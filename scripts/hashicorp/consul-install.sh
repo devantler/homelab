@@ -9,6 +9,7 @@ for IP in "${SERVERS[@]}"; do
             --server \
             --connect \
             --client-addr 0.0.0.0 \
+            --bind-addr $IP \
             --bootstrap-expect ${#SERVERS[@]} "
     for IP in "${SERVERS[@]}"; do
         COMMAND+="--retry-join $IP "
