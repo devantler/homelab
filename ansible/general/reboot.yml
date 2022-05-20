@@ -1,0 +1,6 @@
+- name: Reboot nodes 
+  hosts: nodes
+  become: yes
+  tasks:
+  - name: Reboot nodes
+    reboot:
