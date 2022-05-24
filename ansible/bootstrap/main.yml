@@ -20,18 +20,9 @@
           dtparam=poe_fan_temp2=75000
           dtparam=poe_fan_temp3=80000
         state: present
-    # - name: Check if cmdline.txt has custom text
-    #   lineinfile:
-    #     state: absent
-    #     path: /boot/cmdline.txt
-    #     regexp: "cgroup_memory=1 cgroup_enable=memory ip={{ ansible_ssh_host }}"
-    #   check_mode: true
-    #   changed_when: false # This just makes things look prettier in the logs
-    #   register: check_cmdline
-
-    # - name: Update cmdline.txt
-    #   lineinfile:
-    #     path: /boot/cmdline.txt
-    #     line: "cgroup_memory=1 cgroup_enable=memory ip={{ ansible_ssh_host }}"
-    #     state: present
-    #   when: check_cmdline.found == 0
+    - name: Load modules on boot
+      blockinfile:
+        path: /etc/modules
+        content: |
+          ceph
+        state: present
