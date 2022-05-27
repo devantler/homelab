@@ -4,7 +4,6 @@ export USER=devantler
 # Vault
 for IP in "${SERVERS[@]}"; do
     hashi-up vault install \
-        --version 1.10.2 \
         --ssh-target-addr $IP \
         --ssh-target-user $USER \
         --storage consul \
