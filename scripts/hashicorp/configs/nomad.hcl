@@ -4,13 +4,13 @@ server {
   enabled          = true
   bootstrap_expect = 3
   server_join {
-    retry_join = ["192.168.10.1", "192.168.10.2",  "192.168.10.3"]
+    retry_join = ["rpi1", "rpi2", "rpi3"]
   }
 }
 client {
   enabled = true
   server_join {
-    retry_join = ["192.168.10.1", "192.168.10.2",  "192.168.10.3"]
+    retry_join = ["rpi1", "rpi2", "rpi3"]
   }
 }
 plugin "docker" {

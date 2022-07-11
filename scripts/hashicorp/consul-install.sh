@@ -1,4 +1,4 @@
-export SERVERS=(rpi1 rpi2 rpi3)
+export SERVERS=(10.10.10.1 10.10.10.2 10.10.10.3)
 export USER=devantler
 
 #Consul
