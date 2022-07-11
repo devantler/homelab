@@ -1,5 +1,6 @@
   - name: Add ip and hostnames to /etc/hosts
     hosts: nodes
+    remote_user: devantler
     become: yes
     tasks:
     - name: Add IP address of all hosts to all hosts
