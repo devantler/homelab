@@ -1,0 +1,3 @@
+security_ssh_allowed_groups:
+  - devantler
+security_autoupdate_reboot: true

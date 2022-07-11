@@ -1,4 +1,4 @@
-export SERVERS=(192.168.10.1 192.168.10.2 192.168.10.3)
+export SERVERS=(rpi1 rpi2 rpi3)
 export USER=devantler
 
 # # Nomad

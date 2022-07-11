@@ -1,15 +1,13 @@
 - name: Bootstrap new nodes
   hosts: nodes
+  remote_user: devantler
   become: yes
   roles:
    - geerlingguy.git
    - geerlingguy.pip
    - geerlingguy.docker_arm
+   - geerlingguy.security
   tasks:
-    - name: Ansible apt install lvm2
-      apt:
-        name: lvm2
-        state: present
     - name: Update config.txt
       blockinfile:
         path: /boot/config.txt
@@ -20,9 +18,13 @@
           dtparam=poe_fan_temp2=75000
           dtparam=poe_fan_temp3=80000
         state: present
-    - name: Load modules on boot
-      blockinfile:
-        path: /etc/modules
-        content: |
-          ceph
-        state: present
+    # - name: Ansible apt install lvm2
+    #   apt:
+    #     name: lvm2
+    #     state: present
+    # - name: Load modules on boot
+    #   blockinfile:
+    #     path: /etc/modules
+    #     content: |
+    #       ceph
+    #     state: present
