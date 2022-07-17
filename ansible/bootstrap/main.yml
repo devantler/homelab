@@ -1,5 +1,5 @@
 - name: Bootstrap new nodes
-  hosts: nodes
+  hosts: nodes-ips
   remote_user: devantler
   become: yes
   roles:
@@ -10,7 +10,7 @@
   tasks:
     - name: Update config.txt
       blockinfile:
-        path: /boot/config.txt
+        path: /boot/firmware/config.txt
         content: |
           # PoE Hat Fan Speeds
           dtparam=poe_fan_temp0=65000
@@ -18,6 +18,8 @@
           dtparam=poe_fan_temp2=75000
           dtparam=poe_fan_temp3=80000
         state: present
+    - name: Reboot nodes
+      reboot:
     # - name: Ansible apt install lvm2
     #   apt:
     #     name: lvm2
