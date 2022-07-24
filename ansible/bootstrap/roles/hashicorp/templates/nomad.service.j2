@@ -4,7 +4,7 @@ Documentation=https://nomadproject.io/docs/
 Wants=network-online.target
 After=network-online.target
 [Service]
-ExecStart=/usr/local/bin/nomad agent -config /etc/nomad.d/nomad.hcl -config=/etc/nomad.d/config
+ExecStart=/usr/bin/nomad agent -config /etc/nomad.d/nomad.hcl -config=/etc/nomad.d/config
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=process
 KillSignal=SIGINT
