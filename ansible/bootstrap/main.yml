@@ -10,6 +10,7 @@
     - geerlingguy.docker_arm
     - geerlingguy.security
     - static-ips
+    - hostnames
     - poe-hat-fan-speeds
   tasks:
     - name: Reboot nodes
