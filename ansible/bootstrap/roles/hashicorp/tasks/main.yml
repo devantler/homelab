@@ -17,29 +17,20 @@
     update_cache: yes
     state: latest
 
-- name: Create /etc/nomad.d/config directory
-  file:
-    path: /etc/nomad.d/config
-    state: directory
+- name: check nomad executable is present
+  shell: "which nomad"
+  register: nomad_result
+  ignore_errors: true
 
-- name: Add Nomad Configuration
-  template:
-    src: nomad.hcl.j2
-    dest: /etc/nomad.d/nomad.hcl
-    owner: root
-    group: root
-    mode: 0644
+- name: Setup Nomad
+  import_tasks: setup-nomad.yml
+  when: nomad_result == True
 
-- name: Create nomad.service
-  template:
-    src: nomad.service.j2
-    dest: /etc/systemd/system/nomad.service
-    owner: root
-    group: root
-    mode: 0644
+- name: check consul executable is present
+  shell: "which consul"
+  register: consul_result
+  ignore_errors: true
 
-- name: Start nomad.service
-  service:
-    name: nomad
-    state: started
-    enabled: true
+- name: Setup Consul
+  import_tasks: setup-consul.yml
+  when: consul_result == True
