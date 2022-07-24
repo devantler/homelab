@@ -2,31 +2,41 @@
   hosts: nodes-ips
   remote_user: devantler
   become: yes
+  vars_files:
+    - vars/main.yml
   roles:
-   - geerlingguy.git
-   - geerlingguy.pip
-   - geerlingguy.docker_arm
-   - geerlingguy.security
+    - geerlingguy.git
+    - geerlingguy.pip
+    - geerlingguy.docker_arm
+    - geerlingguy.security
   tasks:
+    - name: Add static ips to netplan
+      copy:
+        dest: /etc/netplan/01-netcfg.yaml 
+        content: |
+          network:
+            version: 2
+            renderer: networkd
+            ethernets:
+              eth0:
+                addresses:
+                  - {{ ansible_default_ipv4 }}/16
+                nameservers:
+                  addresses: 
+                    - 8.8.8.8
+                    - 8.8.4.4
+                routes:
+                  - to: default
+                    via: 10.10.1.1
     - name: Update config.txt
       blockinfile:
         path: /boot/firmware/config.txt
         content: |
           # PoE Hat Fan Speeds
-          dtparam=poe_fan_temp0=65000
+          dtparam=poe_fan_temp0=65sud000
           dtparam=poe_fan_temp1=70000
           dtparam=poe_fan_temp2=75000
           dtparam=poe_fan_temp3=80000
         state: present
     - name: Reboot nodes
       reboot:
-    # - name: Ansible apt install lvm2
-    #   apt:
-    #     name: lvm2
-    #     state: present
-    # - name: Load modules on boot
-    #   blockinfile:
-    #     path: /etc/modules
-    #     content: |
-    #       ceph
-    #     state: present

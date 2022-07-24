@@ -5,7 +5,7 @@
     tasks:
     - name: Add IP address of all hosts to all hosts
       lineinfile:
-        dest: /etc/hosts
+        dest: /etc/cloud/templates/hosts.debian.tmpl
         regexp: '.*{{ item }}$'
         line: "{{ hostvars[item].ansible_host }} {{item}}"
         state: present
