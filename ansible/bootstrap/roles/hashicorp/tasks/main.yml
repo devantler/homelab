@@ -18,7 +18,7 @@
     state: latest
 
 - template:
-    src: templates/nomad.hcl.j2
+    src: nomad.hcl.j2
     dest: /etc/nomad.d/nomad.hcl
     owner: root
     group: root
@@ -27,7 +27,7 @@
 # Create nomad.service file
 - name: Create nomad.service file
   template:
-    src: /templates/nomad.service.j2
+    src: nomad.service.j2
     dest: /etc/systemd/system/nomad.service
     owner: root
     group: root
