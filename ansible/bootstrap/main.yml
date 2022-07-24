@@ -5,13 +5,14 @@
   vars_files:
     - vars/main.yml
   roles:
+    - static-ips
+    - hostnames
+    - poe-hat-fan-speeds
     - geerlingguy.git
     - geerlingguy.pip
     - geerlingguy.docker_arm
     - geerlingguy.security
-    - static-ips
-    - hostnames
-    - poe-hat-fan-speeds
+    - hashicorp
   tasks:
     - name: Reboot nodes
       reboot:
