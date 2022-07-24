@@ -1,14 +1,42 @@
+- name: Check that the somefile.conf exists
+  stat:
+    path: /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  register: gpg_key
+
 - name: Add Hashicorp GPG Key and repository
   shell: |
     wget --no-verbose --output-document=- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor --output=/usr/share/keyrings/hashicorp-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release --codename --short) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+  when: gpg_key.stat.exists == False
 
-- name: Install Nomad
-  shell: |
-    apt update
-    apt install -y nomad
+- name: Install Nomad and Consul
+  apt:
+    pkg:
+    - nomad
+    - consul
+    update_cache: yes
+    state: latest
 
-- name: Install Consul
-  shell: |
-    apt update
-    apt install -y consul
+- template:
+    src: templates/nomad.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+    owner: root
+    group: root
+    mode: 0644
+
+# Create nomad.service file
+- name: Create nomad.service file
+  template:
+    src: /templates/nomad.service.j2
+    dest: /etc/systemd/system/nomad.service
+    owner: root
+    group: root
+    mode: 0644
+
+# Start nomad.service
+- name: Start nomad.service
+  service:
+    name: nomad
+    state: started
+    enabled: yes
+    reloaded: yes
