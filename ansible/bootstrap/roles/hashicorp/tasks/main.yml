@@ -17,6 +17,11 @@
     update_cache: yes
     state: latest
 
+- name: Create /etc/nomad.d/config directory
+  file:
+    path: /etc/nomad.d/config
+    state: directory
+
 - name: Add Nomad Configuration
   template:
     src: nomad.hcl.j2
