@@ -1,4 +1,5 @@
 # geerlingguy.security
 security_ssh_allowed_groups:
   - devantler
+  - root
 security_autoupdate_reboot: true
