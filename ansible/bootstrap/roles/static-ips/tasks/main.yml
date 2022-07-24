@@ -8,7 +8,7 @@
         ethernets:
           eth0:
             addresses:
-              - {{ ansible_default_ipv4 }}/16
+              - {{ ansible_default_ipv4.address }}/16
             nameservers:
               addresses: 
                 - 8.8.8.8
