@@ -1,5 +1,5 @@
 - name: Bootstrap new nodes
-  hosts: nodes-ips
+  hosts: nodes
   remote_user: devantler
   become: yes
   vars_files:
@@ -13,6 +13,4 @@
     - geerlingguy.docker_arm
     - geerlingguy.security
     - hashicorp
-  tasks:
-    - name: Reboot nodes
-      reboot:
+    - reboot

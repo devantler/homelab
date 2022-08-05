@@ -5,7 +5,7 @@
 
 - name: Add Nomad Configuration
   template:
-    src: nomad.hcl.j2
+    src: nomad.hcl
     dest: /etc/nomad.d/nomad.hcl
     owner: root
     group: root
@@ -13,7 +13,7 @@
 
 - name: Create nomad.service
   template:
-    src: nomad.service.j2
+    src: nomad.service
     dest: /etc/systemd/system/nomad.service
     owner: root
     group: root
