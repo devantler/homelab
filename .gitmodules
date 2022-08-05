@@ -1,3 +1,0 @@
-[submodule "ansible/bootstrap/dataspace"]
-	path = ansible/bootstrap/dataspace
-	url = https://github.com/devantler/dataspace
