@@ -1,10 +1,11 @@
 - name: Update config.txt
   blockinfile:
-    path: /boot/firmware/config.txt
+    path: /boot/firmware/usercfg.txt
     content: |
       # PoE Hat Fan Speeds
-      dtparam=poe_fan_temp0=65sud000
-      dtparam=poe_fan_temp1=70000
-      dtparam=poe_fan_temp2=75000
-      dtparam=poe_fan_temp3=80000
+      dtoverlay=rpi-poe
+      dtparam=poe_fan_temp0=50000,poe_fan_temp0_hyst=2000
+      dtparam=poe_fan_temp1=60000,poe_fan_temp1_hyst=3000
+      dtparam=poe_fan_temp2=75000,poe_fan_temp2_hyst=4000
+      dtparam=poe_fan_temp3=80000,poe_fan_temp3_hyst=5000
     state: present

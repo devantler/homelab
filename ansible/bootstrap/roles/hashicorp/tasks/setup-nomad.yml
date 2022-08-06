@@ -1,26 +1,55 @@
-- name: Create /etc/nomad.d/config directory
-  file:
-    path: /etc/nomad.d/config
-    state: directory
+- name: install nomad
+  ansible.builtin.package:
+    name: nomad
+    state: present
+  when:
+    - nomad_install_package
 
-- name: Add Nomad Configuration
-  template:
+- name: create /etc/nomad.d
+  ansible.builtin.file:
+    path: /etc/nomad
+    state: directory
+    mode: "0750"
+    owner: nomad
+    group: nomad
+
+- name: configure nomad server
+  ansible.builtin.template:
     src: nomad.hcl
     dest: /etc/nomad.d/nomad.hcl
-    owner: root
-    group: root
-    mode: 0644
+    mode: "0640"
+    owner: nomad
+    group: nomad
+  notify:
+    - restart nomad
+  when:
+    - nomad_server
 
-- name: Create nomad.service
-  template:
-    src: nomad.service
-    dest: /etc/systemd/system/nomad.service
-    owner: root
-    group: root
-    mode: 0644
-
-- name: Start nomad.service
-  service:
+- name: start nomad
+  ansible.builtin.service:
     name: nomad
     state: started
-    enabled: true
+    enabled: yes
+
+- name: determine nomad leader
+  ansible.builtin.set_fact:
+    nomad_leader: "{{ ansible_hostname }}"
+  run_once: yes
+  when:
+    - nomad_server
+
+- name: list server members
+  ansible.builtin.command:
+    cmd: nomad server members
+  register: nomad_list_server_members
+  changed_when: no
+  when:
+    - nomad_server
+
+- name: join nomad leader
+  ansible.builtin.command:
+    cmd: nomad server join {{ nomad_leader }}:4648
+  register: nomad_join_nomad_leader
+  when:
+    - ansible_hostname != nomad_server
+    - ansible_hostname not in nomad_list_server_members.stdout

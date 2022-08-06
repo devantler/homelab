@@ -9,14 +9,6 @@
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release --codename --short) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
   when: gpg_key.stat.exists == False
 
-- name: Install Nomad and Consul
-  apt:
-    pkg:
-    - nomad
-    - consul
-    update_cache: yes
-    state: latest
-
 - name: check nomad executable is present
   shell: "which nomad"
   register: nomad_result
@@ -24,7 +16,7 @@
 
 - name: Setup Nomad
   import_tasks: setup-nomad.yml
-  when: nomad_result == True
+  when: nomad_result
 
 - name: check consul executable is present
   shell: "which consul"
@@ -33,4 +25,4 @@
 
 - name: Setup Consul
   import_tasks: setup-consul.yml
-  when: consul_result == True
+  when: consul_result
