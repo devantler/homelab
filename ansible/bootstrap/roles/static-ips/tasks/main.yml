@@ -1,18 +1,4 @@
 - name: Add static ips to netplan
-  copy:
-    dest: /etc/netplan/01-netcfg.yaml 
-    content: |
-      network:
-        version: 2
-        renderer: networkd
-        ethernets:
-          eth0:
-            addresses:
-              - {{ ansible_default_ipv4.address }}/16
-            nameservers:
-              addresses: 
-                - 1.1.1.1
-                - 8.8.8.8
-            routes:
-              - to: default
-                via: 10.10.1.1
+  hosts: nodes-ips
+  template: src=01-netcfg.yaml dest=/etc/netplan/01-netcfg.yaml
+  notify: start netplan

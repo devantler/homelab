@@ -1,0 +1,18 @@
+- name: check cephadm is present
+  hosts: cephadm
+  shell: "which cephadm"
+  register: cephadm_install_package
+  ignore_errors: true
+
+- name: install cephadm
+  package:
+    name: cephadm
+    state: present
+  when:
+  - cephadm_install_package
+
+- name: bootstrap ceph
+  command:
+    cmd: cephadm bootstrap --mon-ip {{ ansible_host }}
+  when:
+  - cephadm_install_package

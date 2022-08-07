@@ -1,0 +1,5 @@
+- name: copy ssh key to root
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

@@ -1,12 +1,12 @@
 - name: install nomad
-  ansible.builtin.package:
+  package:
     name: nomad
     state: present
   when:
     - nomad_install_package
 
 - name: create /etc/nomad.d
-  ansible.builtin.file:
+  file:
     path: /etc/nomad
     state: directory
     mode: "0750"
@@ -14,7 +14,7 @@
     group: nomad
 
 - name: configure nomad server
-  ansible.builtin.template:
+  template:
     src: nomad.hcl
     dest: /etc/nomad.d/nomad.hcl
     mode: "0640"
@@ -26,20 +26,20 @@
     - nomad_server
 
 - name: start nomad
-  ansible.builtin.service:
+  service:
     name: nomad
     state: started
     enabled: yes
 
 - name: determine nomad leader
-  ansible.builtin.set_fact:
+  set_fact:
     nomad_leader: "{{ ansible_hostname }}"
   run_once: yes
   when:
     - nomad_server
 
 - name: list server members
-  ansible.builtin.command:
+  command:
     cmd: nomad server members
   register: nomad_list_server_members
   changed_when: no
@@ -47,7 +47,7 @@
     - nomad_server
 
 - name: join nomad leader
-  ansible.builtin.command:
+  command:
     cmd: nomad server join {{ nomad_leader }}:4648
   register: nomad_join_nomad_leader
   when:

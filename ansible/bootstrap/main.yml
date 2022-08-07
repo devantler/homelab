@@ -5,12 +5,16 @@
   vars_files:
     - vars/main.yml
   roles:
+    - update
+    - poe-hat-fan-speeds
     - static-ips
     - hostnames
-    - poe-hat-fan-speeds
+    - copy-ssh-key-to-root
     - geerlingguy.git
     - geerlingguy.pip
     - geerlingguy.docker_arm
     - geerlingguy.security
-    - hashicorp
     - reboot
+    - ceph
+    #- hashicorp
+    #- reboot

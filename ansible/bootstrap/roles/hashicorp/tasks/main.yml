@@ -11,18 +11,18 @@
 
 - name: check nomad executable is present
   shell: "which nomad"
-  register: nomad_result
+  register: nomad_install_package
   ignore_errors: true
 
 - name: Setup Nomad
   import_tasks: setup-nomad.yml
-  when: nomad_result
+  when: nomad_install_package
 
 - name: check consul executable is present
   shell: "which consul"
-  register: consul_result
+  register: consul_install_package
   ignore_errors: true
 
 - name: Setup Consul
   import_tasks: setup-consul.yml
-  when: consul_result
+  when: consul_install_package

@@ -1,0 +1,2 @@
+- name: start netplan
+  shell: netplan apply
