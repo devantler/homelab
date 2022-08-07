@@ -1,0 +1,30 @@
+- name: install consul
+  package:
+    name: consul
+    state: present
+  when: not consul.stat.exists
+
+- name: create consul data directory
+  ansible.builtin.file:
+    path: "/opt/consul"
+    state: directory
+    owner: consul
+    group: consul
+    mode: "0750"
+  when: not consul.stat.exists
+
+- name: configure consul
+  ansible.builtin.template:
+    src: consul.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+    owner: consul
+    group: consul
+    mode: "0644"
+  notify:
+    - restart consul
+
+- name: start and enable consul
+  service:
+    name: consul
+    state: started
+    enabled: yes

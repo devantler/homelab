@@ -1,5 +1,5 @@
 export SERVERS=(10.10.10.1 10.10.10.2 10.10.10.3)
-export USER=devantler
+export USER=umbraco
 
 #Consul
 for IP in "${SERVERS[@]}"; do

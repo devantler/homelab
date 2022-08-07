@@ -15,3 +15,14 @@
   command:
     cmd: cephadm bootstrap --mon-ip {{ ip }}
 
+- name: add ssh key to nodes
+  shell: ssh-copy-id -f -i /etc/ceph/ceph.pub root@{{ item }}
+  when:
+  - ansible_hostname == "rpi1"
+  with_items: "{{ groups.nodes }}"
+
+- name: add hosts
+  shell: ceph orch host add {{ item }} {{ hostvars[item].ip }} --labels mgr mon osd _admin
+  when:
+  - ansible_hostname == "rpi1"
+  with_items: "{{ groups.nodes }}"

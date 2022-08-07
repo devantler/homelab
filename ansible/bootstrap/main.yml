@@ -17,5 +17,5 @@
     - geerlingguy.docker_arm
     - geerlingguy.security
     - ceph
-    #- hashicorp
-    #- reboot
+    - hashicorp
+    - reboot

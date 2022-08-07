@@ -2,8 +2,7 @@
   package:
     name: nomad
     state: present
-  when:
-    - nomad_install_package
+  when: not nomad.stat.exists
 
 - name: create /etc/nomad.d
   file:
@@ -12,6 +11,7 @@
     mode: "0750"
     owner: nomad
     group: nomad
+  when: not nomad.stat.exists
 
 - name: configure nomad server
   template:
@@ -22,34 +22,9 @@
     group: nomad
   notify:
     - restart nomad
-  when:
-    - nomad_server
 
 - name: start nomad
   service:
     name: nomad
     state: started
     enabled: yes
-
-- name: determine nomad leader
-  set_fact:
-    nomad_leader: "{{ ip }}"
-  run_once: yes
-  when:
-    - nomad_server
-
-- name: list server members
-  command:
-    cmd: nomad server members
-  register: nomad_list_server_members
-  changed_when: no
-  when:
-    - nomad_server
-
-- name: join nomad leader
-  command:
-    cmd: nomad server join {{ nomad_leader }}:4648
-  register: nomad_join_nomad_leader
-  when:
-    - ansible_hostname != nomad_server
-    - ansible_hostname not in nomad_list_server_members.stdout
