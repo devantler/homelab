@@ -7,6 +7,11 @@
   command:
     cmd: cephadm install ceph-common
 
+- name: install ceph-volume
+  command:
+    cmd: cephadm install ceph-volume
+
 - name: bootstrap ceph
   command:
     cmd: cephadm bootstrap --mon-ip {{ ip }}
+
