@@ -10,7 +10,7 @@ capability {
 
 secrets {
   adminID  = "admin"
-  adminKey = "AQD024ZiVBYJFxAAweH9j/+Rp1mZ79AgNDv2Zw=="
+  adminKey = "AQDZuO9isefKLBAA1lZQ9Ix3YR7BE21iAR/+9Q=="
 }
 
 parameters {

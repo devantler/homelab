@@ -1,3 +1,3 @@
 domain = "devantler.com"
 
-cloudflare_api_key = "ryPCjnvnqxRO9Ny9FdKbqTVFBmiUJNoFPPdut2Nq"
+cloudflare_api_key = "sdeqFqs_XdYNU4qy_jCirskZaK-P4d62ZQUtqcoT"
