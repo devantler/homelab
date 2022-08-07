@@ -2,5 +2,6 @@
 security_ssh_permit_root_login: "yes"
 security_ssh_allowed_groups:
   - devantler
+  - root
   - ceph
 security_autoupdate_reboot: true

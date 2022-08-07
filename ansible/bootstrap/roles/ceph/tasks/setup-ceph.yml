@@ -1,0 +1,12 @@
+- name: install cephadm
+  package:
+    name: cephadm
+    state: present
+
+- name: install ceph-common
+  command:
+    cmd: cephadm install ceph-common
+
+- name: bootstrap ceph
+  command:
+    cmd: cephadm bootstrap --mon-ip {{ ip }}

@@ -1,4 +1,3 @@
 - name: Add static ips to netplan
-  hosts: nodes-ips
   template: src=01-netcfg.yaml dest=/etc/netplan/01-netcfg.yaml
   notify: start netplan

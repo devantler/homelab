@@ -33,7 +33,7 @@
 
 - name: determine nomad leader
   set_fact:
-    nomad_leader: "{{ ansible_hostname }}"
+    nomad_leader: "{{ ip }}"
   run_once: yes
   when:
     - nomad_server

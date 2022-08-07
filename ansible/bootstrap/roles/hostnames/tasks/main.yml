@@ -2,7 +2,7 @@
   lineinfile:
     dest: /etc/cloud/templates/hosts.debian.tmpl
     regexp: '{{ item }}.*$'
-    line: "{{ hostvars[item].ansible_host }} {{item}}"
+    line: "{{ hostvars[item].ip }} {{item}}"
     state: present
-  when: hostvars[item].ansible_host is defined
+  when: hostvars[item].ip is defined
   with_items: "{{ groups.all }}"
