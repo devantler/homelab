@@ -22,13 +22,21 @@
     path: /usr/bin/nomad
   register: nomad
 
-- name: Setup Nomad
+- name: setup nomad
   import_tasks: setup-nomad.yml
 
 - name: check if consul exists
   stat:
-    path: /usr/sbin/consul
+    path: /usr/bin/consul
   register: consul
 
-- name: Setup Consul
+- name: setup consul
   import_tasks: setup-consul.yml
+
+- name: check if waypoint exists
+  stat:
+    path: /usr/bin/waypoint
+  register: waypoint
+
+- name: setup waypoint
+  import_tasks: setup-waypoint.yml
