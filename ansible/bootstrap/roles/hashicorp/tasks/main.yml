@@ -38,5 +38,5 @@
     path: /usr/bin/waypoint
   register: waypoint
 
-- name: setup waypoint
-  import_tasks: setup-waypoint.yml
+# - name: setup waypoint
+#   import_tasks: setup-waypoint.yml
