@@ -1,0 +1,3 @@
+[submodule "ansible/k3s"]
+	path = ansible/k3s
+	url = https://github.com/techno-tim/k3s-ansible
