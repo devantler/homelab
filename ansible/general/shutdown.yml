@@ -1,5 +1,5 @@
 - name: Shutdown nodes 
-  hosts: nodes
+  hosts: all
   become: yes
   tasks:
     - name: Shutdown nodes

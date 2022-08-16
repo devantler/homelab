@@ -1,5 +1,5 @@
 - name: Bootstrap new nodes
-  hosts: nodes
+  hosts: all
   remote_user: devantler
   become: yes
   vars_files:
@@ -12,10 +12,6 @@
     - ssh-keys
     # Software setup
     - update
-    - geerlingguy.git
-    - geerlingguy.pip
-    - geerlingguy.docker_arm
     - geerlingguy.security
-    - ceph
-    - hashicorp
+    #- ceph
     - reboot

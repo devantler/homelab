@@ -1,5 +1,5 @@
 - name: Update and upgrade apt packages
-  hosts: nodes
+  hosts: all
   become: yes
   tasks:
     - name: Update and upgrade apt packages
