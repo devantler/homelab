@@ -5,7 +5,7 @@
       # PoE Hat Fan Speeds
       dtoverlay=rpi-poe-plus
       dtparam=poe_fan_temp0=40000,dtparam=poe_fan_temp0_hyst=5000
-      dtparam=poe_fan_temp1=55000,dtparam=poe_fan_temp1_hyst=2500
-      dtparam=poe_fan_temp2=77000,dtparam=poe_fan_temp2_hyst=2000
-      dtparam=poe_fan_temp3=80000,dtparam=poe_fan_temp3_hyst=1000
+      dtparam=poe_fan_temp1=50000,dtparam=poe_fan_temp1_hyst=5000
+      dtparam=poe_fan_temp2=70000,dtparam=poe_fan_temp2_hyst=5000
+      dtparam=poe_fan_temp3=80000,dtparam=poe_fan_temp3_hyst=5000
     state: present
