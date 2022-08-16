@@ -1,9 +1,0 @@
-- name: restart nomad
-  service:
-    name: nomad
-    state: restarted
-
-- name: restart consul
-  service:
-    name: consul
-    state: restarted

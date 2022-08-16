@@ -1,5 +1,0 @@
-- name: install waypoint
-  package:
-    name: waypoint
-    state: present
-  when: not waypoint.stat.exists
