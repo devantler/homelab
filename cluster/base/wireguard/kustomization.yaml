@@ -1,8 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: wireguard
+helmCharts:
+  - name: wg-access-server
+    repo: https://place1.github.io/wg-access-server
+    version: v1.9.1
+    namespace: wireguard
+    releaseName: wg-access-server
+    valuesFile: values.yaml
 resources:
-  - deployment.yaml
-  - service.yaml
-  - ingress-ui.yaml
-  - ingress-udp.yaml
+  - cloudflare-token-secret.yaml
+  - certificates/certificate-production.yaml
+  - certificates/certificate-staging.yaml
+  - issuers/letsencrypt-production.yaml
+  - issuers/letsencrypt-staging.yaml
