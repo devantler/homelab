@@ -2,7 +2,6 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: nginx-staging
-  namespace: default
   annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
@@ -16,5 +15,3 @@ spec:
           port: 80
   tls:
     secretName: certificate-staging-tls
-      # middlewares:
-      #   - name: default-headers
