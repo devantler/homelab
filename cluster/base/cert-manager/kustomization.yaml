@@ -10,5 +10,5 @@ resources:
   - cloudflare-token-secret.yaml
   - certificates/certificate-production.yaml
   - certificates/certificate-staging.yaml
-  - certificates/issuers-production.yaml
-  - certificates/issuers-staging.yaml
+  - issuers/letsencrypt-production.yaml
+  - issuers/letsencrypt-staging.yaml

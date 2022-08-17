@@ -5,4 +5,5 @@ resources:
   - https://raw.githubusercontent.com/argoproj/argo-cd/v2.4.9/manifests/install.yaml
   - ingress.yaml
 patchesStrategicMerge:
-  - pathces/argocd-cmd-params-cm-patch.yaml
+  - patches/argocd-cmd-params-cm-patch.yaml
+  - patches/argocd-cm-patch.yaml
