@@ -1,0 +1,15 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: wireguard-ui-route
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - match: Host(`vpn.devantler.com`)
+    kind: Rule
+    services:
+    - name: wireguard-service
+      port: 80
+  tls:
+    secretName: certificate-production-tls

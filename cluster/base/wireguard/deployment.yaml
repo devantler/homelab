@@ -1,0 +1,46 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: wireguard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wireguard
+  template:
+    metadata:
+      labels:
+        app: wireguard
+    spec:
+      containers:
+      - name: wireguard
+        image: weejewel/wg-easy
+        env:
+        - name: WG_HOST
+          value: vpn.devantler.com
+        - name: WG_DEFAULT_ADDRESS
+          value: 10.0.0.x
+        - name: WG_DEFAULT_DNS
+          value: "1.1.1.1"
+        securityContext:	# I am not sure if following is required, I haven't tried it without
+          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_MODULE
+        volumeMounts:
+        - name: wireguard-volume	# stores wg-easy configuration 
+          mountPath: /etc/wireguard
+        - name: lib-volume
+          mountPath: /lib/modules	# makes available wireguard module to pod, this may not be required
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+      - name: wireguard-volume
+        hostPath:
+          path: /mnt/k3s/wireguard
+      - name: lib-volume
+        hostPath:
+          path: /lib/modules
