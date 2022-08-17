@@ -2,16 +2,9 @@ globalArguments:
   - "--global.sendanonymoususage=false"
   - "--global.checknewversion=false"
 
-additionalArguments:
-  - "--log.level=DEBUG"
-
 deployment:
   enabled: true
   replicas: 1
-  annotations: {}
-  podAnnotations: {}
-  additionalContainers: []
-  initContainers: []
 
 ports:
   web:
@@ -33,15 +26,8 @@ providers:
     publishedService:
       enabled: false
 
-rbac:
-  enabled: true
-
 service:
   enabled: true
   type: LoadBalancer
-  annotations: {}
-  labels: {}
   spec:
     loadBalancerIP: 10.10.8.80
-  loadBalancerSourceRanges: []
-  externalIPs: []
