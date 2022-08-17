@@ -5,7 +5,7 @@
   when: ansible_hostname == "rpi1"
 
 - name: setup ceph
-  import_tasks: setup-ceph.yml
+  import_tasks: setup-ceph.yaml
   when:
   - ansible_hostname == "rpi1"
   - not cephadm.stat.exists
