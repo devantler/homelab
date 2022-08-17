@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: traefik-dashboard
+  name: traefik-dashboard-production
   namespace: traefik
   annotations:
     kubernetes.io/ingress.class: traefik-external
@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`traefik.local.devantler.live`)
+    - match: Host(`traefik.devantler.com`)
       kind: Rule
       middlewares:
         - name: traefik-dashboard-basicauth
