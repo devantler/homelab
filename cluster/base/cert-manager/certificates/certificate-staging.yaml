@@ -2,6 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: certificate-staging
+  namespace: default
 spec:
   secretName: certificate-staging-tls
   issuerRef:
