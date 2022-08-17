@@ -7,3 +7,9 @@ helmCharts:
     namespace: cert-manager
     releaseName: cert-manager
     valuesFile: values.yaml
+resources:
+  - cloudflare-token-secret.yaml
+  - certificates/certificate-production.yaml
+  - certificates/certificate-staging.yaml
+  - issuers/letsencrypt-production.yaml
+  - issuers/letsencrypt-staging.yaml

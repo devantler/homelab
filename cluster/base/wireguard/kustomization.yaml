@@ -7,9 +7,3 @@ helmCharts:
     namespace: wireguard
     releaseName: wg-access-server
     valuesFile: values.yaml
-resources:
-  - cloudflare-token-secret.yaml
-  - certificates/certificate-production.yaml
-  - certificates/certificate-staging.yaml
-  - issuers/letsencrypt-production.yaml
-  - issuers/letsencrypt-staging.yaml
