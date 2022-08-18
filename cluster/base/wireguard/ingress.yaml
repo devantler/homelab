@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: wireguard
+  name: wg-easy
   annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
@@ -11,7 +11,7 @@ spec:
     - kind: Rule
       match: Host(`wireguard.devantler.com`)
       services:
-        - name: wireguard
+        - name: wg-easy
           port: 51821
   tls:
     secretName: certificate-production-tls

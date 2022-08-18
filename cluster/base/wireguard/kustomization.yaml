@@ -6,5 +6,5 @@ helmCharts:
   - name: wg-easy
     repo: https://charts.truecharts.org
     version: 1.0.19
-    namespace: wireguard
+    namespace: wg-easy
     releaseName: wg-easy
