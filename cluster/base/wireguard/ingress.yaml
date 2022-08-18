@@ -9,10 +9,9 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`vpn.devantler.com`)
-      priority: 10
+      match: Host(`wireguard.devantler.com`)
       services:
         - name: wireguard
-          port: 51820
+          port: 51821
   tls:
     secretName: certificate-production-tls

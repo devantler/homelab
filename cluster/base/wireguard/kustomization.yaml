@@ -3,8 +3,8 @@ kind: Kustomization
 resources:
   - ingress.yaml
 helmCharts:
-  - name: wireguard
-    repo: https://k8s-at-home.com/charts/
-    version: 1.4.2
+  - name: wg-easy
+    repo: https://charts.truecharts.org
+    version: 1.0.19
     namespace: wireguard
-    releaseName: wireguard
+    releaseName: wg-easy
