@@ -8,4 +8,3 @@ helmCharts:
     version: 1.4.2
     namespace: wireguard
     releaseName: wireguard
-    valuesFile: values.yaml
