@@ -1,0 +1,18 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: wireguard
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`vpn.devantler.com`)
+      priority: 10
+      services:
+        - name: wireguard
+          port: 51820
+  tls:
+    secretName: certificate-production-tls
