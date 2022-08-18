@@ -1,9 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 helmCharts:
-  - name: wg-access-server
-    repo: https://place1.github.io/wg-access-server
-    version: v0.4.6
+  - name: wireguard
+    repo: https://k8s-at-home.com/charts/
+    version: 1.4.2
     namespace: wireguard
-    releaseName: wg-access-server
+    releaseName: wireguard
     valuesFile: values.yaml

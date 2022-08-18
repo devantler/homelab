@@ -1,6 +1,3 @@
 ingress:
-  enabled: true
-  hosts: ["vpn.devantler.com"]
-  tls:
-    - hosts: ["vpn.devantler.com"]
-      secretName: certificate-production-tls
+  main:
+    enabled: true
