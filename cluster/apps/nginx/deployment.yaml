@@ -1,13 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: nginx-deployment
   labels:
     app: nginx
 spec:
-  replicas: 1
-  progressDeadlineSeconds: 600
-  revisionHistoryLimit: 2
   strategy:
     type: Recreate
   selector:
@@ -18,16 +15,13 @@ spec:
       labels:
         app: nginx
     spec:
-      securityContext:
-        runAsGroup: 1000
-        runAsNonRoot: true
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginx:1.23.1-alpine
         resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
           requests:
-            memory: "128Mi"
-            cpu: "500m"
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
