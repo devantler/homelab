@@ -5,4 +5,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: kubectl apply -k ./cluster/ --recursive --dry-run=client
+      - uses: azure/setup-kubectl@v3
+      - run: steps.install.kubectl apply -k ./cluster/ --recursive --dry-run=client
