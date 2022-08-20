@@ -18,6 +18,9 @@ spec:
       labels:
         app: nginx
     spec:
+      securityContext:
+        runAsGroup: 1000
+        runAsNonRoot: true
       containers:
       - name: nginx
         image: nginx:latest
