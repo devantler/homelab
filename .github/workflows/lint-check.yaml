@@ -6,4 +6,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: azure/setup-kubectl@v3
-      - run: steps.install.kubectl apply -k ./cluster/ --recursive --dry-run=client
+      - run: install.kubectl apply -k ./cluster/ --recursive --dry-run=client
