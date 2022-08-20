@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: nginx-ingress-staging
+  name: nginx-ingress
   annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
