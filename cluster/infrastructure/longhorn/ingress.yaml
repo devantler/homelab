@@ -1,0 +1,14 @@
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: longhorn-frontend
+  namespace: longhorn-system
+spec:
+  entryPoints: 
+    - websecure
+  routes:
+  - match: Host(`longhorn.devantler.com`) 
+    kind: Rule
+    services:
+    - name: longhorn-frontend
+      port: 8000
