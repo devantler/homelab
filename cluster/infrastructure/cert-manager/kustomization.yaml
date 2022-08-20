@@ -2,9 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: cert-manager
 resources:
+  - namespace.yaml
+  - release.yaml
   - cloudflare-token-secret.yaml
   - certificates/certificate-production.yaml
   - certificates/certificate-staging.yaml
   - issuers/letsencrypt-production.yaml
   - issuers/letsencrypt-staging.yaml
-  - release.yaml
