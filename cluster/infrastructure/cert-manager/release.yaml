@@ -12,8 +12,8 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: jetstack
-        namespace: cert-manager
-  interval: 5m
+        namespace: flux-system
+  interval: 120m
   values:
     installCRDs: true
     replicaCount: 1

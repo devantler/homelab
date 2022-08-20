@@ -1,7 +1,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: jetstack
+  name: traefik
 spec:
   interval: 240m
-  url: https://charts.jetstack.io
+  url: https://helm.traefik.io/traefik
