@@ -4,7 +4,7 @@ jobs:
   lint-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: piraces/kube-score-ga@v0.1.2
         with:
           manifests-folders: './cluster/**/*.yaml'
