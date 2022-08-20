@@ -7,8 +7,10 @@ spec:
   entryPoints: 
     - websecure
   routes:
-  - match: Host(`longhorn.devantler.com`) 
-    kind: Rule
+  - kind: Rule
+    match: Host(`longhorn.devantler.com`) 
     services:
     - name: longhorn-frontend
       port: 8000
+  tls: 
+    secretName: tls-certificate-production
