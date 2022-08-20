@@ -1,10 +1,10 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: certificate-production
+  name: tls-certificate-production
   namespace: default
 spec:
-  secretName: certificate-production-tls
+  secretName: tls-certificate-production
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer

@@ -1,10 +1,10 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: certificate-staging
+  name: tls-certificate-staging
   namespace: default
 spec:
-  secretName: certificate-staging-tls
+  secretName: tls-certificate-staging
   issuerRef:
     name: letsencrypt-staging
     kind: ClusterIssuer
