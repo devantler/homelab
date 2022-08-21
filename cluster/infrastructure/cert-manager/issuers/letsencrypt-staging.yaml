@@ -14,6 +14,7 @@ spec:
             email: nikolaiemildamm@icloud.com
             apiTokenSecretRef:
               name: cloudflare-token-secret
+              namespace: secrets
               key: cloudflare-token
         selector:
           dnsZones:
