@@ -10,7 +10,7 @@ spec:
     - kind: Rule
       match: Host(`longhorn.devantler.com`)
       middlewares:
-        - name: longhorn-headers
+        - name: svc-longhorn-headers
           namespace: longhorn-system
       services:
         - name: longhorn-frontend
