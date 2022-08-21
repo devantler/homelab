@@ -7,4 +7,4 @@ spec:
   interval: 240m
   url: oci://ghcr.io/borchero/charts/switchboard
   ref:
-    tag: latest
+    semver: 0.5.1
