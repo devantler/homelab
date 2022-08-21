@@ -10,7 +10,7 @@ spec:
       chart: switchboard
       version: 0.5.1
       sourceRef:
-        kind: OCIRepository
+        kind: HelmRepository
         name: switchboard
         namespace: flux-system
   interval: 120m
