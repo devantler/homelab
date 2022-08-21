@@ -3,8 +3,6 @@ apiVersion: traefik.containo.us/v1alpha1
 metadata:
   name: longhorn-ingress
   namespace: longhorn-system
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: devantler.com
 spec:
   entryPoints:
     - websecure
