@@ -13,8 +13,6 @@ spec:
         kind: HelmRepository
         name: external-dns
         namespace: flux-system
-  dependsOn:
-    - name: traefik
   interval: 120m
   values:
     provider: cloudflare

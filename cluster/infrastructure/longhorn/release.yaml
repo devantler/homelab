@@ -13,8 +13,6 @@ spec:
         kind: HelmRepository
         name: longhorn
         namespace: flux-system
-  dependsOn:
-  - name: traefik
   interval: 120m
   values:
     longhornManager:
