@@ -19,9 +19,9 @@ spec:
     sources:
       - service
       - ingress
+    domainFilters:
+      - devantler.com
     extraArgs:
-      - --source=service
-      - --domain-filter=devantler.com
       - --cloudflare-proxied
     env:
       - name: CF_API_KEY
