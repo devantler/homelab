@@ -17,7 +17,6 @@ spec:
   values:
     provider: cloudflare
     sources:
-      - service
       - ingress
     domainFilters:
       - devantler.com

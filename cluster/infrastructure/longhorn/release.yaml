@@ -14,7 +14,3 @@ spec:
         name: longhorn
         namespace: flux-system
   interval: 120m
-  values:
-    longhornManager:
-      serviceAnnotations:
-        external-dns.alpha.kubernetes.io/hostname: devantler.com
