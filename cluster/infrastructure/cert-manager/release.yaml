@@ -15,9 +15,10 @@ spec:
         namespace: flux-system
   install:
     crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   interval: 120m
   values:
-    installCRDs: true
     replicaCount: 1
     extraArgs:
       - --dns01-recursive-nameservers=1.1.1.1:53,8.8.8.8:53
