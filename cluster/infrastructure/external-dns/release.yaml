@@ -24,9 +24,9 @@ spec:
     extraArgs:
       - --cloudflare-proxied
     env:
-      - name: CF_API_KEY
-        value: nikolaiemildamm@icloud.com
       - name: CF_API_EMAIL
+        value: nikolaiemildamm@icloud.com
+      - name: CF_API_KEY
         valueFrom:
           secretKeyRef:
             name: cloudflare-apikey-secret
