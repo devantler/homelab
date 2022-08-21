@@ -5,4 +5,4 @@ namespace: external-dns
 resources:
   - namespace.yaml
   - release.yaml
-  - cloudflare-apikey-secret.yaml
+  - cloudflare-apitoken-secret.yaml

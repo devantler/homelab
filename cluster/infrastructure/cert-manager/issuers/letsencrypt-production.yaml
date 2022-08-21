@@ -13,8 +13,8 @@ spec:
           cloudflare:
             email: nikolaiemildamm@icloud.com
             apiTokenSecretRef:
-              name: cloudflare-apikey-secret
-              key: cloudflare-apikey
+              name: cloudflare-apitoken-secret
+              key: cloudflare-apitoken
         selector:
           dnsZones:
             - "devantler.com"

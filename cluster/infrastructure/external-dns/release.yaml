@@ -26,8 +26,8 @@ spec:
     env:
       - name: CF_API_EMAIL
         value: nikolaiemildamm@icloud.com
-      - name: CF_API_KEY
+      - name: CF_API_TOKEN
         valueFrom:
           secretKeyRef:
-            name: cloudflare-apikey-secret
-            key: cloudflare-apikey
+            name: cloudflare-apitoken-secret
+            key: cloudflare-apitoken
