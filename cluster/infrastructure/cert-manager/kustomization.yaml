@@ -4,6 +4,7 @@ namespace: cert-manager
 resources:
   - namespace.yaml
   - release.yaml
+  - cloudflare-apitoken-secret.yaml
   - certificates/tls-certificate-production.yaml
   - certificates/tls-certificate-staging.yaml
   - issuers/letsencrypt-production.yaml
