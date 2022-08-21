@@ -6,3 +6,4 @@ resources:
   - namespace.yaml
   - release.yaml
   - ingress.yaml
+  - middleware.yaml
