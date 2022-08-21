@@ -1,10 +1,9 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: OCIRepository
+kind: HelmRepository
 metadata:
   name: switchboard
   namespace: flux-system
 spec:
+  type: "oci"
   interval: 240m
   url: oci://ghcr.io/borchero/charts/switchboard
-  ref:
-    semver: 0.5.x
