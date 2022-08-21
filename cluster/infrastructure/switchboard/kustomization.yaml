@@ -4,4 +4,3 @@ kind: Kustomization
 namespace: switchboard
 resources:
   - namespace.yaml
-  - release.yaml
