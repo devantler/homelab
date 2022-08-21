@@ -12,6 +12,7 @@
     - ssh-keys
     # Software setup
     - update
+    - longhorn
     - geerlingguy.security
     #- ceph
     - reboot
