@@ -16,6 +16,8 @@ spec:
     spec:
       containers:
       - name: external-dns
+        
+          
         image: k8s.gcr.io/external-dns/external-dns:v0.7.6
         args:
         - --source=ingress
@@ -30,3 +32,10 @@ spec:
             secretKeyRef:
               name: cloudflare-apikey-secret
               key: cloudflare-apikey
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
