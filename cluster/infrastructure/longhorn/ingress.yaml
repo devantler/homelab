@@ -4,13 +4,16 @@ metadata:
   name: longhorn-ingress
   namespace: longhorn-system
 spec:
-  entryPoints: 
+  entryPoints:
     - websecure
   routes:
-  - kind: Rule
-    match: Host(`longhorn.devantler.com`) 
-    services:
-    - name: longhorn-frontend
-      port: 80
-  tls: 
+    - kind: Rule
+      match: Host(`longhorn.devantler.com`)
+      middlewares:
+        - name: longhorn-headers
+          namespace: longhorn-system
+      services:
+        - name: longhorn-frontend
+          port: 80
+  tls:
     secretName: tls-certificate-production
