@@ -11,6 +11,6 @@ spec:
     match: Host(`longhorn.devantler.com`) 
     services:
     - name: longhorn-frontend
-      port: 8000
+      port: 80
   tls: 
     secretName: tls-certificate-production
