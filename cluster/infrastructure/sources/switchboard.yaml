@@ -6,4 +6,4 @@ metadata:
 spec:
   type: "oci"
   interval: 240m
-  url: oci://ghcr.io/borchero/charts/switchboard
+  url: oci://ghcr.io/borchero/charts
