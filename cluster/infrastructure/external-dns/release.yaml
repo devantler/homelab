@@ -13,7 +13,7 @@ spec:
         kind: HelmRepository
         name: external-dns
         namespace: flux-system
-    dependsOn:
+  dependsOn:
     - name: traefik
   interval: 120m
   values:
