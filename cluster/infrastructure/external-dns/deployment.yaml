@@ -28,6 +28,5 @@ spec:
         - name: CF_API_EMAIL
           valueFrom:
             secretKeyRef:
-              name: cloudflare-token-secret
-              namespace: secrets
-              key: cloudflare-token
+              name: cloudflare-apikey-secret
+              key: cloudflare-apikey
