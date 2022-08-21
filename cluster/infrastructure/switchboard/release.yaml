@@ -19,5 +19,5 @@ spec:
       externalDNS:
         enabled: true
         targetService:
-          name: traefik-external
+          name: traefik
           namespace: traefik
