@@ -13,4 +13,4 @@ spec:
         kind: HelmRepository
         name: switchboard
         namespace: flux-system
-  interval: 115m
+  interval: 120m
