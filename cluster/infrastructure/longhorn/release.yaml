@@ -17,4 +17,4 @@ spec:
   values:
     longhornManager:
       serviceAnnotations:
-        external-dns.alpha.kubernetes.io/hostname: longhorn.devantler.com
+        external-dns.alpha.kubernetes.io/hostname: devantler.com
