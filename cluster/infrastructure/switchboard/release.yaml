@@ -14,3 +14,10 @@ spec:
         name: switchboard
         namespace: flux-system
   interval: 120m
+  values:
+    integrations:
+      externalDNS:
+        enabled: true
+        targetService:
+          name: traefik-external
+          namespace: traefik
