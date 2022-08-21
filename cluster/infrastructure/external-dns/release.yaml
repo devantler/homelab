@@ -1,0 +1,30 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-dns
+  namespace: external-dns
+spec:
+  releaseName: external-dns
+  chart:
+    spec:
+      chart: external-dns
+      version: 1.11.0
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+        namespace: flux-system
+  interval: 120m
+  values:
+    extraArgs:
+      - --source=service
+      - --domain-filter=devantler.com
+      - --provider=cloudflare
+      - --cloudflare-proxied
+    env:
+      - name: CF_API_KEY
+        value: nikolaiemildamm@icloud.com
+      - name: CF_API_EMAIL
+        valueFrom:
+          secretKeyRef:
+            name: cloudflare-apikey-secret
+            key: cloudflare-apikey
