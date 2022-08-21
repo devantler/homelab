@@ -5,7 +5,7 @@ resources:
   - namespace.yaml
   - release.yaml
   - cloudflare-token-secret.yaml
-  - certificates/certificate-production.yaml
-  - certificates/certificate-staging.yaml
+  - certificates/tls-certificate-production.yaml
+  - certificates/tls-certificate-staging.yaml
   - issuers/letsencrypt-production.yaml
   - issuers/letsencrypt-staging.yaml
