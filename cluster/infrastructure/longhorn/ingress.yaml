@@ -16,4 +16,4 @@ spec:
         - name: longhorn-frontend
           port: 80
   tls:
-    secretName: tls-certificate-production
+    secretName: tls-certificate-staging
