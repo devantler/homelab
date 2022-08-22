@@ -12,6 +12,7 @@ spec:
         kind: HelmRepository
         name: jetstack
         namespace: flux-system
+  interval: 1h
   values:
     replicaCount: 1
     extraArgs:
