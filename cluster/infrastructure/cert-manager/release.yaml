@@ -12,10 +12,6 @@ spec:
         kind: HelmRepository
         name: jetstack
         namespace: flux-system
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   values:
     replicaCount: 1
     extraArgs:
