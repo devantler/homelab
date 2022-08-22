@@ -6,3 +6,4 @@ metadata:
 spec:
   type: "oci"
   url: oci://ghcr.io/borchero/charts
+  interval: 24h

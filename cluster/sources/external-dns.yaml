@@ -5,3 +5,4 @@ metadata:
   namespace: flux-system
 spec:
   url: https://kubernetes-sigs.github.io/external-dns/
+  interval: 24h
