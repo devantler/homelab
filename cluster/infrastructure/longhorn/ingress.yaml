@@ -2,7 +2,6 @@ kind: IngressRoute
 apiVersion: traefik.containo.us/v1alpha1
 metadata:
   name: longhorn-ingress
-  namespace: longhorn-system
 spec:
   entryPoints:
     - websecure
