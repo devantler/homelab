@@ -12,7 +12,6 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: flux-system
-  interval: 120m
   values:
     globalArguments:
       - "--global.sendanonymoususage=false"

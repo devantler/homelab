@@ -16,7 +16,6 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-  interval: 120m
   values:
     replicaCount: 1
     extraArgs:

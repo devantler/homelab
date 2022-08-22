@@ -12,7 +12,6 @@ spec:
         kind: HelmRepository
         name: external-dns
         namespace: flux-system
-  interval: 120m
   values:
     provider: cloudflare
     sources:

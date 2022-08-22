@@ -4,5 +4,4 @@ metadata:
   name: traefik
   namespace: flux-system
 spec:
-  interval: 240m
   url: https://helm.traefik.io/traefik

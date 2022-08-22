@@ -12,7 +12,6 @@ spec:
         kind: HelmRepository
         name: switchboard
         namespace: flux-system
-  interval: 120m
   values:
     integrations:
       externalDNS:

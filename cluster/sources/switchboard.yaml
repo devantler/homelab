@@ -5,5 +5,4 @@ metadata:
   namespace: flux-system
 spec:
   type: "oci"
-  interval: 240m
   url: oci://ghcr.io/borchero/charts
