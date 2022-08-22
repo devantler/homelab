@@ -13,6 +13,7 @@ spec:
         name: external-dns
         namespace: flux-system
   interval: 1h
+  timeout: 2m
   values:
     provider: cloudflare
     sources:
