@@ -12,6 +12,7 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: flux-system
+  interval: 1h
   values:
     globalArguments:
       - "--global.sendanonymoususage=false"

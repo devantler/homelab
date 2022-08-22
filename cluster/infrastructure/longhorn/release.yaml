@@ -12,3 +12,4 @@ spec:
         kind: HelmRepository
         name: longhorn
         namespace: flux-system
+  interval: 1h
