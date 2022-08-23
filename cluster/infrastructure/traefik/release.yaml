@@ -29,4 +29,6 @@ spec:
         enabled: false
     service:
       spec:
-        loadBalancerIP: 10.10.8.81
+        loadBalancerIP: 10.10.8.80
+      loadBalancerSourcRanges: []
+      externalIPs: []
