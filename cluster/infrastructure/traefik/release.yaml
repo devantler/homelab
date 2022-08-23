@@ -27,9 +27,6 @@ spec:
     ingressRoute:
       dashboard:
         enabled: false
-    kubernetesIngress:
-      publishedService:
-        enabled: true
     service:
       spec:
-        loadBalancerIP: "10.10.8.80"
+        loadBalancerIP: 10.10.8.80
