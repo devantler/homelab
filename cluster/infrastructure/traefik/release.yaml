@@ -42,4 +42,4 @@ spec:
       enabled: true
       type: LoadBalancer
       spec:
-        loadBalancerIP: 10.10.8.80
+        loadBalancerIP: "10.10.8.80"
