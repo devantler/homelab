@@ -13,7 +13,7 @@ spec:
         name: traefik
         namespace: flux-system
   interval: 1h
-  timeout: 2m
+  timeout: 5m
   values:
     ports:
       web:
