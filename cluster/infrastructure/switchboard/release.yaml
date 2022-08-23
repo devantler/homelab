@@ -16,6 +16,11 @@ spec:
   
   values:
     integrations:
+      certManager:
+        enabled: true
+        issuer:
+          name: letsencrypt-staging
+          namespace: cert-manager
       externalDNS:
         enabled: true
         targetService:
