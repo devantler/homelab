@@ -27,7 +27,11 @@ spec:
     ingressRoute:
       dashboard:
         enabled: false
+    rbac:
+      enabled: true
     service:
+      enabled: true
+      type: LoadBalancer
       spec:
         loadBalancerIP: 10.10.8.80
       loadBalancerSourcRanges: []
