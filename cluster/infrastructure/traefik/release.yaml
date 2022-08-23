@@ -32,4 +32,3 @@ spec:
       type: LoadBalancer
       spec:
         loadBalancerIP: 10.10.8.80
-      externalIPs: [10.10.8.80]
