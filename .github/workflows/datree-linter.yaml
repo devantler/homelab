@@ -7,7 +7,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: datreeio/action-datree@main
-        with:
-          path: cluster/**/*.yaml
-          isKustomization: true
+      - run: chmod +x ci/datree-linter-multiple-files.sh
+      - run: ci/datree-linter-multiple-files.sh
