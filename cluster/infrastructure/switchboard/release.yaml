@@ -14,10 +14,10 @@ spec:
         namespace: flux-system
   interval: 1h
   
-  values:
-    integrations:
-      externalDNS:
-        enabled: true
-        targetService:
-          name: traefik
-          namespace: traefik
+  # values:
+  #   integrations:
+  #     externalDNS:
+  #       enabled: true
+  #       targetService:
+  #         name: traefik
+  #         namespace: traefik
