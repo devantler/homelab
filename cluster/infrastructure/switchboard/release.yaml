@@ -7,7 +7,7 @@ spec:
   chart:
     spec:
       chart: switchboard
-      version: 0.5.1 
+      version: 0.5.1
       sourceRef:
         kind: HelmRepository
         name: switchboard
@@ -16,11 +16,6 @@ spec:
   
   values:
     integrations:
-      certManager:
-        enabled: true
-        issuer:
-          name: letsencrypt-staging
-          namespace: cert-manager
       externalDNS:
         enabled: true
         targetService:
