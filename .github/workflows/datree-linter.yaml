@@ -1,0 +1,13 @@
+name: Datree Linter
+on: push
+env:
+  DATREE_TOKEN: ${{ secrets.DATREE_TOKEN }} 
+jobs:
+  datree-linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: datreeio/action-datree@main
+        with:
+          path: cluster/**/*.yaml
+          isKustomization: true
