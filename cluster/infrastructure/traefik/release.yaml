@@ -4,6 +4,7 @@ metadata:
   name: traefik
 spec:
   releaseName: traefik
+  interval: 1h
   chart:
     spec:
       chart: traefik
@@ -12,7 +13,10 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: flux-system
-  interval: 1h
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   values:
     ports:
       web:
