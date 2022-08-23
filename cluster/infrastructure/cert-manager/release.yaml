@@ -4,6 +4,7 @@ metadata:
   name: cert-manager
 spec:
   releaseName: cert-manager
+  interval: 1h
   chart:
     spec:
       chart: cert-manager
@@ -12,8 +13,10 @@ spec:
         kind: HelmRepository
         name: jetstack
         namespace: flux-system
-  interval: 1h
-  
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   values:
     replicaCount: 1
     extraArgs:
