@@ -4,6 +4,8 @@ metadata:
   name: longhorn
 spec:
   releaseName: longhorn
+  interval: 1h
+  timeout: 15m
   chart:
     spec:
       chart: longhorn
@@ -12,5 +14,4 @@ spec:
         kind: HelmRepository
         name: longhorn
         namespace: flux-system
-  interval: 1h
   

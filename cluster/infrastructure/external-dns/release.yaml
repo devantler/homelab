@@ -4,6 +4,7 @@ metadata:
   name: external-dns
 spec:
   releaseName: external-dns
+  interval: 1h
   chart:
     spec:
       chart: external-dns
@@ -12,8 +13,6 @@ spec:
         kind: HelmRepository
         name: external-dns
         namespace: flux-system
-  interval: 1h
-  
   values:
     provider: cloudflare
     sources:
