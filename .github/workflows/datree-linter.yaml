@@ -1,5 +1,5 @@
 name: Datree Linter
-on: push
+on: workflow_dispatch
 env:
   DATREE_TOKEN: ${{ secrets.DATREE_TOKEN }} 
 jobs:
