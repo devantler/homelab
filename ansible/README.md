@@ -25,12 +25,12 @@
     node
     ```
 
-    - The ip variable on [all] is used to configure hosts on individual nodes.
-    - The static_ip variable on [all] is used to configure static ips for individual nodes.
-3. Make sure you have a `~/.ssh/id_rsa` ssh key. It is used to setup ssh access to all nodes.
+    - The IP variable on [all] is used to configure hosts on individual nodes.
+    - The static_ip variable on [all] is used to configure static IPs for individual nodes.
+3. Make sure you have a `~/.ssh/id_rsa` ssh key. It is used to set up ssh access to all nodes.
 4. Add or update `/etc/ansible/group_vars/all.yml` based on `./k3s/inventory/sample/all.yml`. It is used to configure the k3s cluster.
 
 ## How to run
 
-- Run `bash deploy.sh` to bootstrap nodes and setup a HA k3s cluster.
+- Run `bash deploy.sh` to bootstrap nodes and set up a HA k3s cluster.
 - Run `bash reset.sh` to tear down the k3s cluster.
