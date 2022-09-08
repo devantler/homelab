@@ -11,4 +11,4 @@ network:
           - 8.8.8.8
       routes:
         - to: default
-          via: 10.10.1.1
+          via: 10.0.0.1
