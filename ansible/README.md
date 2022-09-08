@@ -1,23 +1,36 @@
-# Ansible requirements
+# Ansible
+
+## How to setup
 
 1. Install Ansible <https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html>
-2. Add or update `etc/ansible/hosts` with the IP addresses and hostnames of the nodes you want to provision. E.g.
+2. Add or update `/etc/ansible/hosts` with the IP addresses and hostnames of the nodes you want to provision. E.g.
 
     ```txt
-    [nodes-ips] 
-    10.10.10.1
-    10.10.10.2
-    10.10.10.3
+    [all]
+    rpi1 ip=10.10.10.1 static_ip=10.10.10.1/8
+    rpi2 ip=10.10.10.2 static_ip=10.10.10.2/8
+    rpi3 ip=10.10.10.3 static_ip=10.10.10.3/8
+    
+    [master]
+    master1
+    master2
+    master3
 
-    [nodes]
-    rpi1
-    rpi2
-    rpi3
+    [node]
+    node1
+    node2
 
-    [servers]
-    rpi1
-    rpi2
-    rpi3
+    [k3s_cluster:children]
+    master
+    node
     ```
 
-3. Make sure you have a `~/.ssh/id_rsa` ssh key that can access your nodes. It is used for SSH connections by default.
+    - The ip variable on [all] is used to configure hosts on individual nodes.
+    - The static_ip variable on [all] is used to configure static ips for individual nodes.
+3. Make sure you have a `~/.ssh/id_rsa` ssh key. It is used to setup ssh access to all nodes.
+4. Add or update `/etc/ansible/group_vars/all.yml` based on `./k3s/inventory/sample/all.yml`. It is used to configure the k3s cluster.
+
+## How to run
+
+- Run `bash deploy.sh` to bootstrap nodes and setup a HA k3s cluster.
+- Run `bash reset.sh` to tear down the k3s cluster.
