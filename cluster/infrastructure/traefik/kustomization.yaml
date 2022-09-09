@@ -3,7 +3,15 @@ kind: Kustomization
 namespace: traefik
 resources:
   - source.yaml
-  - crds/*.yaml
+  - crds/ingressroute.yaml
+  - crds/ingressroutetcp.yaml
+  - crds/ingressrouteudp.yaml
+  - crds/middlewares.yaml
+  - crds/middlewarestcp.yaml
+  - crds/servertransports.yaml
+  - crds/tlsoptions.yaml
+  - crds/tlsstores.yaml
+  - crds/traefikservices.yaml
   - namespace.yaml
   - release.yaml
 # - default-headers.yaml
