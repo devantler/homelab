@@ -8,7 +8,7 @@ resources:
   - crds/ingressrouteudp.yaml
   - crds/middlewares.yaml
   - crds/middlewarestcp.yaml
-  - crds/servertransports.yaml
+  - crds/serverstransports.yaml
   - crds/tlsoptions.yaml
   - crds/tlsstores.yaml
   - crds/traefikservices.yaml
