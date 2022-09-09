@@ -13,10 +13,6 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: flux-system
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   values:
     ports:
       web:

@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: traefik
 resources:
   - source.yaml
+  - crds/*.yaml
   - namespace.yaml
   - release.yaml
 # - default-headers.yaml

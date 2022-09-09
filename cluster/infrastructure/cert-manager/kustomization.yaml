@@ -3,8 +3,9 @@ kind: Kustomization
 namespace: cert-manager
 resources:
   - source.yaml
+  - crds.yaml
   - namespace.yaml
   - release.yaml
   - secrets.yaml
-  - certificates
-  - issuers
+  - issuers/*.yaml
+  - certificates/*.yaml

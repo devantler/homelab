@@ -5,10 +5,6 @@ metadata:
 spec:
   releaseName: cert-manager
   interval: 1h
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   chart:
     spec:
       chart: cert-manager
