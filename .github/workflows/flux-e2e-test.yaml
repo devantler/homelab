@@ -1,0 +1,33 @@
+name: Flux End-to-End Test
+
+on: pull_request
+
+jobs:
+  fluxctl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Kubernetes
+        uses: engineerd/setup-kind@v0.3.0
+      - name: Setup fluxctl
+        uses: fluxcd/fluxctl-action@master
+      - name: Install Flux
+        run: |
+          kubectl create ns flux
+          fluxctl install \
+          --git-path=cluster \
+          --git-branch=${GITHUB_REF#refs/heads/} \
+          --git-readonly=true \
+          --registry-disable-scanning=true \
+          --git-email=nikolaiemildamm@icloud.com \
+          --git-url=https://github.com/devantler/homelab.git \
+          --namespace=flux | kubectl apply -f -
+      - name: Verify install
+        run: kubectl -n flux rollout status deploy/flux --timeout=1m
+      - name: Sync git with cluster
+        env:
+          FLUX_FORWARD_NAMESPACE: flux
+        run: fluxctl sync
+      - name: Verify sync
+        run: kubectl get ns | grep test
