@@ -14,7 +14,7 @@ jobs:
         uses: fluxcd/fluxctl-action@master
       - name: Install Flux
         run: |
-          kubectl create ns flux
+          kubectl create ns flux-system
           fluxctl install \
           --git-path=cluster \
           --git-branch=${GITHUB_REF#refs/heads/} \
@@ -22,12 +22,21 @@ jobs:
           --registry-disable-scanning=true \
           --git-email=nikolaiemildamm@icloud.com \
           --git-url=https://github.com/devantler/homelab.git \
-          --namespace=flux | kubectl apply -f -
-      - name: Verify install
-        run: kubectl -n flux rollout status deploy/flux --timeout=1m
-      - name: Sync git with cluster
-        env:
-          FLUX_FORWARD_NAMESPACE: flux
-        run: fluxctl sync
-      - name: Verify sync
-        run: kubectl get ns | grep test
+          --namespace=flux-system | kubectl apply -f -
+      - name: Verify cluster reconciliation
+        run: |
+          kubectl -n flux-system wait kustomization/infrastructure --for=condition=ready --timeout=5m
+          kubectl -n flux-system wait kustomization/apps --for=condition=ready --timeout=5m
+      - name: Verify helm reconciliation
+        run: |
+          kubectl -n nginx wait helmrelease/nginx --for=condition=ready --timeout=5m
+          kubectl -n redis wait helmrelease/redis --for=condition=ready --timeout=5m
+          kubectl -n podinfo wait helmrelease/podinfo --for=condition=ready --timeout=5m
+      - name: Debug failure
+        if: failure()
+        run: |
+          kubectl -n flux-system get all
+          kubectl -n flux-system logs deploy/source-controller
+          kubectl -n flux-system logs deploy/kustomize-controller
+          kubectl -n flux-system logs deploy/helm-controller
+          flux get all --all-namespaces
