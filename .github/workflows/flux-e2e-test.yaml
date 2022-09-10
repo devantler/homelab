@@ -22,6 +22,7 @@ jobs:
           --git-branch=${GITHUB_REF#refs/heads/} \
           --git-readonly=true \
           --registry-disable-scanning=true \
+          --git-email=${{ github.event.pusher.email }} \
           --git-url=${{ github.event.repository.html_url }} \
           --namespace=flux-system | kubectl apply -f -
       - name: Verify cluster reconciliation
@@ -33,6 +34,8 @@ jobs:
           kubectl -n cert-manager wait helmrelease/cert-manager --for=condition=ready --timeout=5m
           kubectl -n external-dns wait helmrelease/external-dns --for=condition=ready --timeout=5m
           kubectl -n longhorn wait helmrelease/longhorn --for=condition=ready --timeout=5m
+          kubectl -n switchboard wait helmrelease/switchboard --for=condition=ready --timeout=5m
+          kubectl -n traefik wait helmrelease/traefik --for=condition=ready --timeout=5m
       - name: Debug failure
         if: failure()
         run: |
