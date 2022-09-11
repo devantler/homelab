@@ -6,6 +6,3 @@ resources:
   - namespace.yaml
   - release.yaml
   - secrets.yaml
-  - issuers/letsencrypt-production.yaml
-  - issuers/letsencrypt-staging.yaml
-  - certificates/tls-certificate-production.yaml

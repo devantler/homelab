@@ -8,8 +8,8 @@ resources:
   # - ../base/longhorn
   # - ../base/switchboard
   # - ../base/traefik
-patchesStrategicMerge:
-  - values/cert-manager-values.yaml
+#patchesStrategicMerge:
+  # - values/cert-manager-values.yaml
   # - values/external-dns-values.yaml
   # - values/longhorn-values.yaml
   # - values/switchboard-values.yaml

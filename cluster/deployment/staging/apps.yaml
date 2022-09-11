@@ -13,3 +13,5 @@ spec:
     name: flux-system
   path: ./cluster/apps/staging
   prune: true
+  wait: true
+  timeout: 5m0s
