@@ -30,7 +30,7 @@ jobs:
           --branch=${{ steps.branch-name.outputs.current_branch }}
           flux create kustomization flux-system \
           --source=flux-system \
-          --path=./cluster/deployment
+          --path=./cluster/deployment/staging
       - name: Verify Cluster Reconciliation
         run: |
           kubectl -n flux-system wait kustomization/sources --for=condition=ready --timeout=5m
@@ -39,10 +39,10 @@ jobs:
       - name: Verify Helm Reconciliation
         run: |
           kubectl -n cert-manager wait helmrelease/cert-manager --for=condition=ready --timeout=5m
-          kubectl -n external-dns wait helmrelease/external-dns --for=condition=ready --timeout=5m
-          kubectl -n longhorn wait helmrelease/longhorn --for=condition=ready --timeout=10m
-          kubectl -n switchboard wait helmrelease/switchboard --for=condition=ready --timeout=5m
-          kubectl -n traefik wait helmrelease/traefik --for=condition=ready --timeout=5m
+# kubectl -n external-dns wait helmrelease/external-dns --for=condition=ready --timeout=5m
+# kubectl -n longhorn wait helmrelease/longhorn --for=condition=ready --timeout=10m
+# kubectl -n switchboard wait helmrelease/switchboard --for=condition=ready --timeout=5m
+# kubectl -n traefik wait helmrelease/traefik --for=condition=ready --timeout=5m
       - name: Debug Failure
         if: failure()
         run: |
