@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: traefik
 resources:
-  - source.yaml
   - crds/ingressroute.yaml
   - crds/ingressroutetcp.yaml
   - crds/ingressrouteudp.yaml
