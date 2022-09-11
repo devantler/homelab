@@ -11,7 +11,7 @@ spec:
       match: Host(`longhorn.devantler.com`)
       middlewares:
         - name: svc-longhorn-headers
-          namespace: longhorn-system
+          namespace: longhorn
       services:
         - name: longhorn-frontend
           port: 80
