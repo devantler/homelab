@@ -1,0 +1,19 @@
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: longhorn-ingress
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`longhorn.devantler.com`)
+      middlewares:
+        - name: svc-longhorn-headers
+          namespace: longhorn
+      services:
+        - name: longhorn-frontend
+          port: 80
+  tls:
+    secretName: tls-certificate-staging
