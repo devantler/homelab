@@ -24,7 +24,7 @@ jobs:
         run: |
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
-          --branch=${GITHUB_REF#refs/heads/}
+          --branch=${GITHUB_REF##*/}
           flux create kustomization flux-system \
           --source=flux-system \
           --path=./cluster/deployment
