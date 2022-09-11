@@ -1,0 +1,7 @@
+- name: Update and upgrade apt packages
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        upgrade: yes

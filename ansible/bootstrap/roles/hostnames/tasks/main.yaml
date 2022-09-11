@@ -1,0 +1,8 @@
+- name: Add host entries to /etc/hosts
+  lineinfile:
+    dest: /etc/cloud/templates/hosts.debian.tmpl
+    regexp: '{{ item }}.*$'
+    line: "{{ hostvars[item].ip }} {{item}}"
+    state: present
+  when: hostvars[item].ip is defined
+  with_items: "{{ groups.all }}"

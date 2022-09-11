@@ -1,0 +1,8 @@
+# geerlingguy.security
+security_ssh_permit_root_login: "yes"
+security_ssh_allowed_groups:
+  - devantler
+  - root
+  - ceph
+security_autoupdate_reboot: true
+security_fail2ban_custom_configuration_template: "jail.conf"
