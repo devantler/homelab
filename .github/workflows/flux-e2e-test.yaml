@@ -12,8 +12,10 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Flux
         uses: fluxcd/flux2/action@main
-      - name: Setup Kubernetes
+      - name: Setup Kubernetes Kind
         uses: engineerd/setup-kind@v0.5.0
+      - name: Check Flux Prerequisites
+        run: flux check --pre
       - name: Install Flux in Kubernetes Kind
         run: flux install
       - name: Setup Cluster Reconciliation
