@@ -1,5 +1,0 @@
-[submodule "ansible/k3s"]
-	path = ansible/k3s
-	url = git@github.com:devantler/k3s-ansible.git
-	branch = master
-	ignore = dirty
