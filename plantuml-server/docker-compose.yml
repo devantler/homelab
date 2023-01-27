@@ -6,6 +6,7 @@ services:
             - plantuml-server:/plantuml
         networks:
             - traefik
+        restart: unless-stopped
 
 volumes:
     plantuml-server:

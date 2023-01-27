@@ -3,13 +3,13 @@ services:
     container_name: cloudflared
     image: cloudflare/cloudflared:2023.1.0
     command: tunnel --no-autoupdate run
-    restart: unless-stopped
     environment:
       - TUNNEL_TOKEN=eyJhIjoiNjM0ZTkwMTZkNDAyNDQzZTQyNzg2NWRjMzU0NTc3MjgiLCJ0IjoiZmJlNjhmNGYtZWY3ZS00Y2MwLWJjNWEtOTY1YTM3OTU3YjJmIiwicyI6Ik1HTTRaVGRoWkRRdFpUWTVZaTAwTXpVeExUZ3pPREV0WWpSbU5tRmhZbUprWkRJeCJ9
     networks:
       - cloudflared
     labels:
       - traefik.enable=false
+    restart: unless-stopped
 
 volumes:
   cloudflared:

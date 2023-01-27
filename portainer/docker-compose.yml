@@ -6,7 +6,6 @@ services:
         command: 
             -H unix:///var/run/docker.sock
             --http-enabled
-        restart: always
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
             - portainer_data:/data
@@ -22,6 +21,7 @@ services:
             - traefik.http.services.edge.loadbalancer.server.port=8000
         networks:
             - traefik
+        restart: unless-stopped
 
 volumes:
     portainer_data:
