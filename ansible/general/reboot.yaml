@@ -1,7 +1,0 @@
-- name: Reboot nodes 
-  hosts: all
-  remote_user: devantler
-  become: yes
-  tasks:
-  - name: Reboot nodes
-    reboot:

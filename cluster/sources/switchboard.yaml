@@ -1,9 +1,0 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: switchboard
-  namespace: flux-system
-spec:
-  type: "oci"
-  url: oci://ghcr.io/borchero/charts
-  interval: 24h

@@ -1,0 +1,17 @@
+services:
+    plantuml-server:
+        container_name: plantuml-server
+        image: plantuml/plantuml-server:v1.2023.0
+        volumes:
+            - plantuml-server:/plantuml
+        networks:
+            - traefik
+
+volumes:
+    plantuml-server:
+
+
+networks:
+    traefik:
+        external: true
+        name: traefik

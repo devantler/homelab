@@ -1,2 +1,6 @@
 {
+    "extends": [
+        "config:base",
+        ":disableDependencyDashboard"
+    ]
 }

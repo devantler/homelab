@@ -1,0 +1,32 @@
+services:
+    portainer:
+        container_name: portainer
+        image: portainer/portainer-ee:2.16.2
+
+        command: 
+            -H unix:///var/run/docker.sock
+            --http-enabled
+        restart: always
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - portainer_data:/data
+        labels:
+            - traefik.http.routers.portainer.service=portainer
+            - traefik.http.routers.portainer.entrypoints=web
+            - traefik.http.routers.portainer.rule=Host(`portainer.devantler.com`)
+            - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+            - traefik.http.routers.edge.service=edge
+            - traefik.http.routers.edge.entrypoints=web
+            - traefik.http.routers.edge.rule=Host(`edge.devantler.com`)
+            - traefik.http.services.edge.loadbalancer.server.port=8000
+        networks:
+            - traefik
+
+volumes:
+    portainer_data:
+
+networks:
+    traefik:
+        external: true
+        name: traefik

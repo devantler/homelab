@@ -1,6 +1,0 @@
-- name: Shutdown nodes 
-  hosts: all
-  become: yes
-  tasks:
-    - name: Shutdown nodes
-      community.general.shutdown:

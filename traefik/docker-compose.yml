@@ -1,0 +1,29 @@
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:v2.9
+    ports:
+      - 8080:8080
+    command:
+      - --api.insecure
+      - --providers.docker
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    labels:
+      - traefik.http.routers.traefik.rule=Host(`traefik.devantler.com`)
+      - traefik.http.routers.traefik.entrypoints=web
+    networks:
+      - cloudflared
+      - traefik
+
+
+networks:
+  cloudflared:
+    external: true
+    name: cloudflared
+  traefik:
+    external: true
+    name: traefik
