@@ -1,7 +1,7 @@
 services:
     plantuml-server:
         container_name: plantuml-server
-        image: plantuml/plantuml-server:v1.2023.0
+        image: plantuml/plantuml-server:v1.2023.1
         labels:
             - traefik.http.routers.plantuml-server.rule=Host(`plantuml.devantler.com`)
             - traefik.http.routers.plantuml-server.entrypoints=web
