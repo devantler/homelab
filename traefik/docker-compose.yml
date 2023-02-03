@@ -1,29 +1,38 @@
-services:
-  traefik:
-    container_name: traefik
-    image: traefik:v2.9
-    ports:
-      - 8080:8080
-    command:
-      - --api.insecure
-      - --providers.docker
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
-    labels:
-      - traefik.http.routers.traefik.rule=Host(`traefik.devantler.com`)
-      - traefik.http.routers.traefik.entrypoints=web
-    networks:
-      - cloudflared
-      - traefik
-    restart: unless-stopped
-
 networks:
   cloudflared:
     external: true
-    name: cloudflared
   traefik:
     external: true
-    name: traefik
+services:
+  traefik:
+    command:
+      - '--providers.docker'
+      - '--api'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.websecure.http.tls=true'
+      - '--entrypoints.websecure.http.tls.certresolver=letsencrypt'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.caserver=${LETS_ENCRYPT_CASERVER_URL:-https://acme-v02.api.letsencrypt.org/directory}'
+      - '--certificatesresolvers.letsencrypt.acme.dnschallenge=true'
+      - '--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${LETS_ENCRYPT_DNS_PROVIDER:-cloudflare}'
+    environment:
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_API_KEY=${CF_API_KEY}
+    image: traefik:v2.9
+    labels:
+      - traefik.http.routers.traefik-dashboard.entrypoints=${ENTRYPOINT?}
+      - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN?}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      - traefik.http.routers.traefik-dashboard.service=api@internal
+    networks:
+      - cloudflared
+      - traefik
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+volumes:
+  letsencrypt: null

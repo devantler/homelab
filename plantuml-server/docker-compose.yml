@@ -1,21 +1,16 @@
-services:
-    plantuml-server:
-        container_name: plantuml-server
-        image: plantuml/plantuml-server:v1.2023.1
-        labels:
-            - traefik.http.routers.plantuml-server.rule=Host(`plantuml.devantler.com`)
-            - traefik.http.routers.plantuml-server.entrypoints=web
-        volumes:
-            - plantuml-server:/plantuml
-        networks:
-            - traefik
-        restart: unless-stopped
-
-volumes:
-    plantuml-server:
-
-
 networks:
-    traefik:
-        external: true
-        name: traefik
+  traefik:
+    external: true
+services:
+  plantuml-server:
+    image: plantuml/plantuml-server:v1.2023.1
+    labels:
+      - traefik.http.routers.plantuml-server.rule=Host(`plantuml.${DOMAIN?}`)
+      - traefik.http.routers.plantuml-server.entrypoints=${ENTRYPOINT?}
+    networks:
+      - traefik
+    restart: unless-stopped
+    volumes:
+      - plantuml-server:/plantuml
+volumes:
+  plantuml-server: null
