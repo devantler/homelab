@@ -6,7 +6,7 @@ services:
     command: tunnel --no-autoupdate run
     environment:
       - TUNNEL_TOKEN=${TOKEN?}
-    image: cloudflare/cloudflared:2023.1.0
+    image: cloudflare/cloudflared:2023.2.1
     labels:
       - traefik.enable=false
     networks:
