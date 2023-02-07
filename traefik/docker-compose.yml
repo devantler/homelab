@@ -21,7 +21,7 @@ services:
     environment:
       - CF_API_EMAIL=${CF_API_EMAIL}
       - CF_API_KEY=${CF_API_KEY}
-    image: traefik:v3.0
+    image: traefik:v2.9
     labels:
       - traefik.http.routers.traefik-dashboard.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN?}`)
