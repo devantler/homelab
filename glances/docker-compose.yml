@@ -10,7 +10,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
     labels:
-      - traefik.http.routers.glances.rule=Host(`monitoring.${DOMAIN?}`)
+      - traefik.http.routers.glances.rule=Host(`glances.${DOMAIN?}`)
       - traefik.http.routers.glances.entrypoints=${ENTRYPOINT?}
     networks:
       - traefik
