@@ -4,7 +4,7 @@ networks:
 services:
   portainer:
     command: '-H unix:///var/run/docker.sock --http-enabled'
-    image: portainer/portainer-ee:2.16.2
+    image: portainer/portainer-ee:2.17.0
     ports:
       - 9000:9000
     labels:
