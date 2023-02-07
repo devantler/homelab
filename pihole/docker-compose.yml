@@ -1,0 +1,25 @@
+networks:
+  traefik:
+    external: true
+services:
+  pihole:
+    environment:
+      TZ: America/Chicago
+      WEBPASSWORD: ${PASSWORD?}
+    image: pihole/pihole:latest
+    labels:
+      - traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN?}`)
+      - traefik.http.routers.pihole.entrypoints=${ENTRYPOINT?}
+    networks:
+      - traefik
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 80:80/tcp
+    restart: unless-stopped
+    volumes:
+      - etc-pihole:/etc/pihole
+      - etc-dnsmasq.d:/etc/dnsmasq.d
+volumes:
+  etc-dnsmasq.d: null
+  etc-pihole: null
