@@ -7,6 +7,8 @@ services:
     labels:
       - traefik.http.routers.plantuml-server.rule=Host(`plantuml.${DOMAIN?}`)
       - traefik.http.routers.plantuml-server.entrypoints=${ENTRYPOINT?}
+      - traefik.http.routers.plantuml-server.middlewares=auth
+      - traefik.middlewares.auth.basicauth.users=${BASIC_AUTH_USER?}:${BASIC_AUTH_PASSWORD?}
     networks:
       - traefik
     restart: unless-stopped
