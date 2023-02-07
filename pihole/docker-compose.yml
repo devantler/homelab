@@ -6,6 +6,7 @@ services:
     environment:
       TZ: ${TZ?}
       WEBPASSWORD: ${PASSWORD?}
+      PIHOLE_DNS_: ${DNS?}
     image: pihole/pihole:2023.01.10
     labels:
       - traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN?}`)
