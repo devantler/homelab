@@ -4,9 +4,9 @@ networks:
 services:
   pihole:
     environment:
-      TZ: America/Chicago
+      TZ: ${TZ?}
       WEBPASSWORD: ${PASSWORD?}
-    image: pihole/pihole:latest
+    image: pihole/pihole:2023.01.10
     labels:
       - traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN?}`)
       - traefik.http.routers.pihole.entrypoints=${ENTRYPOINT?}
