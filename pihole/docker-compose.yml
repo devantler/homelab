@@ -10,7 +10,8 @@ services:
     labels:
       - traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN?}`)
       - traefik.http.routers.pihole.entrypoints=${ENTRYPOINT?}
-      - traefik.http.routers.pihole.middlewares=add-prefix
+      - traefik.http.routers.pihole.middlewares=strip-prefix,add-prefix
+      - traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/admin
       - traefik.http.middlewares.add-prefix.addprefix.prefix=/admin
       - traefik.http.services.pihole.loadbalancer.server.port=80
     networks:
