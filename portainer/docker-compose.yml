@@ -5,6 +5,8 @@ services:
   portainer:
     command: '-H unix:///var/run/docker.sock --http-enabled'
     image: portainer/portainer-ee:2.16.2
+    ports:
+      - 9000:9000
     labels:
       - traefik.http.routers.portainer.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)
