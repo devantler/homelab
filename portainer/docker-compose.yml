@@ -11,6 +11,7 @@ services:
       - traefik.http.routers.portainer.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)
       - traefik.http.services.portainer.loadbalancer.server.port=9000
+      - portainer.hide-in-ui=true
     networks:
       - traefik
     restart: unless-stopped
