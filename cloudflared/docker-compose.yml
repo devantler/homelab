@@ -13,4 +13,7 @@ services:
       - cloudflared
     restart: unless-stopped
     volumes:
-      - ./config:/.cloudflared
+      - cloudflared:/.cloudflared
+
+volumes:
+  cloudflared: null
