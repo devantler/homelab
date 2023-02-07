@@ -26,8 +26,6 @@ services:
       - traefik.http.routers.traefik-dashboard.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN?}`)
       - traefik.http.routers.traefik-dashboard.service=api@internal
-      - traefik.http.routers.traefik-dashboard.middlewares=auth
-      - traefik.http.middlewares.auth.basicauth.users=${BASIC_AUTH_USER?}:${BASIC_AUTH_PASSWORD?}
     networks:
       - cloudflared
       - traefik
