@@ -7,8 +7,6 @@ services:
     environment:
       - TUNNEL_TOKEN=${TOKEN?}
     image: cloudflare/cloudflared:2023.2.1
-    labels:
-      - traefik.enable=false
     networks:
       - cloudflared
     restart: unless-stopped

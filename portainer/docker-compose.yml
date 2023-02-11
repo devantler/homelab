@@ -8,6 +8,7 @@ services:
     ports:
       - 9000:9000
     labels:
+      - traefik.enable=true
       - traefik.http.routers.portainer.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)
       - traefik.http.services.portainer.loadbalancer.server.port=9000

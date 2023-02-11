@@ -5,6 +5,7 @@ services:
   plantuml-server:
     image: plantuml/plantuml-server:v1.2023.1
     labels:
+      - traefik.enable=true
       - traefik.http.routers.plantuml-server.rule=Host(`plantuml.${DOMAIN?}`)
       - traefik.http.routers.plantuml-server.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.plantuml-server.middlewares=auth

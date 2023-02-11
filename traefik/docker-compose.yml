@@ -8,6 +8,7 @@ services:
     command:
       - '--providers.docker'
       - '--api.dashboard'
+      - '--providers.docker.exposedByDefault=false'
       - '--entrypoints.http.address=:80'
       - '--entrypoints.https.address=:443'
       - '--entrypoints.https.http.tls=true'
@@ -23,6 +24,7 @@ services:
       - CF_API_KEY=${CF_API_KEY}
     image: traefik:v2.9
     labels:
+      - traefik.enable=true
       - traefik.http.routers.traefik-dashboard.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN?}`)
       - traefik.http.routers.traefik-dashboard.service=api@internal

@@ -9,6 +9,7 @@ services:
       PIHOLE_DNS_: ${DNS?}
     image: pihole/pihole:2023.02.0
     labels:
+      - traefik.enable=true
       - traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN?}`)
       - traefik.http.routers.pihole.entrypoints=${ENTRYPOINT?}
       - traefik.http.routers.pihole.middlewares=strip-prefix,add-prefix
