@@ -25,7 +25,19 @@ services:
       - kafka-logs:/tmp/kafka-logs
       - kafka-data:/var/lib/kafka/data
       - kafka-secrets:/etc/kafka/secrets
-
+  kafka-ui:
+    depends_on:
+      - kafka
+      - schema-registry
+    environment:
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_NAME: kafka
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: schema-registry:8081
+    image: provectuslabs/kafka-ui:latest
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.kafka.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.kafka.rule: Host(`kafka-ui.${DOMAIN?}`)
   schema-registry:
     depends_on:
       - kafka
