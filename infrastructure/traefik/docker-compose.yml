@@ -7,6 +7,7 @@ services:
   traefik:
     command:
       - '--providers.docker'
+      - '--providers.docker.network=traefik'
       - '--api.dashboard'
       - '--providers.docker.exposedByDefault=false'
       - '--entrypoints.http.address=:80'

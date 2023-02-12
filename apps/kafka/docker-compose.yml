@@ -34,15 +34,19 @@ services:
     environment:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_NAME: kafka
-      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: schema-registry:8081
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      SERVER_FORWARDHEADERSSTRATEGY: native
     image: provectuslabs/kafka-ui:latest
     labels:
       traefik.enable: true
       traefik.http.routers.kafka-ui.entrypoints: ${ENTRYPOINT?}
       traefik.http.routers.kafka-ui.rule: Host(`kafka.${DOMAIN?}`)
     networks:
-      - internal
       - traefik
+      - internal
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
   schema-registry:
     depends_on:
       - kafka
