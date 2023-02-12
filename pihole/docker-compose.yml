@@ -19,9 +19,12 @@ services:
       - traefik.http.services.pihole.loadbalancer.server.port=80
     networks:
       - traefik
+    cap_add:
+      - NET_ADMIN
     ports:
       - 53:53/tcp
       - 53:53/udp
+      - 67:67/udp
     restart: unless-stopped
     volumes:
       - etc-pihole:/etc/pihole
