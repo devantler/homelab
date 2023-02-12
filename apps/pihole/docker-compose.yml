@@ -9,7 +9,7 @@ services:
       WEBPASSWORD: ${PASSWORD?}
       PIHOLE_DNS_: ${DNS?}
       DNSMASQ_LISTENING: all
-    image: pihole/pihole:2023.02.0
+    image: pihole/pihole:2023.02.1
     labels:
       - traefik.enable=true
       - traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN?}`)
