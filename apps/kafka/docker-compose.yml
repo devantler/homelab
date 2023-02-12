@@ -36,7 +36,7 @@ services:
       KAFKA_CLUSTERS_0_NAME: kafka
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
       SERVER_FORWARDHEADERSSTRATEGY: native
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:v0.5.0
     labels:
       traefik.enable: true
       traefik.http.routers.kafka-ui.entrypoints: ${ENTRYPOINT?}
