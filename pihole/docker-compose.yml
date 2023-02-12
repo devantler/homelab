@@ -3,7 +3,7 @@ networks:
     external: true
 services:
   pihole:
-    hostname: pihole.${DOMAIN}
+    hostname: pihole.${DOMAIN?}
     environment:
       TZ: ${TZ?}
       WEBPASSWORD: ${PASSWORD?}
