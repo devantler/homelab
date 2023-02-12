@@ -1,3 +1,6 @@
+networks:
+  internal:
+    external: true
 services:
   elasticsearch:
     container_name: elasticsearch

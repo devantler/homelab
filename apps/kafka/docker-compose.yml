@@ -1,0 +1,44 @@
+networks:
+  internal:
+    external: true
+services:
+  kafka:
+    command: |
+      bash -c "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure && sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure && export UUID=`kafka-storage random-uuid` && echo 'kafka-storage format --ignore-formatted -t $$UUID -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/ensure && /etc/confluent/docker/run"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9091
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9091
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_NODE_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      #KAFKA_CONFLUENT_CLUSTER_LINK_ENABLE: false
+    image: confluentinc/cp-kafka:7.3.1
+    networks:
+      - internal
+    volumes:
+      - kafka-logs:/tmp/kafka-logs
+      - kafka-data:/var/lib/kafka/data
+      - kafka-secrets:/etc/kafka/secrets
+
+  schema-registry:
+    depends_on:
+      - kafka
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+    image: confluentinc/cp-schema-registry:7.3.1
+    networks:
+      - internal
+    volumes:
+      - schema-registry-secrets:/etc/schema-registry/secrets
+volumes:
+  kafka-data: null
+  kafka-logs: null
+  kafka-secrets: null
+  schema-registry-secrets: null

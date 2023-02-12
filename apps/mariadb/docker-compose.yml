@@ -1,3 +1,6 @@
+networks:
+  internal:
+    external: true
 services:
   mysql:
     command: '--character-set-server=utf8mb4 --collation-server=utf8mb4_bin --default-authentication-plugin=mysql_native_password'

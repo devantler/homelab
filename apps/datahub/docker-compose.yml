@@ -1,4 +1,6 @@
 networks:
+  traefik:
+    external: true
   internal:
     external: true
 services:
