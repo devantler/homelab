@@ -1,6 +1,8 @@
 networks:
   internal:
     external: true
+  traefik:
+    external: true
 services:
   kafka:
     command: |
@@ -35,9 +37,12 @@ services:
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: schema-registry:8081
     image: provectuslabs/kafka-ui:latest
     labels:
-      traefik.enable: 'true'
-      traefik.http.routers.kafka.entrypoints: ${ENTRYPOINT?}
-      traefik.http.routers.kafka.rule: Host(`kafka-ui.${DOMAIN?}`)
+      traefik.enable: true
+      traefik.http.routers.kafka-ui.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.kafka-ui.rule: Host(`kafka.${DOMAIN?}`)
+    networks:
+      - internal
+      - traefik
   schema-registry:
     depends_on:
       - kafka

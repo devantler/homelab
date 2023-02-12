@@ -5,11 +5,11 @@ services:
   plantuml-server:
     image: plantuml/plantuml-server:v1.2023.1
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.plantuml-server.rule=Host(`plantuml.${DOMAIN?}`)
-      - traefik.http.routers.plantuml-server.entrypoints=${ENTRYPOINT?}
-      - traefik.http.routers.plantuml-server.middlewares=auth
-      - traefik.http.middlewares.auth.basicauth.users=${BASIC_AUTH_USER?}:${BASIC_AUTH_PASSWORD?}
+      traefik.enable: true
+      traefik.http.routers.plantuml-server.rule: Host(`plantuml.${DOMAIN?}`)
+      traefik.http.routers.plantuml-server.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.plantuml-server.middlewares: plantuml-server-auth
+      traefik.http.middlewares.plantuml-server-auth.basicauth.users: ${BASIC_AUTH_USER?}:${BASIC_AUTH_PASSWORD?}
     networks:
       - traefik
     restart: unless-stopped
