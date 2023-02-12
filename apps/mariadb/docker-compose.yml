@@ -6,10 +6,10 @@ services:
     command: '--character-set-server=utf8mb4 --collation-server=utf8mb4_bin --default-authentication-plugin=mysql_native_password'
     container_name: mysql
     environment:
-      - MYSQL_DATABASE=datahub
-      - MYSQL_USER=datahub
-      - MYSQL_PASSWORD=datahub
-      - MYSQL_ROOT_PASSWORD=datahub
+      MYSQL_DATABASE: datahub
+      MYSQL_USER: datahub
+      MYSQL_PASSWORD: datahub
+      MYSQL_ROOT_PASSWORD: datahub
     hostname: mysql
     image: mariadb:10.5.8
     ports:
@@ -22,10 +22,10 @@ services:
     depends_on:
       - mysql
     environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_PORT=3306
-      - MYSQL_USERNAME=datahub
-      - MYSQL_PASSWORD=datahub
-      - DATAHUB_DB_NAME=datahub
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USERNAME: datahub
+      MYSQL_PASSWORD: datahub
+      DATAHUB_DB_NAME: datahub
     hostname: mysql-setup
     image: ${DATAHUB_MYSQL_SETUP_IMAGE:-acryldata/datahub-mysql-setup}:${DATAHUB_VERSION:-head}

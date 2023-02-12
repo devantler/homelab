@@ -11,13 +11,13 @@ services:
       DNSMASQ_LISTENING: all
     image: pihole/pihole:2023.02.0
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN?}`)
-      - traefik.http.routers.pihole.entrypoints=${ENTRYPOINT?}
-      - traefik.http.routers.pihole.middlewares=pihole-strip-prefix,pihole-prefix
-      - traefik.http.middlewares.pihole-strip-prefix.stripprefix.prefixes=/admin
-      - traefik.http.middlewares.pihole-prefix.addprefix.prefix=/admin
-      - traefik.http.services.pihole.loadbalancer.server.port=80
+      traefik.enable: true
+      traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
+      traefik.http.routers.pihole.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.pihole.middlewares: pihole-strip-prefix,pihole-prefix
+      traefik.http.middlewares.pihole-strip-prefix.stripprefix.prefixes: /admin
+      traefik.http.middlewares.pihole-prefix.addprefix.prefix: /admin
+      traefik.http.services.pihole.loadbalancer.server.port: 80
     networks:
       - traefik
     ports:

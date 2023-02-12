@@ -6,13 +6,13 @@ services:
   glances:
     restart: unless-stopped
     environment:
-      - GLANCES_OPT=-w
+      GLANCES_OPT: -w
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.glances.rule=Host(`glances.${DOMAIN?}`)
-      - traefik.http.routers.glances.entrypoints=${ENTRYPOINT?}
+      traefik.enable: true
+      traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
+      traefik.http.routers.glances.entrypoints: ${ENTRYPOINT?}
     networks:
       - traefik
     pid: host
