@@ -1,14 +1,18 @@
+networks:
+  traefik:
+    external: true
 services:
   uptime-kuma:
     container_name: uptime-kuma
     image: louislam/uptime-kuma:1.20.0
-    restart: unless-stopped
     labels:
       traefik.enable: true
       traefik.http.routers.uptime-kuma.entrypoints: ${ENTRYPOINT?}
-      traefik.http.routers.uptime-kuma.rule: "Host(`uptime.${DOMAIN?}`)"
+      traefik.http.routers.uptime-kuma.rule: Host(`uptime.${DOMAIN?}`)
+    networks:
+      - traefik
+    restart: unless-stopped
     volumes:
       - uptime-kuma-data:/app/data
-  
 volumes:
   uptime-kuma-data: null
