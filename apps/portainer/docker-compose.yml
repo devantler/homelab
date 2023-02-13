@@ -4,7 +4,7 @@ networks:
 services:
   portainer:
     command: '-H unix:///var/run/docker.sock --http-enabled'
-    image: portainer/portainer-ee:2.17.0
+    image: portainer/portainer-ee:2.17.0-alpine
     ports:
       - 9000:9000
     labels:
@@ -14,6 +14,8 @@ services:
       traefik.http.services.portainer.loadbalancer.server.port: 9000
     networks:
       - traefik
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:9000 || exit 1
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
