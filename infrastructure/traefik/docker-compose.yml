@@ -12,7 +12,7 @@ services:
       - '--providers.docker.exposedByDefault=false'
       - '--entrypoints.http.address=:80'
       - '--entrypoints.https.address=:443'
-      - '--entrypoints.mysql.address=:3306'
+      - '--entrypoints.mariadb.address=:3306'
       - '--entrypoints.https.http.tls=true'
       - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
       - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
@@ -38,7 +38,7 @@ services:
       - '80:80'
       # HTTPS
       - '443:443'
-      # MySQL
+      # MariaDB
       - '3306:3306'
     restart: unless-stopped
     volumes:

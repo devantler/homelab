@@ -18,7 +18,7 @@ services:
     labels:
       traefik.enable: true
       traefik.tcp.routers.mariadb.rule: HostSNI(`*`)
-      traefik.tcp.routers.mariadb.entrypoints: mysql
+      traefik.tcp.routers.mariadb.entrypoints: mariadb
 
 volumes:
   mariadb-mysql: null
