@@ -12,6 +12,8 @@ services:
     image: mariadb:10.9.5
     volumes:
       - mariadb-mysql:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping -P 3306 -p${PASSWORD?} | grep 'mariadb is alive' || exit 1
     networks:
       - internal
       - traefik
