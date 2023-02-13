@@ -11,7 +11,7 @@ services:
       MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD?}
       MARIADB_USER: ${USER?}
     healthcheck:
-      test: mysqladmin ping -P 3306 -p${ROOT_PASSWORD?}
+      test: mysqladmin ping --protocol tcp -P 3306 -p${ROOT_PASSWORD?}
     image: mariadb:10.9.5
     labels:
       traefik.enable: true
