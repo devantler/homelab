@@ -7,8 +7,6 @@ services:
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN?}
     image: cloudflare/cloudflared:2023.2.1
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:3333/ready || exit 1
     networks:
       - cloudflared
     restart: unless-stopped
