@@ -13,7 +13,7 @@ services:
       - '--providers.docker.exposedByDefault=false'
       - '--entrypoints.http.address=:80'
       - '--entrypoints.https.address=:443'
-      - '--entrypoints.postgresql.address=:5432'
+      - '--entrypoints.postgres.address=:5432'
       - '--entrypoints.https.http.tls=true'
       - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
       - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
