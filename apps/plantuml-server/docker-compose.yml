@@ -4,14 +4,13 @@ networks:
 services:
   plantuml-server:
     image: plantuml/plantuml-server:v1.2023.1
+    command: apt
     labels:
       traefik.enable: true
       traefik.http.routers.plantuml-server.rule: Host(`plantuml.${DOMAIN?}`)
       traefik.http.routers.plantuml-server.entrypoints: ${ENTRYPOINT?}
       traefik.http.routers.plantuml-server.middlewares: plantuml-server-auth
       traefik.http.middlewares.plantuml-server-auth.basicauth.users: ${BASIC_AUTH_USER?}:${BASIC_AUTH_PASSWORD?}
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:8080 || exit 1
     networks:
       - traefik
     restart: unless-stopped
