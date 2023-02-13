@@ -13,6 +13,8 @@ services:
       traefik.enable: true
       traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
       traefik.http.routers.glances.entrypoints: ${ENTRYPOINT?}
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:8080 || exit 1
     networks:
       - traefik
     pid: host
