@@ -13,7 +13,7 @@ services:
     volumes:
       - mariadb-mysql:/var/lib/mysql
     healthcheck:
-      test: mysqladmin ping -h localhost -u root -p ${ROOT_PASSWORD?} | grep 'mariadb is alive' || exit 1
+      test: mysqladmin ping -h localhost -u root -p${ROOT_PASSWORD?} | grep 'mariadb is alive' || exit 1
     networks:
       - internal
       - traefik
