@@ -4,7 +4,6 @@ networks:
 services:
   plantuml-server:
     image: plantuml/plantuml-server:v1.2023.1
-    command: apt
     labels:
       traefik.enable: true
       traefik.http.routers.plantuml-server.rule: Host(`plantuml.${DOMAIN?}`)
