@@ -10,7 +10,7 @@ services:
       MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD?}
       MARIADB_USER: ${USER?}
     healthcheck:
-      test: mysqladmin ping -h localhost -u root -p=${ROOT_PASSWORD?} | grep 'mariadb is alive' || exit 1
+      test: mysqladmin ping -h localhost -u devantler -p=${ROOT_PASSWORD?} | grep 'mariadb is alive' || exit 1
     image: mariadb:10.9.5
     labels:
       traefik.enable: true
