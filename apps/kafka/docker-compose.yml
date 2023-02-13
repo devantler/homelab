@@ -29,13 +29,17 @@ services:
       - kafka-secrets:/etc/kafka/secrets
   kafka-ui:
     depends_on:
-      - kafka
-      - schema-registry
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
     environment:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_NAME: kafka
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
       SERVER_FORWARDHEADERSSTRATEGY: native
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider  http://localhost:8080/actuator/health
     image: provectuslabs/kafka-ui:v0.5.0
     labels:
       traefik.enable: true
@@ -47,7 +51,8 @@ services:
     restart: unless-stopped
   schema-registry:
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
