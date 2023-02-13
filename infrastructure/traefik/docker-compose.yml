@@ -9,6 +9,7 @@ services:
       - '--providers.docker'
       - '--providers.docker.network=traefik'
       - '--api.dashboard'
+      - '--ping'
       - '--providers.docker.exposedByDefault=false'
       - '--entrypoints.http.address=:80'
       - '--entrypoints.https.address=:443'
@@ -26,7 +27,7 @@ services:
       CF_API_EMAIL: ${CF_API_EMAIL}
       CF_API_KEY: ${CF_API_KEY}
     healthcheck:
-      test: traefik healthcheck --ping
+      test: traefik healthcheck
     image: traefik:v2.9
     labels:
       traefik.enable: true
@@ -39,7 +40,6 @@ services:
     ports:
       - '80:80'
       - '443:443'
-      - '8080:8080'
       - 3306:3306/tcp
       - 5432:5432/tcp
     restart: unless-stopped
