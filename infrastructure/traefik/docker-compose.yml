@@ -39,6 +39,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
+      - '8080:8080'
       - 3306:3306/tcp
       - 5432:5432/tcp
     restart: unless-stopped
