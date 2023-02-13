@@ -44,8 +44,6 @@ services:
     networks:
       - traefik
       - internal
-    ports:
-      - '8080:8080'
     restart: unless-stopped
   schema-registry:
     depends_on:
