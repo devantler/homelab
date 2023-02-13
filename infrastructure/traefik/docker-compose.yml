@@ -34,12 +34,9 @@ services:
       - cloudflared
       - traefik
     ports:
-      # HTTP
       - '80:80'
-      # HTTPS
       - '443:443'
-      # MariaDB
-      - '3306:3306/tcp'
+      - 3306:3306/tcp
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
