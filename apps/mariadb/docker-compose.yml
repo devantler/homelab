@@ -9,6 +9,7 @@ services:
       MARIADB_PASSWORD: ${PASSWORD?}
       MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD?}
       MARIADB_USER: ${USER?}
+      MARIADB_MYSQL_LOCALHOST_USER: true
     healthcheck:
       test: mysqladmin ping -P 3306 -p=${ROOT_PASSWORD?} | grep 'mariadb is alive' || exit 1
     image: mariadb:10.9.5
