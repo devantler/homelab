@@ -19,6 +19,8 @@ services:
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
       #KAFKA_CONFLUENT_CLUSTER_LINK_ENABLE: false
     image: confluentinc/cp-kafka:7.3.1
     networks:
