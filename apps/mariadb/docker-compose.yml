@@ -6,7 +6,6 @@ networks:
 services:
   mariadb:
     environment:
-      MARIADB_MYSQL_LOCALHOST_USER: true
       MARIADB_PASSWORD: ${PASSWORD?}
       MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD?}
       MARIADB_USER: ${USER?}
