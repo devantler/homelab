@@ -1,0 +1,22 @@
+networks:
+  traefik:
+    external: true
+services:
+  portainer:
+    command: '-H unix:///var/run/docker.sock --http-enabled'
+    image: portainer/portainer-ee:2.17.0
+    ports:
+      - 9000:9000
+    labels:
+      traefik.enable: true
+      traefik.http.routers.portainer.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.portainer.rule: Host(`portainer.${DOMAIN}`)
+      traefik.http.services.portainer.loadbalancer.server.port: 9000
+    networks:
+      - traefik
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+volumes:
+  portainer_data: null

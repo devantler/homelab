@@ -1,0 +1,17 @@
+networks:
+  cloudflared:
+    external: true
+services:
+  cloudflared:
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN?}
+    image: cloudflare/cloudflared:2023.2.1
+    networks:
+      - cloudflared
+    restart: unless-stopped
+    volumes:
+      - cloudflared:/.cloudflared
+
+volumes:
+  cloudflared: null
