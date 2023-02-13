@@ -6,21 +6,20 @@ networks:
 services:
   mariadb:
     environment:
-      MARIADB_USER: ${USER?}
       MARIADB_PASSWORD: ${PASSWORD?}
       MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD?}
-    image: mariadb:10.9.5
-    volumes:
-      - mariadb-mysql:/var/lib/mysql
+      MARIADB_USER: ${USER?}
     healthcheck:
       test: mysqladmin ping -h localhost -u root -p${ROOT_PASSWORD?} | grep 'mariadb is alive' || exit 1
+    image: mariadb:10.9.5
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.mariadb.entrypoints: mariadb
+      traefik.tcp.routers.mariadb.rule: HostSNI(`*`)
     networks:
       - internal
       - traefik
-    labels:
-      traefik.enable: true
-      traefik.tcp.routers.mariadb.rule: HostSNI(`*`)
-      traefik.tcp.routers.mariadb.entrypoints: mariadb
-
+    volumes:
+      - mariadb-mysql:/var/lib/mysql
 volumes:
   mariadb-mysql: null
