@@ -1,0 +1,22 @@
+networks:
+  internal:
+    external: true
+  traefik:
+    external: true
+services:
+  postgresql:
+    environment:
+      POSTGRES_PASSWORD: ${PASSWORD?}
+    image: postgres:15.2
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.postgresql.entrypoints: postgresql
+      traefik.tcp.routers.postgresql.rule: HostSNI(`*`)
+    networks:
+      - internal
+      - traefik
+    restart: unless-stopped
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+volumes:
+  postgresql-data: null

@@ -13,6 +13,7 @@ services:
       - '--entrypoints.http.address=:80'
       - '--entrypoints.https.address=:443'
       - '--entrypoints.mariadb.address=:3306'
+      - '--entrypoints.postgresql.address=:5432'
       - '--entrypoints.https.http.tls=true'
       - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
       - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
@@ -37,6 +38,7 @@ services:
       - '80:80'
       - '443:443'
       - 3306:3306/tcp
+      - 5432:5432/tcp
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
