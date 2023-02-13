@@ -8,6 +8,8 @@ services:
     environment:
       POSTGRES_PASSWORD: ${PASSWORD?}
       POSTGRES_USER: ${USER?}
+    healthcheck:
+      test: pg_isready
     image: postgres:15.2
     labels:
       traefik.enable: true
