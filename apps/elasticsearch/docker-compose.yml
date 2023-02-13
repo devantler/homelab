@@ -3,31 +3,34 @@ networks:
     external: true
 services:
   elasticsearch:
-    container_name: elasticsearch
+    networks:
+      - internal
     environment:
+      ES_JAVA_OPTS: '-Xms256m -Xmx512m -Dlog4j2.formatMsgNoLookups=true'
       discovery.type: single-node
       xpack.security.enabled: false
-      ES_JAVA_OPTS: -Xms256m -Xmx512m -Dlog4j2.formatMsgNoLookups=true
     healthcheck:
       retries: 4
       start_period: 2m
       test:
         - CMD-SHELL
         - curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
-    hostname: elasticsearch
     image: elasticsearch:7.10.1
     mem_limit: 1g
     ports:
-      - ${DATAHUB_MAPPED_ELASTIC_PORT:-9200}:9200
+      - '9200:9200'
     volumes:
-      - esdata:/usr/share/elasticsearch/data
+      - elasticsearch-data:/usr/share/elasticsearch/data
   elasticsearch-setup:
-    container_name: elasticsearch-setup
+    networks:
+      - internal
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     environment:
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: 9200
       ELASTICSEARCH_PROTOCOL: http
-    hostname: elasticsearch-setup
-    image: ${DATAHUB_ELASTIC_SETUP_IMAGE:-linkedin/datahub-elasticsearch-setup}:${DATAHUB_VERSION:-head}
+    image: linkedin/datahub-elasticsearch-setup:v0.10.0
+volumes:
+  elasticsearch-data: null
