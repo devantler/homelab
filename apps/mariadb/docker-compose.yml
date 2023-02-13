@@ -11,7 +11,7 @@ services:
       MYSQL_PASSWORD: datahub
       MYSQL_ROOT_PASSWORD: datahub
     hostname: mysql
-    image: mariadb:10.5.8
+    image: mariadb:10.10.3
     ports:
       - ${DATAHUB_MAPPED_MYSQL_PORT:-3306}:3306
     volumes:
