@@ -103,9 +103,6 @@ services:
     networks:
       - internal
   elasticsearch-setup:
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
     environment:
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: 9200

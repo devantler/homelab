@@ -46,7 +46,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.kafka-ui.entrypoints: ${ENTRYPOINT?}
-      traefik.http.routers.kafka-ui.rule: Host(`kafka.${DOMAIN?}`)
+      traefik.http.routers.kafka-ui.rule: Host(`kafka-ui.${DOMAIN?}`)
     networks:
       - traefik
       - internal
