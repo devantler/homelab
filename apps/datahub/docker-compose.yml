@@ -102,6 +102,16 @@ services:
     image: acryldata/datahub-upgrade:v0.10.0
     networks:
       - internal
-      
+  elasticsearch-setup:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_PROTOCOL: http
+    image: linkedin/datahub-elasticsearch-setup:v0.10.0
+    networks:
+      - internal
 volumes:
   datahub-plugins: null

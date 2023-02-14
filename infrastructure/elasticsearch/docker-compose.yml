@@ -17,20 +17,7 @@ services:
         - curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
     image: elasticsearch:7.10.1
     mem_limit: 1g
-    ports:
-      - '9200:9200'
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
-  elasticsearch-setup:
-    networks:
-      - internal
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    environment:
-      ELASTICSEARCH_HOST: elasticsearch
-      ELASTICSEARCH_PORT: 9200
-      ELASTICSEARCH_PROTOCOL: http
-    image: linkedin/datahub-elasticsearch-setup:v0.10.0
 volumes:
   elasticsearch-data: null
