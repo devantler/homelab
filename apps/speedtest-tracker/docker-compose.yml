@@ -1,25 +1,25 @@
 networks:
   traefik:
     external: true
+  internal:
+    external: true
 services:
   speedtest-tracker:
     environment:
-      - TZ=${TZ?}
-      - OOKLA_EULA_GDPR=true
-    # healthcheck:
-    #   test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:80 || exit 1
-    image: henrywhitaker3/speedtest-tracker:latest-arm
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: speedtest_tracker
+      DB_USERNAME: ${DB_USERNAME?}
+      DB_PASSWORD: ${DB_PASSWORD?}
+    image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.1
     labels:
       traefik.enable: 'true'
       traefik.http.routers.speedtest.entrypoints: ${ENTRYPOINT?}
       traefik.http.routers.speedtest.rule: Host(`speedtest.${DOMAIN?}`)
-    logging:
-      driver: json-file
-      options:
-        max-file: '10'
-        max-size: 200k
     networks:
       - traefik
+      - internal
     restart: unless-stopped
     volumes:
       - speedtest-tracker-config:/config
