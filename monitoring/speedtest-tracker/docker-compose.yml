@@ -11,7 +11,7 @@ services:
       DB_HOST: postgres
       DB_PASSWORD: ${DB_PASSWORD?}
       DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME?}
+      DB_USERNAME: postgres
     healthcheck:
       test: curl --fail http://localhost || exit 1
     image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.1
