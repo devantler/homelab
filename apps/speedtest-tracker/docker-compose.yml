@@ -1,5 +1,5 @@
 services:
-  speedtest:
+  speedtest-tracker:
     environment:
       - TZ=${TZ?}
       - OOKLA_EULA_GDPR=true
@@ -15,6 +15,6 @@ services:
         max-size: 200k
     restart: unless-stopped
     volumes:
-      - speedtest-config:/config
+      - speedtest-tracker-config:/config
 volumes:
-  speedtest-config: null
+  speedtest-tracker-config: null
