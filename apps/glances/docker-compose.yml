@@ -1,21 +1,20 @@
 networks:
   traefik:
     external: true
-
 services:
   glances:
-    restart: unless-stopped
     environment:
-      GLANCES_OPT: -w
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock:ro'
-    labels:
-      traefik.enable: true
-      traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
-      traefik.http.routers.glances.entrypoints: ${ENTRYPOINT?}
+      GLANCES_OPT: '-w'
     healthcheck:
       test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:61208 || exit 1
+    image: nicolargo/glances:3.3.1.1-full
+    labels:
+      traefik.enable: true
+      traefik.http.routers.glances.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
     networks:
       - traefik
     pid: host
-    image: 'nicolargo/glances:3.3.1.1-full'
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

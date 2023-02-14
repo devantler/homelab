@@ -6,8 +6,8 @@ services:
     environment:
       - TZ=${TZ?}
       - OOKLA_EULA_GDPR=true
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:80 || exit 1
+    # healthcheck:
+    #   test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:80 || exit 1
     image: henrywhitaker3/speedtest-tracker:latest-arm
     labels:
       traefik.enable: 'true'
