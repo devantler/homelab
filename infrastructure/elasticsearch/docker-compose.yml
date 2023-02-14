@@ -6,7 +6,7 @@ services:
     networks:
       - internal
     environment:
-      ES_JAVA_OPTS: '-Xms256m -Xmx512m -Dlog4j2.formatMsgNoLookups=true'
+      # ES_JAVA_OPTS: '-Xms256m -Xmx512m -Dlog4j2.formatMsgNoLookups=true'
       discovery.type: single-node
       xpack.security.enabled: false
     healthcheck:
