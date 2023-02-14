@@ -19,7 +19,7 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.speedtest-tracker.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.speedtest-tracker.rule: Host(`speedtest-tracker.${DOMAIN?}`)
-      traefik.services.speedtest-tracker.loadbalancer.server.port: 443
+      traefik.http.services.speedtest-tracker.loadbalancer.server.port: 443
     networks:
       - public
       - internal
