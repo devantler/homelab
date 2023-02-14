@@ -40,8 +40,10 @@ services:
     networks:
       - internal
       - traefik
-    ports:
-      - '9002:9002'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.datahub.rule: Host(`datahub.${DOMAIN?}`)
+      traefik.http.routers.datahub.entrypoints: ${ENTRYPOINT?}
     volumes:
       - datahub-plugins:/etc/datahub/plugins
   datahub-gms:
@@ -49,10 +51,10 @@ services:
       DATAHUB_SERVER_TYPE: quickstart
       DATAHUB_TELEMETRY_ENABLED: true
       DATAHUB_UPGRADE_HISTORY_KAFKA_CONSUMER_GROUP_ID: generic-duhe-consumer-job-client-gms
-      EBEAN_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
-      EBEAN_DATASOURCE_HOST: mariadb:3306
+      EBEAN_DATASOURCE_DRIVER: org.postgresql.Driver
+      EBEAN_DATASOURCE_HOST: postgres:5432
       EBEAN_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD?}
-      EBEAN_DATASOURCE_URL: jdbc:mysql://mariadb:3306/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
+      EBEAN_DATASOURCE_URL: jdbc:postgresql://postgres:5432/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
       EBEAN_DATASOURCE_USERNAME: ${DATASOURCE_USERNAME?}
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_INDEX_BUILDER_MAPPINGS_REINDEX: true
@@ -73,8 +75,6 @@ services:
     image: linkedin/datahub-gms:v0.10.0
     networks:
       - internal
-    ports:
-      - '8082:8080'
     volumes:
       - datahub-plugins:/etc/datahub/plugins
   datahub-upgrade:
@@ -85,10 +85,10 @@ services:
     environment:
       DATAHUB_GMS_HOST: datahub-gms
       DATAHUB_GMS_PORT: 8080
-      EBEAN_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
-      EBEAN_DATASOURCE_HOST: mariadb:3306
+      EBEAN_DATASOURCE_DRIVER: org.postgresql.Driver
+      EBEAN_DATASOURCE_HOST: postgres:5432
       EBEAN_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD?}
-      EBEAN_DATASOURCE_URL: jdbc:mysql://mariadb:3306/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
+      EBEAN_DATASOURCE_URL: jdbc:postgresql://postgres:5432/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
       EBEAN_DATASOURCE_USERNAME: ${DATASOURCE_USERNAME?}
       ELASTICSEARCH_BUILD_INDICES_CLONE_INDICES: false
       ELASTICSEARCH_HOST: elasticsearch
@@ -108,6 +108,23 @@ services:
       ELASTICSEARCH_PORT: 9200
       ELASTICSEARCH_PROTOCOL: http
     image: linkedin/datahub-elasticsearch-setup:v0.10.0
+    networks:
+      - internal
+  kafka-setup:
+    environment:
+      DATAHUB_PRECREATE_TOPICS: false
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+    image: linkedin/datahub-kafka-setup:v0.10.0
+    networks:
+      - internal
+  postgres-setup:
+    environment:
+      DATAHUB_DB_NAME: datahub
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD?}
+      POSTGRES_PORT: 5432
+      POSTGRES_USERNAME: ${DATASOURCE_USERNAME?}
+    image: acryldata/datahub-postgres-setup:v0.10.0
     networks:
       - internal
 volumes:
