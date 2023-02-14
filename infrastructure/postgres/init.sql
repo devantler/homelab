@@ -1,1 +1,1 @@
-CREATE DATABASE IF NOT EXISTS speedtest-tracker;
+CREATE DATABASE IF NOT EXISTS speedtest_tracker;
