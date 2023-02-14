@@ -1,8 +1,13 @@
+networks:
+  traefik:
+    external: true
 services:
   speedtest-tracker:
     environment:
       - TZ=${TZ?}
       - OOKLA_EULA_GDPR=true
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:80 || exit 1
     image: henrywhitaker3/speedtest-tracker:latest-arm
     labels:
       traefik.enable: 'true'
@@ -13,6 +18,8 @@ services:
       options:
         max-file: '10'
         max-size: 200k
+    networks:
+      - traefik
     restart: unless-stopped
     volumes:
       - speedtest-tracker-config:/config
