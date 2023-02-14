@@ -22,4 +22,4 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 volumes:
-  postgresql-data: null
+  postgres-data: null
