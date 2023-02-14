@@ -3,7 +3,7 @@ services:
     environment:
       - TZ=${TZ?}
       - OOKLA_EULA_GDPR=true
-    image: henrywhitaker3/speedtest-tracker
+    image: henrywhitaker3/speedtest-tracker:latest-arm
     labels:
       traefik.enable: 'true'
       traefik.http.routers.speedtest.entrypoints: ${ENTRYPOINT?}
