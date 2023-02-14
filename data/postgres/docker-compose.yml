@@ -1,7 +1,7 @@
 networks:
   internal:
     external: true
-  traefik:
+  public:
     external: true
 services:
   postgres:
@@ -17,7 +17,7 @@ services:
       traefik.tcp.routers.postgresql.rule: HostSNI(`*`)
     networks:
       - internal
-      - traefik
+      - public
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data

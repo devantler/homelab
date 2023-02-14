@@ -1,5 +1,5 @@
 networks:
-  traefik:
+  public:
     external: true
 services:
   pihole:
@@ -13,13 +13,13 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
-      traefik.http.routers.pihole.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.pihole.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.pihole.middlewares: pihole-strip-prefix,pihole-prefix
       traefik.http.middlewares.pihole-strip-prefix.stripprefix.prefixes: /admin
       traefik.http.middlewares.pihole-prefix.addprefix.prefix: /admin
       traefik.http.services.pihole.loadbalancer.server.port: 80
     networks:
-      - traefik
+      - public
     ports:
       - 53:53/tcp
       - 53:53/udp

@@ -1,7 +1,7 @@
 networks:
-  cloudflared:
+  tunnel:
     external: true
-  traefik:
+  public:
     external: true
 services:
   traefik:
@@ -30,12 +30,12 @@ services:
     image: traefik:v2.9
     labels:
       traefik.enable: true
-      traefik.http.routers.traefik-dashboard.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
       traefik.http.routers.traefik-dashboard.service: api@internal
     networks:
-      - cloudflared
-      - traefik
+      - tunnel
+      - public
     ports:
       - '80:80'
       - '443:443'

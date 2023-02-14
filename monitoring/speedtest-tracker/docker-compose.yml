@@ -1,7 +1,7 @@
 networks:
   internal:
     external: true
-  traefik:
+  public:
     external: true
 services:
   speedtest-tracker:
@@ -17,10 +17,10 @@ services:
     image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.1
     labels:
       traefik.enable: 'true'
-      traefik.http.routers.speedtest.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.speedtest.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.speedtest.rule: Host(`speedtest-tracker.${DOMAIN?}`)
     networks:
-      - traefik
+      - public
       - internal
     restart: unless-stopped
     volumes:

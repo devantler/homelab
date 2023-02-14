@@ -1,5 +1,5 @@
 networks:
-  cloudflared:
+  tunnel:
     external: true
 services:
   cloudflared:
@@ -8,7 +8,7 @@ services:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN?}
     image: cloudflare/cloudflared:2023.2.1
     networks:
-      - cloudflared
+      - tunnel
     restart: unless-stopped
     volumes:
       - cloudflared:/.cloudflared

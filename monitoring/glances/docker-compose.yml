@@ -1,5 +1,5 @@
 networks:
-  traefik:
+  public:
     external: true
 services:
   glances:
@@ -10,10 +10,10 @@ services:
     image: nicolargo/glances:3.3.1.1-full
     labels:
       traefik.enable: true
-      traefik.http.routers.glances.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.glances.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
     networks:
-      - traefik
+      - public
     pid: host
     restart: unless-stopped
     volumes:

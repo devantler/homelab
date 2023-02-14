@@ -1,7 +1,7 @@
 networks:
   internal:
     external: true
-  traefik:
+  public:
     external: true
 services:
   datahub-actions:
@@ -39,11 +39,11 @@ services:
     image: linkedin/datahub-frontend-react:v0.10.0
     labels:
       traefik.enable: true
-      traefik.http.routers.datahub.entrypoints: ${ENTRYPOINT?}
+      traefik.http.routers.datahub.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.datahub.rule: Host(`datahub.${DOMAIN?}`)
     networks:
       - internal
-      - traefik
+      - public
     volumes:
       - datahub-plugins:/etc/datahub/plugins
   datahub-gms:
