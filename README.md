@@ -1,6 +1,4 @@
-# My HomeLab!
-
-Welcome to Devantler's Homelab 🚀
+# Welcome to Devantler's Homelab 🚀
 
 This Homelab is a single-server setup, that focuses on ease-of-use over production-capabilities. As such, it works well for hobby projects, and small-scale hosting.
 
