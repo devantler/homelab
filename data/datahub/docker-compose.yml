@@ -75,8 +75,6 @@ services:
     image: linkedin/datahub-gms:v0.10.0
     networks:
       - internal
-    # Temporary fix for libpg issue https://github.com/psycopg/psycopg2/issues/1360
-    platform: linux/amd64
     volumes:
       - datahub-plugins:/etc/datahub/plugins
   datahub-upgrade:
