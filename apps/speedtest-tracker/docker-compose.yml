@@ -1,22 +1,24 @@
 networks:
-  traefik:
-    external: true
   internal:
+    external: true
+  traefik:
     external: true
 services:
   speedtest-tracker:
     environment:
       DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
       DB_DATABASE: speedtest_tracker
-      DB_USERNAME: ${DB_USERNAME?}
+      DB_HOST: postgres
       DB_PASSWORD: ${DB_PASSWORD?}
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME?}
+    healthcheck:
+      test: curl --fail http://localhost || exit 1
     image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.1
     labels:
       traefik.enable: 'true'
       traefik.http.routers.speedtest.entrypoints: ${ENTRYPOINT?}
-      traefik.http.routers.speedtest.rule: Host(`speedtest.${DOMAIN?}`)
+      traefik.http.routers.speedtest.rule: Host(`speedtest-tracker.${DOMAIN?}`)
     networks:
       - traefik
       - internal
