@@ -19,6 +19,8 @@ services:
       METADATA_CHANGE_LOG_VERSIONED_TOPIC_NAME: MetadataChangeLog_Versioned_v1
       SCHEMA_REGISTRY_URL: http://schema-registry:8081
     image: acryldata/datahub-actions:v0.0.11
+    # Temporary fix for libpg issue https://github.com/psycopg/psycopg2/issues/1360
+    platform: linux/amd64
     networks:
       - internal
     restart: unless-stopped
