@@ -33,7 +33,8 @@ This Homelab is a single-server setup, that focuses on ease-of-use over producti
 To run the Homelab you must:
 
 1. Create and configure a domain on Cloudflare.
-2. Create an `.env` file in the the 'apps/portainer' folder with the required environment variables. 
+2. Setup Cloudflared to tunnel service access.
+3. Create an `.env` file in the the 'apps/portainer' folder with the required environment variables. 
     - Check for `${NAME_OF_ENV_VAR?}` in the docker-compose file to see which environment variables are required.
-3. Access Portainer on `http://localhost:9000`.
-4. Add and configure stacks in Portainer, for the services you want to host.
+4. Access Portainer on `http://localhost:9000`.
+5. Add and configure stacks in Portainer, for the services you want to host.
