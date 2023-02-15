@@ -1,6 +1,8 @@
 networks:
   dhcp-network:
-    external: true
+    ipam: 
+      config:
+        - subnet: ${DHCP_SUBNET}/24
   public:
     external: true
 services:
@@ -16,6 +18,11 @@ services:
   pihole:
     cap_add:
       - NET_ADMIN
+    depends_on:
+      - dhcphelper
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
     environment:
       DNSMASQ_LISTENING: all
       PIHOLE_DNS_: ${DNS?}
