@@ -13,7 +13,7 @@ services:
       DB_PORT: 5432
       DB_USERNAME: postgres
       APP_URL: speedtest-tracker.${DOMAIN?}
-      SSL_MODE: full
+      SSL_MODE: off
     healthcheck:
       test: curl --fail http://localhost || exit 1
     image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.1
@@ -21,8 +21,6 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.speedtest-tracker.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.speedtest-tracker.rule: Host(`speedtest-tracker.${DOMAIN?}`)
-      traefik.http.services.speedtest-tracker.loadbalancer.server.port: 443
-      traefik.http.services.speedtest-tracker.loadbalancer.server.scheme: https
 
     networks:
       - public
