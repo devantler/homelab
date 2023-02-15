@@ -7,7 +7,7 @@ services:
   traefik:
     command:
       - '--providers.docker'
-      - '--providers.docker.network=traefik'
+      - '--providers.docker.network=public'
       - '--api.dashboard'
       - '--ping'
       - '--providers.docker.exposedByDefault=false'

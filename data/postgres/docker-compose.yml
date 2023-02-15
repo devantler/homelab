@@ -21,5 +21,11 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
 volumes:
   postgres-data: null
