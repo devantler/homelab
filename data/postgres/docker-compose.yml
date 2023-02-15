@@ -9,7 +9,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD?}@postgres:5432/pgweb?sslmode=disable
+      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD?}@postgres:5432?sslmode=disable
     healthcheck:
       interval: 5s
       test: [ "CMD", "nc", "-vz", "127.0.0.1", "8081" ]
