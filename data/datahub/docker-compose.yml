@@ -55,7 +55,7 @@ services:
       EBEAN_DATASOURCE_HOST: postgres:5432
       EBEAN_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD?}
       EBEAN_DATASOURCE_URL: jdbc:postgresql://postgres:5432/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
-      EBEAN_DATASOURCE_USERNAME: ${DATASOURCE_USERNAME?}
+      EBEAN_DATASOURCE_USERNAME: postgres
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_INDEX_BUILDER_MAPPINGS_REINDEX: true
       ELASTICSEARCH_INDEX_BUILDER_SETTINGS_REINDEX: true
@@ -89,7 +89,7 @@ services:
       EBEAN_DATASOURCE_HOST: postgres:5432
       EBEAN_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD?}
       EBEAN_DATASOURCE_URL: jdbc:postgresql://postgres:5432/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
-      EBEAN_DATASOURCE_USERNAME: ${DATASOURCE_USERNAME?}
+      EBEAN_DATASOURCE_USERNAME: postgres
       ELASTICSEARCH_BUILD_INDICES_CLONE_INDICES: false
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_INDEX_BUILDER_MAPPINGS_REINDEX: true
