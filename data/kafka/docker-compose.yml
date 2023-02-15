@@ -25,7 +25,7 @@ services:
     image: confluentinc/cp-kafka:7.3.1
     networks:
       - internal
-    restart: unless-stoppedc
+    restart: unless-stopped
     volumes:
       - kafka-logs:/tmp/kafka-logs
       - kafka-data:/var/lib/kafka/data
