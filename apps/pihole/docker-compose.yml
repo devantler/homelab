@@ -2,7 +2,7 @@ networks:
   dhcp-network:
     ipam: 
       config:
-        - subnet: ${DHCP_SUBNET}/24
+        - subnet: ${DHCP_SUBNET}
   public:
     external: true
 services:
