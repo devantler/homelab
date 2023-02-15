@@ -4,17 +4,22 @@ networks:
   public:
     external: true
 services:
-  pgadmin:
+  pgweb:
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    image: dpage/pgadmin4:6.20
-    networks:
-      - public
+      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD?}@postgres:5432/pgweb?sslmode=disable
+    healthcheck:
+      interval: 5s
+      test: [ "CMD", "nc", "-vz", "127.0.0.1", "8081" ]
+    image: sosedoff/pgweb:0.13.1
     labels:
       traefik.enable: true
-      traefik.http.routers.pg-admin.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-      traefik.http.routers.pg-admin.rule: Host(`pgadmin.${DOMAIN?}`)
+      traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.pgweb.rule: Host(`pgweb.${DOMAIN?}`)
+    networks:
+      - public
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}
