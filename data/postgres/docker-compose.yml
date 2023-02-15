@@ -9,6 +9,8 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     image: dpage/pgadmin4:6.20
+    networks:
+      - public
     labels:
       traefik.enable: true
       traefik.http.routers.pg-admin.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
