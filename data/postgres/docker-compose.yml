@@ -4,6 +4,15 @@ networks:
   public:
     external: true
 services:
+  pg-admin:
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    image: dpage/pgadmin4:6.20
+    labels:
+      traefik.enable: true
+      traefik.http.routers.pg-admin.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.pg-admin.rule: Host(`pg-admin.${DOMAIN?}`)
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}
@@ -21,11 +30,5 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
 volumes:
   postgres-data: null
