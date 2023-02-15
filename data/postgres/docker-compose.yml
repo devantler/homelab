@@ -4,7 +4,7 @@ networks:
   public:
     external: true
 services:
-  pg-admin:
+  pgadmin:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -12,7 +12,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.pg-admin.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-      traefik.http.routers.pg-admin.rule: Host(`pg-admin.${DOMAIN?}`)
+      traefik.http.routers.pg-admin.rule: Host(`pgadmin.${DOMAIN?}`)
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}
