@@ -123,7 +123,7 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD?}
       POSTGRES_PORT: 5432
-      POSTGRES_USERNAME: ${DATASOURCE_USERNAME?}
+      POSTGRES_USERNAME: postgres
     image: acryldata/datahub-postgres-setup:v0.10.0
     networks:
       - internal
