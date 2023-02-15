@@ -11,7 +11,7 @@ services:
       - '--api.dashboard'
       - '--ping'
       - '--providers.docker.exposedByDefault=false'
-      - '--serversTransport.insecureSkipVerify=true'
+      # - '--serversTransport.insecureSkipVerify=true'
       - '--entrypoints.http.address=:80'
       - '--entrypoints.https.address=:443'
       - '--entrypoints.postgres.address=:5432'
