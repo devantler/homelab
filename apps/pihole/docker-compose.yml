@@ -20,10 +20,8 @@ services:
       - NET_ADMIN
     depends_on:
       - dhcphelper
-    dns:
-      - 127.0.0.1
-      - 1.1.1.1
     environment:
+      SERVERIP: 192.168.1.200
       DNSMASQ_LISTENING: all
       PIHOLE_DNS_: ${DNS?}
       TZ: ${TZ?}
