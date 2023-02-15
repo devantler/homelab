@@ -3,8 +3,6 @@ networks:
     external: true
 services:
   elasticsearch:
-    networks:
-      - internal
     environment:
       # ES_JAVA_OPTS: '-Xms256m -Xmx512m -Dlog4j2.formatMsgNoLookups=true'
       discovery.type: single-node
@@ -17,6 +15,9 @@ services:
         - curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
     image: elasticsearch:7.10.1
     mem_limit: 1g
+    networks:
+      - internal
+    restart: unless-stopped
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
 volumes:

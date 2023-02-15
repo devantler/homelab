@@ -20,6 +20,7 @@ services:
       traefik.http.routers.pgweb.rule: Host(`pgweb.${DOMAIN?}`)
     networks:
       - public
+    restart: unless-stopped
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}

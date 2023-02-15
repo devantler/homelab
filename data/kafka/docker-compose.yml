@@ -25,6 +25,7 @@ services:
     image: confluentinc/cp-kafka:7.3.1
     networks:
       - internal
+    restart: unless-stoppedc
     volumes:
       - kafka-logs:/tmp/kafka-logs
       - kafka-data:/var/lib/kafka/data
@@ -63,6 +64,7 @@ services:
     image: confluentinc/cp-schema-registry:7.3.1
     networks:
       - internal
+    restart: unless-stopped
     volumes:
       - schema-registry-secrets:/etc/schema-registry/secrets
 volumes:

@@ -44,6 +44,7 @@ services:
     networks:
       - internal
       - public
+    restart: unless-stopped
     volumes:
       - datahub-plugins:/etc/datahub/plugins
   datahub-gms:
