@@ -1,27 +1,40 @@
 networks:
+  dhcp-network:
+    external: true
   public:
     external: true
 services:
-  pihole:
-    hostname: pihole.${DOMAIN?}
+  dhcphelper:
+    cap_add:
+      - NET_ADMIN
     environment:
+      IP: ${DHCP_HOST_IP?}
+      TZ: ${TZ?}
+    image: homeall/dhcphelper:latest
+    network_mode: host
+    restart: unless-stopped
+  pihole:
+    cap_add:
+      - NET_ADMIN
+    environment:
+      DNSMASQ_LISTENING: all
+      PIHOLE_DNS_: ${DNS?}
       TZ: ${TZ?}
       WEBPASSWORD: ${PASSWORD?}
-      PIHOLE_DNS_: ${DNS?}
-      DNSMASQ_LISTENING: all
+    hostname: pihole.${DOMAIN?}
     image: pihole/pihole:2023.02.0
     labels:
       traefik.enable: true
-      traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
+      traefik.http.middlewares.pihole-prefix.addprefix.prefix: /admin
+      traefik.http.middlewares.pihole-strip-prefix.stripprefix.prefixes: /admin
       traefik.http.routers.pihole.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.pihole.middlewares: pihole-strip-prefix,pihole-prefix
-      traefik.http.middlewares.pihole-strip-prefix.stripprefix.prefixes: /admin
-      traefik.http.middlewares.pihole-prefix.addprefix.prefix: /admin
+      traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
       traefik.http.services.pihole.loadbalancer.server.port: 80
     networks:
-      - public
-    cap_add:
-      - NET_ADMIN
+      dhcp-network:
+        ipv4_address: ${DHCP_HOST_IP?}
+      public: null
     ports:
       - 53:53/tcp
       - 53:53/udp
@@ -30,17 +43,6 @@ services:
     volumes:
       - etc-pihole:/etc/pihole
       - etc-dnsmasq.d:/etc/dnsmasq.d
-  
-  dhcphelper:
-    image: homeall/dhcphelper:latest
-    restart: unless-stopped
-    network_mode: host
-    environment:
-      TZ: ${TZ?}
-      IP: ${DHCP_HOST_IP?}
-    cap_add:
-      - NET_ADMIN
-
 volumes:
   etc-dnsmasq.d: null
   etc-pihole: null
