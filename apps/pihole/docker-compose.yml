@@ -30,6 +30,17 @@ services:
     volumes:
       - etc-pihole:/etc/pihole
       - etc-dnsmasq.d:/etc/dnsmasq.d
+  
+  dhcphelper:
+    image: homeall/dhcphelper:latest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: ${TZ?}
+      IP: ${DHCP_HOST_IP?}
+    cap_add:
+      - NET_ADMIN
+
 volumes:
   etc-dnsmasq.d: null
   etc-pihole: null
