@@ -1,27 +1,9 @@
 networks:
-  dhcp-network:
-    ipam: 
-      config:
-        - subnet: ${DHCP_SUBNET}
   public:
     external: true
 services:
-  dhcphelper:
-    cap_add:
-      - NET_ADMIN
-    environment:
-      IP: ${DHCP_HOST_IP?}
-      TZ: ${TZ?}
-    image: homeall/dhcphelper:latest
-    network_mode: host
-    restart: unless-stopped
   pihole:
-    cap_add:
-      - NET_ADMIN
-    depends_on:
-      - dhcphelper
     environment:
-      SERVERIP: 192.168.1.200
       DNSMASQ_LISTENING: all
       PIHOLE_DNS_: ${DNS?}
       TZ: ${TZ?}
@@ -37,8 +19,6 @@ services:
       traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
       traefik.http.services.pihole.loadbalancer.server.port: 80
     networks:
-      dhcp-network:
-        ipv4_address: ${DHCP_HOST_IP?}
       public: null
     ports:
       - 53:53/tcp
