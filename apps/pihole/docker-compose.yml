@@ -9,7 +9,7 @@ services:
       TZ: ${TZ?}
       WEBPASSWORD: ${PASSWORD?}
     hostname: pihole.${DOMAIN?}
-    image: pihole/pihole:2023.02.0
+    image: pihole/pihole:2023.02.2
     labels:
       traefik.enable: true
       traefik.http.middlewares.pihole-prefix.addprefix.prefix: /admin
