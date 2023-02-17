@@ -9,7 +9,7 @@ This Homelab is a single-server setup, that focuses on ease-of-use over producti
 - [Cloudflared](https://github.com/cloudflare/cloudflared): To tunnel traffic from the internet to the server securely.
 - [Traefik](https://traefik.io/traefik/): Reverse proxy to route traffic to services.
 
-### Data Management
+### Data
 
 - [Postgres](https://www.postgresql.org): A popular SQL Database.
 - [DataHub](https://datahubproject.io): A versatile metadata platform.
