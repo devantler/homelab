@@ -12,14 +12,14 @@ services:
     labels:
       traefik.enable: true
       traefik.tcp.routers.valheim-tcp.entrypoints: valheim-tcp
-      traefik.tcp.routers.valheim-tcp.rule: HostSNI(`*`)
+      traefik.tcp.routers.valheim-tcp.rule: HostSNI(`valheim.${DOMAIN?}`)
       traefik.udp.routers.valheim-udp.entrypoints: valheim-udp1,valheim-udp2
-      traefik.udp.routers.valheim-udp.rule: HostSNI(`*`)
+      traefik.udp.routers.valheim-udp.rule: HostSNI(`valheim.${DOMAIN?}`)
     environment:
-      SERVER_NAME: ${VALHEIM_SERVER_NAME}
-      WORLD_NAME: ${VALHEIM_WORLD_NAME}
-      SERVER_PASS: ${VALHEIM_SERVER_PASS}
-      SERVER_PUBLIC: ${IS_SERVER_PUBLIC}
+      SERVER_NAME: ${VALHEIM_SERVER_NAME?}
+      WORLD_NAME: ${VALHEIM_WORLD_NAME?}
+      SERVER_PASS: ${VALHEIM_SERVER_PASS?}
+      SERVER_PUBLIC: ${IS_SERVER_PUBLIC?}
     restart: unless-stopped
     platform: linux/amd64 # Only platform supported by this image. The platform is emulated on Apple Silicon Macs.
 volumes:
