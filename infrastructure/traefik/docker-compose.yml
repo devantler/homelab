@@ -11,10 +11,12 @@ services:
       - '--api.dashboard'
       - '--ping'
       - '--providers.docker.exposedByDefault=false'
-      # - '--serversTransport.insecureSkipVerify=true'
       - '--entrypoints.http.address=:80'
       - '--entrypoints.https.address=:443'
       - '--entrypoints.postgres.address=:5432'
+      - '--entrypoints.valheim-tcp.address=:9001'
+      - '--entrypoints.valheim-udp1.address=:2456'
+      - '--entrypoints.valheim-udp2.address=:2457'
       - '--entrypoints.https.http.tls=true'
       - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
       - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
@@ -41,6 +43,9 @@ services:
       - '80:80'
       - '443:443'
       - 5432:5432/tcp
+      - 9001:9001/tcp
+      - 2456:2456/udp
+      - 2457:2457/udp
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro

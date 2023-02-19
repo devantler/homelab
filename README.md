@@ -4,10 +4,12 @@ This Homelab is a single-server setup, that focuses on ease-of-use over producti
 
 ## Overview
 
-### Infrastructure
+### Apps
 
-- [Cloudflared](https://github.com/cloudflare/cloudflared): To tunnel traffic from the internet to the server securely.
-- [Traefik](https://traefik.io/traefik/): Reverse proxy to route traffic to services.
+- [Portainer](https://www.portainer.io): Container management software for Docker, Kubernetes and Nomad.
+- [Kafka UI](https://github.com/provectus/kafka-ui): Fast and lightweight web UI for managing Apache Kafka® clusters.
+- [Pi-hole](https://pi-hole.net): Network-wide Ad Blocking
+- [PlantUML Server](https://github.com/plantuml/plantuml-server): A web application and server to generate PlantUML diagrams on-the-fly.
 
 ### Data
 
@@ -15,12 +17,14 @@ This Homelab is a single-server setup, that focuses on ease-of-use over producti
 - [DataHub](https://datahubproject.io): A versatile metadata platform.
 - [Kafka](https://kafka.apache.org): A distributed event streaming platform.
 
-### Apps
+### Game Servers
 
-- [Portainer](https://www.portainer.io): Container management software for Docker, Kubernetes and Nomad.
-- [Kafka UI](https://github.com/provectus/kafka-ui): Fast and lightweight web UI for managing Apache Kafka® clusters. 
-- [Pi-hole](https://pi-hole.net): Network-wide Ad Blocking
-- [PlantUML Server](https://github.com/plantuml/plantuml-server): A web application and server to generate PlantUML diagrams on-the-fly.
+- [Valheim](https://github.com/lloesche/valheim-server-docker): A dedicated Valheim server.
+
+### Infrastructure
+
+- [Cloudflared](https://github.com/cloudflare/cloudflared): To tunnel traffic from the internet to the server securely.
+- [Traefik](https://traefik.io/traefik/): Reverse proxy to route traffic to services.
 
 ### Monitoring
 
@@ -34,7 +38,7 @@ To run the Homelab you must:
 
 1. Create and configure a domain on Cloudflare.
 2. Setup Cloudflared to tunnel service access.
-3. Create an `.env` file in the the 'apps/portainer' folder with the required environment variables. 
+3. Create an `.env` file in the the 'apps/portainer' folder with the required environment variables.
     - Check for `${NAME_OF_ENV_VAR?}` in the docker-compose file to see which environment variables are required.
 4. Access Portainer on `http://localhost:9000`.
 5. Add and configure stacks in Portainer, for the services you want to host.
