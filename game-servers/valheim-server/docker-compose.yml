@@ -1,5 +1,5 @@
 services:
-  valheim:
+  valheim-server:
     image: lloesche/valheim-server:latest
     cap_add:
       - sys_nice
@@ -12,9 +12,9 @@ services:
     labels:
       traefik.enable: true
       traefik.tcp.routers.valheim-tcp.entrypoints: valheim-tcp
-      traefik.tcp.routers.valheim-tcp.rule: HostSNI(`valheim.${DOMAIN?}`)
+      traefik.tcp.routers.valheim-tcp.rule: HostSNI(`valheim-server.${DOMAIN?}`)
       traefik.udp.routers.valheim-udp.entrypoints: valheim-udp1,valheim-udp2
-      traefik.udp.routers.valheim-udp.rule: HostSNI(`valheim.${DOMAIN?}`)
+      traefik.udp.routers.valheim-udp.rule: HostSNI(`valheim-server.${DOMAIN?}`)
     environment:
       SERVER_NAME: ${VALHEIM_SERVER_NAME?}
       WORLD_NAME: ${VALHEIM_WORLD_NAME?}
