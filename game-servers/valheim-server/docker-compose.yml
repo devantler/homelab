@@ -20,9 +20,6 @@ services:
     networks:
       - public
     platform: linux/amd64
-    ports:
-      - 2456-2457:2456-2457/udp
-      - 9001:9001/tcp
     restart: unless-stopped
     volumes:
       - valheim-config:/config
