@@ -15,8 +15,10 @@ services:
       traefik.enable: true
       traefik.tcp.routers.valheim-tcp.entrypoints: valheim-tcp
       traefik.tcp.routers.valheim-tcp.rule: HostSNI(`valheim-server.${DOMAIN?}`)
-      traefik.udp.routers.valheim-udp.entrypoints: valheim-udp1,valheim-udp2
-      traefik.udp.routers.valheim-udp.rule: HostSNI(`valheim-server.${DOMAIN?}`)
+      traefik.udp.routers.valheim-udp1.entrypoints: valheim-udp1
+      traefik.udp.routers.valheim-udp1.rule: HostSNI(`valheim-server.${DOMAIN?}`)
+      traefik.udp.routers.valheim-udp2.entrypoints: valheim-udp2
+      traefik.udp.routers.valheim-udp2.rule: HostSNI(`valheim-server.${DOMAIN?}`)
     networks:
       - public
     platform: linux/amd64
