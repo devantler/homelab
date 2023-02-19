@@ -1,27 +1,32 @@
+networks:
+  public:
+    external: true
 services:
   valheim-server:
-    image: lloesche/valheim-server:latest
     cap_add:
       - sys_nice
-    volumes:
-      - valheim-config:/config
-      - valheim-data:/opt/valheim
-    ports:
-      - "2456-2457:2456-2457/udp"
-      - "9001:9001/tcp"
+    environment:
+      SERVER_NAME: ${VALHEIM_SERVER_NAME?}
+      SERVER_PASS: ${VALHEIM_SERVER_PASS?}
+      SERVER_PUBLIC: ${IS_SERVER_PUBLIC?}
+      WORLD_NAME: ${VALHEIM_WORLD_NAME?}
+    image: lloesche/valheim-server:latest
     labels:
       traefik.enable: true
       traefik.tcp.routers.valheim-tcp.entrypoints: valheim-tcp
       traefik.tcp.routers.valheim-tcp.rule: HostSNI(`valheim-server.${DOMAIN?}`)
       traefik.udp.routers.valheim-udp.entrypoints: valheim-udp1,valheim-udp2
       traefik.udp.routers.valheim-udp.rule: HostSNI(`valheim-server.${DOMAIN?}`)
-    environment:
-      SERVER_NAME: ${VALHEIM_SERVER_NAME?}
-      WORLD_NAME: ${VALHEIM_WORLD_NAME?}
-      SERVER_PASS: ${VALHEIM_SERVER_PASS?}
-      SERVER_PUBLIC: ${IS_SERVER_PUBLIC?}
+    networks:
+      - public
+    platform: linux/amd64
+    ports:
+      - 2456-2457:2456-2457/udp
+      - 9001:9001/tcp
     restart: unless-stopped
-    platform: linux/amd64 # Only platform supported by this image. The platform is emulated on Apple Silicon Macs.
+    volumes:
+      - valheim-config:/config
+      - valheim-data:/opt/valheim
 volumes:
   valheim-config: null
   valheim-data: null
