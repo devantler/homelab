@@ -13,7 +13,7 @@ services:
     healthcheck:
       interval: 5s
       test: [ "CMD", "nc", "-vz", "127.0.0.1", "8081" ]
-    image: sosedoff/pgweb:0.13.1
+    image: sosedoff/pgweb:0.14.0
     labels:
       traefik.enable: true
       traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
