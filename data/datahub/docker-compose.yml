@@ -76,6 +76,7 @@ services:
     image: linkedin/datahub-gms:v0.10.0
     networks:
       - internal
+    restart: unless-stopped
     volumes:
       - datahub-plugins:/etc/datahub/plugins
   datahub-upgrade:
