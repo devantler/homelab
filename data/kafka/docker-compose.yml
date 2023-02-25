@@ -61,7 +61,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
     healthcheck:
       test: nc -z localhost 8081 || exit -1
-    image: confluentinc/cp-schema-registry:7.3.1
+    image: confluentinc/cp-schema-registry:7.3.2
     networks:
       - internal
     restart: unless-stopped
