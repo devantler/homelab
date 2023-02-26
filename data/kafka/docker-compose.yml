@@ -22,7 +22,7 @@ services:
     healthcheck:
       test: nc -z localhost 9092 || exit -1
       #KAFKA_CONFLUENT_CLUSTER_LINK_ENABLE: false
-    image: confluentinc/cp-kafka:7.3.1
+    image: confluentinc/cp-kafka:7.3.2
     networks:
       - internal
     restart: unless-stopped
