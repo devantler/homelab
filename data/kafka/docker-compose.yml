@@ -67,6 +67,7 @@ services:
             traefik.enable: true
             traefik.http.routers.schema-registry.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
             traefik.http.routers.schema-registry.rule: Host(`schema-registry.${DOMAIN?}`)
+            traefik.http.routers.schema-registry.middlewares: schema-registry-ipwhitelist
             traefik.http.middlewares.schema-registry-ipwhitelist.ipwhitelist.sourcerange: ${TRAEFIK_IP_WHITELIST?}
         networks:
             - internal
