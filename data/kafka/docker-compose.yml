@@ -70,8 +70,8 @@ services:
         image: confluentinc/cp-schema-registry:7.3.2
         labels:
             traefik.enable: true
-            traefik.tcp.routers.schema-registry.entrypoints: schema-registry
-            traefik.tcp.routers.schema-registry.rule: HostSNI(`*`)
+            traefik.http.routers.schema-registry.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+            traefik.http.routers.schema-registry.rule: Host(`schema-registry.${DOMAIN?}`)
         networks:
             - internal
             - public
