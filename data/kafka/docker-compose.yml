@@ -23,13 +23,8 @@ services:
             test: nc -z localhost 9092 || exit -1
             #KAFKA_CONFLUENT_CLUSTER_LINK_ENABLE: false
         image: confluentinc/cp-kafka:7.3.2
-        labels:
-            traefik.enable: true
-            traefik.tcp.routers.kafka.entrypoints: kafka
-            traefik.tcp.routers.kafka.rule: HostSNI(`*`)
         networks:
             - internal
-            - public
         restart: unless-stopped
         volumes:
             - kafka-logs:/tmp/kafka-logs
