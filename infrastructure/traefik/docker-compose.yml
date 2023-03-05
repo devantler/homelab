@@ -1,50 +1,52 @@
 networks:
-  public:
-    external: true
-  tunnel:
-    external: true
+    public:
+        external: true
+    tunnel:
+        external: true
 services:
-  traefik:
-    command:
-      - '--providers.docker'
-      - '--providers.docker.network=public'
-      - '--api.dashboard'
-      - '--ping'
-      - '--providers.docker.exposedByDefault=false'
-      - '--entrypoints.http.address=:80'
-      - '--entrypoints.https.address=:443'
-      - '--entrypoints.postgres.address=:5432'
-      - '--entrypoints.kafka.address=:9092'
-      - '--entrypoints.https.http.tls=true'
-      - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
-      - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
-      - '--entrypoints.https.http.tls.certresolver=letsencrypt'
-      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
-      - '--certificatesresolvers.letsencrypt.acme.caserver=${LETS_ENCRYPT_CASERVER_URL:-https://acme-v02.api.letsencrypt.org/directory}'
-      - '--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${LETS_ENCRYPT_DNS_PROVIDER:-cloudflare}'
-      - '--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=${LETS_ENCRYPT_DNS_RESOLVERS:-1.1.1.1:53,1.0.0.1:53}'
-    environment:
-      CF_API_EMAIL: ${CF_API_EMAIL}
-      CF_API_KEY: ${CF_API_KEY}
-    healthcheck:
-      test: traefik healthcheck --ping
-    image: traefik:v2.9
-    labels:
-      traefik.enable: true
-      traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-      traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
-      traefik.http.routers.traefik-dashboard.service: api@internal
-    networks:
-      - tunnel
-      - public
-    ports:
-      - '80:80'
-      - '443:443'
-      - 5432:5432/tcp
-      - 9092:9092/tcp
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - letsencrypt:/letsencrypt
+    traefik:
+        command:
+            - '--providers.docker'
+            - '--providers.docker.network=public'
+            - '--api.dashboard'
+            - '--ping'
+            - '--providers.docker.exposedByDefault=false'
+            - '--entrypoints.http.address=:80'
+            - '--entrypoints.https.address=:443'
+            - '--entrypoints.postgres.address=:5432'
+            - '--entrypoints.schema-registry.address=:8081'
+            - '--entrypoints.kafka.address=:9092'
+            - '--entrypoints.https.http.tls=true'
+            - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
+            - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
+            - '--entrypoints.https.http.tls.certresolver=letsencrypt'
+            - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
+            - '--certificatesresolvers.letsencrypt.acme.caserver=${LETS_ENCRYPT_CASERVER_URL:-https://acme-v02.api.letsencrypt.org/directory}'
+            - '--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${LETS_ENCRYPT_DNS_PROVIDER:-cloudflare}'
+            - '--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=${LETS_ENCRYPT_DNS_RESOLVERS:-1.1.1.1:53,1.0.0.1:53}'
+        environment:
+            CF_API_EMAIL: ${CF_API_EMAIL}
+            CF_API_KEY: ${CF_API_KEY}
+        healthcheck:
+            test: traefik healthcheck --ping
+        image: traefik:v2.9
+        labels:
+            traefik.enable: true
+            traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+            traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
+            traefik.http.routers.traefik-dashboard.service: api@internal
+        networks:
+            - tunnel
+            - public
+        ports:
+            - '80:80'
+            - '443:443'
+            - 5432:5432/tcp
+            - 8081:8081/tcp
+            - 9092:9092/tcp
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - letsencrypt:/letsencrypt
 volumes:
-  letsencrypt: null
+    letsencrypt: null

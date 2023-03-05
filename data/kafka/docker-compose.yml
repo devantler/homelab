@@ -68,8 +68,13 @@ services:
         healthcheck:
             test: nc -z localhost 8081 || exit -1
         image: confluentinc/cp-schema-registry:7.3.2
+        labels:
+            traefik.enable: true
+            traefik.tcp.routers.schema-registry.entrypoints: schema-registry
+            traefik.tcp.routers.schema-registry.rule: HostSNI(`*`)
         networks:
             - internal
+            - public
         restart: unless-stopped
         volumes:
             - schema-registry-secrets:/etc/schema-registry/secrets
