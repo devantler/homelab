@@ -1,85 +1,99 @@
 networks:
-    internal:
-        external: true
-    public:
-        external: true
+  internal:
+    external: true
+  public:
+    external: true
 services:
-    kafka:
-        command: |
-            bash -c "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure && sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure && export UUID=`kafka-storage random-uuid` && echo 'kafka-storage format --ignore-formatted -t $$UUID -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/ensure && /etc/confluent/docker/run"
-        environment:
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-            KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-            KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9091
-            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-            KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9091
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-            KAFKA_NODE_ID: 1
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-            KAFKA_PROCESS_ROLES: broker,controller
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-        healthcheck:
-            test: nc -z localhost 9092 || exit -1
-            #KAFKA_CONFLUENT_CLUSTER_LINK_ENABLE: false
-        image: confluentinc/cp-kafka:7.3.2
-        labels:
-            traefik.enable: true
-            traefik.http.routers.kafka.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-            traefik.http.routers.kafka.rule: Host(`kafka.${DOMAIN?}`)
-        networks:
-            - internal
-            - public
-        restart: unless-stopped
-        volumes:
-            - kafka-logs:/tmp/kafka-logs
-            - kafka-data:/var/lib/kafka/data
-            - kafka-secrets:/etc/kafka/secrets
-    kafka-ui:
-        depends_on:
-            kafka:
-                condition: service_healthy
-            schema-registry:
-                condition: service_healthy
-        environment:
-            KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-            KAFKA_CLUSTERS_0_NAME: kafka
-            KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
-            KAFKA_CLUSTERS_0_SCHEMANAMETEMPLATE: '%s-value'
-            SERVER_FORWARDHEADERSSTRATEGY: native
-        healthcheck:
-            test: wget --no-verbose --tries=1 --spider  http://localhost:8080/actuator/health
-        image: provectuslabs/kafka-ui:v0.5.0
-        labels:
-            traefik.enable: true
-            traefik.http.routers.kafka-ui.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-            traefik.http.routers.kafka-ui.rule: Host(`kafka-ui.${DOMAIN?}`)
-        networks:
-            - public
-            - internal
-        restart: unless-stopped
-    schema-registry:
-        depends_on:
-            kafka:
-                condition: service_healthy
-        environment:
-            SCHEMA_REGISTRY_HOST_NAME: schema-registry
-            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
-        healthcheck:
-            test: nc -z localhost 8081 || exit -1
-        image: confluentinc/cp-schema-registry:7.3.2
-        labels:
-            traefik.enable: true
-            traefik.http.routers.schema-registry.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-            traefik.http.routers.schema-registry.rule: Host(`schema-registry.${DOMAIN?}`)
-        networks:
-            - internal
-            - public
-        restart: unless-stopped
-        volumes:
-            - schema-registry-secrets:/etc/schema-registry/secrets
+  kafka:
+    image: confluentinc/cp-kafka:7.3.2
+    command: |
+      bash -c "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure && sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure && export UUID=`kafka-storage random-uuid` && echo 'kafka-storage format --ignore-formatted -t $$UUID -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/ensure && /etc/confluent/docker/run"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9091
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9091
+      KAFKA_NODE_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+    networks:
+      - internal
+    restart: unless-stopped
+    volumes:
+      - kafka-logs:/tmp/kafka-logs
+      - kafka-data:/var/lib/kafka/data
+      - kafka-secrets:/etc/kafka/secrets
+
+  kafka-rest-proxy:
+    image: confluentinc/cp-kafka-rest:7.3.0
+    environment:
+      KAFKA_REST_HOST_NAME: kafka-rest-proxy
+      KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
+      KAFKA_REST_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+    healthcheck:
+      test: nc -z localhost 8082 || exit -1
+    labels:
+      traefik.enable: true
+      traefik.http.routers.kafka.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.kafka.rule: Host(`kafka.${DOMAIN?}`)
+    networks:
+      - public
+      - internal
+    restart: unless-stopped
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.2
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+    healthcheck:
+      test: nc -z localhost 8081 || exit -1
+    labels:
+      traefik.enable: true
+      traefik.http.routers.schema-registry.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.schema-registry.rule: Host(`schema-registry.${DOMAIN?}`)
+    networks:
+      - internal
+      - public
+    restart: unless-stopped
+    volumes:
+      - schema-registry-secrets:/etc/schema-registry/secrets
+    
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.5.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_NAME: kafka
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_SCHEMANAMETEMPLATE: '%s-value'
+      SERVER_FORWARDHEADERSSTRATEGY: native
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider  http://localhost:8080/actuator/health
+    labels:
+      traefik.enable: true
+      traefik.http.routers.kafka-ui.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.kafka-ui.rule: Host(`kafka-ui.${DOMAIN?}`)
+    networks:
+      - public
+      - internal
+    restart: unless-stopped
 volumes:
-    kafka-data: null
-    kafka-logs: null
-    kafka-secrets: null
-    schema-registry-secrets: null
+  kafka-data: null
+  kafka-logs: null
+  kafka-secrets: null
+  schema-registry-secrets: null
