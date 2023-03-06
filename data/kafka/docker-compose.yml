@@ -32,6 +32,11 @@ services:
 
   kafka-rest-proxy:
     image: confluentinc/cp-kafka-rest:7.3.2
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
     environment:
       KAFKA_REST_HOST_NAME: kafka-rest-proxy
       KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
