@@ -31,7 +31,7 @@ services:
       - kafka-secrets:/etc/kafka/secrets
 
   kafka-rest-proxy:
-    image: confluentinc/cp-kafka-rest:7.3.0
+    image: confluentinc/cp-kafka-rest:7.3.2
     environment:
       KAFKA_REST_HOST_NAME: kafka-rest-proxy
       KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
