@@ -24,4 +24,6 @@ services:
       - internal
     restart: unless-stopped
     volumes:
-      - ./config:/config
+      - speedtest-tracker-config:/config
+volumes:
+  speedtest-tracker-config: null
