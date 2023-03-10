@@ -73,7 +73,7 @@ services:
     restart: unless-stopped
     volumes:
       - schema-registry-secrets:/etc/schema-registry/secrets
-    
+
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.6.0
     depends_on:
@@ -87,6 +87,7 @@ services:
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
       KAFKA_CLUSTERS_0_SCHEMANAMETEMPLATE: '%s-value'
       SERVER_FORWARDHEADERSSTRATEGY: native
+      DYNAMIC_CONFIG_ENABLED: true
     healthcheck:
       test: wget --no-verbose --tries=1 --spider  http://localhost:8080/actuator/health
     labels:
