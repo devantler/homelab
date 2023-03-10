@@ -14,7 +14,7 @@ services:
       DB_USERNAME: postgres
     healthcheck:
       test: curl --fail http://localhost || exit 1
-    image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.6
+    image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.8
     labels:
       traefik.enable: 'true'
       traefik.http.routers.speedtest-tracker.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
