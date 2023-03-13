@@ -14,6 +14,7 @@ services:
             - '--entrypoints.http.address=:80'
             - '--entrypoints.https.address=:443'
             - '--entrypoints.postgres.address=:5432'
+            - '--entrypoints.kafka.address=:9092'
             - '--entrypoints.https.http.tls=true'
             - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
             - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
@@ -40,6 +41,7 @@ services:
             - '80:80'
             - '443:443'
             - 5432:5432/tcp
+            - 9092:9092/tcp
         restart: unless-stopped
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro

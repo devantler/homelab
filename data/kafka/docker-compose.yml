@@ -24,6 +24,11 @@ services:
       test: nc -z localhost 9092 || exit -1
     networks:
       - internal
+      - public
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.kafka.entrypoints: kafka
+      traefik.tcp.routers.kafka.rule: Host(`*`)
     restart: unless-stopped
     volumes:
       - kafka-logs:/tmp/kafka-logs
