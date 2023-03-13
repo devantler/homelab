@@ -28,7 +28,7 @@ services:
     labels:
       traefik.enable: true
       traefik.tcp.routers.kafka.entrypoints: kafka
-      traefik.tcp.routers.kafka.rule: Host(`*`)
+      traefik.tcp.routers.kafka.rule: HostSNI(`*`)
     restart: unless-stopped
     volumes:
       - kafka-logs:/tmp/kafka-logs
@@ -52,7 +52,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.kafka.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-      traefik.http.routers.kafka.rule: HostSNI(`kafka.${DOMAIN?}`)
+      traefik.http.routers.kafka.rule: Host(`kafka.${DOMAIN?}`)
     networks:
       - public
       - internal
