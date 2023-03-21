@@ -44,6 +44,8 @@ services:
     networks:
       - internal
       - public
+    ports:
+      - 9002:9002
     restart: unless-stopped
     volumes:
       - datahub-plugins:/etc/datahub/plugins
