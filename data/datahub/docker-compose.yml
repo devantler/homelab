@@ -41,6 +41,8 @@ services:
       traefik.enable: true
       traefik.http.routers.datahub.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.datahub.rule: Host(`datahub.${DOMAIN?}`)
+      traefik.http.middlewares.crossoriginallow.headers.customresponseheaders.Access-Control-Allow-Origin: '*'
+      traefik.http.routers.datahub.middlewares: cors@file
     networks:
       - internal
       - public
