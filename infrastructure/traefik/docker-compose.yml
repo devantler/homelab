@@ -28,7 +28,7 @@ services:
             CF_API_KEY: ${CF_API_KEY}
         healthcheck:
             test: traefik healthcheck --ping
-        image: traefik:v2.9
+        image: traefik:v2.10
         labels:
             traefik.enable: true
             traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
