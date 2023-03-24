@@ -126,7 +126,7 @@ services:
       POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD?}
       POSTGRES_PORT: 5432
       POSTGRES_USERNAME: postgres
-    image: acryldata/datahub-postgres-setup:v0.10.0
+    image: acryldata/datahub-postgres-setup:v0.10.1
     networks:
       - internal
 volumes:
