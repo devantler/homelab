@@ -116,7 +116,7 @@ services:
     environment:
       DATAHUB_PRECREATE_TOPICS: false
       KAFKA_BOOTSTRAP_SERVER: kafka:9092
-    image: linkedin/datahub-kafka-setup:v0.10.0
+    image: linkedin/datahub-kafka-setup:v0.10.1
     networks:
       - internal
   postgres-setup:
