@@ -101,7 +101,7 @@ services:
       GRAPH_SERVICE_IMPL: elasticsearch
       KAFKA_BOOTSTRAP_SERVER: kafka:9092
       KAFKA_SCHEMAREGISTRY_URL: http://schema-registry:8081
-    image: acryldata/datahub-upgrade:v0.10.0
+    image: acryldata/datahub-upgrade:v0.10.1
     networks:
       - internal
   elasticsearch-setup:
