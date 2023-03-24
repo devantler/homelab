@@ -73,7 +73,7 @@ services:
       MCE_CONSUMER_ENABLED: true
       PE_CONSUMER_ENABLED: true
       UI_INGESTION_ENABLED: true
-    image: linkedin/datahub-gms:v0.10.0
+    image: linkedin/datahub-gms:v0.10.1
     networks:
       - internal
     restart: unless-stopped
