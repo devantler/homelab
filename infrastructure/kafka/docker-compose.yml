@@ -51,10 +51,8 @@ services:
     networks:
       - internal
       - public
-    labels:
-      traefik.enable: true
-      traefik.tcp.routers.kafka.entrypoints: kafka
-      traefik.tcp.routers.kafka.rule: HostSNI(`*`)
+    ports:
+      - 9092:9092/tcp
     restart: unless-stopped
     volumes:
       - kafka-logs:/tmp/kafka-logs
@@ -109,4 +107,3 @@ volumes:
   kafka-logs: null
   kafka-secrets: null
   schema-registry-secrets: null
-

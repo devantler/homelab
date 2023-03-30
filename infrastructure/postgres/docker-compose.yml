@@ -27,10 +27,8 @@ services:
     healthcheck:
       test: pg_isready -U postgres
     image: postgres:15.2
-    labels:
-      traefik.enable: true
-      traefik.tcp.routers.postgres.entrypoints: postgres
-      traefik.tcp.routers.postgres.rule: HostSNI(`*`)
+    ports:
+      - 5432:5432/tcp
     networks:
       - internal
       - public
