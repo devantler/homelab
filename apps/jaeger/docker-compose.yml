@@ -28,3 +28,8 @@ services:
     networks:
       - public
       - internal
+    volumes:
+      - tmp:/tmp
+
+volumes:
+  tmp:
