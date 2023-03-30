@@ -27,6 +27,8 @@ services:
       DASHBOARD__LINKS__1__URL: https://pgweb.devantler.com/
       DASHBOARD__LINKS__2__NAME: DataHub
       DASHBOARD__LINKS__2__URL: https://datahub.devantler.com/
+      DASHBOARD__LINKS__3__NAME: Jaeger
+      DASHBOARD__LINKS__3__URL: https://jaeger.devantler.com/
       DATASTORE__TYPE: SQL
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=movies;Username=postgres;Password=${POSTGRES_PASSWORD?}
