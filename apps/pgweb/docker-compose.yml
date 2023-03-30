@@ -1,0 +1,22 @@
+networks:
+  public:
+    external: true
+
+services:
+  pgweb:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD?}@postgres:5432?sslmode=disable
+    healthcheck:
+      interval: 5s
+      test: [ "CMD", "nc", "-vz", "127.0.0.1", "8081" ]
+    image: sosedoff/pgweb:0.14.0
+    labels:
+      traefik.enable: true
+      traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.pgweb.rule: Host(`pgweb.${DOMAIN?}`)
+    networks:
+      - public
+    restart: unless-stopped
