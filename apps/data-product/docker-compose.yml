@@ -1,0 +1,18 @@
+networks:
+  internal:
+    external: true
+  public:
+    external: true
+services:
+  contoso-university-dp:
+    image: ghcr.io/devantler/data-product:v0.0.5
+    networks:
+      - internal
+      - public
+    labels:
+      traefik.enable: true
+      traefik.http.routers.contoso-university-dp.entrypoints: https
+      traefik.http.routers.contoso-university-dp.rule: Host(`contoso-university-dp.devantler.com`)
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/app/config.yaml

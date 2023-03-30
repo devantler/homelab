@@ -1,0 +1,71 @@
+Name: Contoso University Data Product
+Description: A data product to query and manage students and courses at the Contoso University.
+Version: v0.0.1
+PublicUrl: https://contoso-university-dp.devantler.com
+
+License:
+  Name: MIT
+  Url: https://opensource.org/licenses/MIT
+
+Owner:
+  Name: Nikolai Emil Damm
+  Email: nikolaiemildamm@icloud.com
+  Organisation: Devantler Software
+  Phone: "+45 41240202"
+  Website: https://devantler.com
+
+FeatureFlags:
+  EnableDashboard: true
+  EnableApis:
+    - Rest
+    - GraphQL
+  EnableCaching: true
+  EnableDataIngestion: true
+  EnableDataCatalog: true
+  EnableDataEgestion: false # TODO: #143 Enable feature gated data publication with configured pub/sub
+  EnableTracing: false # TODO: #141 Enable feature gated tracing with OpenTelemetry and Jaeger
+  EnableMetrics: false # TODO: #140 Enable feature gated metrics with Prometheus and Grafana
+  EnableAuthentication: false # TODO: #138 Enable feature gated authentication with Duende IdentityServer and OpenID Connect
+  EnableAuthorisation: false # TODO: #137 Enable feature gated authorisation with Duende IdentityServer and OpenID Connect
+  EnableWebhooks: false # TODO: Enable feature gated webhooks
+
+Dashboard:
+  CSPFrameAncestors:
+    - https://identity.chillicream.com
+  Links:
+    - Name: Kafka
+      Url: https://kafka-ui.devantler.com/
+    - Name: pgweb
+      Url: https://pgweb.devantler.com/
+    - Name: DataHub
+      Url: https://datahub.devantler.com/
+  
+DataStore:
+  Type: SQL
+  Provider: PostgreSQL
+  ConnectionString: Host=postgres;Port=5432;Database=contoso-university;Username=postgres;Password=Jepfa202042
+
+CacheStore:
+  Type: InMemory
+
+SchemaRegistry:
+  Type: Kafka
+  Url: https://schema-registry.devantler.com
+  Schema:
+    Subject: contoso-university-value
+    Version: 1
+
+DataCatalog:
+  Type: DataHub
+  Url: https://datahub.devantler.com
+  AccessToken: eyJhbGciOiJIUzI1NiJ9.eyJhY3RvclR5cGUiOiJVU0VSIiwiYWN0b3JJZCI6ImRldmFudGxlciIsInR5cGUiOiJQRVJTT05BTCIsInZlcnNpb24iOiIyIiwianRpIjoiYTI2NDJhODgtODI1ZC00N2JiLTkwN2ItNWQxMDA2NTY4Y2IzIiwic3ViIjoiZGV2YW50bGVyIiwiaXNzIjoiZGF0YWh1Yi1tZXRhZGF0YS1zZXJ2aWNlIn0.RCPf7ETx3MfzY1Wfs2aMT6_beRFWOvx82ACfDi1_9Ho
+
+DataIngestors:
+  - Type: Local
+    FilePath: assets/data/contoso-university-single.json
+  - Type: Local
+    FilePath: assets/data/contoso-university-multiple.json
+  - Type: Kafka
+    GroupId: contoso-university
+    Topic: contoso-university
+    Servers: kafka:9092
