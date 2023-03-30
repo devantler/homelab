@@ -11,8 +11,6 @@ services:
       - public
     labels:
       traefik.enable: true
-      traefik.http.routers.contoso-university-dp.entrypoints: https
-      traefik.http.routers.contoso-university-dp.rule: Host(`contoso-university-dp.devantler.com`)
+      traefik.http.routers.contoso-university-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.contoso-university-dp.rule: Host(`${DOMAIN?}.devantler.com`)
     restart: unless-stopped
-    volumes:
-      - ./config.yaml:/app/config.yaml
