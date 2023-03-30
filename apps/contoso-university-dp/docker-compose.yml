@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   contoso-university-dp:
-    image: ghcr.io/devantler/data-product:v0.0.7
+    image: ghcr.io/devantler/data-product:v0.0.8
     networks:
       - internal
       - public
@@ -49,9 +49,8 @@ services:
       DATAINGESTORS__2__TOPIC: contoso-university
       DATAINGESTORS__2__SERVERS: kafka:9092
       METRICSSYSTEM__TYPE: Console
-      TRACINGSYSTEM__TYPE: Jaeger
-      TRACINGSYSTEM__HOST: jaeger
-      TRACINGSYSTEM__PORT: 6831
+      TRACINGSYSTEM__TYPE: OpenTelemetry
+      TRACINGSYSTEM__ENDPOINT: http://jaeger:4317
       FEATUREFLAGS__ENABLEDASHBOARD: true
       FEATUREFLAGS__ENABLEAPIS__0: Rest
       FEATUREFLAGS__ENABLEAPIS__1: GraphQL
