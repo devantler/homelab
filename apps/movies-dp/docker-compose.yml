@@ -10,8 +10,8 @@ services:
       - internal
       - public
     environment:
-      NAME: Contoso University Data Product
-      DESCRIPTION: A data product to query and manage students and courses at the Contoso University.
+      NAME: Movies Data Product
+      DESCRIPTION: A data product to query and manage movies.
       RELEASE: v0.0.1
       PUBLICURL: https://movies-dp.${DOMAIN?}
       LICENSE__NAME: MIT
