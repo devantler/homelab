@@ -10,6 +10,10 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true
       - LOG_LEVEL=debug
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.jaeger.rule: Host(`jaeger.${DOMAIN}`)
     networks:
       - public
       - internal
