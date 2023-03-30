@@ -1,0 +1,61 @@
+networks:
+  internal:
+    external: true
+  public:
+    external: true
+services:
+  movies-dp:
+    image: ghcr.io/devantler/data-product:main
+    networks:
+      - internal
+      - public
+    environment:
+      NAME: Contoso University Data Product
+      DESCRIPTION: A data product to query and manage students and courses at the Contoso University.
+      RELEASE: v0.0.1
+      PUBLICURL: https://movies-dp.${DOMAIN?}
+      LICENSE__NAME: MIT
+      LICENSE__URL: https://opensource.org/licenses/MIT
+      OWNER__NAME: ${OWNER_NAME?}
+      OWNER__EMAIL: ${OWNER_EMAIL?}
+      OWNER__ORGANISATION: ${OWNER_ORGANISATION?}
+      OWNER__PHONE: ${OWNER_PHONE?}
+      OWNER__WEBSITE: ${OWNER_WEBSITE?}
+      DASHBOARD__LINKS__0__NAME: Kafka
+      DASHBOARD__LINKS__0__URL: https://kafka-ui.devantler.com/
+      DASHBOARD__LINKS__1__NAME: pgweb
+      DASHBOARD__LINKS__1__URL: https://pgweb.devantler.com/
+      DASHBOARD__LINKS__2__NAME: DataHub
+      DASHBOARD__LINKS__2__URL: https://datahub.devantler.com/
+      DATASTORE__TYPE: SQL
+      DATASTORE__PROVIDER: PostgreSQL
+      DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=movies;Username=postgres;Password=${POSTGRES_PASSWORD?}
+      CACHESTORE__TYPE: InMemory
+      SCHEMAREGISTRY__TYPE: Kafka
+      SCHEMAREGISTRY__URL: https://schema-registry.devantler.com
+      SCHEMAREGISTRY__SCHEMA__SUBJECT: movies-value
+      SCHEMAREGISTRY__SCHEMA__VERSION: 1
+      DATACATALOG__TYPE: DataHub
+      DATACATALOG__URL: https://datahub.devantler.com
+      DATACATALOG__ACCESSTOKEN: ${DATACATALOG_ACCESSTOKEN?}
+      DATAINGESTORS__0__TYPE: Kafka
+      DATAINGESTORS__0__GROUPID: movies
+      DATAINGESTORS__0__TOPIC: movies
+      DATAINGESTORS__0__SERVERS: kafka:9092
+      FEATUREFLAGS__ENABLEDASHBOARD: true
+      FEATUREFLAGS__ENABLEAPIS__0: Rest
+      FEATUREFLAGS__ENABLEAPIS__1: GraphQL
+      FEATUREFLAGS__ENABLECACHING: true
+      FEATUREFLAGS__ENABLEDATAINGESTION: true
+      FEATUREFLAGS__ENABLEDATACATALOG: true
+      FEATUREFLAGS__ENABLEDATAEGESTION: false
+      FEATUREFLAGS__ENABLETRACING: false
+      FEATUREFLAGS__ENABLEMETRICS: false
+      FEATUREFLAGS__ENABLEAUTHENTICATION: false
+      FEATUREFLAGS__ENABLEAUTHORISATION: false
+      FEATUREFLAGS__ENABLEWEBHOOKS: false
+    labels:
+      traefik.enable: true
+      traefik.http.routers.movies-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.movies-dp.rule: Host(`movies-dp.${DOMAIN?}`)
+    restart: unless-stopped
