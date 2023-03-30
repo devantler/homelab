@@ -12,5 +12,5 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.contoso-university-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-      traefik.http.routers.contoso-university-dp.rule: Host(`${DOMAIN?}.devantler.com`)
+      traefik.http.routers.contoso-university-dp.rule: Host(`contoso-university-dp.${DOMAIN?}`)
     restart: unless-stopped
