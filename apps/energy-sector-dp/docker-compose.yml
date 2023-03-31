@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   energy-sector-dp:
-    image: ghcr.io/devantler/data-product:v0.0.14
+    image: ghcr.io/devantler/data-product:v0.0.15
     networks:
       - internal
       - public
@@ -44,10 +44,10 @@ services:
       DATAINGESTORS__0__GROUPID: energy-sector
       DATAINGESTORS__0__TOPIC: energy-sector
       DATAINGESTORS__0__SERVERS: kafka:9092
-      METRICSSYSTEM__TYPE: OpenTelemetry
-      METRICSSYSTEM__ENDPOINT: http://prometheus:9090
-      TRACINGSYSTEM__TYPE: OpenTelemetry
-      TRACINGSYSTEM__ENDPOINT: http://jaeger:4317
+      METRICSEXPORTER__TYPE: OpenTelemetry
+      METRICSEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
+      TRACINGEXPORTER__TYPE: OpenTelemetry
+      TRACINGEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
       FEATUREFLAGS__ENABLEDASHBOARD: true
       FEATUREFLAGS__ENABLEAPIS__0: Rest
       FEATUREFLAGS__ENABLEAPIS__1: GraphQL
