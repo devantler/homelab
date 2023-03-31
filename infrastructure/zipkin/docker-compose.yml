@@ -2,7 +2,7 @@ networks:
   public:
     external: true
   internal:
-    external: false
+    external: true
 
 services:
   zipkin:
