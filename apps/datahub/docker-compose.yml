@@ -18,7 +18,7 @@ services:
       METADATA_AUDIT_EVENT_NAME: MetadataAuditEvent_v4
       METADATA_CHANGE_LOG_VERSIONED_TOPIC_NAME: MetadataChangeLog_Versioned_v1
       SCHEMA_REGISTRY_URL: http://schema-registry:8081
-    image: acryldata/datahub-actions:v0.0.13
+    image: acryldata/datahub-actions:v0.0.12
     networks:
       - internal
     restart: unless-stopped
