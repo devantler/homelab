@@ -3,6 +3,11 @@ receivers:
     protocols:
       grpc:
 
+  otlp/spanmetrics:
+    protocols:
+      grpc:
+        endpoint: "localhost:65535"
+
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
@@ -16,6 +21,8 @@ exporters:
 
 processors:
   batch:
+  spanmetrics:
+    metrics_exporter: prometheus
 
 extensions:
   health_check:
@@ -29,9 +36,8 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [spanmetrics, batch]
       exporters: [logging, jaeger]
     metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [logging, prometheus]
+      receivers: [otlp/spanmetrics]
+      exporters: [prometheus]
