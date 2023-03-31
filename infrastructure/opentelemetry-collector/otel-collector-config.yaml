@@ -1,8 +1,8 @@
 receivers:
   otlp:
-  protocols:
-    grpc:
-    http:
+    protocols:
+      grpc:
+      http:
       
   # Dummy receiver that's never used, because a pipeline is required to have one.
   otlp/spanmetrics:
