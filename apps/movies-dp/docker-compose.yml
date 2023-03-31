@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   movies-dp:
-    image: ghcr.io/devantler/data-product:v0.0.13
+    image: ghcr.io/devantler/data-product:v0.0.14
     networks:
       - internal
       - public
@@ -44,7 +44,8 @@ services:
       DATAINGESTORS__0__GROUPID: movies
       DATAINGESTORS__0__TOPIC: movies
       DATAINGESTORS__0__SERVERS: kafka:9092
-      METRICSSYSTEM__TYPE: Prometheus
+      METRICSSYSTEM__TYPE: OpenTelemetry
+      METRICSSYSTEM__ENDPOINT: http://prometheus:9090
       TRACINGSYSTEM__TYPE: OpenTelemetry
       TRACINGSYSTEM__ENDPOINT: http://jaeger:4317
       FEATUREFLAGS__ENABLEDASHBOARD: true
