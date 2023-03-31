@@ -1,0 +1,8 @@
+services:
+  zipkin-all-in-one:
+    image: openzipkin/zipkin:2.24
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.http.routers.zipkin.rule: Host(`zipkin.${DOMAIN}`)
+      traefik.http.routers.zipkin.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
