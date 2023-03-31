@@ -30,7 +30,7 @@ services:
       DASHBOARD__LINKS__3__NAME: Jaeger
       DASHBOARD__LINKS__3__URL: https://jaeger.devantler.com/
       DASHBOARD__LINKS__4__NAME: Grafana
-      DASHBOARD__LINKS__4__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m&from=1680273182792&to=1680274082793
+      DASHBOARD__LINKS__4__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m
       DATASTORE__TYPE: SQL
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=contoso-university;Username=postgres;Password=${POSTGRES_PASSWORD?}
