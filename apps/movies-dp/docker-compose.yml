@@ -44,7 +44,7 @@ services:
       DATAINGESTORS__0__GROUPID: movies
       DATAINGESTORS__0__TOPIC: movies
       DATAINGESTORS__0__SERVERS: kafka:9092
-      METRICSSYSTEM__TYPE: Console
+      METRICSSYSTEM__TYPE: Prometheus
       TRACINGSYSTEM__TYPE: OpenTelemetry
       TRACINGSYSTEM__ENDPOINT: http://jaeger:4317
       FEATUREFLAGS__ENABLEDASHBOARD: true

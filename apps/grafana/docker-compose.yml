@@ -1,3 +1,9 @@
+networks:
+  public:
+    external: true
+  internal:
+    external: true
+
 services:
   grafana:
     image: grafana/grafana:5.4.5
@@ -7,6 +13,9 @@ services:
       traefik.enable: "true"
       traefik.http.routers.grafana.rule: "Host(`grafana.${DOMAIN?}}`)"
       traefik.http.routers.grafana.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+    networks:
+      - public
+      - internal
     environment:
       - GF_SECURITY_ADMIN_USER=${USER?}
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD?}
