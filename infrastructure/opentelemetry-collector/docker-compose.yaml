@@ -15,3 +15,5 @@ services:
       - 55679:55679 # zpages extension
     networks:
       - internal
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml

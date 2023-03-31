@@ -20,5 +20,6 @@ services:
     restart: unless-stopped
     volumes:
       - prometheus:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
 volumes:
   prometheus:
