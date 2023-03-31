@@ -4,11 +4,6 @@ receivers:
       grpc:
       http:
 
-  otlp/spanmetrics:
-    protocols:
-      grpc:
-        endpoint: "localhost:65535"
-
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
@@ -37,10 +32,9 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [span, batch]
+      processors: [batch]
       exporters: [logging, jaeger]
-    # The exporter name in this pipeline must match the spanmetrics.metrics_exporter name.
-    # The receiver is just a dummy and never used; added to pass validation requiring at least one receiver in a pipeline.
-    metrics/spanmetrics:
-      receivers: [otlp/spanmetrics]
-      exporters: [prometheus]
+    metrics:
+      receivers: [otlp]
+      processors: [span, batch]
+      exporters: [logging, prometheus]
