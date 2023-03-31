@@ -5,6 +5,11 @@ networks:
 services:
   opentelemetry-collector:
     image: otel/opentelemetry-collector:0.74.0
+    command:
+      [
+        "--config=/etc/otel-collector-config.yaml",
+        "${OTELCOL_ARGS}"
+      ]
     restart: unless-stopped
     ports:
       - 1888:1888 # pprof extension
