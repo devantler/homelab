@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
     labels:
       traefik.enable: "true"
-      traefik.http.routers.grafana.rule: "Host(`grafana.${DOMAIN?}}`)"
+      traefik.http.routers.grafana.rule: "Host(`grafana.${DOMAIN?}`)"
       traefik.http.routers.grafana.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
     networks:
       - public
