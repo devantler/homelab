@@ -42,5 +42,4 @@ service:
       exporters: [prometheus]
     metrics/spanmetrics:
       receivers: [otlp/spanmetrics]
-      processors: [batch, spanmetrics]
       exporters: [prometheus]
