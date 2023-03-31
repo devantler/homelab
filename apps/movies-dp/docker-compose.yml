@@ -34,7 +34,8 @@ services:
       DATASTORE__TYPE: SQL
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=movies;Username=postgres;Password=${POSTGRES_PASSWORD?}
-      CACHESTORE__TYPE: InMemory
+      CACHESTORE__TYPE: Redis
+      CACHESTORE__SERVER: redis:6379
       SCHEMAREGISTRY__TYPE: Kafka
       SCHEMAREGISTRY__URL: https://schema-registry.devantler.com
       SCHEMAREGISTRY__SCHEMA__SUBJECT: movies-value
