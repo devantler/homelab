@@ -3,7 +3,7 @@ receivers:
     protocols:
       grpc:
       http:
-      
+
   # Dummy receiver that's never used, because a pipeline is required to have one.
   otlp/spanmetrics:
     protocols:
@@ -19,7 +19,7 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
 
-  logging: 
+  logging:
 
 processors:
   batch:
@@ -42,4 +42,7 @@ service:
       exporters: [jaeger]
     metrics/spanmetrics:
       receivers: [otlp/spanmetrics]
+      exporters: [prometheus]
+    metrics:
+      receivers: [otlp]
       exporters: [prometheus]
