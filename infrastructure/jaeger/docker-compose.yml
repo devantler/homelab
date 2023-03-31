@@ -8,8 +8,8 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:1.43.0
     environment:
-      - COLLECTOR_OTLP_ENABLED=true
-      - LOG_LEVEL=debug
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
     labels:
       traefik.enable: true
       traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
