@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   contoso-university-dp:
-    image: ghcr.io/devantler/data-product:v0.0.18
+    image: ghcr.io/devantler/data-product:v0.0.19
     networks:
       - internal
       - public
@@ -13,7 +13,6 @@ services:
       NAME: Contoso University Data Product
       DESCRIPTION: A data product to query and manage students and courses at the Contoso University.
       RELEASE: v0.0.1
-      PUBLICURL: https://contoso-university-dp.${DOMAIN?}
       LICENSE__NAME: MIT
       LICENSE__URL: https://opensource.org/licenses/MIT
       OWNER__NAME: ${OWNER_NAME?}
@@ -30,7 +29,7 @@ services:
       DASHBOARD__LINKS__3__NAME: Jaeger
       DASHBOARD__LINKS__3__URL: https://jaeger.devantler.com/
       DASHBOARD__LINKS__4__NAME: Grafana
-      DASHBOARD__LINKS__4__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m
+      DASHBOARD__LINKS__4__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m&kiosk=tv
       DATASTORE__TYPE: SQL
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=contoso-university;Username=postgres;Password=${POSTGRES_PASSWORD?}
