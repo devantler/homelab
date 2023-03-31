@@ -6,10 +6,9 @@ services:
   opentelemetry-collector:
     image: otel/opentelemetry-collector:0.74.0
     command: --config=/etc/otel-collector-config.yaml
-
     restart: unless-stopped
     ports:
-      - 4317:4317 # OTLP gRPC receiver
+      - 4317:4317
     networks:
       - internal
     volumes:
