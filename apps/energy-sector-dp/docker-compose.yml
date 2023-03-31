@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   energy-sector-dp:
-    image: ghcr.io/devantler/data-product:v0.0.16
+    image: ghcr.io/devantler/data-product:v0.0.17
     networks:
       - internal
       - public
