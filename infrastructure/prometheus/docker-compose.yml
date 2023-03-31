@@ -7,7 +7,6 @@ networks:
 services:
   prometheus:
     image: prom/prometheus:v2.43.0
-    container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
