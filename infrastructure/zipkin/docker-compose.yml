@@ -13,6 +13,8 @@ services:
       traefik.http.routers.zipkin.rule: Host(`zipkin.${DOMAIN?}`)
       traefik.http.routers.zipkin.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.services.zipkin.loadbalancer.server.port: 9411
+    environment:
+      HEALTHCHECK_IP: 127.0.0.1
     networks:
       - public
       - internal
