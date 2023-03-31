@@ -1,0 +1,12 @@
+services:
+  grafana:
+    image: grafana/grafana:5.4.2
+    container_name: grafana
+    restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.grafana.rule: "Host(`grafana.${DOMAIN?}}`)"
+      traefik.http.routers.grafana.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+    environment:
+      - GF_SECURITY_ADMIN_USER=${USER?}
+      - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD?}
