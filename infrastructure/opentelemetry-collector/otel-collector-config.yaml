@@ -1,20 +1,22 @@
 receivers:
-  jaeger:
-    protocols:
-      thrift_http:
-        endpoint: "0.0.0.0:14278"
-
   otlp:
     protocols:
       grpc:
       http:
 
+  otlp/spanmetrics:
+    protocols:
+      grpc:
+        endpoint: "localhost:65535"
+
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
 
+  logging:
+
   jaeger:
-    endpoint: "jaeger:14250"
+    endpoint: jaeger:14250
     tls:
       insecure: true
 
@@ -23,12 +25,20 @@ processors:
   span:
     metrics_exporter: prometheus
 
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
 service:
+  extensions: [pprof, zpages, health_check]
   pipelines:
     traces:
-      receivers: [otlp, jaeger]
+      receivers: [otlp]
       processors: [span, batch]
-      exporters: [jaeger]
+      exporters: [logging, jaeger]
     # The exporter name in this pipeline must match the spanmetrics.metrics_exporter name.
     # The receiver is just a dummy and never used; added to pass validation requiring at least one receiver in a pipeline.
     metrics/spanmetrics:
