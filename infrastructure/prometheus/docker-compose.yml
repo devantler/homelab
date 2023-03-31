@@ -11,7 +11,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
-      - traefik
+      - public
       - internal
     labels:
       traefik.enable: 'true'
