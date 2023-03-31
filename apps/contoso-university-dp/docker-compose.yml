@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   contoso-university-dp:
-    image: datamesh:latest
+    image: ghcr.io/devantler/data-product:v0.0.12
     networks:
       - internal
       - public
