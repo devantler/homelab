@@ -1,5 +1,5 @@
 networks:
-  traefik:
+  public:
     external: true
   internal:
     external: true
