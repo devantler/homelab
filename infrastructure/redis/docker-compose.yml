@@ -10,3 +10,8 @@ services:
       - 6379:6379
     networks:
       - internal
+    volumes:
+      - data:/data
+
+volumes:
+  data:
