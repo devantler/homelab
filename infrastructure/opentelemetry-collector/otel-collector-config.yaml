@@ -28,21 +28,19 @@ processors:
 
 extensions:
   health_check:
-  pprof:
-    endpoint: :1888
-  zpages:
-    endpoint: :55679
 
 service:
-  extensions: [pprof, zpages, health_check]
+  extensions: [health_check]
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [spanmetrics, batch]
+      processors: [batch, spanmetrics]
       exporters: [jaeger]
-    metrics/spanmetrics:
-      receivers: [otlp/spanmetrics]
-      exporters: [prometheus]
     metrics:
       receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
+    metrics/spanmetrics:
+      receivers: [otlp/spanmetrics]
+      processors: [batch, spanmetrics]
       exporters: [prometheus]
