@@ -17,7 +17,6 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.prometheus.rule: Host(`prometheus.${DOMAIN?}`)
       traefik.http.routers.prometheus.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
-      traefik.http.services.prometheus.loadbalancer.server.port: 9090
     restart: unless-stopped
     volumes:
       - prometheus:/prometheus
