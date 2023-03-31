@@ -83,7 +83,7 @@ services:
     restart: unless-stopped
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.3.2
+    image: confluentinc/cp-schema-registry:7.3.3
     depends_on:
       kafka:
         condition: service_healthy
