@@ -15,4 +15,4 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     healthcheck:
-      test: curl -f http://localhost:13133 || exit 1
+      test: wget -qO- http://localhost:13133 || exit 1
