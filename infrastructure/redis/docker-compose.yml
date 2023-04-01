@@ -12,6 +12,8 @@ services:
       - internal
     volumes:
       - data:/data
+    healthcheck:
+      test: redis-cli ping || exit 1
 
 volumes:
   data:
