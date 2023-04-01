@@ -31,6 +31,7 @@ services:
       SPAN_STORAGE_TYPE: elasticsearch
       ES_SERVER_URLS: http://elasticsearch:9200
       METRICS_STORAGE_TYPE: prometheus
+      PROMETHEUS_SERVER_URL: http://prometheus:9090
     ports:
       - 16685:16685 # The port of the query's gRPC server
       - 16687:16687 # The port for the query's admin server, including health check, /metrics, etc.
