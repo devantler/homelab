@@ -18,7 +18,7 @@ services:
       - internal
     restart: unless-stopped
     healthcheck:
-      test: curl -f http://localhost:14269/ || exit 1
+      test: curl -f http://localhost:14269 || exit 1
 
   jaeger-query:
     image: jaegertracing/jaeger-query:1.43.0
@@ -39,4 +39,4 @@ services:
       - internal
     restart: unless-stopped
     healthcheck:
-      test: curl -f http://localhost:16687/ || exit 1
+      test: curl -f http://localhost:16687 || exit 1
