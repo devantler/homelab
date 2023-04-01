@@ -6,7 +6,7 @@ networks:
 
 services:
   jaeger-collector:
-    image: jaegertracing/jaeger-collector:1.43
+    image: jaegertracing/jaeger-collector:1.43.0
     environment:
       SPAN_STORAGE_TYPE: elasticsearch
       ES_SERVER_URLS: http://elasticsearch:9200
@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
 
   jaeger-query:
-    image: jaegertracing/jaeger-query:1.43
+    image: jaegertracing/jaeger-query:1.43.0
     labels:
       traefik.enable: true
       traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
