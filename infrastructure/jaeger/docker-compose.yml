@@ -15,6 +15,7 @@ services:
       traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
       traefik.http.routers.jaeger.rule: Host(`jaeger.${DOMAIN}`)
       traefik.http.services.jaeger.loadbalancer.server.port: 16686
+    restart: unless-stopped
     ports:
       - 14250:14250 # jaeger query over gRPC
       - 14268:14268 # jaeger agent server to receive spans in Thrift binary encoding over UDP
