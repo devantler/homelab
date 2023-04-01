@@ -4,12 +4,15 @@ networks:
 
 services:
   opentelemetry-collector:
-    image:  otel/opentelemetry-collector-contrib:0.74.0
+    image: otel/opentelemetry-collector-contrib:0.74.0
     command: --config=/etc/otel-collector-config.yaml
     restart: unless-stopped
     ports:
       - 4317:4317
+      - 13133:13133
     networks:
       - internal
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    healthcheck:
+      test: curl -f http://localhost:13133 || exit 1
