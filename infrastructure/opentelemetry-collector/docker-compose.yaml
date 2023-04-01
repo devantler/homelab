@@ -14,5 +14,3 @@ services:
       - internal
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:13133" ]
