@@ -15,5 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - plantuml-server:/plantuml
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
 volumes:
   plantuml-server: null
