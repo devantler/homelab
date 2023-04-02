@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   movies-dp:
-    image: ghcr.io/devantler/data-product:v0.0.24
+    image: ghcr.io/devantler/data-product:v0.1.0
     networks:
       - internal
       - public
@@ -47,6 +47,8 @@ services:
       DATAINGESTORS__0__GROUPID: movies
       DATAINGESTORS__0__TOPIC: movies
       DATAINGESTORS__0__SERVERS: kafka:9092
+      LOGGINGEXPORTER__TYPE: OpenTelemetry
+      LOGGINGEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
       METRICSEXPORTER__TYPE: OpenTelemetry
       METRICSEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
       TRACINGEXPORTER__TYPE: OpenTelemetry
@@ -58,6 +60,7 @@ services:
       FEATUREFLAGS__ENABLEDATAINGESTION: true
       FEATUREFLAGS__ENABLEDATACATALOG: true
       FEATUREFLAGS__ENABLEDATAEGESTION: false
+      FEATUREFLAGS__ENABLELOGGING: true
       FEATUREFLAGS__ENABLETRACING: true
       FEATUREFLAGS__ENABLEMETRICS: true
       FEATUREFLAGS__ENABLEAUTHENTICATION: false
