@@ -10,6 +10,11 @@ receivers:
       grpc:
         endpoint: localhost:65535
 
+processors:
+  batch:
+  spanmetrics:
+    metrics_exporter: prometheus
+
 exporters:
   jaeger:
     endpoint: jaeger-collector:14250
@@ -18,13 +23,6 @@ exporters:
 
   prometheus:
     endpoint: 0.0.0.0:8889
-
-  logging:
-
-processors:
-  batch:
-  spanmetrics:
-    metrics_exporter: prometheus
 
 extensions:
   health_check:
@@ -35,7 +33,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch, spanmetrics]
-      exporters: [logging, jaeger]
+      exporters: [jaeger]
     metrics:
       receivers: [otlp]
       processors: [batch]
