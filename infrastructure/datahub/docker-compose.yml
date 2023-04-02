@@ -36,7 +36,7 @@ services:
       ELASTIC_CLIENT_PORT: 9200
       JAVA_OPTS: '-Xms512m -Xmx512m -Dhttp.port=9002 -Dconfig.file=datahub-frontend/conf/application.conf -Djava.security.auth.login.config=datahub-frontend/conf/jaas.conf -Dlogback.configurationFile=datahub-frontend/conf/logback.xml -Dlogback.debug=false -Dpidfile.path=/dev/null'
       KAFKA_BOOTSTRAP_SERVER: kafka:9092
-      METADATA_SERVICE_AUTH_ENABLED: false
+      METADATA_SERVICE_AUTH_ENABLED: true
     image: linkedin/datahub-frontend-react:v0.10.1
     labels:
       traefik.enable: true
