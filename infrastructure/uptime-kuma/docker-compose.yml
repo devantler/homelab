@@ -3,7 +3,7 @@ networks:
     external: true
 services:
   uptime-kuma:
-    image: louislam/uptime-kuma:1.21.1
+    image: louislam/uptime-kuma:1.21.2
     labels:
       traefik.enable: true
       traefik.http.routers.uptime-kuma.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
