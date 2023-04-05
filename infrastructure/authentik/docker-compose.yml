@@ -27,6 +27,8 @@ services:
       traefik.http.routers.authentik-server.rule: Host(`authentik.${DOMAIN?}`)
       traefik.http.routers.authentik-server.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.authentik-server.loadbalancer.server.port: 9443
+    healthcheck:
+      test: wget -qO- http://localhost:9443/health/ready || exit 1
   authentik-worker:
     image: ghcr.io/goauthentik/server:2023.3.1
     restart: unless-stopped
@@ -45,6 +47,8 @@ services:
       - media:/media
       - certs:/certs
       - templates:/templates
+    healthcheck:
+      test: [ "CMD", "/lifecycle/ak" ]
 
 volumes:
   media:
