@@ -25,6 +25,7 @@ services:
       traefik.enable: true
       traefik.http.routers.authentik-server.rule: Host(`authentik.${DOMAIN?}`)
       traefik.http.routers.authentik-server.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.services.authentik-server.loadbalancer.server.port: 9443
   authentik-worker:
     image: ghcr.io/goauthentik/server:2023.3.1
     restart: unless-stopped
