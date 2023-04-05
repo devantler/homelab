@@ -10,7 +10,7 @@ services:
     image: nicolargo/glances:3.3.1.1-full
     labels:
       traefik.enable: true
-      traefik.http.routers.glances.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.glances.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
     networks:
       - public

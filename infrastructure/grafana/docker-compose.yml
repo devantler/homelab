@@ -12,7 +12,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.grafana.rule: "Host(`grafana.${DOMAIN?}`)"
-      traefik.http.routers.grafana.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.grafana.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
     networks:
       - public
       - internal

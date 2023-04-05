@@ -15,7 +15,7 @@ services:
     labels:
       traefik.enable: 'true'
       traefik.http.routers.prometheus.rule: Host(`prometheus.${DOMAIN?}`)
-      traefik.http.routers.prometheus.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.prometheus.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
     restart: unless-stopped
     volumes:
       - prometheus:/prometheus

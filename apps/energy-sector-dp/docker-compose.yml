@@ -68,6 +68,6 @@ services:
       FEATUREFLAGS__ENABLEWEBHOOKS: false
     labels:
       traefik.enable: true
-      traefik.http.routers.energy-sector-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.energy-sector-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.energy-sector-dp.rule: Host(`energy-sector-dp.${DOMAIN?}`)
     restart: unless-stopped

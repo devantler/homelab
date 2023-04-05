@@ -7,7 +7,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.plantuml-server.rule: Host(`plantuml.${DOMAIN?}`)
-      traefik.http.routers.plantuml-server.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.plantuml-server.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.plantuml-server.middlewares: plantuml-server-auth
       traefik.http.middlewares.plantuml-server-auth.basicauth.users: ${BASIC_AUTH_USER?}:${BASIC_AUTH_PASSWORD?}
     networks:

@@ -6,7 +6,7 @@ services:
     image: louislam/uptime-kuma:1.21.2
     labels:
       traefik.enable: true
-      traefik.http.routers.uptime-kuma.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.uptime-kuma.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.uptime-kuma.rule: Host(`uptime.${DOMAIN?}`)
     networks:
       - public

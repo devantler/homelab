@@ -29,7 +29,7 @@ services:
         image: traefik:v2.10
         labels:
             traefik.enable: true
-            traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+            traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
             traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
             traefik.http.routers.traefik-dashboard.service: api@internal
         networks:

@@ -9,7 +9,7 @@ services:
       - 9000:9000
     labels:
       traefik.enable: true
-      traefik.http.routers.portainer.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.portainer.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.portainer.rule: Host(`portainer.${DOMAIN}`)
       traefik.http.services.portainer.loadbalancer.server.port: 9000
     networks:

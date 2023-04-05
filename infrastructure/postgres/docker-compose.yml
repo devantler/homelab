@@ -16,7 +16,7 @@ services:
     image: sosedoff/pgweb:0.14.0
     labels:
       traefik.enable: true
-      traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.pgweb.rule: Host(`pgweb.${DOMAIN?}`)
     networks:
       - public

@@ -22,7 +22,7 @@ services:
       test: wget --no-verbose --tries=1 --spider  http://localhost:8080/actuator/health
     labels:
       traefik.enable: true
-      traefik.http.routers.kafka-ui.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.kafka-ui.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.kafka-ui.rule: Host(`kafka-ui.${DOMAIN?}`)
       traefik.http.middlewares.frameallow.headers.customresponseheaders.X-Frame-Options:
       traefik.http.routers.kafka-ui.middlewares: frameallow
@@ -75,7 +75,7 @@ services:
       test: nc -z localhost 8082 || exit -1
     labels:
       traefik.enable: true
-      traefik.http.routers.kafka.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.kafka.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.kafka.rule: Host(`kafka.${DOMAIN?}`)
     networks:
       - public
@@ -94,7 +94,7 @@ services:
       test: nc -z localhost 8081 || exit -1
     labels:
       traefik.enable: true
-      traefik.http.routers.schema-registry.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.schema-registry.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.schema-registry.rule: Host(`schema-registry.${DOMAIN?}`)
     networks:
       - internal

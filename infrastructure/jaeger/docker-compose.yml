@@ -24,7 +24,7 @@ services:
     image: jaegertracing/jaeger-query:1.43.0
     labels:
       traefik.enable: true
-      traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS?}
+      traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.jaeger.rule: Host(`jaeger.${DOMAIN}`)
       traefik.http.services.jaeger.loadbalancer.server.port: 16686
     environment:
