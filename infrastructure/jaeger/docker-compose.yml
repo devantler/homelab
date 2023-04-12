@@ -6,7 +6,7 @@ networks:
 
 services:
   jaeger-collector:
-    image: jaegertracing/jaeger-collector:1.43.0
+    image: jaegertracing/jaeger-collector:1.44.0
     environment:
       SPAN_STORAGE_TYPE: elasticsearch
       ES_SERVER_URLS: http://elasticsearch:9200
