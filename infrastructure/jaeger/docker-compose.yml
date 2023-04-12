@@ -21,7 +21,7 @@ services:
       test: wget -qO- http://localhost:14269 || exit 1
 
   jaeger-query:
-    image: jaegertracing/jaeger-query:1.43.0
+    image: jaegertracing/jaeger-query:1.44.0
     labels:
       traefik.enable: true
       traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
