@@ -6,31 +6,32 @@ This Homelab is a single-server setup, that focuses on ease-of-use over producti
 
 ### Apps
 
-- [Portainer](https://www.portainer.io): Container management software for Docker, Kubernetes and Nomad.
-- [Kafka UI](https://github.com/provectus/kafka-ui): Fast and lightweight web UI for managing Apache Kafka® clusters.
-- [Pi-hole](https://pi-hole.net): Network-wide Ad Blocking
+- [Data Products](https://github.com/devantler/homelab): An implementation of a data product, a Platform as a Service (PaaS), that enables rich interfacing/integrations for a specific data domain.
 - [PlantUML Server](https://github.com/plantuml/plantuml-server): A web application and server to generate PlantUML diagrams on-the-fly.
-
-### Data
-
-- [Postgres](https://www.postgresql.org): A popular SQL Database.
-- [DataHub](https://datahubproject.io): A versatile metadata platform.
-- [Kafka](https://kafka.apache.org): A distributed event streaming platform.
-
-### Game Servers
-
 - [Valheim](https://github.com/lloesche/valheim-server-docker): A dedicated Valheim server.
 
 ### Infrastructure
 
+- [Authentik](https://goauthentik.io): A modern, open-source Identity & Access Management (IAM) solution.
 - [Cloudflared](https://github.com/cloudflare/cloudflared): To tunnel traffic from the internet to the server securely.
+- [DataHub](https://datahubproject.io): A versatile metadata platform.
+- [Elasticsearch](https://www.elastic.co/elasticsearch/): A distributed, RESTful search and analytics engine.
+- [Glances](https://nicolargo.github.io/glances/): Real-time system monitoring tool. (restricted to docker-allocated resources)
+- [Grafana](https://grafana.com): A popular open-source analytics and monitoring solution.
+- [Jaeger](https://www.jaegertracing.io): A distributed tracing system.
+- [Kafka](https://kafka.apache.org): A distributed event streaming platform.
+- [Kafka UI](https://github.com/provectus/kafka-ui): Fast and lightweight web UI for managing Apache Kafka® clusters.
+- [Opentelemetry Collector](https://opentelemetry.io): A vendor-agnostic open-source telemetry data collector.
+- [Pi-hole](https://pi-hole.net): Network-wide Ad Blocking
+- [Portainer](https://www.portainer.io): Container management software for Docker, Kubernetes and Nomad.
+- [Postgres](https://www.postgresql.org): A popular SQL Database.
+- [Prometheus](https://prometheus.io): A popular open-source monitoring solution.
+- [Redis](https://redis.io): An in-memory data structure store.
+- [Speedtest Tracker](https://github.com/alexjustesen/speedtest-tracker): Internet performance tracking application that runs speedtest checks against Ookla's Speedtest service.
 - [Traefik](https://traefik.io/traefik/): Reverse proxy to route traffic to services.
+- [Uptime Kuma](https://github.com/louislam/uptime-kuma): An uptime monitor for self-hosted or external services.
 
 ### Monitoring
-
-- [Uptime Kuma](https://github.com/louislam/uptime-kuma): An uptime monitor for self-hosted or external services.
-- [Glances](https://nicolargo.github.io/glances/): Real-time system monitoring tool. (restricted to docker-allocated resources)
-- [Speedtest Tracker](https://github.com/alexjustesen/speedtest-tracker): Internet performance tracking application that runs speedtest checks against Ookla's Speedtest service.
 
 ## Getting Started
 
