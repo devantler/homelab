@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   kafka-ui:
-    image: provectuslabs/kafka-ui:v0.6.1
+    image: provectuslabs/kafka-ui:v0.6.2
     depends_on:
       kafka:
         condition: service_healthy
