@@ -27,7 +27,7 @@ This Homelab is a single-server setup, that focuses on ease-of-use over producti
 - [Postgres](https://www.postgresql.org): A popular SQL Database.
 - [Prometheus](https://prometheus.io): A popular open-source monitoring solution.
 - [Redis](https://redis.io): An in-memory data structure store.
-- [Speedtest Tracker](https://github.com/alexjustesen/speedtest-tracker): Internet performance tracking application that runs speedtest checks against Ookla's Speedtest service.
+- [Speedtest Tracker](https://github.com/alexjustesen/speedtest-tracker): Internet performance tracking application that runs speed test checks against Ookla's Speedtest service.
 - [Traefik](https://traefik.io/traefik/): Reverse proxy to route traffic to services.
 - [Uptime Kuma](https://github.com/louislam/uptime-kuma): An uptime monitor for self-hosted or external services.
 
