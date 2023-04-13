@@ -4,7 +4,7 @@ networks:
 
 services:
   opentelemetry-collector:
-    image: otel/opentelemetry-collector-contrib:0.75.0
+    image: otel/opentelemetry-collector:0.75.0
     command: --config=/etc/otel-collector-config.yaml
     restart: unless-stopped
     ports:
