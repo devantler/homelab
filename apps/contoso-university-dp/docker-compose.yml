@@ -13,6 +13,7 @@ services:
       NAME: Contoso University Data Product
       DESCRIPTION: A data product to query and manage students and courses at the Contoso University.
       RELEASE: v0.0.1
+      PUBLIC_URL: https://contoso-university-dp.${DOMAIN?}
       LICENSE__NAME: MIT
       LICENSE__URL: https://opensource.org/licenses/MIT
       OWNER__NAME: ${OWNER_NAME?}
@@ -20,6 +21,9 @@ services:
       OWNER__ORGANISATION: ${OWNER_ORGANISATION?}
       OWNER__PHONE: ${OWNER_PHONE?}
       OWNER__WEBSITE: ${OWNER_WEBSITE?}
+      APIS__REST__ENABLEBULKCONTROLLER: true
+      CACHESTORE__SERVER: redis:6379
+      CACHESTORE__TYPE: Redis
       DASHBOARD__LINKS__0__NAME: Kafka
       DASHBOARD__LINKS__0__URL: https://kafka-ui.devantler.com/
       DASHBOARD__LINKS__1__NAME: Postgres
@@ -30,32 +34,30 @@ services:
       DASHBOARD__LINKS__3__URL: https://jaeger.devantler.com/
       DASHBOARD__LINKS__4__NAME: Grafana
       DASHBOARD__LINKS__4__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m&kiosk=tv
-      DATASTORE__TYPE: SQL
-      DATASTORE__PROVIDER: PostgreSQL
-      DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=contoso-university;Username=postgres;Password=${POSTGRES_PASSWORD?}
-      CACHESTORE__TYPE: Redis
-      CACHESTORE__SERVER: redis:6379
-      SCHEMAREGISTRY__TYPE: Kafka
-      SCHEMAREGISTRY__URL: https://schema-registry.devantler.com
-      SCHEMAREGISTRY__SCHEMA__SUBJECT: contoso-university-value
-      SCHEMAREGISTRY__SCHEMA__VERSION: 1
+      DATACATALOG__ACCESSTOKEN: ${DATACATALOG_ACCESSTOKEN?}
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.devantler.com
-      DATACATALOG__ACCESSTOKEN: ${DATACATALOG_ACCESSTOKEN?}
-      DATAINGESTORS__0__TYPE: Local
       DATAINGESTORS__0__FILEPATH: assets/data/contoso-university-single.json
-      DATAINGESTORS__1__TYPE: Local
+      DATAINGESTORS__0__TYPE: Local
       DATAINGESTORS__1__FILEPATH: assets/data/contoso-university-multiple.json
-      DATAINGESTORS__2__TYPE: Kafka
+      DATAINGESTORS__1__TYPE: Local
       DATAINGESTORS__2__GROUPID: contoso-university
-      DATAINGESTORS__2__TOPIC: contoso-university
       DATAINGESTORS__2__SERVERS: kafka:9092
-      LOGGINGEXPORTER__TYPE: OpenTelemetry
+      DATAINGESTORS__2__TOPIC: contoso-university
+      DATAINGESTORS__2__TYPE: Kafka
+      DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=contoso-university;Username=postgres;Password=${POSTGRES_PASSWORD?}
+      DATASTORE__PROVIDER: PostgreSQL
+      DATASTORE__TYPE: SQL
       LOGGINGEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
-      METRICSEXPORTER__TYPE: OpenTelemetry
+      LOGGINGEXPORTER__TYPE: OpenTelemetry
       METRICSEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
-      TRACINGEXPORTER__TYPE: OpenTelemetry
+      METRICSEXPORTER__TYPE: OpenTelemetry
+      SCHEMAREGISTRY__SCHEMA__SUBJECT: contoso-university-value
+      SCHEMAREGISTRY__SCHEMA__VERSION: 1
+      SCHEMAREGISTRY__TYPE: Kafka
+      SCHEMAREGISTRY__URL: https://schema-registry.devantler.com
       TRACINGEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
+      TRACINGEXPORTER__TYPE: OpenTelemetry
       FEATUREFLAGS__ENABLEDASHBOARD: true
       FEATUREFLAGS__ENABLEAPIS__0: Rest
       FEATUREFLAGS__ENABLEAPIS__1: GraphQL
