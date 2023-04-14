@@ -112,7 +112,7 @@ services:
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: 9200
       ELASTICSEARCH_PROTOCOL: http
-    image: linkedin/datahub-elasticsearch-setup:v0.10.1
+    image: linkedin/datahub-elasticsearch-setup:v0.10.2
     networks:
       - internal
   kafka-setup:
