@@ -3,7 +3,7 @@ networks:
     external: true
   internal:
     external: true
-
+  
 services:
   authentik-server:
     image: ghcr.io/goauthentik/server:2023.4.0
@@ -46,6 +46,7 @@ services:
       AUTHENTIK_SECRET_KEY: ${SECRET_KEY?}
     networks:
       - internal
+    user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - media:/media
