@@ -27,6 +27,8 @@ services:
       traefik.http.routers.authentik.rule: Host(`authentik.${DOMAIN?}`)
       traefik.http.routers.authentik.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.authentik.loadbalancer.server.port: 9000
+      traefik.http.routers.authentik-outpost.rule: HostRegexp(`{subdomain:[a-z0-9-]+}.${DOMAIN?}`) && PathPrefix(`/outpost.goauthentik.io/`)"
+      traefik.http.routers.authentik-outpost.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
     # healthcheck:
     #   test: wget -qO- http://localhost:9000/health/ready || exit 1
   authentik-worker:
