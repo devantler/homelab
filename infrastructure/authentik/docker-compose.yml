@@ -44,9 +44,9 @@ services:
       AUTHENTIK_SECRET_KEY: ${SECRET_KEY?}
     networks:
       - internal
-    user: root
+    # user: root
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      # - /var/run/docker.sock:/var/run/docker.sock
       - media:/media
       - certs:/certs
       - templates:/templates
