@@ -15,5 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - plantuml-server:/plantuml
+      - tmp-jetty:/tmp/jetty
 volumes:
   plantuml-server: null
+  tmp-jetty: null
