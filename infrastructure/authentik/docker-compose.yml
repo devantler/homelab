@@ -26,6 +26,7 @@ services:
       traefik.enable: true
       traefik.http.routers.authentik.rule: Host(`authentik.${DOMAIN?}`)
       traefik.http.routers.authentik.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.authentik.tls: true
       traefik.http.services.authentik.loadbalancer.server.port: 9443
     # healthcheck:
     #   test: wget -qO- http://localhost:9000/health/ready || exit 1
