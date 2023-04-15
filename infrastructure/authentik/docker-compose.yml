@@ -19,9 +19,9 @@ services:
     volumes:
       - media:/media
       - templates:/templates
-    networks:
-      - public
-      - internal
+    # networks:
+    #   - public
+    #   - internal
     ports:
       - 9001:9000
       - 9443:9443
@@ -42,8 +42,8 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS?}
       AUTHENTIK_SECRET_KEY: ${SECRET_KEY?}
-    networks:
-      - internal
+    # networks:
+    #   - internal
     # user: root
     volumes:
       # - /var/run/docker.sock:/var/run/docker.sock
