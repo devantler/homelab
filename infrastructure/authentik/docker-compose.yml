@@ -22,15 +22,17 @@ services:
     networks:
       - public
       - internal
+    ports:
+      - 9000:9000
+      - 9443:9443
     labels:
       traefik.enable: true
       traefik.http.routers.authentik.rule: Host(`authentik.${DOMAIN?}`)
       traefik.http.routers.authentik.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.authentik.loadbalancer.server.port: 9000
-      traefik.http.routers.authentik-outpost.rule: HostRegexp(`{authentik:[a-z0-9-]+}.${DOMAIN?}`) && PathPrefix(`/outpost.goauthentik.io/`)"
-      traefik.http.routers.authentik-outpost.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
     # healthcheck:
     #   test: wget -qO- http://localhost:9000/health/ready || exit 1
+
   authentik-worker:
     image: ghcr.io/goauthentik/server:2023.4.0
     restart: unless-stopped
