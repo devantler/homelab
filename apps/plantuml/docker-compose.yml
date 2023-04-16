@@ -16,8 +16,8 @@ services:
     volumes:
       - plantuml-server:/plantuml
       - tmp-jetty:/tmp/jetty
-    healthcheck:
-      test: curl -f localhost:8080 || exit 1
+    # healthcheck:
+    #   test: curl -f localhost:8080 || exit 1
 volumes:
   plantuml-server: null
   tmp-jetty: null
