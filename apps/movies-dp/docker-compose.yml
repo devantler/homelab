@@ -65,6 +65,8 @@ services:
     restart: unless-stopped
     volumes:
       - redis:/data
+    networks:
+      - internal
     healthcheck:
       test: redis-cli ping || exit 1
 
