@@ -9,7 +9,6 @@ services:
     restart: unless-stopped
     ports:
       - 4317:4317
-      - 13133:13133
     networks:
       - internal
     volumes:
