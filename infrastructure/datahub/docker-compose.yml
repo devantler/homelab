@@ -13,11 +13,11 @@ services:
       DATAHUB_GMS_PROTOCOL: http
       DATAHUB_SYSTEM_CLIENT_ID: __datahub_system
       DATAHUB_SYSTEM_CLIENT_SECRET: ${DATAHUB_SYSTEM_CLIENT_SECRET?}
-      KAFKA_BOOTSTRAP_SERVER: server:9092
+      KAFKA_BOOTSTRAP_SERVER: kafka-server-1:9092
       KAFKA_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
       METADATA_AUDIT_EVENT_NAME: MetadataAuditEvent_v4
       METADATA_CHANGE_LOG_VERSIONED_TOPIC_NAME: MetadataChangeLog_Versioned_v1
-      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      SCHEMA_REGISTRY_URL: http://kafka-schema-registry-1:8081
     image: acryldata/datahub-actions:v0.0.12
     networks:
       - internal
@@ -35,7 +35,7 @@ services:
       ELASTIC_CLIENT_HOST: elasticsearch-server-1
       ELASTIC_CLIENT_PORT: 9200
       JAVA_OPTS: '-Xms512m -Xmx512m -Dhttp.port=9002 -Dconfig.file=datahub-frontend/conf/application.conf -Djava.security.auth.login.config=datahub-frontend/conf/jaas.conf -Dlogback.configurationFile=datahub-frontend/conf/logback.xml -Dlogback.debug=false -Dpidfile.path=/dev/null'
-      KAFKA_BOOTSTRAP_SERVER: server:9092
+      KAFKA_BOOTSTRAP_SERVER: kafka-server-1:9092
       METADATA_SERVICE_AUTH_ENABLED: true
     image: linkedin/datahub-frontend-react:v0.10.2
     labels:
@@ -69,7 +69,7 @@ services:
       GRAPH_SERVICE_IMPL: elasticsearch
       JAVA_OPTS: '-Xms1g -Xmx1g'
       KAFKA_BOOTSTRAP_SERVER: kafka-server-1:9092
-      KAFKA_SCHEMAREGISTRY_URL: http://schema-registry:8081
+      KAFKA_SCHEMAREGISTRY_URL: http://kafka-schema-registry-1:8081
       MAE_CONSUMER_ENABLED: true
       MCE_CONSUMER_ENABLED: true
       METADATA_SERVICE_AUTH_ENABLED: true
@@ -87,12 +87,12 @@ services:
       - '-u'
       - SystemUpdate
     environment:
-      DATAHUB_GMS_HOST: datahub-gms
+      DATAHUB_GMS_HOST: datahub-gms-1
       DATAHUB_GMS_PORT: 8080
       EBEAN_DATASOURCE_DRIVER: org.postgresql.Driver
       EBEAN_DATASOURCE_HOST: postgres-server-1:5432
       EBEAN_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD?}
-      EBEAN_DATASOURCE_URL: jdbc:postgresql://postgres:5432/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
+      EBEAN_DATASOURCE_URL: jdbc:postgresql://postgres-server-1:5432/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
       EBEAN_DATASOURCE_USERNAME: postgres
       ELASTICSEARCH_BUILD_INDICES_CLONE_INDICES: false
       ELASTICSEARCH_HOST: elasticsearch-server-1
@@ -102,7 +102,7 @@ services:
       ENTITY_REGISTRY_CONFIG_PATH: /datahub/datahub-gms/resources/entity-registry.yml
       GRAPH_SERVICE_IMPL: elasticsearch
       KAFKA_BOOTSTRAP_SERVER: kafka-server-1:9092
-      KAFKA_SCHEMAREGISTRY_URL: http://schema-registry:8081
+      KAFKA_SCHEMAREGISTRY_URL: http://kafka-schema-registry-1:8081
     image: acryldata/datahub-upgrade:v0.10.2
     networks:
       - internal
