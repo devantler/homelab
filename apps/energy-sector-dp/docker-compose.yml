@@ -9,6 +9,9 @@ services:
     networks:
       - internal
       - public
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       NAME: Energy Sector Data Product
       DESCRIPTION: A data product to query and manage energy sector data
