@@ -10,8 +10,7 @@ services:
     restart: unless-stopped
     command: server
     environment:
-      AUTHENTIK_REDIS__HOST: redis-server-1
-      AUTHENTIK_REDIS__DB: 1
+      AUTHENTIK_REDIS__HOST: authentik-redis-1
       AUTHENTIK_POSTGRESQL__HOST: postgres-server-1
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-postgres}
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
@@ -34,8 +33,7 @@ services:
     restart: unless-stopped
     command: worker
     environment:
-      AUTHENTIK_REDIS__HOST: redis-server-1
-      AUTHENTIK_REDIS__DB: 1
+      AUTHENTIK_REDIS__HOST: authentik-redis-1
       AUTHENTIK_POSTGRESQL__HOST: postgres-server-1
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-postgres}
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
@@ -47,8 +45,16 @@ services:
       - media:/media
       - certs:/certs
       - templates:/templates
+  redis:
+    image: redis:7.0.10-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: redis-cli ping || exit 1
 
 volumes:
   media:
   certs:
   templates:
+  redis:
