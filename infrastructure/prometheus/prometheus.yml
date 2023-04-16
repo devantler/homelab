@@ -8,4 +8,4 @@ scrape_configs:
 
   - job_name: "opentelemetry-collector"
     static_configs:
-      - targets: ["opentelemetry-collector-1:8889"]
+      - targets: ["opentelemetry-collector-1:8888"]
