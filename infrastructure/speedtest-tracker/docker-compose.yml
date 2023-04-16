@@ -8,7 +8,7 @@ services:
     environment:
       DB_CONNECTION: pgsql
       DB_DATABASE: speedtest_tracker
-      DB_HOST: postgres
+      DB_HOST: postgres-server-1
       DB_PASSWORD: ${DB_PASSWORD?}
       DB_PORT: 5432
       DB_USERNAME: postgres
