@@ -16,7 +16,7 @@ exporters:
       insecure: true
 
   prometheus:
-    endpoint: opentelemetry-collector-1:8889 # GRPc port
+    endpoint: opentelemetry-collector-1:8889
 
 extensions:
   health_check:
