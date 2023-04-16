@@ -16,7 +16,7 @@ exporters:
       insecure: true
 
   prometheus:
-    endpoint: 0.0.0.0:8889
+    endpoint: prometheus-server-1:8889
 
 extensions:
   health_check:
