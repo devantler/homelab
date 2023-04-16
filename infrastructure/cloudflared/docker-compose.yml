@@ -2,7 +2,7 @@ networks:
   tunnel:
     external: true
 services:
-  cloudflared:
+  client:
     command: tunnel --no-autoupdate run
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN?}

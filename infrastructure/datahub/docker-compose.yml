@@ -4,7 +4,7 @@ networks:
   public:
     external: true
 services:
-  datahub-actions:
+  actions:
     depends_on:
       - datahub-gms
     environment:
@@ -22,7 +22,7 @@ services:
     networks:
       - internal
     restart: unless-stopped
-  datahub-frontend-react:
+  frontend-react:
     depends_on:
       - datahub-gms
     environment:
@@ -48,7 +48,7 @@ services:
     restart: unless-stopped
     volumes:
       - datahub-plugins:/etc/datahub/plugins
-  datahub-gms:
+  gms:
     environment:
       DATAHUB_SERVER_TYPE: quickstart
       DATAHUB_TELEMETRY_ENABLED: true
@@ -82,11 +82,10 @@ services:
     restart: unless-stopped
     volumes:
       - datahub-plugins:/etc/datahub/plugins
-  datahub-upgrade:
+  upgrade:
     command:
       - '-u'
       - SystemUpdate
-    container_name: datahub-upgrade
     environment:
       DATAHUB_GMS_HOST: datahub-gms
       DATAHUB_GMS_PORT: 8080

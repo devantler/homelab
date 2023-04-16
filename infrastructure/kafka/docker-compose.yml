@@ -4,7 +4,7 @@ networks:
   public:
     external: true
 services:
-  kafka-ui:
+  ui:
     image: provectuslabs/kafka-ui:v0.6.2
     depends_on:
       kafka:
@@ -30,7 +30,7 @@ services:
       - public
       - internal
     restart: unless-stopped
-  kafka:
+  server:
     image: confluentinc/cp-kafka:7.3.3
     command: |
       bash -c "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure && sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure && export UUID=`kafka-storage random-uuid` && echo 'kafka-storage format --ignore-formatted -t $$UUID -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/ensure && /etc/confluent/docker/run"
@@ -59,7 +59,7 @@ services:
       - kafka-data:/var/lib/kafka/data
       - kafka-secrets:/etc/kafka/secrets
 
-  kafka-rest-proxy:
+  rest-proxy:
     image: confluentinc/cp-kafka-rest:7.3.3
     depends_on:
       kafka:

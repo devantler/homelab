@@ -21,7 +21,7 @@ services:
     networks:
       - public
     restart: unless-stopped
-  postgres:
+  server:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}
     healthcheck:

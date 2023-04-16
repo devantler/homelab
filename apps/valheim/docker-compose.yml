@@ -2,7 +2,7 @@ networks:
   public:
     external: true
 services:
-  valheim-server:
+  server:
     cap_add:
       - sys_nice
     environment:

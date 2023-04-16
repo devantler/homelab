@@ -5,7 +5,7 @@ networks:
     external: true
 
 services:
-  jaeger-collector:
+  collector:
     image: jaegertracing/jaeger-collector:1.44.0
     environment:
       SPAN_STORAGE_TYPE: elasticsearch
@@ -20,7 +20,7 @@ services:
     healthcheck:
       test: wget -qO- http://localhost:14269 || exit 1
 
-  jaeger-query:
+  query:
     image: jaegertracing/jaeger-query:1.44.0
     labels:
       traefik.enable: true

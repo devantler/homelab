@@ -2,7 +2,7 @@ networks:
   public:
     external: true
 services:
-  uptime-kuma:
+  server:
     image: louislam/uptime-kuma:1.21.2
     labels:
       traefik.enable: true

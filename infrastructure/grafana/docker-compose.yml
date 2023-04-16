@@ -5,9 +5,8 @@ networks:
     external: true
 
 services:
-  grafana:
+  server:
     image: grafana/grafana:9.4.7
-    container_name: grafana
     restart: unless-stopped
     labels:
       traefik.enable: "true"

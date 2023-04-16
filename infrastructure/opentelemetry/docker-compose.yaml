@@ -3,7 +3,7 @@ networks:
     external: true
 
 services:
-  opentelemetry-collector:
+  collector:
     image: otel/opentelemetry-collector:0.75.0
     command: --config=/etc/otel-collector-config.yaml
     restart: unless-stopped

@@ -4,7 +4,7 @@ networks:
   public:
     external: true
 services:
-  speedtest-tracker:
+  server:
     environment:
       DB_CONNECTION: pgsql
       DB_DATABASE: speedtest_tracker

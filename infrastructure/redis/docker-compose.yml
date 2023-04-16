@@ -3,7 +3,7 @@ networks:
     external: true
 
 services:
-  redis:
+  server:
     image: redis:7.0.10-alpine
     restart: unless-stopped
     ports:

@@ -5,7 +5,7 @@ networks:
     external: true
 
 services:
-  prometheus:
+  server:
     image: prom/prometheus:v2.43.0
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'

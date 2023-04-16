@@ -2,7 +2,7 @@ networks:
   public:
     external: true
 services:
-  glances:
+  server:
     environment:
       GLANCES_OPT: '-w'
     healthcheck:

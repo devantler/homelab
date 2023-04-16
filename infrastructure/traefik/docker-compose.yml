@@ -4,7 +4,7 @@ networks:
     tunnel:
         external: true
 services:
-    traefik:
+    server:
         command:
             - '--providers.docker'
             - '--providers.docker.network=public'

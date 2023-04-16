@@ -2,7 +2,7 @@ networks:
   public:
     external: true
 services:
-  plantuml-server:
+  server:
     image: plantuml/plantuml-server:v1.2023.5
     labels:
       traefik.enable: true
