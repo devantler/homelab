@@ -10,7 +10,6 @@ services:
     ports:
       - 4317:4317
       - 13133:13133
-      - 8888:8888 # Prometheus metrics exposed by the collector
     networks:
       - internal
     volumes:

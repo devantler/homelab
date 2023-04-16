@@ -16,7 +16,7 @@ exporters:
       insecure: true
 
   prometheus:
-    endpoint: prometheus-server-1:8889
+    endpoint: opentelemetry-collector-1:8889
 
 extensions:
   health_check:
