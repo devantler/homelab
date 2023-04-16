@@ -7,7 +7,7 @@ receivers:
 processors:
   batch:
   spanmetrics:
-    metrics_exporter: prometheus-server-1
+    metrics_exporter: prometheus
 
 exporters:
   jaeger:
