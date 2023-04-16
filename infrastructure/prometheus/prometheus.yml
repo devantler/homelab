@@ -4,9 +4,9 @@ global:
 scrape_configs:
   - job_name: "prometheus"
     static_configs:
-      - targets: ["prometheus:9090"]
+      - targets: ["prometheus-server-1:9090"]
 
   - job_name: "opentelemetry-collector"
     static_configs:
-      - targets: ["opentelemetry-collector:8888"]
-      - targets: ["opentelemetry-collector:8889"]
+      - targets: ["opentelemetry-collector-1:8888"]
+      - targets: ["opentelemetry-collector-1:8889"]
