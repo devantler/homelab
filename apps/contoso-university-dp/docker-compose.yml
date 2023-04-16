@@ -45,7 +45,7 @@ services:
       DATAINGESTORS__2__SERVERS: kafka:9092
       DATAINGESTORS__2__TOPIC: contoso-university
       DATAINGESTORS__2__TYPE: Kafka
-      DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=contoso-university;Username=postgres;Password=${POSTGRES_PASSWORD?}
+      DATASTORE__CONNECTIONSTRING: Host=postgres-server-1;Port=5432;Database=contoso-university;Username=postgres;Password=${POSTGRES_PASSWORD?}
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__TYPE: SQL
       LOGGINGEXPORTER__ENDPOINT: http://opentelemetry-collector-1:4317
