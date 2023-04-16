@@ -21,7 +21,7 @@ services:
       OWNER__PHONE: ${OWNER_PHONE?}
       OWNER__WEBSITE: ${OWNER_WEBSITE?}
       APIS__REST__ENABLEBULKCONTROLLER: true
-      CACHESTORE__SERVER: redis-server-1:6379
+      CACHESTORE__SERVER: contoso-university-dp-redis-1:6379
       CACHESTORE__TYPE: Redis
       DASHBOARD__LINKS__0__NAME: Kafka
       DASHBOARD__LINKS__0__URL: https://kafka-ui.devantler.com/
@@ -64,3 +64,13 @@ services:
       traefik.http.routers.contoso-university-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.contoso-university-dp.rule: Host(`contoso-university-dp.${DOMAIN?}`)
     restart: unless-stopped
+  redis:
+    image: redis:7.0.10-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: redis-cli ping || exit 1
+
+volumes:
+  redis:
