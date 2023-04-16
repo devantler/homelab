@@ -7,11 +7,11 @@ receivers:
 processors:
   batch:
   spanmetrics:
-    metrics_exporter: prometheus
+    metrics_exporter: prometheus-server-1
 
 exporters:
   jaeger:
-    endpoint: jaeger-collector:14250
+    endpoint: jaeger-collector-1:14250
     tls:
       insecure: true
 

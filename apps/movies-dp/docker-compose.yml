@@ -22,7 +22,7 @@ services:
       OWNER__PHONE: ${OWNER_PHONE?}
       OWNER__WEBSITE: ${OWNER_WEBSITE?}
       APIS__REST__ENABLEBULKCONTROLLER: true
-      CACHESTORE__SERVER: redis:6379
+      CACHESTORE__SERVER: redis-server-1:6379
       CACHESTORE__TYPE: Redis
       DASHBOARD__LINKS__0__NAME: Kafka
       DASHBOARD__LINKS__0__URL: https://kafka-ui.devantler.com/
@@ -44,15 +44,15 @@ services:
       DATASTORE__CONNECTIONSTRING: Host=postgres;Port=5432;Database=movies;Username=postgres;Password=${POSTGRES_PASSWORD?}
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__TYPE: SQL
-      LOGGINGEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
+      LOGGINGEXPORTER__ENDPOINT: http://opentelemetry-collector-1:4317
       LOGGINGEXPORTER__TYPE: OpenTelemetry
-      METRICSEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
+      METRICSEXPORTER__ENDPOINT: http://opentelemetry-collector-1:4317
       METRICSEXPORTER__TYPE: OpenTelemetry
       SCHEMAREGISTRY__SCHEMA__SUBJECT: movies-value
       SCHEMAREGISTRY__SCHEMA__VERSION: 1
       SCHEMAREGISTRY__TYPE: Kafka
       SCHEMAREGISTRY__URL: https://schema-registry.devantler.com
-      TRACINGEXPORTER__ENDPOINT: http://opentelemetry-collector:4317
+      TRACINGEXPORTER__ENDPOINT: http://opentelemetry-collector-1:4317
       TRACINGEXPORTER__TYPE: OpenTelemetry
       FEATUREFLAGS__ENABLEDASHBOARD: true
       FEATUREFLAGS__ENABLEAPIS__0: Rest

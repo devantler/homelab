@@ -7,7 +7,7 @@ services:
   ui:
     image: provectuslabs/kafka-ui:v0.6.2
     depends_on:
-      kafka:
+      server:
         condition: service_healthy
       schema-registry:
         condition: service_healthy
@@ -62,7 +62,7 @@ services:
   rest-proxy:
     image: confluentinc/cp-kafka-rest:7.3.3
     depends_on:
-      kafka:
+      server:
         condition: service_healthy
       schema-registry:
         condition: service_healthy
@@ -85,7 +85,7 @@ services:
   schema-registry:
     image: confluentinc/cp-schema-registry:7.3.3
     depends_on:
-      kafka:
+      server:
         condition: service_healthy
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
