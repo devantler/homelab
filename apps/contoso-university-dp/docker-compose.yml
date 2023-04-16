@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   server:
-    image: ghcr.io/devantler/data-product:v0.1.5
+    image: ghcr.io/devantler/data-product:v0.1.6
     depends_on:
       redis:
         condition: service_healthy
@@ -54,9 +54,6 @@ services:
       SCHEMAREGISTRY__SCHEMA__VERSION: 1
       SCHEMAREGISTRY__TYPE: Kafka
       SCHEMAREGISTRY__URL: https://schema-registry.devantler.com
-      TELEMETRY__ENABLELOGGING: true
-      TELEMETRY__ENABLEMETRICS: true
-      TELEMETRY__ENABLETRACING: true
       TELEMETRY__ENDPOINT: http://opentelemetry-collector-1:4317
       TELEMETRY__EXPORTERTYPE: OpenTelemetry
       FEATUREFLAGS__ENABLEDATACATALOG: true
