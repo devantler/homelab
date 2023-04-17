@@ -61,7 +61,7 @@ services:
       traefik.http.routers.energy-sector-dp.rule: Host(`energy-sector-dp.${DOMAIN?}`)
     restart: unless-stopped
   redis:
-    image: redis:7.0.10-alpine
+    image: redis:7.0.11-alpine
     restart: unless-stopped
     volumes:
       - redis:/data
