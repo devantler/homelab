@@ -15,7 +15,7 @@ services:
     environment:
       NAME: Contoso University Data Product
       DESCRIPTION: A data product to query and manage students and courses at the Contoso University.
-      PUBLIC_URL: https://contoso-university-dp.${DOMAIN?}
+      PUBLICURL: https://contoso-university-dp.${DOMAIN?}
       LICENSE__NAME: MIT
       LICENSE__URL: https://opensource.org/licenses/MIT
       OWNER__NAME: ${OWNER_NAME?}
