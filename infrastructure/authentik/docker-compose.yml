@@ -52,7 +52,7 @@ services:
       - certs:/certs
       - templates:/templates
   redis:
-    image: redis:7.0.10-alpine
+    image: redis:7.0.11-alpine
     restart: unless-stopped
     volumes:
       - redis:/data
