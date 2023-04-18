@@ -4,7 +4,7 @@ networks:
 services:
   server:
     command: '-H unix:///var/run/docker.sock --http-enabled'
-    image: portainer/portainer-ee:2.17.1-alpine
+    image: portainer/portainer-ee:2.18.1-alpine
     labels:
       traefik.enable: true
       traefik.http.routers.portainer.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
