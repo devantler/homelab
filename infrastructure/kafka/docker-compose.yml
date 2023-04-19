@@ -50,7 +50,6 @@ services:
       test: nc -z localhost 9092 || exit -1
     networks:
       - internal
-      - public
     ports:
       - 9092:9092/tcp
     restart: unless-stopped
@@ -76,7 +75,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.kafka.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.kafka.rule: Host(`kafka.${DOMAIN?}`)
+      traefik.http.routers.kafka.rule: Host(`kafka-rest.${DOMAIN?}`)
     networks:
       - public
       - internal
