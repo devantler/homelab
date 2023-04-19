@@ -23,7 +23,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.kafka-ui.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.kafka-ui.rule: Host(`kafka-ui.${DOMAIN?}`)
+      traefik.http.routers.kafka-ui.rule: Host(`kafka.${DOMAIN?}`)
       traefik.http.middlewares.frameallow.headers.customresponseheaders.X-Frame-Options:
       traefik.http.routers.kafka-ui.middlewares: frameallow
     networks:
