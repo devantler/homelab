@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   server:
-    image: ghcr.io/devantler/data-product:v0.1.6
+    image: ghcr.io/devantler/data-product:v0.1.7
     depends_on:
       redis:
         condition: service_healthy
