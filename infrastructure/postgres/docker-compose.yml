@@ -17,7 +17,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.pgweb.rule: Host(`pgweb.${DOMAIN?}`)
+      traefik.http.routers.pgweb.rule: Host(`postgres.${DOMAIN?}`)
     networks:
       - public
     restart: unless-stopped
