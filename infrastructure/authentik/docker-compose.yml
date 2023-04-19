@@ -27,7 +27,7 @@ services:
       - internal
     labels:
       traefik.enable: true
-      traefik.http.routers.authentik.rule: Host(`authentik.${DOMAIN?}`)
+      traefik.http.routers.authentik.rule: Host(`auth.${DOMAIN?}`)
       traefik.http.routers.authentik.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.authentik.loadbalancer.server.port: 9000
 
