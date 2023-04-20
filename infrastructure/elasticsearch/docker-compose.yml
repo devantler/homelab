@@ -14,7 +14,6 @@ services:
         - CMD-SHELL
         - curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
     image: elasticsearch:7.10.1
-    mem_limit: 1g
     networks:
       - internal
     restart: unless-stopped
