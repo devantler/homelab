@@ -8,11 +8,7 @@ services:
       discovery.type: single-node
       xpack.security.enabled: false
     healthcheck:
-      retries: 4
-      start_period: 2m
-      test:
-        - CMD-SHELL
-        - curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
+      test: curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
     image: elasticsearch:7.10.1
     networks:
       - internal
@@ -20,4 +16,4 @@ services:
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
 volumes:
-  elasticsearch-data: null
+  elasticsearch-data:
