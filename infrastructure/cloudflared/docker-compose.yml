@@ -6,7 +6,7 @@ services:
     command: tunnel --no-autoupdate run
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN?}
-    image: cloudflare/cloudflared:2023.4.2
+    image: cloudflare/cloudflared:2023.5.0
     networks:
       - tunnel
     restart: unless-stopped
