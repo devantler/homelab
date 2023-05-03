@@ -9,7 +9,7 @@ services:
       xpack.security.enabled: false
     healthcheck:
       test: curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
-    image: elasticsearch:7.10.1
+    image: elasticsearch:7.17.10
     networks:
       - internal
     restart: unless-stopped
