@@ -59,7 +59,7 @@ services:
       - kafka-secrets:/etc/kafka/secrets
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:7.3.3
+    image: confluentinc/cp-kafka-rest:7.4.0
     depends_on:
       server:
         condition: service_healthy
