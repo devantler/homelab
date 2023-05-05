@@ -6,7 +6,7 @@ networks:
 
 services:
   server:
-    image: prom/prometheus:v2.43.0
+    image: prom/prometheus:v2.43.1
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
