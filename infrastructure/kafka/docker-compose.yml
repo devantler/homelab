@@ -32,8 +32,6 @@ services:
     restart: unless-stopped
   server:
     image: confluentinc/cp-kafka:7.4.0
-    command: |
-      bash -c "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure && sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure && export UUID=`kafka-storage random-uuid` && echo 'kafka-storage format --ignore-formatted -t $$UUID -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/ensure && /etc/confluent/docker/run"
     environment:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-server-1:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
