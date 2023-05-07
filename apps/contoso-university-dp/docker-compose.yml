@@ -53,7 +53,7 @@ services:
       SCHEMAREGISTRY__SCHEMA__SUBJECT: contoso-university-value
       SCHEMAREGISTRY__SCHEMA__VERSION: 1
       SCHEMAREGISTRY__TYPE: Kafka
-      SCHEMAREGISTRY__URL: schema-registry-1:8081
+      SCHEMAREGISTRY__URL: kafka-schema-registry-1:8081
       TELEMETRY__ENDPOINT: http://opentelemetry-collector-1:4317
       TELEMETRY__EXPORTERTYPE: OpenTelemetry
       FEATUREFLAGS__ENABLEDATACATALOG: true
