@@ -6,8 +6,6 @@ services:
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
-    healthcheck:
-      test: curl -sS --fail 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=0s' || exit 1
     image: elasticsearch:8.7.1
     networks:
       - internal
