@@ -36,7 +36,6 @@ services:
       DASHBOARD__LINKS__3__URL: https://jaeger.devantler.com/
       DASHBOARD__LINKS__4__NAME: Grafana
       DASHBOARD__LINKS__4__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m
-      DATACATALOG__ACCESSTOKEN: ${DATACATALOG_ACCESSTOKEN?}
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.devantler.com
       DATAINGESTORS__0__GROUPID: movies
