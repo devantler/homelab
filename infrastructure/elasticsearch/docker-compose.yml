@@ -6,6 +6,7 @@ services:
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
     image: elasticsearch:8.7.1
     networks:
       - internal
