@@ -4,7 +4,7 @@ networks:
 
 services:
   collector:
-    image: otel/opentelemetry-collector-contrib:0.76.1 # contrib is required until spanmetrics processor is merged into baseline
+    image: otel/opentelemetry-collector-contrib:0.77.0 # contrib is required until spanmetrics processor is merged into baseline
     command: --config=/etc/otel-collector-config.yaml
     restart: unless-stopped
     ports:
