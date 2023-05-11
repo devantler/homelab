@@ -6,7 +6,7 @@ networks:
 
 services:
   server:
-    image: grafana/grafana:9.5.1
+    image: grafana/grafana:9.5.2
     restart: unless-stopped
     labels:
       traefik.enable: "true"
