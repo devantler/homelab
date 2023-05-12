@@ -10,10 +10,9 @@ services:
     environment:
       SPAN_STORAGE_TYPE: elasticsearch
       ES_SERVER_URLS: http://elasticsearch-server-1:9200
-    # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
-    command: |
-      --es.version=7
-      --es.create-index-templates=false
+      # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
+      ES_VERSION: 7
+      ES_CREATE_INDEX_TEMPLATES: false
     networks:
       - internal
     restart: unless-stopped
@@ -32,6 +31,9 @@ services:
       ES_SERVER_URLS: http://elasticsearch-server-1:9200
       METRICS_STORAGE_TYPE: prometheus
       PROMETHEUS_SERVER_URL: http://prometheus-server-1:9090
+      # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
+      ES_VERSION: 7
+      ES_CREATE_INDEX_TEMPLATES: false
     networks:
       - public
       - internal
