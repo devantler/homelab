@@ -12,7 +12,7 @@ services:
       ES_SERVER_URLS: http://elasticsearch-server-1:9200
     command: |
       --es.version=7
-      --es.create-index-templates=true
+      --es.create-index-templates: "false"
     networks:
       - internal
     restart: unless-stopped
