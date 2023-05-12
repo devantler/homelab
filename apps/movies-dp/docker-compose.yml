@@ -38,6 +38,7 @@ services:
       DASHBOARD__LINKS__4__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.devantler.com
+      DATACATALOG__ACESSTOKEN: ${ACCESS_TOKEN?}
       DATAINGESTORS__0__GROUPID: movies
       DATAINGESTORS__0__SERVERS: kafka-server-1:9092
       DATAINGESTORS__0__TOPIC: movies
