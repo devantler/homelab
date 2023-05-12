@@ -36,7 +36,7 @@ services:
       ELASTIC_CLIENT_PORT: 9200
       JAVA_OPTS: '-Xms512m -Xmx512m -Dhttp.port=9002 -Dconfig.file=datahub-frontend/conf/application.conf -Djava.security.auth.login.config=datahub-frontend/conf/jaas.conf -Dlogback.configurationFile=datahub-frontend/conf/logback.xml -Dlogback.debug=false -Dpidfile.path=/dev/null'
       KAFKA_BOOTSTRAP_SERVER: kafka-server-1:9092
-      METADATA_SERVICE_AUTH_ENABLED: false # TODO: Fix auth when it is more stable
+      METADATA_SERVICE_AUTH_ENABLED: true
     image: linkedin/datahub-frontend-react:v0.10.2
     labels:
       traefik.enable: true
@@ -72,8 +72,8 @@ services:
       KAFKA_SCHEMAREGISTRY_URL: http://kafka-schema-registry-1:8081
       MAE_CONSUMER_ENABLED: true
       MCE_CONSUMER_ENABLED: true
-      METADATA_SERVICE_AUTH_ENABLED: false # TODO: Fix auth when it is more stable
-      REST_API_AUTHORIZATION_ENABLED: false # TODO: Fix auth when it is more stable
+      METADATA_SERVICE_AUTH_ENABLED: true
+      REST_API_AUTHORIZATION_ENABLED: true
       PE_CONSUMER_ENABLED: true
       UI_INGESTION_ENABLED: true
     image: linkedin/datahub-gms:v0.10.2
