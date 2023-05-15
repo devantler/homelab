@@ -6,7 +6,7 @@ networks:
 
 services:
   collector:
-    image: jaegertracing/jaeger-collector:1.44.0
+    image: jaegertracing/jaeger-collector:1.45.0
     environment:
       SPAN_STORAGE_TYPE: elasticsearch
       ES_SERVER_URLS: http://elasticsearch-server-1:9200
@@ -20,7 +20,7 @@ services:
       test: wget -qO- http://localhost:14269 || exit 1
 
   query:
-    image: jaegertracing/jaeger-query:1.44.0
+    image: jaegertracing/jaeger-query:1.45.0
     labels:
       traefik.enable: true
       traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
