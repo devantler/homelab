@@ -34,6 +34,7 @@ services:
       DASHBOARD__EMBEDDEDSERVICES__2__URL: https://kafka.devantler.com
       DASHBOARD__EMBEDDEDSERVICES__3__NAME: Data Catalog
       DASHBOARD__EMBEDDEDSERVICES__3__URL: https://datahub.devantler.com
+      DATACATALOG__URL: datahub-frontend-react-1:9002
       DATACATALOG__ACCESSTOKEN: ${ACCESS_TOKEN?}
       DATAINGESTORS__0__FILEPATH: assets/data/contoso-university-single.json
       DATAINGESTORS__0__TYPE: Local
