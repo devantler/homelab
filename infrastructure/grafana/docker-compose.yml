@@ -19,8 +19,7 @@ services:
       - GF_SECURITY_ADMIN_USER=${USER?}
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD?}
       - GF_SECURITY_ALLOW_EMBEDDING=true
-      # - GF_SERVER_DOMAIN=grafana.${DOMAIN?}
-      # - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_DOMAIN=grafana.${DOMAIN?}
     volumes:
       - grafana_data:/var/lib/grafana
     # healthcheck:
