@@ -18,7 +18,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${USER?}
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD?}
-      - GF_ALLOW_EMBEDDING=true
+      - GF_SECURITY_ALLOW_EMBEDDING=true
     volumes:
       - grafana_data:/var/lib/grafana
     # healthcheck:
