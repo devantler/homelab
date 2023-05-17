@@ -29,7 +29,7 @@ services:
       DASHBOARD__EMBEDDEDSERVICES__0__NAME: Tracing
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.devantler.com
       DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
-      DASHBOARD__EMBEDDEDSERVICES__1__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m&kiosk=tv
+      DASHBOARD__EMBEDDEDSERVICES__1__URL: https://grafana.devantler.com/d/KdDACDp4z/data-product-metrics?orgId=1&refresh=5s&var-job=opentelemetry-collector&var-exported_job=movies-data-product&var-http_client_peer_name=All&kiosk
       DASHBOARD__EMBEDDEDSERVICES__2__NAME: Kafka
       DASHBOARD__EMBEDDEDSERVICES__2__URL: https://kafka.devantler.com
       DASHBOARD__EMBEDDEDSERVICES__3__NAME: Data Store
