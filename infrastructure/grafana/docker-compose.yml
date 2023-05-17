@@ -18,6 +18,11 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${USER?}
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD?}
-      - ALLOW_EMBEDDING=true
+      - GF_ALLOW_EMBEDDING=true
+    volumes:
+      - grafana_data:/var/lib/grafana
     # healthcheck:
     #   test: curl -f localhost:3000/api/health && echo 'ready' || exit 1
+
+volumes:
+  grafana_data:
