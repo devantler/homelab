@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   server:
-    image: ghcr.io/devantler/data-product:v0.1.12
+    image: ghcr.io/devantler/data-product:v0.1.14
     depends_on:
       redis:
         condition: service_healthy
@@ -28,12 +28,15 @@ services:
       CACHESTORE__TYPE: Redis
       DASHBOARD__EMBEDDEDSERVICES__0__NAME: Tracing
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.devantler.com
-      # DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
-      # DASHBOARD__EMBEDDEDSERVICES__1__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m&kiosk=tv
+      DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
+      DASHBOARD__EMBEDDEDSERVICES__1__URL: https://grafana.devantler.com/d/KdDACDp4z/asp-net-otel-opentelemetry-metrics?orgId=1&refresh=1m&kiosk=tv
       DASHBOARD__EMBEDDEDSERVICES__2__NAME: Kafka
       DASHBOARD__EMBEDDEDSERVICES__2__URL: https://kafka.devantler.com
-      DASHBOARD__EMBEDDEDSERVICES__3__NAME: Data Catalog
-      DASHBOARD__EMBEDDEDSERVICES__3__URL: https://datahub.devantler.com
+      DASHBOARD__EMBEDDEDSERVICES__3__NAME: Data Store
+      DASHBOARD__EMBEDDEDSERVICES__3__URL: https://postgres.devantler.com
+      DASHBOARD__EMBEDDEDSERVICES__4__NAME: Data Catalog
+      DASHBOARD__EMBEDDEDSERVICES__4__URL: https://datahub.devantler.com
+      DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: http://datahub-frontend-react-1:9002
       DATACATALOG__ACCESSTOKEN: ${ACCESS_TOKEN?}
       DATAINGESTORS__0__FILEPATH: assets/data/contoso-university-single.json
