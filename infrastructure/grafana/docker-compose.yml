@@ -18,5 +18,6 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${USER?}
       - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD?}
+      - ALLOW_EMBEDDING=true
     # healthcheck:
     #   test: curl -f localhost:3000/api/health && echo 'ready' || exit 1

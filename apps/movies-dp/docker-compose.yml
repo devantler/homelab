@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   server:
-    image: ghcr.io/devantler/data-product:v0.1.15
+    image: ghcr.io/devantler/data-product:v0.1.16
     networks:
       - internal
       - public
