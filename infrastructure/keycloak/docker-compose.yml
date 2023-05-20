@@ -9,6 +9,7 @@ services:
     environment:
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN?}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD?}
+    command: start-dev
     labels:
       traefik.enable: true
       traefik.http.routers.keycloak.rule: Host(`auth.${DOMAIN?}`)
