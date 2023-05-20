@@ -13,15 +13,25 @@ networks:
 services:
   server:
     image: quay.io/keycloak/keycloak:21.1.1
+    restart: unless-stopped
     environment:
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN?}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD?}
-    command: start-dev
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN?}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD?}
+      KC_HOSTNAME: auth.${DOMAIN?}
+      KC_PROXY: edge
+      KC_DB: ${KC_DB?}
+      KC_DB_URL: ${KC_DB_HOST?}
+      KC_DB_USERNAME: ${KC_DB_USER?}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD?}
+      KC_HEALTH_ENABLED: true
+    command: start
     labels:
       traefik.enable: true
       traefik.http.routers.keycloak.rule: Host(`auth.${DOMAIN?}`)
       traefik.http.routers.keycloak.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.keycloak.loadbalancer.server.port: 8080
+    healthcheck:
+      test: curl -f localhost:8080/health/live || exit 1
     networks:
       - public
       - internal
