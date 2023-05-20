@@ -3,6 +3,13 @@
 ## Look into how to handle policies in keycloak.
 ## Look into potential policy enforcemnent service, or consider if it makes sense to enforce policies decentralized.
 
+networks:
+  public:
+    external: true
+  internal:
+    external: true
+  
+
 services:
   server:
     image: quay.io/keycloak/keycloak:21.1.1
@@ -15,3 +22,6 @@ services:
       traefik.http.routers.keycloak.rule: Host(`auth.${DOMAIN?}`)
       traefik.http.routers.keycloak.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.keycloak.loadbalancer.server.port: 8080
+    networks:
+      - public
+      - internal
