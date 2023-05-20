@@ -20,7 +20,7 @@ services:
       KC_HOSTNAME: auth.${DOMAIN?}
       KC_PROXY: edge
       KC_DB: ${KC_DB?}
-      KC_DB_URL: ${KC_DB_URL?}
+      KC_DB_URL_HOST: ${KC_DB_URL_HOST?}
       KC_DB_USERNAME: ${KC_DB_USERNAME?}
       KC_DB_PASSWORD: ${KC_DB_PASSWORD?}
       KC_HEALTH_ENABLED: true
