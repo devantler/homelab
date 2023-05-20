@@ -1,0 +1,4 @@
+# Setup keycloak, and remove Cloudflare auth.
+## Should use Traefik ForwardAuth instead.
+## Look into how to handle policies in keycloak.
+## Look into potential policy enforcemnent service, or consider if it makes sense to enforce policies decentralized.
