@@ -2,3 +2,14 @@
 ## Should use Traefik ForwardAuth instead.
 ## Look into how to handle policies in keycloak.
 ## Look into potential policy enforcemnent service, or consider if it makes sense to enforce policies decentralized.
+
+services:
+  server:
+    image: quay.io/keycloak/keycloak:21.1.1
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN?}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD?}
+    labels:
+      traefik.enable: true
+      traefik.http.routers.keycloak.rule: Host(`auth.${DOMAIN?}`)
+      traefik.http.routers.keycloak.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
