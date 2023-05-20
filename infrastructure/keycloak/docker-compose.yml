@@ -14,3 +14,4 @@ services:
       traefik.enable: true
       traefik.http.routers.keycloak.rule: Host(`auth.${DOMAIN?}`)
       traefik.http.routers.keycloak.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.services.keycloak.loadbalancer.server.port: 8080
