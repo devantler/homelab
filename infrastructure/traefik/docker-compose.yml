@@ -29,13 +29,13 @@ services:
         image: traefik:v2.10
         labels:
             traefik.enable: true
+            traefik.http.middlewares.auth.forwardauth.address: https://auth.${DOMAIN?}/auth/realms/master
+            traefik.http.middlewares.auth.forwardauth.trustForwardHeader: true
+
             traefik.http.routers.traefik-dashboard.service: api@internal
             traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
             traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
             traefik.http.routers.traefik-dashboard.middlewares: auth
-
-            traefik.http.middlewares.auth.forwardauth.address: https://auth.${DOMAIN?}/auth/realms/master
-            traefik.http.middlewares.auth.forwardauth.trustForwardHeader: true
         networks:
             - tunnel
             - public
