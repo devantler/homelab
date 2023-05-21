@@ -18,7 +18,7 @@ services:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD?}
       KC_HOSTNAME: auth.${DOMAIN?}
-      KC_HOSTNAME_ADMIN_URL: https://keycloak.${DOMAIN?}
+      KC_HOSTNAME_ADMIN_URL: https://keycloak.${DOMAIN?}:8081
       KC_PROXY: edge
       KC_DB: ${KC_DB?}
       KC_DB_URL_HOST: ${KC_DB_URL_HOST?}
@@ -31,7 +31,7 @@ services:
       traefik.http.routers.keycloak.service: keycloak
       traefik.http.routers.keycloak.rule: Host(`keycloak.${DOMAIN?}`)
       traefik.http.routers.keycloak.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.services.keycloak.loadbalancer.server.port: 8080
+      traefik.http.services.keycloak.loadbalancer.server.port: 8081
 
       traefik.http.routers.keycloak-auth.service: keycloak-auth
       traefik.http.routers.keycloak-auth.rule: Host(`auth.${DOMAIN?}`)
