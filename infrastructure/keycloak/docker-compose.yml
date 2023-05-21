@@ -18,6 +18,7 @@ services:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN?}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD?}
       KC_HOSTNAME: auth.${DOMAIN?}
+      KC_HOSTNAME_ADMIN: keycloak.${DOMAIN?}
       KC_PROXY: edge
       KC_DB: ${KC_DB?}
       KC_DB_URL_HOST: ${KC_DB_URL_HOST?}
@@ -27,9 +28,12 @@ services:
     command: start
     labels:
       traefik.enable: true
-      traefik.http.routers.keycloak.rule: Host(`auth.${DOMAIN?}`)
+      traefik.http.routers.keycloak.rule: Host(`keycloak.${DOMAIN?}`)
       traefik.http.routers.keycloak.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.keycloak.loadbalancer.server.port: 8080
+      traefik.http.routers.keycloak-auth.rule: Host(`auth.${DOMAIN?}`)
+      traefik.http.routers.keycloak-auth.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.services.keycloak-auth.loadbalancer.server.port: 8080
     networks:
       - public
       - internal
