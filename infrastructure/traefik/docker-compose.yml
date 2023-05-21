@@ -36,7 +36,6 @@ services:
 
             traefik.http.middlewares.auth.forwardauth.address: https://auth.${DOMAIN?}/admin/master/console
             traefik.http.middlewares.auth.forwardauth.trustForwardHeader: true
-            traefik.http.middlewares.auth.forwardauth.authResponseHeaders: X-Forwarded-User
         networks:
             - tunnel
             - public
