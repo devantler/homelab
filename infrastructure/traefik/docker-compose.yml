@@ -34,7 +34,7 @@ services:
             traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
             traefik.http.routers.traefik-dashboard.middlewares: auth
 
-            traefik.http.middlewares.auth.forwardauth.address: https://auth.${DOMAIN?}/admin/master/console
+            traefik.http.middlewares.auth.forwardauth.address: https://auth.${DOMAIN?}/auth/realms/master
             traefik.http.middlewares.auth.forwardauth.trustForwardHeader: true
         networks:
             - tunnel
