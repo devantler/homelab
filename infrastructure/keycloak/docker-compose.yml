@@ -28,9 +28,12 @@ services:
     command: start
     labels:
       traefik.enable: true
+      traefik.http.routers.keycloak.service: keycloak
       traefik.http.routers.keycloak.rule: Host(`keycloak.${DOMAIN?}`)
       traefik.http.routers.keycloak.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.keycloak.loadbalancer.server.port: 8080
+
+      traefik.http.routers.keycloak-auth.service: keycloak-auth
       traefik.http.routers.keycloak-auth.rule: Host(`auth.${DOMAIN?}`)
       traefik.http.routers.keycloak-auth.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.keycloak-auth.loadbalancer.server.port: 8080
