@@ -18,7 +18,7 @@ services:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD?}
       KC_HOSTNAME: auth.${DOMAIN?}
-      KC_HOSTNAME_ADMIN: keycloak.${DOMAIN?}
+      KC_HOSTNAME_ADMIN_URL: keycloak.${DOMAIN?}
       KC_PROXY: edge
       KC_DB: ${KC_DB?}
       KC_DB_URL_HOST: ${KC_DB_URL_HOST?}
