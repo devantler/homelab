@@ -15,7 +15,7 @@ services:
     image: quay.io/keycloak/keycloak:21.1.1
     restart: unless-stopped
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN?}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD?}
       KC_HOSTNAME: auth.${DOMAIN?}
       KC_HOSTNAME_ADMIN: keycloak.${DOMAIN?}
