@@ -6,12 +6,13 @@ networks:
 services:
   server:
     environment:
+      # Database settings
       DB_CONNECTION: pgsql
       DB_DATABASE: speedtest_tracker
       DB_HOST: postgres-server-1
-      DB_PASSWORD: ${DB_PASSWORD?}
       DB_PORT: 5432
       DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD?}
     healthcheck:
       test: curl --fail http://localhost || exit 1
     image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.16
@@ -19,6 +20,7 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.speedtest-tracker.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.speedtest-tracker.rule: Host(`speedtest-tracker.${DOMAIN?}`)
+      traefik.http.routers.speedtest-tracker.middlewares: auth-signin,auth-verify
     networks:
       - public
       - internal

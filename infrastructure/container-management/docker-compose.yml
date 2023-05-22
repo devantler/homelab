@@ -2,7 +2,7 @@ networks:
   public:
     external: true
 services:
-  server:
+  portainer:
     command: '-H unix:///var/run/docker.sock --http-enabled'
     image: portainer/portainer-ee:2.18.2-alpine
     labels:
@@ -10,6 +10,8 @@ services:
       traefik.http.routers.portainer.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.portainer.rule: Host(`portainer.${DOMAIN?}`)
       traefik.http.services.portainer.loadbalancer.server.port: 9000
+    ports:
+      - 9000:9000
     networks:
       - public
     healthcheck:

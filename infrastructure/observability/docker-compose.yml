@@ -5,7 +5,7 @@ networks:
     external: true
 
 services:
-  collector:
+  jaeger-collector:
     image: jaegertracing/jaeger-collector:1.45.0
     environment:
       SPAN_STORAGE_TYPE: elasticsearch
@@ -19,7 +19,7 @@ services:
     healthcheck:
       test: wget -qO- http://localhost:14269 || exit 1
 
-  query:
+  jaeger-query:
     image: jaegertracing/jaeger-query:1.45.0
     labels:
       traefik.enable: true
@@ -40,3 +40,36 @@ services:
     restart: unless-stopped
     healthcheck:
       test: wget -qO- http://localhost:16687 || exit 1
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - public
+      - internal
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.prometheus.rule: Host(`prometheus.${DOMAIN?}`)
+      traefik.http.routers.prometheus.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.prometheus.middlewares: auth-signin,auth-verify
+    restart: unless-stopped
+    volumes:
+      - prometheus:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    healthcheck:
+      test: wget -qO- http://localhost:9090
+
+  opentelemetry-collector:
+    image: otel/opentelemetry-collector-contrib:0.75.0
+    command: --config=/etc/otel-collector-config.yaml
+    restart: unless-stopped
+    ports:
+      - 4317:4317
+    networks:
+      - internal
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+
+volumes:
+  prometheus:
