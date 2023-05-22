@@ -41,7 +41,7 @@ services:
       OAUTH2_PROXY_HTTP_ADDRESS: '0.0.0.0:4180'
       OAUTH2_PROXY_BANNER: '-' # disables banner
       OAUTH2_PROXY_FOOTER: '-' # disables footer
-      # OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: 'true'
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
       # OIDC settings
       OAUTH2_PROXY_PROVIDER: keycloak-oidc
       OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: Keycloak
@@ -67,7 +67,7 @@ services:
       traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
       # Auth middlewares
-      traefik.http.middlewares.auth-verify.forwardAuth.address: http://identity-management-oauth2-proxy-1:4180/oauth2/auth
+      traefik.http.middlewares.auth-verify.forwardAuth.address: http://identity-management-oauth2-proxy-1:4180/
       traefik.http.middlewares.auth-verify.forwardAuth.trustForwardHeader: true
       traefik.http.middlewares.auth-verify.forwardAuth.authResponseHeaders: X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Access-Token,X-Auth-Request-Redirect,Authorization
       traefik.http.middlewares.auth-signin.errors.service: oauth2-proxy@docker
