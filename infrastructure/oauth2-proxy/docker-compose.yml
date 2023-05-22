@@ -11,7 +11,7 @@ services:
         OAUTH2_PROXY_PROVIDER: keycloak-oidc
         OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID?}
         OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET?}
-        OAUTH2_PROXY_REDIRECT_URL: https://${DOMAIN?}/oauth2/callback
+        OAUTH2_PROXY_REDIRECT_URL: https://oauth2-proxy.${DOMAIN?}/oauth2/callback
         OAUTH2_PROXY_OIDC_ISSUER_URL: https://auth.${DOMAIN?}/realms/master
         OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET?}
         OAUTH2_PROXY_EMAIL_DOMAINS: '*'
