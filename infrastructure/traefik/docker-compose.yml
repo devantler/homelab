@@ -1,58 +1,54 @@
 networks:
-    public:
-        external: true
-    tunnel:
-        external: true
+  public:
+    external: true
+  tunnel:
+    external: true
+  internal:
+    external: true
 services:
-    server:
-        command:
-            - '--providers.docker'
-            - '--providers.docker.network=public'
-            - '--api.dashboard'
-            - '--ping'
-            - '--providers.docker.exposedByDefault=false'
-            - '--entrypoints.http.address=:80'
-            - '--entrypoints.https.address=:443'
-            - '--entrypoints.https.http.tls=true'
-            - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
-            - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
-            - '--entrypoints.https.http.tls.certresolver=letsencrypt'
-            - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
-            - '--certificatesresolvers.letsencrypt.acme.caserver=${LETS_ENCRYPT_CASERVER_URL:-https://acme-v02.api.letsencrypt.org/directory}'
-            - '--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${LETS_ENCRYPT_DNS_PROVIDER:-cloudflare}'
-            - '--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=${LETS_ENCRYPT_DNS_RESOLVERS:-1.1.1.1:53,1.0.0.1:53}'
-        environment:
-            CF_API_EMAIL: ${CF_API_EMAIL}
-            CF_API_KEY: ${CF_API_KEY}
-        healthcheck:
-            test: traefik healthcheck --ping
-        image: traefik:v2.10
-        labels:
-            traefik.enable: true
-            traefik.http.middlewares.auth.forwardauth.address: https://auth.${DOMAIN?}/realms/master
-            traefik.http.middlewares.auth.forwardauth.trustForwardHeader: true
+  server:
+    command:
+      - '--providers.docker'
+      - '--providers.docker.network=public'
+      - '--api.dashboard'
+      - '--ping'
+      - '--providers.docker.exposedByDefault=false'
+      - '--entrypoints.http.address=:80'
+      - '--entrypoints.https.address=:443'
+      - '--entrypoints.https.http.tls=true'
+      - '--entrypoints.https.http.tls.domains[0].main=${DOMAIN?}'
+      - '--entrypoints.https.http.tls.domains[0].sans=*.${DOMAIN?}'
+      - '--entrypoints.https.http.tls.certresolver=letsencrypt'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.caserver=${LETS_ENCRYPT_CASERVER_URL:-https://acme-v02.api.letsencrypt.org/directory}'
+      - '--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${LETS_ENCRYPT_DNS_PROVIDER:-cloudflare}'
+      - '--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=${LETS_ENCRYPT_DNS_RESOLVERS:-1.1.1.1:53,1.0.0.1:53}'
+    environment:
+      CF_API_EMAIL: ${CF_API_EMAIL}
+      CF_API_KEY: ${CF_API_KEY}
+    healthcheck:
+      test: traefik healthcheck --ping
+    image: traefik:v2.10
+    labels:
+      traefik.enable: true
+      traefik.http.middlewares.auth.forwardauth.address: https://auth.${DOMAIN?}/realms/master
+      traefik.http.middlewares.auth.forwardauth.trustForwardHeader: true
 
-            traefik.http.routers.traefik-dashboard.service: api@internal
-            traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-            traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
-            traefik.http.routers.traefik-dashboard.middlewares: auth
-        networks:
-            - tunnel
-            - public
-        ports:
-            - '80:80'
-            - '443:443'
-        restart: unless-stopped
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            - letsencrypt:/letsencrypt
-    oauth2-proxy:
-        image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
-        environment:
-            OAUTH2_PROXY_PROVIDER: keycloak-oidc
-            OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID?}
-            OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET?}
-            OAUTH2_PROXY_REDIRECT_URL: https://${DOMAIN?}/oauth2/callback
-            OAUTH2_PROXY_OIDC_ISSUER_URL: https://auth.${DOMAIN?}/realms/master
+      traefik.http.routers.traefik-dashboard.service: api@internal
+      traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
+      traefik.http.routers.traefik-dashboard.middlewares: auth
+    networks:
+      - tunnel
+      - public
+      - internal
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+
 volumes:
-    letsencrypt: null
+  letsencrypt: null
