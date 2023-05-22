@@ -50,8 +50,8 @@ services:
       OAUTH2_PROXY_WHITELIST_DOMAINS: '*.${DOMAIN?}'
       # Cookie settings
       OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET?}
-      OAUTH2_PROXY_COOKIE_SECURE: false
       OAUTH2_PROXY_COOKIE_DOMAINS: '*.${DOMAIN?}'
+      # OAUTH2_PROXY_COOKIE_SECURE: false
       # OAUTH2_PROXY_SCOPE: 'user:email'
       # Cookie settings
       # OAUTH2_PROXY_COOKIE_SECURE: true
