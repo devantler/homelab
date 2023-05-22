@@ -22,8 +22,8 @@ services:
       - '--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${LETS_ENCRYPT_DNS_PROVIDER:-cloudflare}'
       - '--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=${LETS_ENCRYPT_DNS_RESOLVERS:-1.1.1.1:53,1.0.0.1:53}'
     environment:
-      CF_API_EMAIL: ${CF_API_EMAIL}
-      CF_API_KEY: ${CF_API_KEY}
+      CF_API_EMAIL: ${CF_API_EMAIL?}
+      CF_API_KEY: ${CF_API_KEY?}
     healthcheck:
       test: traefik healthcheck --ping
     image: traefik:v2.10
