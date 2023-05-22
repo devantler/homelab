@@ -37,4 +37,4 @@ services:
       - public
 
 volumes:
-  postgres-data: null
+  postgres-data:
