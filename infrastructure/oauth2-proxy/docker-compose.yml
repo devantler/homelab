@@ -7,6 +7,7 @@ networks:
 services:
   server:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
+    restart: unless-stopped
     environment:
         OAUTH2_PROXY_PROVIDER: keycloak-oidc
         OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID?}
