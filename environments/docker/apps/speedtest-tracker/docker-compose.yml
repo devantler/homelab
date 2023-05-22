@@ -20,7 +20,7 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.speedtest-tracker.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.speedtest-tracker.rule: Host(`speedtest-tracker.${DOMAIN?}`)
-      traefik.http.routers.speedtest-tracker.middlewares: auth-signin,auth-verify
+      traefik.http.routers.speedtest-tracker.middlewares: auth
     networks:
       - public
       - internal
