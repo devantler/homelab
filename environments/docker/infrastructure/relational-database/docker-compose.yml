@@ -33,7 +33,7 @@ services:
       traefik.enable: true
       traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.pgweb.rule: Host(`postgres.${DOMAIN?}`)
-      traefik.http.routers.pgweb.middlewares: auth-signin,auth-verify
+      # traefik.http.routers.pgweb.middlewares: auth-signin,auth-verify
     networks:
       - internal
       - public
