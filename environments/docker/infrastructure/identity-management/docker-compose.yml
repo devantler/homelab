@@ -41,7 +41,7 @@ services:
       OAUTH2_PROXY_HTTP_ADDRESS: '0.0.0.0:4180' # Required for the traefik entrypoint to hit the container
       OAUTH2_PROXY_BANNER: '-' # disables banner
       OAUTH2_PROXY_FOOTER: '-' # disables footer
-      OAUTH2_PROXY_UPSTREAM: static://202 # Required to go around the reverse proxy becaause of https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
+      OAUTH2_PROXY_UPSTREAMS: static://202 # Required to go around the reverse proxy becaause of https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
       # OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
       # OIDC settings
       OAUTH2_PROXY_PROVIDER: keycloak-oidc
@@ -69,7 +69,7 @@ services:
       # Auth middlewares
       traefik.http.middlewares.auth.forwardAuth.address: http://identity-management-oauth2-proxy-1:4180/ # Required to go around the reverse proxy becaause of https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
       traefik.http.middlewares.auth.forwardAuth.trustForwardHeader: true
-      traefik.http.middlewares.auth.forwardAuth.authResponseHeaders: X-Forwarded-User,X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Access-Token,Set-Cookie,Authorization
+      traefik.http.middlewares.auth.forwardAuth.authResponseHeaders: X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Access-Token,Set-Cookie,Authorization
       # Does not work yet: https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
       # traefik.http.middlewares.auth-signin.errors.service: oauth2-proxy@docker
       # traefik.http.middlewares.auth-signin.errors.status: '401'
