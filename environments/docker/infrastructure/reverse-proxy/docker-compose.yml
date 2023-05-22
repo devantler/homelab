@@ -37,7 +37,7 @@ services:
       traefik.http.routers.traefik-dashboard.service: api@internal
       traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
-      traefik.http.routers.traefik-dashboard.middlewares: auth-signin,auth-verify
+      traefik.http.routers.traefik-dashboard.middlewares: auth
     ports:
       - '80:80'
       - '443:443'
