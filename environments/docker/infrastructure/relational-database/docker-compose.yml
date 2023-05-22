@@ -3,37 +3,40 @@ networks:
     external: true
   public:
     external: true
+
 services:
-  pgweb:
-    depends_on:
-      server:
-        condition: service_healthy
-    environment:
-      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD?}@postgres-server-1:5432?sslmode=disable
-    healthcheck:
-      interval: 5s
-      test: [ "CMD", "nc", "-vz", "127.0.0.1", "8081" ]
-    image: sosedoff/pgweb:0.14.0
-    labels:
-      traefik.enable: true
-      traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.pgweb.rule: Host(`postgres.${DOMAIN?}`)
-    networks:
-      - public
+  postgres:
+    image: postgres:15.3
     restart: unless-stopped
-  server:
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}
     healthcheck:
       test: pg_isready -U postgres
-    image: postgres:15.3
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}
     ports:
       - 5432:5432/tcp
     networks:
       - internal
-      - public
-    restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
+
+  pgweb:
+    image: sosedoff/pgweb:0.14.0
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: nc -vz 127.0.0.1 8081 || exit 1
+    environment:
+      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD?}@relational-database-postgres-1:5432?sslmode=disable
+    labels:
+      traefik.enable: true
+      traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.pgweb.rule: Host(`postgres.${DOMAIN?}`)
+      traefik.http.routers.pgweb.middlewares: auth-signin,auth-verify
+    networks:
+      - internal
+      - public
+
 volumes:
   postgres-data: null

@@ -1,17 +1,11 @@
-# Setup keycloak, and remove Cloudflare auth.
-## Should use Traefik ForwardAuth instead.
-## Look into how to handle policies in keycloak.
-## Look into potential policy enforcemnent service, or consider if it makes sense to enforce policies decentralized.
-
 networks:
   public:
     external: true
   internal:
     external: true
   
-
 services:
-  server:
+  keycloak:
     image: quay.io/keycloak/keycloak:21.1.1
     restart: unless-stopped
     environment:
@@ -35,7 +29,7 @@ services:
       - public
       - internal
   
-  server:
+  oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
     restart: unless-stopped
     environment:
