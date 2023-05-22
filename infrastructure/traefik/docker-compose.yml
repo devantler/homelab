@@ -3,8 +3,6 @@ networks:
     external: true
   tunnel:
     external: true
-  internal:
-    external: true
 services:
   server:
     command:
@@ -41,7 +39,6 @@ services:
     networks:
       - tunnel
       - public
-      - internal
     ports:
       - '80:80'
       - '443:443'
