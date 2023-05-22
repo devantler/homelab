@@ -66,7 +66,7 @@ services:
       # OAUTH2_PROXY_PASS_USER_HEADERS: 'true'
     labels:
       traefik.enable: true
-      traefik.http.routers.oauth2-proxy.rule: Host(`oauth2-proxy.${DOMAIN?}`) || PathPrefix(`/oauth2/`)
+      traefik.http.routers.oauth2-proxy.rule: Host(`oauth2-proxy.${DOMAIN?}`) || PathPrefix(`/oauth2`)
       traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
       # Auth middlewares
