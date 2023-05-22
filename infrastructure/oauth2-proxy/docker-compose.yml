@@ -1,9 +1,11 @@
 networks:
   internal:
     external: true
+  public:
+    external: true
 
 services:
-  oauth2-proxy:
+  server:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
     environment:
         OAUTH2_PROXY_PROVIDER: keycloak-oidc
@@ -13,6 +15,11 @@ services:
         OAUTH2_PROXY_OIDC_ISSUER_URL: https://auth.${DOMAIN?}/realms/master
         OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET?}
         OAUTH2_PROXY_EMAIL_DOMAINS: '*'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.oauth2-proxy.rule: Host(`oauth2.${DOMAIN?}`) || PathPrefix(`/oauth2`)
+      traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+
     networks:
       - internal
-      
+      - public      
