@@ -12,7 +12,7 @@ services:
       traefik.enable: true
       traefik.http.routers.glances.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
-      traefik.http.routers.glances.middlewares: auth
+      traefik.http.routers.glances.middlewares: auth-signin, auth-verify
     networks:
       - public
     pid: host
