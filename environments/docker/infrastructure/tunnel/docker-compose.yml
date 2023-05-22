@@ -1,15 +1,16 @@
 networks:
   tunnel:
     external: true
+
 services:
   cloudflared:
+    image: cloudflare/cloudflared:2023.5.0
+    restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN?}
-    image: cloudflare/cloudflared:2023.5.0
     networks:
       - tunnel
-    restart: unless-stopped
     volumes:
       - cloudflared:/.cloudflared
 
