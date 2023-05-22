@@ -31,6 +31,7 @@ services:
       - internal
 
   oauth2-proxy:
+    # The current setup contains a workaround to get around this issue: https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
     restart: unless-stopped
     healthcheck:
@@ -67,13 +68,9 @@ services:
       traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
       # Auth middlewares
-      traefik.http.middlewares.auth.forwardAuth.address: http://identity-management-oauth2-proxy-1:4180/ # Required to go around the reverse proxy becaause of https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
+      traefik.http.middlewares.auth.forwardAuth.address: http://identity-management-oauth2-proxy-1:4180/
       traefik.http.middlewares.auth.forwardAuth.trustForwardHeader: true
       traefik.http.middlewares.auth.forwardAuth.authResponseHeaders: X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Access-Token,Set-Cookie,Authorization
-      # Does not work yet: https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
-      # traefik.http.middlewares.auth-signin.errors.service: oauth2-proxy@docker
-      # traefik.http.middlewares.auth-signin.errors.status: '401'
-      # traefik.http.middlewares.auth-signin.errors.query: /oauth2/sign_in
     networks:
       - public
       - internal
