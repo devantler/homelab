@@ -12,8 +12,6 @@ services:
       test: pg_isready -U postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?}
-    ports:
-      - 5432:5432/tcp
     networks:
       - internal
     volumes:
@@ -33,7 +31,7 @@ services:
       traefik.enable: true
       traefik.http.routers.pgweb.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.pgweb.rule: Host(`postgres.${DOMAIN?}`)
-      # traefik.http.routers.pgweb.middlewares: auth-signin,auth-verify
+      traefik.http.routers.pgweb.middlewares: auth-signin,auth-verify
     networks:
       - internal
       - public
