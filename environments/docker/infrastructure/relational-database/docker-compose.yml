@@ -23,7 +23,7 @@ services:
     image: sosedoff/pgweb:0.14.0
     restart: unless-stopped
     depends_on:
-      server:
+      postgres:
         condition: service_healthy
     healthcheck:
       test: nc -vz 127.0.0.1 8081 || exit 1
