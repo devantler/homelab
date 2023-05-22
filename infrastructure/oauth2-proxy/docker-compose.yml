@@ -19,6 +19,8 @@ services:
         OAUTH2_PROXY_COOKIE_DOMAINS: '*.${DOMAIN?}'
         OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET?}
         OAUTH2_PROXY_COOKIE_SECURE: true
+        OAUTH2_PROXY_COOKIE_CSRF_PER_REQUEST: true
+        OAUTH2_PROXY_COOKIE_CSRF_EXPIRE: 5m
         # Other settings
         OAUTH2_PROXY_REVERSE_PROXY: true
         OAUTH2_PROXY_HTTP_ADDRESS: '0.0.0.0:4180'
@@ -33,7 +35,7 @@ services:
       traefik.http.routers.oauth2-proxy.rule: Host(`oauth2-proxy.${DOMAIN?}`) || PathPrefix(`/oauth2`)
       traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
-
+      # Auth middleware
       traefik.http.middlewares.auth-verify.forwardAuth.address: https://oauth2-proxy.${DOMAIN?}/oauth2/auth
       traefik.http.middlewares.auth-verify.forwardAuth.trustForwardHeader: true
       traefik.http.middlewares.auth-verify.forwardAuth.authResponseHeaders: X-Auth-Request-User,X-Auth-Request-Email,Set-Cookie
