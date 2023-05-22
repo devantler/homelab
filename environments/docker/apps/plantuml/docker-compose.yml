@@ -3,7 +3,7 @@ networks:
     external: true
 services:
   server:
-    image: plantuml/plantuml-server:v1.2023.7
+    image: plantuml/plantuml-server:v1.2023.8
     labels:
       traefik.enable: true
       traefik.http.routers.plantuml-server.rule: Host(`plantuml.${DOMAIN?}`)
