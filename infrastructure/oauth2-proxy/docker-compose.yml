@@ -33,7 +33,7 @@ services:
       traefik.http.middlewares.auth-signin.errors.status: '401'
       traefik.http.middlewares.auth-signin.errors.query: /oauth2/sign_in
     healthcheck:
-      test: curl --fail http://localhost:4180/ping || exit 1
+      test: wget -qO- http://localhost:4180 || exit 1
     networks:
       - public
       - internal
