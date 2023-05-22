@@ -20,7 +20,6 @@ services:
       traefik.http.routers.oauth2-proxy.rule: Host(`oauth2.${DOMAIN?}`)
       traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
-
     networks:
+      - public
       - internal
-      - public      
