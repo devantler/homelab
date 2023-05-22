@@ -34,7 +34,7 @@ services:
       traefik.http.middlewares.auth-verify.forwardAuth.authResponseHeaders: X-Auth-Request-User,X-Auth-Request-Email,Set-Cookie
       traefik.http.middlewares.auth-signin.errors.service: oauth2-proxy@docker
       traefik.http.middlewares.auth-signin.errors.status: '401'
-      traefik.http.middlewares.auth-signin.errors.query: /oauth2/sign_in
+      traefik.http.middlewares.auth-signin.errors.query: /oauth2/sign-in
 
       traefik.http.routers.traefik-dashboard.service: api@internal
       traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
