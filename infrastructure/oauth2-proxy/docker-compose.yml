@@ -22,6 +22,13 @@ services:
       traefik.http.routers.oauth2-proxy.rule: Host(`oauth2-proxy.${DOMAIN?}`)
       traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
+
+      traefik.http.middlewares.auth-verify.forwardAuth.address: https://oauth2-proxy.${DOMAIN?}/oauth2/auth
+      traefik.http.middlewares.auth-verify.forwardAuth.trustForwardHeader: true
+      traefik.http.middlewares.auth-verify.forwardAuth.authResponseHeaders: X-Auth-Request-User,X-Auth-Request-Email,Set-Cookie
+      traefik.http.middlewares.auth-signin.errors.service: oauth2-proxy@docker
+      traefik.http.middlewares.auth-signin.errors.status: '401'
+      traefik.http.middlewares.auth-signin.errors.query: /oauth2/sign_in
     networks:
       - public
       - internal
