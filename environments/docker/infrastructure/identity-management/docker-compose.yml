@@ -48,6 +48,7 @@ services:
       OAUTH2_PROXY_REDIRECT_URL: https://oauth2-proxy.${DOMAIN?}/oauth2/callback
       OAUTH2_PROXY_EMAIL_DOMAINS: '*'
       OAUTH2_PROXY_WHITELIST_DOMAINS: .${DOMAIN?}
+      OAUTH2_PROXY_SCOPE: 'openid email profile'
       # Cookie settings
       OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET?}
       OAUTH2_PROXY_COOKIE_DOMAINS: .${DOMAIN?}
