@@ -32,6 +32,8 @@ services:
       traefik.http.middlewares.auth-signin.errors.service: oauth2-proxy@docker
       traefik.http.middlewares.auth-signin.errors.status: '401'
       traefik.http.middlewares.auth-signin.errors.query: /oauth2/sign_in
+    healthcheck:
+      test: curl --fail http://localhost:4180/ping || exit 1
     networks:
       - public
       - internal
