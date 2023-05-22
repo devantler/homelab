@@ -41,7 +41,7 @@ services:
       OAUTH2_PROXY_HTTP_ADDRESS: '0.0.0.0:4180' # Required for the traefik entrypoint to hit the container
       OAUTH2_PROXY_BANNER: '-' # disables banner
       OAUTH2_PROXY_FOOTER: '-' # disables footer
-      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
+      # OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
       # OIDC settings
       OAUTH2_PROXY_PROVIDER: keycloak-oidc
       OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: Keycloak
@@ -57,7 +57,6 @@ services:
       # Headers settings
       OAUTH2_PROXY_SET_AUTHORIZATION_HEADER: true
       OAUTH2_PROXY_SET_XAUTHREQUEST: true
-
       # Domain settings
       OAUTH2_PROXY_EMAIL_DOMAINS: '*'
       OAUTH2_PROXY_WHITELIST_DOMAINS: .${DOMAIN?}
@@ -67,7 +66,7 @@ services:
       traefik.http.routers.oauth2-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
       # Auth middlewares
-      traefik.http.middlewares.auth-verify.forwardAuth.address: http://identity-management-oauth2-proxy-1:4180/oauth2/auth # Required to go around the reverse proxy becaause of https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
+      traefik.http.middlewares.auth-verify.forwardAuth.address: http://identity-management-oauth2-proxy-1:4180/ # Required to go around the reverse proxy becaause of https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
       traefik.http.middlewares.auth-verify.forwardAuth.trustForwardHeader: true
       traefik.http.middlewares.auth-verify.forwardAuth.authResponseHeaders: X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Access-Token,X-Auth-Request-Redirect,Authorization
       # Does not work yet: https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
