@@ -42,7 +42,7 @@ services:
       OAUTH2_PROXY_BANNER: '-' # disables banner
       OAUTH2_PROXY_FOOTER: '-' # disables footer
       OAUTH2_PROXY_UPSTREAMS: static://202 # Required to go around the reverse proxy becaause of https://github.com/oauth2-proxy/oauth2-proxy/issues/1768
-      # OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
       # OIDC settings
       OAUTH2_PROXY_PROVIDER: keycloak-oidc
       OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: Keycloak
