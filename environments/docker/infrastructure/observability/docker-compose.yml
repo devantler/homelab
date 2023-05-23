@@ -89,7 +89,7 @@ services:
       - public
       - internal
     volumes:
-      - grafana_data:/var/lib/grafana
+      - grafana-data:/var/lib/grafana
 
   glances:
     image: nicolargo/glances:3.4.0.3-full
@@ -109,6 +109,32 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  speedtest-tracker:
+    image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.16
+    restart: unless-stopped
+    healthcheck:
+      test: curl --fail http://localhost || exit 1
+    environment:
+      # Database settings
+      DB_CONNECTION: pgsql
+      DB_DATABASE: speedtest_tracker
+      DB_HOST: relational-database-postgres-1
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD?}
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.speedtest-tracker.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.speedtest-tracker.rule: Host(`speedtest.${DOMAIN?}`)
+      traefik.http.routers.speedtest-tracker.middlewares: auth
+    networks:
+      - public
+      - internal
+    volumes:
+      - speedtest-tracker-config:/config
+
+
 volumes:
   prometheus:
-  grafana_data:
+  grafana-data:
+  speedtest-tracker-config: null
