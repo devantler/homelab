@@ -1,6 +1,13 @@
+networks:
+  internal:
+    external: true
+  public:
+    external: true
+
 services:
   kafka:
     image: confluentinc/cp-schema-registry:7.4.0
+    restart: unless-stopped
     healthcheck:
       test: nc -z localhost 8081 || exit -1
     environment:
@@ -13,7 +20,6 @@ services:
     networks:
       - internal
       - public
-    restart: unless-stopped
     volumes:
       - schema-registry-secrets:/etc/schema-registry/secrets
 
