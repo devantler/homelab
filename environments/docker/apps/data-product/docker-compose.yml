@@ -24,12 +24,8 @@ services:
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.${DOMAIN?}
       DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
       DASHBOARD__EMBEDDEDSERVICES__1__URL: https://grafana.${DOMAIN?}/d/KdDACDp4z/data-product-metrics?orgId=1&refresh=5s&var-job=opentelemetry-collector&var-exported_job=contoso-university-data-product&var-http_client_peer_name=All&kiosk
-      DASHBOARD__EMBEDDEDSERVICES__2__NAME: Kafka
-      DASHBOARD__EMBEDDEDSERVICES__2__URL: https://kafka.${DOMAIN?}
-      DASHBOARD__EMBEDDEDSERVICES__3__NAME: Data Store
-      DASHBOARD__EMBEDDEDSERVICES__3__URL: https://postgres.${DOMAIN?}
-      DASHBOARD__EMBEDDEDSERVICES__4__NAME: Data Catalog
-      DASHBOARD__EMBEDDEDSERVICES__4__URL: https://datahub.${DOMAIN?}
+      DASHBOARD__EMBEDDEDSERVICES__2__NAME: Data Store
+      DASHBOARD__EMBEDDEDSERVICES__2__URL: https://postgres.${DOMAIN?}
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.${DOMAIN?}
       DATACATALOG__ACCESSTOKEN: ${DATA_CATALOG_ACCESS_TOKEN?}
@@ -87,12 +83,8 @@ services:
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.${DOMAIN?}
       DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
       DASHBOARD__EMBEDDEDSERVICES__1__URL: https://grafana.${DOMAIN?}/d/KdDACDp4z/data-product-metrics?orgId=1&refresh=5s&var-job=opentelemetry-collector&var-exported_job=movies-data-product&var-http_client_peer_name=All&kiosk
-      DASHBOARD__EMBEDDEDSERVICES__2__NAME: Kafka
-      DASHBOARD__EMBEDDEDSERVICES__2__URL: https://kafka.${DOMAIN?}
-      DASHBOARD__EMBEDDEDSERVICES__3__NAME: Data Store
-      DASHBOARD__EMBEDDEDSERVICES__3__URL: https://postgres.${DOMAIN?}
-      DASHBOARD__EMBEDDEDSERVICES__4__NAME: Data Catalog
-      DASHBOARD__EMBEDDEDSERVICES__4__URL: https://datahub.${DOMAIN?}
+      DASHBOARD__EMBEDDEDSERVICES__2__NAME: Data Store
+      DASHBOARD__EMBEDDEDSERVICES__2__URL: https://postgres.${DOMAIN?}
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.${DOMAIN?}
       DATACATALOG__ACCESSTOKEN: ${DATA_CATALOG_ACCESS_TOKEN?}
@@ -146,12 +138,8 @@ services:
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.${DOMAIN?}
       DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
       DASHBOARD__EMBEDDEDSERVICES__1__URL: https://grafana.${DOMAIN?}/d/KdDACDp4z/data-product-metrics?orgId=1&refresh=5s&var-job=opentelemetry-collector&var-exported_job=energy-sector-data-product&var-http_client_peer_name=All&kiosk
-      DASHBOARD__EMBEDDEDSERVICES__2__NAME: Kafka
-      DASHBOARD__EMBEDDEDSERVICES__2__URL: https://kafka.${DOMAIN?}
-      DASHBOARD__EMBEDDEDSERVICES__3__NAME: Data Store
-      DASHBOARD__EMBEDDEDSERVICES__3__URL: https://postgres.${DOMAIN?}
-      DASHBOARD__EMBEDDEDSERVICES__4__NAME: Data Catalog
-      DASHBOARD__EMBEDDEDSERVICES__4__URL: https://datahub.${DOMAIN?}
+      DASHBOARD__EMBEDDEDSERVICES__2__NAME: Data Store
+      DASHBOARD__EMBEDDEDSERVICES__2__URL: https://postgres.${DOMAIN?}
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.${DOMAIN?}
       DATACATALOG__ACCESSTOKEN: ${DATA_CATALOG_ACCESS_TOKEN?}
