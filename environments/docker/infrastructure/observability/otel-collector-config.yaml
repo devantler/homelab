@@ -11,12 +11,12 @@ processors:
 
 exporters:
   jaeger:
-    endpoint: jaeger-collector-1:14250
+    endpoint: observability-jaeger-collector-1:14250
     tls:
       insecure: true
 
   prometheus:
-    endpoint: opentelemetry-collector-1:8889
+    endpoint: observability-opentelemetry-collector-1:8889
 
 extensions:
   health_check:
