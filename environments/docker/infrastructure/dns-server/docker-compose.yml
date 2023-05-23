@@ -1,8 +1,5 @@
-networks:
-  public:
-    external: true
 services:
-  server:
+  pihole:
     environment:
       DNSMASQ_LISTENING: all
       PIHOLE_DNS_: ${DNS?}
@@ -19,7 +16,7 @@ services:
       traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
       traefik.http.services.pihole.loadbalancer.server.port: 80
     networks:
-      public: null
+      public:
     ports:
       - 53:53/tcp
       - 53:53/udp
@@ -27,6 +24,11 @@ services:
     volumes:
       - etc-pihole:/etc/pihole
       - etc-dnsmasq.d:/etc/dnsmasq.d
+
+networks:
+  public:
+    external: true
+
 volumes:
-  etc-dnsmasq.d: null
-  etc-pihole: null
+  etc-dnsmasq.d:
+  etc-pihole:

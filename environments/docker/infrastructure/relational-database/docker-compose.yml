@@ -1,9 +1,3 @@
-networks:
-  internal:
-    external: true
-  public:
-    external: true
-
 services:
   postgres:
     image: postgres:15.3
@@ -35,6 +29,13 @@ services:
     networks:
       - internal
       - public
+
+networks:
+  internal:
+    external: true
+  public:
+    external: true
+
 
 volumes:
   postgres-data:

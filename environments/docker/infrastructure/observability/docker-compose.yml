@@ -1,9 +1,3 @@
-networks:
-  public:
-    external: true
-  internal:
-    external: true
-
 services:
   opentelemetry-collector:
     image: otel/opentelemetry-collector-contrib:0.75.0
@@ -133,6 +127,11 @@ services:
     volumes:
       - speedtest-tracker-config:/config
 
+networks:
+  public:
+    external: true
+  internal:
+    external: true
 
 volumes:
   prometheus:
