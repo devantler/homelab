@@ -3,23 +3,23 @@ networks:
     external: true
   public:
     external: true
+
 services:
-  ui:
+  kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.0
+    restart: unless-stopped
     depends_on:
-      server:
+      kafka:
         condition: service_healthy
-      schema-registry:
-        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider  http://localhost:8080/actuator/health
     environment:
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-server-1:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: event-streaming-kafka-1:9092
       KAFKA_CLUSTERS_0_NAME: kafka
-      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry-kafka-1:8081
       KAFKA_CLUSTERS_0_SCHEMANAMETEMPLATE: '%s-value'
       SERVER_FORWARDHEADERSSTRATEGY: native
       DYNAMIC_CONFIG_ENABLED: true
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider  http://localhost:8080/actuator/health
     labels:
       traefik.enable: true
       traefik.http.routers.kafka-ui.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
@@ -29,8 +29,8 @@ services:
     networks:
       - public
       - internal
-    restart: unless-stopped
-  server:
+
+  kafka:
     image: confluentinc/cp-kafka:7.4.0
     environment:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-server-1:9092
@@ -57,7 +57,7 @@ services:
       - kafka-data:/var/lib/kafka/data
       - kafka-secrets:/etc/kafka/secrets
 
-  rest-proxy:
+  kafka-rest-proxy:
     image: confluentinc/cp-kafka-rest:7.4.0
     depends_on:
       server:
@@ -79,7 +79,7 @@ services:
       - public
       - internal
     restart: unless-stopped
-    
+
 volumes:
   kafka-data: null
   kafka-logs: null
