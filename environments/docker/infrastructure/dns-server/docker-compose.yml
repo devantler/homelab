@@ -12,7 +12,7 @@ services:
       traefik.http.middlewares.pihole-prefix.addprefix.prefix: /admin
       traefik.http.middlewares.pihole-strip-prefix.stripprefix.prefixes: /admin
       traefik.http.routers.pihole.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.pihole.middlewares: pihole-strip-prefix,pihole-prefix
+      traefik.http.routers.pihole.middlewares: pihole-strip-prefix,pihole-prefix,auth
       traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
       traefik.http.services.pihole.loadbalancer.server.port: 80
     networks:
