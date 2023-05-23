@@ -1,0 +1,28 @@
+services:
+  kafka:
+    image: confluentinc/cp-schema-registry:7.4.0
+    restart: unless-stopped
+    healthcheck:
+      test: nc -z localhost 8081 || exit -1
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: event-streaming-kafka-1:9092
+    labels:
+      traefik.enable: true
+      traefik.http.routers.schema-registry.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.schema-registry.rule: Host(`schema-registry.${DOMAIN?}`)
+      traefik.http.routers.schema-registry.middlewares: auth
+    networks:
+      - internal
+      - public
+    volumes:
+      - schema-registry-secrets:/etc/schema-registry/secrets
+
+networks:
+  internal:
+    external: true
+  public:
+    external: true
+
+volumes:
+  schema-registry-secrets:

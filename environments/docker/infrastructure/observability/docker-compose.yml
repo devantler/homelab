@@ -1,69 +1,8 @@
-networks:
-  public:
-    external: true
-  internal:
-    external: true
-
 services:
-  jaeger-collector:
-    image: jaegertracing/jaeger-collector:1.45.0
-    environment:
-      SPAN_STORAGE_TYPE: elasticsearch
-      ES_SERVER_URLS: http://elasticsearch-server-1:9200
-      # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
-      #ES_VERSION: 7
-      #ES_CREATE_INDEX_TEMPLATES: false
-    networks:
-      - internal
-    restart: unless-stopped
-    healthcheck:
-      test: wget -qO- http://localhost:14269 || exit 1
-
-  jaeger-query:
-    image: jaegertracing/jaeger-query:1.45.0
-    labels:
-      traefik.enable: true
-      traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.jaeger.rule: Host(`jaeger.${DOMAIN}`)
-      traefik.http.services.jaeger.loadbalancer.server.port: 16686
-    environment:
-      SPAN_STORAGE_TYPE: elasticsearch
-      ES_SERVER_URLS: http://elasticsearch-server-1:9200
-      METRICS_STORAGE_TYPE: prometheus
-      PROMETHEUS_SERVER_URL: http://prometheus-server-1:9090
-      # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
-      #ES_VERSION: 7
-      #ES_CREATE_INDEX_TEMPLATES: false
-    networks:
-      - public
-      - internal
-    restart: unless-stopped
-    healthcheck:
-      test: wget -qO- http://localhost:16687 || exit 1
-
-  prometheus:
-    image: prom/prometheus:v2.44.0
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    networks:
-      - public
-      - internal
-    labels:
-      traefik.enable: 'true'
-      traefik.http.routers.prometheus.rule: Host(`prometheus.${DOMAIN?}`)
-      traefik.http.routers.prometheus.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.prometheus.middlewares: auth
-    restart: unless-stopped
-    volumes:
-      - prometheus:/prometheus
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    healthcheck:
-      test: wget -qO- http://localhost:9090
-
   opentelemetry-collector:
     image: otel/opentelemetry-collector-contrib:0.75.0
-    command: --config=/etc/otel-collector-config.yaml
     restart: unless-stopped
+    command: --config=/etc/otel-collector-config.yaml
     ports:
       - 4317:4317
     networks:
@@ -71,5 +10,130 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
 
+  jaeger-collector:
+    image: jaegertracing/jaeger-collector:1.45.0
+    restart: unless-stopped
+    healthcheck:
+      test: wget -qO- http://localhost:14269 || exit 1
+    environment:
+      SPAN_STORAGE_TYPE: elasticsearch
+      ES_SERVER_URLS: http://search-engine-elasticsearch-1:9200
+      # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
+      #ES_VERSION: 7
+      #ES_CREATE_INDEX_TEMPLATES: false
+    networks:
+      - internal
+
+  jaeger-query:
+    image: jaegertracing/jaeger-query:1.45.0
+    restart: unless-stopped
+    healthcheck:
+      test: wget -qO- http://localhost:16687 || exit 1
+    labels:
+      traefik.enable: true
+      traefik.http.routers.jaeger.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.jaeger.rule: Host(`jaeger.${DOMAIN}`) || Host(`tracing.${DOMAIN}`)
+      traefik.http.services.jaeger.loadbalancer.server.port: 16686
+      traefik.http.routers.jaeger.middlewares: auth
+    environment:
+      SPAN_STORAGE_TYPE: elasticsearch
+      ES_SERVER_URLS: http://search-engine-elasticsearch-1:9200
+      METRICS_STORAGE_TYPE: prometheus
+      PROMETHEUS_SERVER_URL: http://observability-prometheus-1:9090
+      # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
+      #ES_VERSION: 7
+      #ES_CREATE_INDEX_TEMPLATES: false
+    networks:
+      - public
+      - internal
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    restart: unless-stopped
+    healthcheck:
+      test: wget -qO- http://localhost:9090
+    command: --config.file=/etc/prometheus/prometheus.yml
+    labels:
+      traefik.enable: true
+      traefik.http.routers.prometheus.rule: Host(`prometheus.${DOMAIN?}`) || Host(`metrics.${DOMAIN?}`)
+      traefik.http.routers.prometheus.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.prometheus.middlewares: auth
+    networks:
+      - public
+      - internal
+    volumes:
+      - prometheus:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:9.5.2
+    restart: unless-stopped
+    # healthcheck:
+    #   test: curl -f localhost:3000/api/health && echo 'ready' || exit 1
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER?}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD?}
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      # - GF_SERVER_DOMAIN=grafana.${DOMAIN?}
+    labels:
+      traefik.enable: true
+      traefik.http.routers.grafana.rule: "Host(`grafana.${DOMAIN?}`)"
+      traefik.http.routers.grafana.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+    networks:
+      - public
+      - internal
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  glances:
+    image: nicolargo/glances:3.4.0.3-full
+    restart: unless-stopped
+    pid: host
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider --no-check-certificate http://localhost:61208 || exit 1
+    environment:
+      GLANCES_OPT: '-w'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.glances.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.glances.rule: Host(`glances.${DOMAIN?}`)
+      traefik.http.routers.glances.middlewares: auth
+    networks:
+      - public
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  speedtest-tracker:
+    image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.16
+    restart: unless-stopped
+    healthcheck:
+      test: curl --fail http://localhost || exit 1
+    environment:
+      # Database settings
+      DB_CONNECTION: pgsql
+      DB_DATABASE: speedtest_tracker
+      DB_HOST: relational-database-postgres-1
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD?}
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.speedtest-tracker.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.speedtest-tracker.rule: Host(`speedtest.${DOMAIN?}`)
+      traefik.http.routers.speedtest-tracker.middlewares: auth
+    networks:
+      - public
+      - internal
+    volumes:
+      - speedtest-tracker-config:/config
+
+networks:
+  public:
+    external: true
+  internal:
+    external: true
+
 volumes:
   prometheus:
+  grafana-data:
+  speedtest-tracker-config: null

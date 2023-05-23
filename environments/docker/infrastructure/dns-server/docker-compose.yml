@@ -1,13 +1,10 @@
-networks:
-  public:
-    external: true
 services:
-  server:
+  pihole:
     environment:
       DNSMASQ_LISTENING: all
-      PIHOLE_DNS_: ${DNS?}
-      TZ: ${TZ?}
-      WEBPASSWORD: ${PASSWORD?}
+      PIHOLE_DNS_: ${PIHOLE_DNS?}
+      TZ: ${PIHOLE_TZ?}
+      WEBPASSWORD: ${PIHOLE_PASSWORD?}
     hostname: pihole.${DOMAIN?}
     image: pihole/pihole:2023.03.1
     labels:
@@ -15,11 +12,11 @@ services:
       traefik.http.middlewares.pihole-prefix.addprefix.prefix: /admin
       traefik.http.middlewares.pihole-strip-prefix.stripprefix.prefixes: /admin
       traefik.http.routers.pihole.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.pihole.middlewares: pihole-strip-prefix,pihole-prefix
+      traefik.http.routers.pihole.middlewares: pihole-strip-prefix,pihole-prefix,auth
       traefik.http.routers.pihole.rule: Host(`pihole.${DOMAIN?}`)
       traefik.http.services.pihole.loadbalancer.server.port: 80
     networks:
-      public: null
+      public:
     ports:
       - 53:53/tcp
       - 53:53/udp
@@ -27,6 +24,11 @@ services:
     volumes:
       - etc-pihole:/etc/pihole
       - etc-dnsmasq.d:/etc/dnsmasq.d
+
+networks:
+  public:
+    external: true
+
 volumes:
-  etc-dnsmasq.d: null
-  etc-pihole: null
+  etc-dnsmasq.d:
+  etc-pihole:

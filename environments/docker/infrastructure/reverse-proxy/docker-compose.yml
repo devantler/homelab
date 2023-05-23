@@ -1,9 +1,3 @@
-networks:
-  public:
-    external: true
-  tunnel:
-    external: true
-
 services:
   traefik:
     image: traefik:v2.10
@@ -47,6 +41,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt
+
+networks:
+  public:
+    external: true
+  tunnel:
+    external: true
 
 volumes:
   letsencrypt: null
