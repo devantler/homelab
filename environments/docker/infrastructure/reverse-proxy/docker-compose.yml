@@ -1,0 +1,52 @@
+services:
+  traefik:
+    image: traefik:v2.10
+    restart: unless-stopped
+    healthcheck:
+      test: traefik healthcheck --ping
+    environment:
+      # General settings
+      TRAEFIK_API_DASHBOARD: true
+      TRAEFIK_PING: true
+      # Provider settings
+      TRAEFIK_PROVIDERS_DOCKER: true
+      TRAEFIK_PROVIDERS_DOCKER_NETWORK: public
+      TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT: false
+      # Entrypoints settings
+      TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS: :80
+      TRAEFIK_ENTRYPOINTS_HTTPS_ADDRESS: :443
+      TRAEFIK_ENTRYPOINTS_HTTPS_HTTP_TLS: true
+      TRAEFIK_ENTRYPOINTS_HTTPS_HTTP_TLS_DOMAINS_0_MAIN: ${DOMAIN?}
+      TRAEFIK_ENTRYPOINTS_HTTPS_HTTP_TLS_DOMAINS_0_SANS: '*.${DOMAIN?}'
+      # Certificate resolver settings
+      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE: /letsencrypt/acme.json
+      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_CASERVER: ${LETS_ENCRYPT_CASERVER_URL:-https://acme-v02.api.letsencrypt.org/directory}
+      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_DNSCHALLENGE_PROVIDER: ${LETS_ENCRYPT_DNS_PROVIDER:-cloudflare}
+      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_DNSCHALLENGE_RESOLVERS: ${LETS_ENCRYPT_DNS_RESOLVERS:-1.1.1.1:53,1.0.0.1:53}
+      # Cloudflare settings
+      CF_API_EMAIL: ${CF_API_EMAIL?}
+      CF_API_KEY: ${CF_API_KEY?}
+    labels:
+      traefik.enable: true
+      traefik.http.routers.traefik-dashboard.service: api@internal
+      traefik.http.routers.traefik-dashboard.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.traefik-dashboard.rule: Host(`traefik.${DOMAIN?}`)
+      traefik.http.routers.traefik-dashboard.middlewares: auth
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - tunnel
+      - public
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+
+networks:
+  public:
+    external: true
+  tunnel:
+    external: true
+
+volumes:
+  letsencrypt: null

@@ -1,0 +1,34 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+  spanmetrics:
+    metrics_exporter: prometheus
+
+exporters:
+  jaeger:
+    endpoint: observability-jaeger-collector-1:14250
+    tls:
+      insecure: true
+
+  prometheus:
+    endpoint: observability-opentelemetry-collector-1:8889
+
+extensions:
+  health_check:
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, spanmetrics]
+      exporters: [jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
