@@ -66,8 +66,9 @@ services:
       KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry-kafka-1:8081
     labels:
       traefik.enable: true
-      traefik.http.routers.kafka.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
-      traefik.http.routers.kafka.rule: Host(`kafka-rest.${DOMAIN?}`)
+      traefik.http.routers.kafka-rest-proxy.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
+      traefik.http.routers.kafka-rest-proxy.rule: Host(`kafka-rest.${DOMAIN?}`)
+      traefik.http.routers.kafka-rest-proxy.middlewares: auth
     networks:
       - public
       - internal
