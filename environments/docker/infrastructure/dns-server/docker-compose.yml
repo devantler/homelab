@@ -2,7 +2,7 @@ services:
   pihole:
     environment:
       DNSMASQ_LISTENING: all
-      PIHOLE_DNS_: ${DNS?}
+      PIHOLE_DNS_: ${PIHOLE_DNS?}
       TZ: ${TZ?}
       WEBPASSWORD: ${PASSWORD?}
     hostname: pihole.${DOMAIN?}
