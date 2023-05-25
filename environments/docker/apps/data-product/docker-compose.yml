@@ -53,6 +53,7 @@ services:
       FEATUREFLAGS__ENABLEDATACATALOG: true
       FEATUREFLAGS__ENABLEDATAINGESTION: true
       FEATUREFLAGS__ENABLETELEMETRY: true
+      FEATUREFLAGS__ENABLEAUTH: true
     labels:
       traefik.enable: true
       traefik.http.routers.contoso-university-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
@@ -111,6 +112,7 @@ services:
       FEATUREFLAGS__ENABLEDATACATALOG: true
       FEATUREFLAGS__ENABLEDATAINGESTION: true
       FEATUREFLAGS__ENABLETELEMETRY: true
+      FEATUREFLAGS__ENABLEAUTH: true
     labels:
       traefik.enable: true
       traefik.http.routers.movies-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
@@ -169,6 +171,7 @@ services:
       FEATUREFLAGS__ENABLEDATACATALOG: true
       FEATUREFLAGS__ENABLEDATAINGESTION: true
       FEATUREFLAGS__ENABLETELEMETRY: true
+      FEATUREFLAGS__ENABLEAUTH: true
     labels:
       traefik.enable: true
       traefik.http.routers.energy-sector-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
