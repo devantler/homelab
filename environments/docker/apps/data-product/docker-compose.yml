@@ -1,6 +1,6 @@
 services:
   contoso-university:
-    image: ghcr.io/devantler/data-product:v0.1.18
+    image: ghcr.io/devantler/data-product:v0.1.19
     restart: unless-stopped
     depends_on:
       redis:
@@ -20,6 +20,10 @@ services:
       CACHESTORE__SERVER: data-product-redis-1:6379
       CACHESTORE__TYPE: Redis
       CACHESTORE__DATABASE: 0
+      AUTH__TYPE: Keycloak
+      AUTH__AUTHSERVERURL: https://auth.${DOMAIN?}/
+      AUTH__CLIENTID: ${DP_AUTH_CLIENTID?}
+      AUTH__CLIENTSECRET: ${DP_AUTH_CLIENTSECRET?}
       DASHBOARD__EMBEDDEDSERVICES__0__NAME: Tracing
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.${DOMAIN?}
       DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
@@ -53,13 +57,12 @@ services:
       traefik.enable: true
       traefik.http.routers.contoso-university-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.contoso-university-dp.rule: Host(`contoso-university-dp.${DOMAIN?}`)
-      traefik.http.routers.contoso-university-dp.middlewares: auth
     networks:
       - internal
       - public
   
   movies:
-    image: ghcr.io/devantler/data-product:v0.1.18
+    image: ghcr.io/devantler/data-product:v0.1.19
     restart: unless-stopped
     depends_on:
       redis:
@@ -79,6 +82,10 @@ services:
       CACHESTORE__SERVER: data-product-redis-1:6379
       CACHESTORE__TYPE: Redis
       CACHESTORE__DATABASE: 1
+      AUTH__TYPE: Keycloak
+      AUTH__AUTHSERVERURL: https://auth.${DOMAIN?}/
+      AUTH__CLIENTID: ${DP_AUTH_CLIENTID?}
+      AUTH__CLIENTSECRET: ${DP_AUTH_CLIENTSECRET?}
       DASHBOARD__EMBEDDEDSERVICES__0__NAME: Tracing
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.${DOMAIN?}
       DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
@@ -108,13 +115,12 @@ services:
       traefik.enable: true
       traefik.http.routers.movies-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.movies-dp.rule: Host(`movies-dp.${DOMAIN?}`)
-      traefik.http.routers.movies-dp.middlewares: auth
     networks:
       - internal
       - public
 
   energy-sector:
-    image: ghcr.io/devantler/data-product:v0.1.18
+    image: ghcr.io/devantler/data-product:v0.1.19
     restart: unless-stopped
     depends_on:
       redis:
@@ -134,6 +140,10 @@ services:
       CACHESTORE__SERVER: data-product-redis-1:6379
       CACHESTORE__TYPE: Redis
       CACHESTORE__DATABASE: 2
+      AUTH__TYPE: Keycloak
+      AUTH__AUTHSERVERURL: https://auth.${DOMAIN?}/
+      AUTH__CLIENTID: ${DP_AUTH_CLIENTID?}
+      AUTH__CLIENTSECRET: ${DP_AUTH_CLIENTSECRET?}
       DASHBOARD__EMBEDDEDSERVICES__0__NAME: Tracing
       DASHBOARD__EMBEDDEDSERVICES__0__URL: https://jaeger.${DOMAIN?}
       DASHBOARD__EMBEDDEDSERVICES__1__NAME: Monitoring
@@ -163,7 +173,6 @@ services:
       traefik.enable: true
       traefik.http.routers.energy-sector-dp.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
       traefik.http.routers.energy-sector-dp.rule: Host(`energy-sector-dp.${DOMAIN?}`)
-      traefik.http.routers.energy-sector-dp.middlewares: auth
     networks:
       - internal
       - public
