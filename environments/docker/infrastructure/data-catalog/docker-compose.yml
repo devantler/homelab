@@ -19,7 +19,7 @@ services:
       - internal
 
   datahub-frontend-react:
-    image: linkedin/datahub-frontend-react:v0.10.2
+    image: linkedin/datahub-frontend-react:v0.10.3
     restart: unless-stopped
     depends_on:
       - datahub-gms
