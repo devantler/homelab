@@ -1,6 +1,6 @@
 services:
   contoso-university:
-    image: ghcr.io/devantler/data-product:v0.1.28
+    image: ghcr.io/devantler/data-product:v0.1.29
     restart: unless-stopped
     depends_on:
       redis:
@@ -63,7 +63,7 @@ services:
       - public
   
   movies:
-    image: ghcr.io/devantler/data-product:v0.1.28
+    image: ghcr.io/devantler/data-product:v0.1.29
     restart: unless-stopped
     depends_on:
       redis:
@@ -122,7 +122,7 @@ services:
       - public
 
   energy-sector:
-    image: ghcr.io/devantler/data-product:v0.1.28
+    image: ghcr.io/devantler/data-product:v0.1.29
     restart: unless-stopped
     depends_on:
       redis:
