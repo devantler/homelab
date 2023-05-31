@@ -6,7 +6,7 @@ services:
       TZ: ${PIHOLE_TZ?}
       WEBPASSWORD: ${PIHOLE_PASSWORD?}
     hostname: pihole.${DOMAIN?}
-    image: pihole/pihole:2023.05.1
+    image: pihole/pihole:2023.05.2
     labels:
       traefik.enable: true
       traefik.http.routers.pihole.entrypoints: ${TRAEFIK_ENTRYPOINTS:-https}
