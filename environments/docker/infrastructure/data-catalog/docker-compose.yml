@@ -49,6 +49,7 @@ services:
       - public
     volumes:
       - datahub-plugins:/etc/datahub/plugins
+      - ./user.props:/datahub-frontend/conf/user.props
 
   datahub-gms:
     image: linkedin/datahub-gms:v0.10.3
