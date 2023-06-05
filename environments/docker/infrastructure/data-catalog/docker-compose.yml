@@ -54,7 +54,7 @@ services:
     image: linkedin/datahub-gms:v0.10.3
     restart: unless-stopped
     environment:
-      DATAHUB_SERVER_TYPE: quickstart
+      #DATAHUB_SERVER_TYPE: quickstart
       DATAHUB_TELEMETRY_ENABLED: true
       DATAHUB_UPGRADE_HISTORY_KAFKA_CONSUMER_GROUP_ID: generic-duhe-consumer-job-client-gms
       EBEAN_DATASOURCE_DRIVER: org.postgresql.Driver

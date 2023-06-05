@@ -136,4 +136,4 @@ networks:
 volumes:
   prometheus:
   grafana-data:
-  speedtest-tracker-config: null
+  speedtest-tracker-config:
