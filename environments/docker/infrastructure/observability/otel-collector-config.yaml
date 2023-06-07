@@ -12,8 +12,6 @@ exporters:
 
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
-    send_timestamps: true
-    enable_open_metrics: true
 
 connectors:
   spanmetrics:
@@ -31,7 +29,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [spanmetrics, otlp]
-    metrics/spanmetrics: # Normal metrics to Prometheus
-      receivers: [otlp]
+    metrics/spanmetrics: # Metrics to Prometheus
+      receivers: [otlp, spanmetrics]
       processors: [batch]
       exporters: [prometheus]
