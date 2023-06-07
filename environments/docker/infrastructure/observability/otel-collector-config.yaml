@@ -12,6 +12,7 @@ exporters:
 
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
+    enable_open_metrics: true
 
 connectors:
   spanmetrics:
