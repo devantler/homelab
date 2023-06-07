@@ -9,7 +9,7 @@ exporters:
     endpoint: observability-jaeger-collector-1:4317
 
   prometheus:
-    endpoint: observability-prometheus-1:8889
+    endpoint: observability-opentelemetry-collector-1:8889
 
 connectors:
   spanmetrics:
