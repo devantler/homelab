@@ -1,6 +1,6 @@
 services:
   opentelemetry-collector:
-    image: otel/opentelemetry-collector-contrib:0.78.0
+    image: otel/opentelemetry-collector-contrib:0.79.0
     restart: unless-stopped
     command: --config=/etc/otel-collector-config.yaml
     ports:
@@ -11,7 +11,7 @@ services:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
 
   jaeger-collector:
-    image: jaegertracing/jaeger-collector:1.45.0
+    image: jaegertracing/jaeger-collector:1.46.0
     restart: unless-stopped
     healthcheck:
       test: wget -qO- http://localhost:14269 || exit 1
@@ -25,7 +25,7 @@ services:
       - internal
 
   jaeger-query:
-    image: jaegertracing/jaeger-query:1.45.0
+    image: jaegertracing/jaeger-query:1.46.0
     restart: unless-stopped
     healthcheck:
       test: wget -qO- http://localhost:16687 || exit 1
@@ -67,7 +67,7 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   grafana:
-    image: grafana/grafana:9.5.2
+    image: grafana/grafana:9.5.3
     restart: unless-stopped
     # healthcheck:
     #   test: curl -f localhost:3000/api/health && echo 'ready' || exit 1
@@ -137,4 +137,4 @@ networks:
 volumes:
   prometheus:
   grafana-data:
-  speedtest-tracker-config: null
+  speedtest-tracker-config:
