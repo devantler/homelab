@@ -5,6 +5,7 @@ services:
     command: --config=/etc/otel-collector-config.yaml
     ports:
       - 4317:4317
+      - 8889:8889
     networks:
       - internal
     volumes:
