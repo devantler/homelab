@@ -13,13 +13,11 @@ exporters:
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
 
-# connectors:
-#   spanmetrics:
+connectors:
+  spanmetrics:
 
 processors:
   batch:
-  spanmetrics:
-    metrics_exporter: prometheus
 
 extensions:
   health_check:
@@ -29,12 +27,12 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch, spanmetrics]
-      exporters: [otlp] #[otlp, spanmetrics]
+      processors: [batch]
+      exporters: [otlp, spanmetrics]
     metrics: # Regular metrics to Prometheus
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
-    # metrics/spanmetrics: # Span metrics to Prometheus
-    #   receivers: [spanmetrics]
-    #   exporters: [prometheus]
+    metrics/spanmetrics: # Span metrics to Prometheus
+      receivers: [spanmetrics]
+      exporters: [prometheus]
