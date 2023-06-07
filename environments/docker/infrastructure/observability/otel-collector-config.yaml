@@ -18,6 +18,8 @@ exporters:
 
 processors:
   batch:
+  spanmetrics:
+    metrics_exporter: prometheus
 
 extensions:
   health_check:
@@ -27,7 +29,7 @@ service:
   pipelines:
     traces: # Traces to Jaeger
       receivers: [otlp]
-      processors: [batch]
+      processors: [batch, spanmetrics]
       exporters: [otlp] #[spanmetrics, otlp]
     metrics: # Normal metrics to Prometheus
       receivers: [otlp]
