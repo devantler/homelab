@@ -12,6 +12,7 @@ exporters:
 
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
+    send_timestamps: true
     enable_open_metrics: true
 
 connectors:
