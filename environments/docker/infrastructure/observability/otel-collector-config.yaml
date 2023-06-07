@@ -13,8 +13,8 @@ exporters:
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
 
-connectors:
-  spanmetrics:
+# connectors:
+#   spanmetrics:
 
 processors:
   batch:
