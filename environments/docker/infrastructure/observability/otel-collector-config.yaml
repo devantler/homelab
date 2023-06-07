@@ -34,6 +34,10 @@ service:
       receivers: [otlp, jaeger]
       processors: [batch]
       exporters: [spanmetrics, jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
     metrics/spanmetrics:
       receivers: [spanmetrics]
       exporters: [prometheus]
