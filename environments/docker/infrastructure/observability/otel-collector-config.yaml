@@ -1,13 +1,13 @@
 receivers:
+  jaeger:
+    protocols:
+      thrift_http:
+        endpoint: observability-opentelemetry-collector-1:14278
+
   otlp:
     protocols:
       grpc:
       http:
-
-processors:
-  batch:
-  spanmetrics:
-    metrics_exporter: prometheus
 
 exporters:
   jaeger:
@@ -18,6 +18,13 @@ exporters:
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
 
+connectors:
+  spanmetrics:
+    metrics_exporter: prometheus
+
+processors:
+  batch:
+
 extensions:
   health_check:
 
@@ -25,10 +32,13 @@ service:
   extensions: [health_check]
   pipelines:
     traces:
-      receivers: [otlp]
-      processors: [batch, spanmetrics]
-      exporters: [jaeger]
-    metrics:
-      receivers: [otlp]
+      receivers: [otlp, jaeger]
       processors: [batch]
+      exporters: [spanmetrics, jaeger]
+    metrics/spanmetrics:
+      receivers: [spanmetrics]
       exporters: [prometheus]
+    # metrics:
+    #   receivers: [otlp]
+    #   processors: [batch]
+    #   exporters: [prometheus]

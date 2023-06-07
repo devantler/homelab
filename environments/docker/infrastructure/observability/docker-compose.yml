@@ -40,6 +40,7 @@ services:
       ES_SERVER_URLS: http://search-engine-elasticsearch-1:9200
       METRICS_STORAGE_TYPE: prometheus
       PROMETHEUS_SERVER_URL: http://observability-prometheus-1:9090
+      PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR: true
       # Necessary as elasticsearch doesn't work with version 8 yet https://github.com/jaegertracing/jaeger/issues/3571
       #ES_VERSION: 7
       #ES_CREATE_INDEX_TEMPLATES: false
