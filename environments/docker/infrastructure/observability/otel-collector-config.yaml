@@ -27,11 +27,11 @@ extensions:
 service:
   extensions: [health_check]
   pipelines:
-    traces: # Traces to Jaeger
+    traces:
       receivers: [otlp]
       processors: [batch, spanmetrics]
-      exporters: [otlp] #[spanmetrics, otlp]
-    metrics: # Normal metrics to Prometheus
+      exporters: [otlp]
+    metrics:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
