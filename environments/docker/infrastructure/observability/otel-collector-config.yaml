@@ -5,13 +5,11 @@ receivers:
       http:
 
 exporters:
-  jaeger:
-    endpoint: observability-jaeger-collector-1:14250
-    tls:
-      insecure: true
+  otlp:
+    endpoint: observability-jaeger-collector-1:4317
 
   prometheus:
-    endpoint: 0.0.0.0:8889
+    endpoint: observability-prometheus-1:8889
 
 connectors:
   spanmetrics:
