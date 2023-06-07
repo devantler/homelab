@@ -2,7 +2,7 @@ receivers:
   jaeger:
     protocols:
       thrift_http:
-        endpoint: observability-opentelemetry-collector-1:14278
+        endpoint: 0.0.0.0:14278
 
   otlp:
     protocols:
@@ -16,11 +16,10 @@ exporters:
       insecure: true
 
   prometheus:
-    endpoint: observability-opentelemetry-collector-1:8889
+    endpoint: 0.0.0.0:8889
 
 connectors:
   spanmetrics:
-    metrics_exporter: prometheus
 
 processors:
   batch:
@@ -38,7 +37,3 @@ service:
     metrics/spanmetrics:
       receivers: [spanmetrics]
       exporters: [prometheus]
-    # metrics:
-    #   receivers: [otlp]
-    #   processors: [batch]
-    #   exporters: [prometheus]
