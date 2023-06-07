@@ -26,7 +26,7 @@ service:
     traces: # Traces to Jaeger
       receivers: [otlp]
       processors: [batch]
-      exporters: [spanmetrics, jaeger]
+      exporters: [spanmetrics, otlp]
     metrics: # Normal metrics to Prometheus
       receivers: [otlp]
       processors: [batch]
