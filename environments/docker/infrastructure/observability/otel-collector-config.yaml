@@ -7,6 +7,8 @@ receivers:
 exporters:
   otlp:
     endpoint: observability-jaeger-collector-1:4317
+    tls:
+      insecure: true
 
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
