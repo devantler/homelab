@@ -29,7 +29,10 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [spanmetrics, otlp]
-    metrics/spanmetrics: # Metrics to Prometheus
-      receivers: [otlp, spanmetrics]
+    metrics: # Normal metrics to Prometheus
+      receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
+    # metrics/spanmetrics: # Span metrics to Prometheus
+    #   receivers: [spanmetrics]
+    #   exporters: [prometheus]
