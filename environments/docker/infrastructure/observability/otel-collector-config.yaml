@@ -13,8 +13,8 @@ exporters:
   prometheus:
     endpoint: observability-opentelemetry-collector-1:8889
 
-# connectors:
-#   spanmetrics:
+connectors:
+  spanmetrics:
 
 processors:
   batch:
@@ -28,11 +28,12 @@ service:
     traces: # Traces to Jaeger
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp] # [spanmetrics, otlp] 
+      exporters: [spanmetrics, otlp]
     metrics: # Normal metrics to Prometheus
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
-    # metrics/spanmetrics: # Span metrics to Prometheus
-    #   receivers: [spanmetrics]
-    #   exporters: [prometheus]
+    metrics/spanmetrics: # Span metrics to Prometheus
+      receivers: [spanmetrics]
+      processors: [batch]
+      exporters: [prometheus]
