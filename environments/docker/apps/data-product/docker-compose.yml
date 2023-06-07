@@ -1,6 +1,6 @@
 services:
   contoso-university:
-    image: ghcr.io/devantler/data-product:v0.1.29
+    image: ghcr.io/devantler/data-product:v0.1.30
     restart: unless-stopped
     depends_on:
       redis:
@@ -33,14 +33,16 @@ services:
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.${DOMAIN?}
       DATACATALOG__ACCESSTOKEN: ${DATA_CATALOG_ACCESS_TOKEN?}
-      DATAINGESTORS__0__FILEPATH: assets/data/contoso-university-single.json
-      DATAINGESTORS__0__TYPE: Local
-      DATAINGESTORS__1__FILEPATH: assets/data/contoso-university-multiple.json
-      DATAINGESTORS__1__TYPE: Local
-      DATAINGESTORS__2__GROUPID: contoso-university
-      DATAINGESTORS__2__SERVERS: event-streaming-kafka-1:9092
-      DATAINGESTORS__2__TOPIC: contoso-university
-      DATAINGESTORS__2__TYPE: Kafka
+      INPUTS__0__FILEPATH: assets/input/contoso-university-single.json
+      INPUTS__0__TYPE: File
+      INPUTS__1__FILEPATH: assets/input/contoso-university-multiple.json
+      INPUTS__1__TYPE: File
+      INPUTS__2__GROUPID: contoso-university
+      INPUTS__2__SERVERS: event-streaming-kafka-1:9092
+      INPUTS__2__TOPIC: contoso-university
+      INPUTS__2__TYPE: Kafka
+      OUTPUTS__0__TYPE: File
+      OUTPUTS__0__FILEPATH: assets/output/contoso-university.txt
       DATASTORE__CONNECTIONSTRING: Host=relational-database-postgres-1;Port=5432;Database=contoso-university;Username=postgres;Password=${POSTGRES_PASSWORD?}
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__TYPE: SQL
@@ -51,7 +53,8 @@ services:
       TELEMETRY__ENDPOINT: http://observability-opentelemetry-collector-1:4317
       TELEMETRY__EXPORTERTYPE: OpenTelemetry
       FEATUREFLAGS__ENABLEDATACATALOG: true
-      FEATUREFLAGS__ENABLEDATAINGESTION: true
+      FEATUREFLAGS__ENABLEINPUTS: true
+      FEATUREFLAGS__ENABLEOUTPUTS: true
       FEATUREFLAGS__ENABLETELEMETRY: true
       FEATUREFLAGS__ENABLEAUTH: true
     labels:
@@ -63,7 +66,7 @@ services:
       - public
   
   movies:
-    image: ghcr.io/devantler/data-product:v0.1.29
+    image: ghcr.io/devantler/data-product:v0.1.30
     restart: unless-stopped
     depends_on:
       redis:
@@ -96,10 +99,12 @@ services:
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.${DOMAIN?}
       DATACATALOG__ACCESSTOKEN: ${DATA_CATALOG_ACCESS_TOKEN?}
-      DATAINGESTORS__0__GROUPID: movies
-      DATAINGESTORS__0__SERVERS: event-streaming-kafka-1:9092
-      DATAINGESTORS__0__TOPIC: movies
-      DATAINGESTORS__0__TYPE: Kafka
+      INPUTS__0__GROUPID: movies
+      INPUTS__0__SERVERS: event-streaming-kafka-1:9092
+      INPUTS__0__TOPIC: movies
+      INPUTS__0__TYPE: Kafka
+      OUTPUTS__0__TYPE: File
+      OUTPUTS__0__FILEPATH: assets/output/contoso-university.txt
       DATASTORE__CONNECTIONSTRING: Host=relational-database-postgres-1;Port=5432;Database=movies;Username=postgres;Password=${POSTGRES_PASSWORD?}
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__TYPE: SQL
@@ -110,7 +115,8 @@ services:
       TELEMETRY__ENDPOINT: http://observability-opentelemetry-collector-1:4317
       TELEMETRY__EXPORTERTYPE: OpenTelemetry
       FEATUREFLAGS__ENABLEDATACATALOG: true
-      FEATUREFLAGS__ENABLEDATAINGESTION: true
+      FEATUREFLAGS__ENABLEINPUTS: true
+      FEATUREFLAGS__ENABLEOUTPUTS: true
       FEATUREFLAGS__ENABLETELEMETRY: true
       FEATUREFLAGS__ENABLEAUTH: true
     labels:
@@ -122,7 +128,7 @@ services:
       - public
 
   energy-sector:
-    image: ghcr.io/devantler/data-product:v0.1.29
+    image: ghcr.io/devantler/data-product:v0.1.30
     restart: unless-stopped
     depends_on:
       redis:
@@ -155,10 +161,12 @@ services:
       DATACATALOG__TYPE: DataHub
       DATACATALOG__URL: https://datahub.${DOMAIN?}
       DATACATALOG__ACCESSTOKEN: ${DATA_CATALOG_ACCESS_TOKEN?}
-      DATAINGESTORS__0__GROUPID: energy-sector
-      DATAINGESTORS__0__SERVERS: event-streaming-kafka-1:9092
-      DATAINGESTORS__0__TOPIC: energy-sector
-      DATAINGESTORS__0__TYPE: Kafka
+      INPUTS__0__GROUPID: energy-sector
+      INPUTS__0__SERVERS: event-streaming-kafka-1:9092
+      INPUTS__0__TOPIC: energy-sector
+      INPUTS__0__TYPE: Kafka
+      OUTPUTS__0__TYPE: File
+      OUTPUTS__0__FILEPATH: assets/output/contoso-university.txt
       DATASTORE__CONNECTIONSTRING: Host=relational-database-postgres-1;Port=5432;Database=energy-sector;Username=postgres;Password=${POSTGRES_PASSWORD?}
       DATASTORE__PROVIDER: PostgreSQL
       DATASTORE__TYPE: SQL
@@ -169,7 +177,8 @@ services:
       TELEMETRY__ENDPOINT: http://observability-opentelemetry-collector-1:4317
       TELEMETRY__EXPORTERTYPE: OpenTelemetry
       FEATUREFLAGS__ENABLEDATACATALOG: true
-      FEATUREFLAGS__ENABLEDATAINGESTION: true
+      FEATUREFLAGS__ENABLEINPUTS: true
+      FEATUREFLAGS__ENABLEOUTPUTS: true
       FEATUREFLAGS__ENABLETELEMETRY: true
       FEATUREFLAGS__ENABLEAUTH: true
     labels:

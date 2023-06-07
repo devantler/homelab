@@ -49,7 +49,7 @@ services:
       - public
     volumes:
       - datahub-plugins:/etc/datahub/plugins
-      - ./user.props:/datahub-frontend/conf/user.props
+      - ./user.props:/datahub-frontend/conf/user.props # Disables the default user https://datahubproject.io/docs/authentication/guides/add-users/#changing-the-default-datahub-user-credentials-recommended
 
   datahub-gms:
     image: linkedin/datahub-gms:v0.10.3
