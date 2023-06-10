@@ -106,7 +106,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   speedtest-tracker:
-    image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.16
+    image: ghcr.io/alexjustesen/speedtest-tracker:v0.11.17
     restart: unless-stopped
     healthcheck:
       test: curl --fail http://localhost || exit 1
