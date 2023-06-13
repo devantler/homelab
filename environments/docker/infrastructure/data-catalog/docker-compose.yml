@@ -87,7 +87,7 @@ services:
       - datahub-plugins:/etc/datahub/plugins
 
   datahub-upgrade:
-    image: acryldata/datahub-upgrade:v0.10.3
+    image: acryldata/datahub-upgrade:v0.10.4
     command: -u SystemUpdate
     environment:
       DATAHUB_GMS_HOST: data-catalog-datahub-gms-1
