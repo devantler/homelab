@@ -119,7 +119,7 @@ services:
       - internal
 
   datahub-kafka-setup:
-    image: linkedin/datahub-kafka-setup:v0.10.3
+    image: linkedin/datahub-kafka-setup:v0.10.4
     environment:
       DATAHUB_PRECREATE_TOPICS: false
       KAFKA_BOOTSTRAP_SERVER: event-streaming-kafka-1:9092
