@@ -127,7 +127,7 @@ services:
       - internal
 
   datahub-postgres-setup:
-    image: acryldata/datahub-postgres-setup:v0.10.3
+    image: acryldata/datahub-postgres-setup:v0.10.4
     environment:
       DATAHUB_DB_NAME: datahub
       POSTGRES_HOST: relational-database-postgres-1
