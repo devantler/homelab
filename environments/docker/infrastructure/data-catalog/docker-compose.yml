@@ -110,7 +110,7 @@ services:
       - internal
 
   datahub-elasticsearch-setup:
-    image: linkedin/datahub-elasticsearch-setup:v0.10.3
+    image: linkedin/datahub-elasticsearch-setup:v0.10.4
     environment:
       ELASTICSEARCH_HOST: search-engine-elasticsearch-1
       ELASTICSEARCH_PORT: 9200
