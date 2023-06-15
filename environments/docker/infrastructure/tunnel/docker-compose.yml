@@ -1,6 +1,6 @@
 services:
   cloudflared:
-    image: cloudflare/cloudflared:2023.5.1
+    image: cloudflare/cloudflared:2023.6.0
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
