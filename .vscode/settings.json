@@ -1,0 +1,10 @@
+{
+    "yaml.schemas": {
+        "file:///Users/nikolaiemildamm/.vscode/extensions/docsmsft.docs-yaml-1.0.0/dist/toc.schema.json": "/toc\\.yml/i",
+        "https://raw.githubusercontent.com/devantler/data-product/main/src/Devantler.DataMesh.DataProduct/config.schema.json": "config*.y*ml",
+        "https://raw.githubusercontent.com/rancher/k3d/main/pkg/config/config.versions.schema.json": [
+            "file:///Users/nikolaiemildamm/git-personal/homelab/environments/kubernetes/cluster-dev.yaml",
+            "file:///Users/nikolaiemildamm/git-personal/homelab/environments/kubernetes/cluster-prod.yaml"
+        ]
+    }
+}
