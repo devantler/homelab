@@ -1,0 +1,10 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: cluster-prod
+kubeAPI:
+  host: devantler.com # <-- change this to your production domain name
+  hostIP: 127.0.0.1
+  hostPort: "6443"
+volumes:
+  - volume: cluster-prod:/tmp/k3dvol
