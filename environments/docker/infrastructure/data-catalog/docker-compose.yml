@@ -1,6 +1,6 @@
 services:
   datahub-actions:
-    image: acryldata/datahub-actions:v0.0.12
+    image: acryldata/datahub-actions:v0.0.13
     restart: unless-stopped
     depends_on:
       - datahub-gms
