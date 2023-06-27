@@ -50,7 +50,7 @@ services:
       - internal
 
   prometheus:
-    image: prom/prometheus:v2.44.0
+    image: prom/prometheus:v2.45.0
     restart: unless-stopped
     healthcheck:
       test: wget -qO- http://localhost:9090
