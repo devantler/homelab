@@ -30,7 +30,7 @@ jobs:
         run: |
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
-          --branch=${steps.extract_branch.outputs.branch} \
+          --branch=${{ steps.extract_branch.outputs.branch }} \
           --ignore-paths="./k8s/clusters/**/flux-system/"
           flux create kustomization flux-system \
           --source=flux-system \
