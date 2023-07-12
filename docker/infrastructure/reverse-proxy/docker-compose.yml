@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.0
     restart: unless-stopped
     healthcheck:
       test: traefik healthcheck --ping
