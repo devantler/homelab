@@ -1,9 +1,2 @@
 {
-    "yaml.schemas": {
-        "https://raw.githubusercontent.com/devantler/data-product/main/src/Devantler.DataMesh.DataProduct/config.schema.json": "config*.y*ml",
-        "https://raw.githubusercontent.com/rancher/k3d/main/pkg/config/config.versions.schema.json": [
-            "file:///Users/nikolaiemildamm/git-personal/homelab/environments/kubernetes/cluster-dev.yaml",
-            "file:///Users/nikolaiemildamm/git-personal/homelab/environments/kubernetes/cluster-prod.yaml"
-        ]
-    }
 }

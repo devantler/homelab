@@ -1,0 +1,6 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: cluster-staging
+volumes:
+  - volume: cluster-staging:/tmp/k3dvol
