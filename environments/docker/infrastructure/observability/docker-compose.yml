@@ -1,6 +1,6 @@
 services:
   opentelemetry-collector:
-    image: otel/opentelemetry-collector-contrib:0.75.0
+    image: otel/opentelemetry-collector-contrib:0.81.0
     restart: unless-stopped
     command: --config=/etc/otel-collector-config.yaml
     ports:
