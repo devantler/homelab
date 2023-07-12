@@ -15,6 +15,10 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Flux
         uses: fluxcd/flux2/action@main
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
       - name: Setup Kubernetes
         uses: nolar/setup-k3d-k3s@v1
         with:
@@ -26,7 +30,7 @@ jobs:
         run: |
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
-          --branch=${GITHUB_REF#refs/heads/} \
+          --branch=${steps.extract_branch.outputs.branch} \
           --ignore-paths="./k8s/clusters/**/flux-system/"
           flux create kustomization flux-system \
           --source=flux-system \
