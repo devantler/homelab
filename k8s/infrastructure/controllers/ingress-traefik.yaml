@@ -13,7 +13,7 @@ metadata:
   namespace: ingress-traefik
 spec:
   interval: 24h
-  url: https://helm.traefik.io/traefik
+  url: https://traefik.github.io/charts
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
