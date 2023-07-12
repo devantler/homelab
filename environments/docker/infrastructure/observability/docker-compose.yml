@@ -12,7 +12,7 @@ services:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
 
   jaeger-collector:
-    image: jaegertracing/jaeger-collector:1.46.0
+    image: jaegertracing/jaeger-collector:1.47.0
     restart: unless-stopped
     healthcheck:
       test: wget -qO- http://localhost:14269 || exit 1
