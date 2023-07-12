@@ -24,16 +24,10 @@ spec:
   interval: 30m
   chart:
     spec:
-      chart: ingress-traefik
+      chart: traefik
       version: "*"
       sourceRef:
         kind: HelmRepository
         name: ingress-traefik
         namespace: ingress-traefik
       interval: 12h
-  values:
-    controller:
-      service:
-        type: "NodePort"
-    admissionWebhooks:
-      enabled: false
