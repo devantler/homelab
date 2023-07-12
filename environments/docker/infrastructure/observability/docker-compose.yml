@@ -26,7 +26,7 @@ services:
       - internal
 
   jaeger-query:
-    image: jaegertracing/jaeger-query:1.46.0
+    image: jaegertracing/jaeger-query:1.47.0
     restart: unless-stopped
     healthcheck:
       test: wget -qO- http://localhost:16687 || exit 1
