@@ -14,3 +14,5 @@ spec:
         name: ingress-traefik
         namespace: ingress-traefik
       interval: 12h
+      valuesFiles:
+        - values.yaml
