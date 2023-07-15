@@ -33,6 +33,7 @@ jobs:
           --branch=${{ steps.extract_branch.outputs.branch }} \
           --ignore-paths="./k8s/clusters/**/flux-system/" \
           --secret-ref=flux-system
+          --namespace=flux-system
           flux create kustomization flux-system \
           --source=flux-system \
           --path=./k8s/clusters/development
