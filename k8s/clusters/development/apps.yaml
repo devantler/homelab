@@ -10,6 +10,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/apps/development
+  path: ./k8s/apps/overlays/development
   prune: true
   wait: true
