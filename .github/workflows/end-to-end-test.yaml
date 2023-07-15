@@ -29,7 +29,7 @@ jobs:
           flux install
       - name: Setup cluster reconciliation
         run: |
-          flux create secret git podinfo-auth \
+          flux create secret git flux-system \
           --url=${{ github.event.repository.html_url }} \
           --username=${{ github.actor }} \
           --password=${{ secrets.GITHUB_TOKEN }}
