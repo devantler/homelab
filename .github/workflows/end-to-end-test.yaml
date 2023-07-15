@@ -30,7 +30,7 @@ jobs:
       - name: Setup cluster reconciliation
         run: |
           flux create secret git flux-system \
-          --url=ssh://git@github.com/${{ github.event.repository.name }}
+          --url=ssh://git@github.com/${{ github.event.repository.name }}.git
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
           --branch=${{ steps.extract_branch.outputs.branch }} \
