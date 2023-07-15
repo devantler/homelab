@@ -25,11 +25,12 @@ jobs:
           k3d-name: cluster-test
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Flux in K3d
+        run: flux install
+      - name: Create Flux secret
         run: |
-          flux install \
-          --components-extra=image-reflector-controller,image-automation-controller \
-          --namespace=flux-system \
-          --secret-name=flux-system
+          flux create secret git flux-system \
+          --url=${{ github.event.repository.html_url }} \
+          --branch=${{ steps.extract_branch.outputs.branch }}
       - name: Setup cluster reconciliation
         run: |
           flux create source git flux-system \
