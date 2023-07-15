@@ -23,7 +23,7 @@ jobs:
         uses: nolar/setup-k3d-k3s@v1
         with:
           k3d-name: cluster-test
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Flux in K3d
         run: flux install
       - name: Setup cluster reconciliation
