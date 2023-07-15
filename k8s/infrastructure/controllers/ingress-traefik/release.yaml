@@ -1,8 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: traefik
-  namespace: traefik
+  name: ingress-traefik
 spec:
   interval: 30m
   chart:
@@ -11,6 +10,8 @@ spec:
       version: "*"
       sourceRef:
         kind: HelmRepository
-        name: traefik
-        namespace: traefik
+        name: ingress-traefik
+        namespace: ingress-traefik
       interval: 12h
+      valuesFiles:
+        - values.yaml

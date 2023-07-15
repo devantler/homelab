@@ -1,4 +1,4 @@
-name: End-to-end test of FluxCD reconciliation
+name: End-to-end test of cluster reconciliation
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
         uses: nolar/setup-k3d-k3s@v1
         with:
           k3d-name: cluster-test
-          # github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Flux in K3d
         run: flux install
       - name: Setup cluster reconciliation
@@ -40,9 +40,9 @@ jobs:
           kubectl -n flux-system wait kustomization/infra-controllers --for=condition=ready --timeout=5m
           kubectl -n flux-system wait kustomization/infra-configs --for=condition=ready --timeout=5m
           kubectl -n flux-system wait kustomization/apps --for=condition=ready --timeout=5m
-      # - name: Verify helm reconciliation
-      #   run: |
-      #     kubectl -n podinfo wait helmrelease/podinfo --for=condition=ready --timeout=5m
+      - name: Verify helm reconciliation
+        run: |
+          kubectl -n ingress-traefik wait helmrelease/ingress-traefik --for=condition=ready --timeout=5m
       - name: Debug failure
         if: failure()
         run: |
