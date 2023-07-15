@@ -31,8 +31,8 @@ jobs:
         run: |
           flux create secret git flux-system \
           --url=ssh://git@github.com/${{ github.event.repository.name }} \
-          --ssh-key-algorithm=ecdsa \
-          --ssh-ecdsa-curve=p521
+          --username=${{ github.actor }} \
+          --password=${{ secrets.GITHUB_TOKEN }}
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
           --branch=${{ steps.extract_branch.outputs.branch }} \
