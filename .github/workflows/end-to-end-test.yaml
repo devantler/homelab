@@ -29,8 +29,9 @@ jobs:
       - name: Create Flux secret
         run: |
           flux create secret git flux-system \
-          --url=${{ github.event.repository.html_url }} \
-          --branch=${{ steps.extract_branch.outputs.branch }}
+          --url=${{ github.event.repository.ssh_url }} \
+          --ssh-key-algorithm=ecdsa \
+          --ssh-ecdsa-curve=p521
       - name: Setup cluster reconciliation
         run: |
           flux create source git flux-system \
