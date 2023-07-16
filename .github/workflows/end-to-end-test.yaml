@@ -20,25 +20,22 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Setup Kubernetes
-        uses: nolar/setup-k3d-k3s@v1
+        uses: helm/kind-action@v1.7.0
         with:
-          k3d-name: cluster-test
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install Flux in K3d
+          cluster_name: flux
+      # - name: Setup Kubernetes
+      #   uses: nolar/setup-k3d-k3s@v1
+      #   with:
+      #     k3d-name: cluster-test
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Flux
         run: |
           flux install
-      - name: Create GitHub secret
-        run: |
-          kubectl create secret generic flux-system \
-          --from-literal=github-username=${{ github.actor }} \
-          --from-literal=github-token=${{ secrets.GITHUB_TOKEN }} \
-          --namespace=flux-system
       - name: Setup cluster reconciliation
         run: |
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
           --branch=${{ steps.extract_branch.outputs.branch }} \
-          --secret-ref=flux-system \
           --ignore-paths="./k8s/clusters/**/flux-system/"
           flux create kustomization flux-system \
           --source=flux-system \
@@ -46,7 +43,6 @@ jobs:
       - name: Verify cluster reconciliation
         run: |
           kubectl -n flux-system wait kustomization/infra-controllers --for=condition=ready --timeout=5m
-          kubectl -n flux-system wait kustomization/infra-configs --for=condition=ready --timeout=5m
           kubectl -n flux-system wait kustomization/apps --for=condition=ready --timeout=5m
       - name: Verify helm reconciliation
         run: |
