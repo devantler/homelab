@@ -20,14 +20,10 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Setup Kubernetes
-        uses: helm/kind-action@v1.7.0
+        uses: nolar/setup-k3d-k3s@v1
         with:
-          cluster_name: flux
-      # - name: Setup Kubernetes
-      #   uses: nolar/setup-k3d-k3s@v1
-      #   with:
-      #     k3d-name: cluster-test
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+          k3d-name: cluster-test
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Flux
         run: |
           flux install
