@@ -27,6 +27,12 @@ jobs:
       - name: Install Flux in K3d
         run: |
           flux install
+      - name: Create GitHub secret
+        run: |
+          kubectl create secret generic flux-system \
+          --from-literal=github-username=${{ github.actor }} \
+          --from-literal=github-token=${{ secrets.GITHUB_TOKEN }} \
+          --namespace=flux-system
       - name: Setup cluster reconciliation
         run: |
           flux create source git flux-system \
