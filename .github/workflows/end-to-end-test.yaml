@@ -32,7 +32,7 @@ jobs:
           flux create secret git flux-system \
           --url=${{ github.event.repository.html_url }} \
           --username=${{ github.actor }} \
-          --password=§{{ secrets.GITHUB_TOKEN }}
+          --password=§{{ secrets.PAT }}
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
           --branch=${{ steps.extract_branch.outputs.branch }} \
