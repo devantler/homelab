@@ -29,11 +29,13 @@ jobs:
           flux install
       - name: Setup cluster reconciliation
         run: |
+          flux create secret git flux-system \
+          --url=${{ github.event.repository.html_url }} \
+          --username=${{ github.actor }} \
+          --password=§{{ secrets.GITHUB_TOKEN }}
           flux create source git flux-system \
           --url=${{ github.event.repository.html_url }} \
           --branch=${{ steps.extract_branch.outputs.branch }} \
-          --username=${{ github.actor }} \
-          --password=${{ secrets.GITHUB_TOKEN }} \
           --ignore-paths="./k8s/clusters/**/flux-system/"
           flux create kustomization flux-system \
           --source=flux-system \
