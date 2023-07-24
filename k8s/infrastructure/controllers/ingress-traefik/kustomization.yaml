@@ -4,5 +4,5 @@ namespace: ingress-traefik
 resources:
   - namespace.yaml
   - repository.yaml
-  # - release.yaml
+  - release.yaml
 
