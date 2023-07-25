@@ -1,0 +1,36 @@
+name: End-to-end test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: 'main'
+  pull_request:
+    branches: 'main'
+
+jobs:
+  end-to-end-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Flux
+        uses: fluxcd/flux2/action@main
+      - name: Extract branch name
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Setup Kubernetes
+        uses: nolar/setup-k3d-k3s@v1
+        with:
+          k3d-name: cluster-test
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Flux
+        run: flux install
+      - name: Setup cluster reconciliation
+        run: ./.github/scripts/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }}
+      - name: Verify cluster reconciliation
+        run: ./.github/scripts/e2e-verify-cluster-reconciliation.sh
+      - name: Verify helm reconciliation
+        run: ./.github/scripts/e2e-verify-helm-reconciliation.sh
+      - name: Debug failure
+        if: failure()
+        run: ./.github/scripts/e2e-debug-failure.sh
