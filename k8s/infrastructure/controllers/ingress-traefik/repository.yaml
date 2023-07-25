@@ -1,7 +1,0 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: ingress-traefik
-spec:
-  interval: 24h
-  url: https://traefik.github.io/charts
