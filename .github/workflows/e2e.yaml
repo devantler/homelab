@@ -11,7 +11,7 @@ jobs:
   end-to-end-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
       - name: Setup Flux
         uses: fluxcd/flux2/action@main
