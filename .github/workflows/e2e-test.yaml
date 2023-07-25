@@ -27,7 +27,7 @@ jobs:
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation
-        run: ./.github/scripts/e2e-setup-cluster-reconciliation.sh
+        run: ./.github/scripts/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }}
         shell: bash
       - name: Verify cluster reconciliation
         run: ./.github/scripts/e2e-verify-cluster-reconciliation.sh
