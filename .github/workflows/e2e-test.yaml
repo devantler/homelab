@@ -28,10 +28,14 @@ jobs:
         run: flux install
       - name: Setup cluster reconciliation
         run: ./.github/scripts/e2e-setup-cluster-reconciliation.sh
+        shell: bash
       - name: Verify cluster reconciliation
         run: ./.github/scripts/e2e-verify-cluster-reconciliation.sh
+        shell: bash
       - name: Verify helm reconciliation
         run: ./.github/scripts/e2e-verify-helm-reconciliation.sh
+        shell: bash
       - name: Debug failure
         if: failure()
         run: ./.github/scripts/e2e-debug-failure.sh
+        shell: bash
