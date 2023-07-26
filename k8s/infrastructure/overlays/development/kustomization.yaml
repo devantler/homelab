@@ -6,3 +6,4 @@ patches:
   - path: ingress-values.yaml
     target:
       kind: HelmRelease
+      name: ingress
