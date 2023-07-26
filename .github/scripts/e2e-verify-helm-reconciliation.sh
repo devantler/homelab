@@ -4,7 +4,7 @@ if [[ -z "$helm_releases" ]]; then
 else
     for helm_release in $helm_releases; do
         namespace=$(yq eval '.metadata.namespace' "$helm_release")
-        release_name=$(yq eval '.metadata.name' "$helm_release")
+        release_name=helmrelease/$(yq eval '.metadata.name' "$helm_release")
         kubectl -n "$namespace" wait "$release_name" --for=condition=ready --timeout=5m
     done
 fi
