@@ -1,0 +1,14 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ingress
+  namespace: ingress
+spec:
+  releaseName: ingress
+  chart:
+    spec:
+      chart: traefik
+      sourceRef:
+        kind: HelmRepository
+        name: ingress
+  interval: 50m
