@@ -10,5 +10,6 @@ spec:
       chart: traefik
       sourceRef:
         kind: HelmRepository
+        namespace: ingress
         name: ingress
   interval: 50m
