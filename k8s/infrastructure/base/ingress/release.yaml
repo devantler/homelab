@@ -11,4 +11,5 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: ingress
+        namespace: ingress
   interval: 50m
