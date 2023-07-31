@@ -4,7 +4,6 @@ metadata:
   name: ingress
   namespace: ingress
 spec:
-  releaseName: ingress
   chart:
     spec:
       chart: traefik
