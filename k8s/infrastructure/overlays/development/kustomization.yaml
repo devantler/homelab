@@ -4,6 +4,6 @@ resources:
   - ../../base/traefik-ingress
 
 patches:
-  - path: traefik-ingress-values.yaml
+  - path: patches/traefik-ingress-values.yaml
     target:
       kind: HelmRelease
