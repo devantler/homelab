@@ -1,5 +1,8 @@
 name: End-to-end test
 
+env:
+  SCRIPTS_DIR: ./.github/scripts
+
 on:
   workflow_dispatch:
   push:
@@ -19,18 +22,22 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Setup Kubernetes
-        uses: nolar/setup-k3d-k3s@v1
+        uses: AbsaOSS/k3d-action@v2.4.0
         with:
-          k3d-name: cluster-test
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cluster-name: cluster-test
+          k3d-version: v5.5.2
+          args: >-
+            --config=$SCRIPTS_DIR/cluster-config/cluster-test.yaml
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation
-        run: ./.github/scripts/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }}
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }}
       - name: Verify cluster reconciliation
-        run: ./.github/scripts/e2e-verify-cluster-reconciliation.sh
+        run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: Verify helm reconciliation
-        run: ./.github/scripts/e2e-verify-helm-reconciliation.sh
+        run: $SCRIPTS_DIR/e2e-verify-helm-reconciliation.sh
+      # Run e2e tests for apps here
+      # ...
       - name: Debug failure
         if: failure()
-        run: ./.github/scripts/e2e-debug-failure.sh
+        run: $SCRIPTS_DIR/e2e-debug-failure.sh
