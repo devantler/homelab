@@ -23,9 +23,7 @@ jobs:
         with:
           cluster-name: "test-cluster"
           args: >-
-            --port "8080:80"
-            --port "8443:443"
-            --k3s-arg "--disable=traefik@server:*"
+            --config=../scripts/cluster-config/cluster-test.yaml
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation
