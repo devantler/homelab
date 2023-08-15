@@ -1,0 +1,5 @@
+# k8s namespace manifest file
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
