@@ -13,3 +13,8 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: traefik-ingress
+  values:
+    providers:
+      kubernetesIngress:
+        publishedService:
+          enabled: true
