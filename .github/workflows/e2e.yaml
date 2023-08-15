@@ -19,10 +19,13 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Setup Kubernetes
-        uses: nolar/setup-k3d-k3s@v1
+        uses: AbsaOSS/k3d-action@v2.4.0
         with:
-          k3d-name: cluster-test
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cluster-name: "test-cluster"
+          args: >-
+            --port "8080:80"
+            --port "8443:443"
+            --k3s-arg "--disable=traefik@server:*"
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation
