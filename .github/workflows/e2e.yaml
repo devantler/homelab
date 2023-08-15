@@ -1,5 +1,8 @@
 name: End-to-end test
 
+env:
+  SCRIPTS_DIR: ./.github/scripts
+
 on:
   workflow_dispatch:
   push:
@@ -23,15 +26,15 @@ jobs:
         with:
           cluster-name: "test-cluster"
           args: >-
-            --config=../scripts/cluster-config/cluster-test.yaml
+            --config=$SCRIPTS_DIR/cluster-config/cluster-test.yaml
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation
-        run: ./.github/scripts/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }}
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }}
       - name: Verify cluster reconciliation
-        run: ./.github/scripts/e2e-verify-cluster-reconciliation.sh
+        run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: Verify helm reconciliation
-        run: ./.github/scripts/e2e-verify-helm-reconciliation.sh
+        run: $SCRIPTS_DIR/e2e-verify-helm-reconciliation.sh
       - name: Debug failure
         if: failure()
-        run: ./.github/scripts/e2e-debug-failure.sh
+        run: $SCRIPTS_DIR/e2e-debug-failure.sh
