@@ -13,3 +13,7 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: traefik-ingress
+  values:
+    ingressRoute:
+      dashboard:
+        entryPoints: ["web"]
