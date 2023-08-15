@@ -25,6 +25,7 @@ jobs:
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
           cluster-name: "test-cluster"
+          k3d-version: v5.5.2
           args: >-
             --config=$SCRIPTS_DIR/cluster-config/cluster-test.yaml
       - name: Install Flux
