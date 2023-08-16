@@ -8,7 +8,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`localhost`) && Path(`/weave-gitops`)
+    - match: Host(`localhost`)
       kind: Rule
       services:
         - name: weave-gitops
