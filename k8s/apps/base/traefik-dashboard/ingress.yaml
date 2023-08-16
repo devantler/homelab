@@ -5,7 +5,7 @@ metadata:
   namespace: traefik-ingress
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
     - match: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
       kind: Rule
