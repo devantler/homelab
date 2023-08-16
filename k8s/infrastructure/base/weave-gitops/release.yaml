@@ -25,5 +25,5 @@ spec:
       hosts:
         - host:
           paths:
-            - path: /weave-gitops
+            - path: /
               pathType: Prefix
