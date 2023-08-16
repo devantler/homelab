@@ -17,11 +17,11 @@ spec:
       create: true
       passwordHash: $2a$10$b32neZpO7lXm4lTYYwR70.DGapcQ4Nrjppz2.A1pv8zLFG5gzSwkK
       username: admin
-    # ingress:
-    #   enabled: true
-    #   class: traefik
-    #   hosts:
-    #     - host:
-    #       paths:
-    #         - path: /weave-gitops
-    #           pathType: Prefix
+    ingress:
+      enabled: true
+      class: traefik
+      hosts:
+        - host:
+          paths:
+            - path: /weave-gitops
+              pathType: Prefix
