@@ -11,4 +11,5 @@ spec:
       kind: Rule
       services:
         - name: api@internal
+          namespace: traefik-ingress
           kind: TraefikService
