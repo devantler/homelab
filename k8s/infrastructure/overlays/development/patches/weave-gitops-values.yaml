@@ -4,7 +4,13 @@ metadata:
   name: weave-gitops
   namespace: flux-system
 spec:
-  interval: 1h0m0s
+  chart:
+    spec:
+      chart: weave-gitops
+      sourceRef:
+        kind: HelmRepository
+        name: weave-gitops
+  interval: 5m
   values:
     ingress:
       hosts:

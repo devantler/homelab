@@ -10,7 +10,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: weave-gitops
-  interval: 1h0m0s
+  interval: 5m
   values:
     adminUser:
       create: true
