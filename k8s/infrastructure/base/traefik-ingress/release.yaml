@@ -14,9 +14,6 @@ spec:
         name: traefik
         namespace: traefik-ingress
   values:
-    ingressRoute:
-      dashboard:
-        entryPoints: ["traefik", "web", "websecure"]
     providers:
       kubernetesIngress:
         publishedService:

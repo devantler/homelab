@@ -7,19 +7,3 @@ metadata:
 spec:
   interval: 1m
   url: https://traefik.github.io/charts
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: GitRepository
-metadata:
-  name: traefik-crds
-  namespace: traefik-ingress
-spec:
-  interval: 30m
-  url: https://github.com/traefik/traefik-helm-chart.git
-  ref:
-    tag: v24.0.0
-  ignore: |
-    # exclude all
-    /*
-    # path to crds
-    !/traefik/crds/
