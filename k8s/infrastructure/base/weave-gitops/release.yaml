@@ -23,7 +23,4 @@ spec:
       enabled: true
       class: traefik
       hosts:
-        - host:
-          paths:
-            - path: /
-              pathType: Prefix
+        - host: weave-gitops.localhost
