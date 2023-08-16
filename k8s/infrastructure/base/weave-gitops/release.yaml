@@ -19,3 +19,6 @@ spec:
     ingress:
       enabled: true
       class: traefik
+      hosts:
+        - host:
+          paths: []
