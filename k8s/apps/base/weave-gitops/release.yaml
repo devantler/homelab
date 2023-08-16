@@ -38,3 +38,9 @@ spec:
       passwordHash: "$2a$10$P/tHQ1DNFXdvX0zRGA8LPeSOyb0JXq9rP3fZ4W8HGTpLV7qHDlWhe"
     ingress:
       enabled: true
+      class: traefik
+      hosts:
+        - host: localhost
+          paths:
+            - path: /weave-gitops
+              pathType: Prefix
