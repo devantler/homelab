@@ -13,4 +13,4 @@ spec:
       services:
         - name: weave-gitops
           port: 9001
-          kind: TraefikService
+          kind: Service
