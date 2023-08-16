@@ -23,4 +23,4 @@ spec:
       enabled: true
       class: traefik
       hosts:
-        - host: weave-gitops.localhost
+        - host: weave-gitops.devantler.test

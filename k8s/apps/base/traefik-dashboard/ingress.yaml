@@ -8,7 +8,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+    - match: Host(`traefik.devantler.test`)
       kind: Rule
       services:
         - name: api@internal
