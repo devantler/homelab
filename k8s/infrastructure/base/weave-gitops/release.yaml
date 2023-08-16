@@ -1,9 +1,6 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  annotations:
-    metadata.weave.works/description: This is the Weave GitOps Dashboard.  It provides
-      a simple way to get insights into your GitOps workloads.
   name: weave-gitops
   namespace: flux-system
 spec:
@@ -22,6 +19,3 @@ spec:
     ingress:
       enabled: true
       class: traefik
-      hosts:
-        - host: weave-gitops.devantler.test
-          paths: []

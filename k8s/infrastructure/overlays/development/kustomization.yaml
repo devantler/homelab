@@ -3,3 +3,10 @@ kind: Kustomization
 resources:
   - ../../base/traefik-ingress
   - ../../base/weave-gitops
+
+patches:
+  - path: patches/weave-gitops-values.yaml
+    target:
+      kind: HelmRelease
+      name: weave-gitops
+      namespace: flux-system
