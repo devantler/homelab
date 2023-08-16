@@ -14,4 +14,4 @@ spec:
         - name: weave-gitops
           namespace: flux-system
           port: 9001
-          kind: TraefikService
+          kind: Service
