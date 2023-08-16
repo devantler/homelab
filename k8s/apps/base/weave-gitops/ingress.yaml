@@ -8,7 +8,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: PathPrefix(`/dashboard`)
+    - match: Host(`dsadasdsad`)
       kind: Rule
       services:
         - name: weave-gitops
