@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`localhost`) && Path(`/traefik`)
+    - match: Host(`localhost`) && Path(`/traefik`) || Path(`/api`)
       kind: Rule
       services:
         - name: api@internal
