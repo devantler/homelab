@@ -8,7 +8,7 @@ spec:
   interval: 1m
   url: https://traefik.github.io/charts
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
+apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
   name: traefik-crds
