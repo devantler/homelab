@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`localhost`) && PathPrefix(`/dashboard`)
+    - match: PathPrefix(`/dashboard`)
       kind: Rule
       services:
         - name: api@internal
