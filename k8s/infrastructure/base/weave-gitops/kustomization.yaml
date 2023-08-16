@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - repository.yaml
   - release.yaml
-  - ingress.yaml
