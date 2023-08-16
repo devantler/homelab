@@ -24,3 +24,5 @@ spec:
       class: traefik
       hosts:
         - host: weave-gitops.devantler.test
+          paths:
+            - /
