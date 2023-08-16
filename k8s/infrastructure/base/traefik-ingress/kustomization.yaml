@@ -4,4 +4,5 @@ resources:
   - namespace.yaml
   - repository.yaml
   - release.yaml
+  - crds.yaml
   - dashboard.yaml
