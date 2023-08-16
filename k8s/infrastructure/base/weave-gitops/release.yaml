@@ -19,3 +19,8 @@ spec:
     ingress:
       enabled: true
       class: traefik
+      hosts:
+        - host: weave-gitops.devantler.test
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
