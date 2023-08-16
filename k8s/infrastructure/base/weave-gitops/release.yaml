@@ -4,6 +4,7 @@ metadata:
   name: weave-gitops
   namespace: flux-system
 spec:
+  interval: 5m
   chart:
     spec:
       chart: weave-gitops
@@ -11,7 +12,6 @@ spec:
         kind: HelmRepository
         name: weave-gitops
         namespace: flux-system
-  interval: 1h0m0s
   values:
     adminUser:
       create: true
