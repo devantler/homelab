@@ -2,11 +2,15 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base/traefik-ingress
+  - ../../base/kubernetes-dashboard
   - ../../base/weave-gitops
 
 patches:
+  - path: patches/kubernetes-dashboard-values.yaml
+    target:
+      kind: HelmRelease
+      name: kubernetes-dashboard
   - path: patches/weave-gitops-values.yaml
     target:
       kind: HelmRelease
       name: weave-gitops
-      namespace: flux-system
