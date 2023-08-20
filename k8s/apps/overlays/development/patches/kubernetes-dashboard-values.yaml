@@ -8,5 +8,5 @@ spec:
     app:
       ingress:
         hosts:
-          - k8s.dev
+          - k8s.test
         

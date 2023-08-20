@@ -7,7 +7,7 @@ spec:
   values:
     ingress:
       hosts:
-        - host: gitops.dev
+        - host: gitops.test
           paths:
             - path: /
               pathType: ImplementationSpecific
