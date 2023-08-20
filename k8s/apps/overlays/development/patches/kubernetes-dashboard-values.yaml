@@ -1,0 +1,12 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  routes:
+    - match: Host(`k8s.test`)
+      kind: Rule
+      services:
+        - name: kubernetes-dashboard-web
+          service: TraefikService
