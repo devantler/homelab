@@ -4,3 +4,9 @@ resources:
   - ../../base/cert-manager
   - ../../base/traefik-ingress
 
+patches:
+  - path: patches/traefik-ingress-values.yaml
+    target:
+      kind: HelmRelease
+      name: traefik-ingress
+

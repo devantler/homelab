@@ -19,4 +19,4 @@ spec:
       username: admin
     ingress:
       enabled: true
-      class: traefik
+      class: traefik-ingress
