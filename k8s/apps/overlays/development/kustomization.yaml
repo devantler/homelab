@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources: 
   - ../../base/traefik-dashboard
-  - ../../base/kubernetes-dashboard
   - ../../base/gitops-dashboard
 
 patches:
@@ -10,10 +9,6 @@ patches:
     target:
       kind: IngressRoute
       name: traefik-dashboard
-  - path: patches/kubernetes-dashboard-values.yaml
-    target:
-      kind: IngressRoute
-      name: kubernetes-dashboard
   - path: patches/gitops-dashboard-values.yaml
     target:
       kind: HelmRelease
