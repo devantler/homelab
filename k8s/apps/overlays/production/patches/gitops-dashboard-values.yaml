@@ -6,11 +6,11 @@ metadata:
 spec:
   values:
     adminUser:
-      username: admin
-      passwordHash: $2a$12$6twAYNqxU3Pz3PqVYTJN9uE5LaMDj3R1.TgLvalUoKeLnzKsFkK3i
+      username: devantler
+      passwordHash: $2a$12$iOMTP/0u9ZWORa2ck7OiGegKA0LruaKrfCp23fWxg4C31xEKwQKRa
     ingress:
       hosts:
-        - host: gitops.test
+        - host: gitops.devantler.com
           paths:
             - path: /
               pathType: ImplementationSpecific
