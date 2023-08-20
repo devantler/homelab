@@ -18,3 +18,8 @@ spec:
       kubernetesIngress:
         publishedService:
           enabled: true
+    ingressRoute:
+      dashboard:
+        entryPoints:
+          - web
+          - websecure

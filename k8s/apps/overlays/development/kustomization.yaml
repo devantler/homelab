@@ -3,7 +3,7 @@ kind: Kustomization
 resources: 
   - ../../base/gitops-dashboard
   - ../../base/kubernetes-dashboard
-  - ../../base/traefik-dashboard
+  # - ../../base/traefik-dashboard
 
 patches:
   - path: patches/gitops-dashboard-values.yaml
@@ -14,7 +14,7 @@ patches:
     target:
       kind: IngressRoute
       name: kubernetes-dashboard
-  - path: patches/traefik-dashboard-values.yaml
-    target:
-      kind: IngressRoute
-      name: traefik-dashboard
+  # - path: patches/traefik-dashboard-values.yaml
+  #   target:
+  #     kind: IngressRoute
+  #     name: traefik-dashboard
