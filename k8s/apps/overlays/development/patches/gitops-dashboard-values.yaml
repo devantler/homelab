@@ -4,6 +4,14 @@ metadata:
   name: gitops-dashboard
   namespace: flux-system
 spec:
+  chart:
+    spec:
+      chart: weave-gitops
+      version: 4.0.28
+      sourceRef:
+        kind: HelmRepository
+        name: gitops-dashboard
+  interval: 5m
   values:
     ingress:
       hosts:
