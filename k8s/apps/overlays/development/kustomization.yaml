@@ -9,3 +9,7 @@ patches:
     target:
       kind: HelmRelease
       name: gitops-dashboard
+  - path: patches/kubernetes-dashboard-values.yaml
+    target:
+      kind: HelmRelease
+      name: kubernetes-dashboard
