@@ -14,7 +14,7 @@ spec:
   values:
     ingress:
       hosts:
-        - host: weave-gitops.devantler.test
+        - host: weave-gitops.dev
           paths:
             - path: /
               pathType: ImplementationSpecific
