@@ -21,6 +21,7 @@ spec:
     cert-manager:
       enabled: false
     ingress:
+      enabled: true
       hosts:
-        - host: k8s.test
+        - k8s.test
       ingressClassName: traefik-ingress
