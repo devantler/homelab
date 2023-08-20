@@ -7,7 +7,7 @@ spec:
   values:
     ingress:
       hosts:
-        - host: gitops-dashboard.dev
+        - host: gitops.dev
           paths:
             - path: /
               pathType: ImplementationSpecific

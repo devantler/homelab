@@ -8,5 +8,5 @@ spec:
     app:
       ingress:
         hosts:
-          - kubernetes-dashboard.dev
+          - k8s.dev
         
