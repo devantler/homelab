@@ -10,4 +10,4 @@ spec:
       services:
         - name: kubernetes-dashboard
           namespace: kubernetes-dashboard
-          kind: TraefikService
+          port: 8080
