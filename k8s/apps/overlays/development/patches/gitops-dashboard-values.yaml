@@ -1,20 +1,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: weave-gitops
+  name: gitops-dashboard
   namespace: flux-system
 spec:
-  chart:
-    spec:
-      chart: weave-gitops
-      sourceRef:
-        kind: HelmRepository
-        name: weave-gitops
-  interval: 5m
   values:
     ingress:
       hosts:
-        - host: weave-gitops.dev
+        - host: gitops-dashboard.dev
           paths:
             - path: /
               pathType: ImplementationSpecific

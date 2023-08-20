@@ -1,7 +1,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: weave-gitops
+  name: gitops-dashboard
   namespace: flux-system
 spec:
   interval: 1h0m0s
