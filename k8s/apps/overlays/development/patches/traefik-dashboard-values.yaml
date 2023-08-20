@@ -5,7 +5,7 @@ metadata:
   namespace: traefik-ingress
 spec:
   routes:
-    - match: Host(`traefik.devantler.test`)
+    - match: Host(`traefik.dev`)
       kind: Rule
       services:
         - name: api@internal
