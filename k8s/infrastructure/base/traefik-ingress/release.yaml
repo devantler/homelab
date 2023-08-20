@@ -23,4 +23,3 @@ spec:
         entryPoints:
           - web
           - websecure
-        matchRule: Host(`traefik.test`)
