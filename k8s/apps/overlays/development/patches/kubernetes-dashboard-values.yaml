@@ -8,5 +8,5 @@ spec:
     app:
       ingress:
         hosts:
-          - kubernetes-dashboard.devantler.test
+          - kubernetes-dashboard.dev
         

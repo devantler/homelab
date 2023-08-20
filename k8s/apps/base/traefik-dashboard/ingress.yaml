@@ -7,10 +7,4 @@ spec:
   entryPoints:
     - web
     - websecure
-  routes:
-    - match: Host(`traefik.devantler.test`)
-      kind: Rule
-      services:
-        - name: api@internal
-          namespace: traefik-ingress
-          kind: TraefikService
+  routes: []

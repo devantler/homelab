@@ -2,5 +2,3 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: kubernetes-dashboard
-  labels:
-    name: kubernetes-dashboard
