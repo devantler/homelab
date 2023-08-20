@@ -19,3 +19,7 @@ spec:
         ingressClassName: traefik
     metrics-server:
       enabled: false
+    cert-manager:
+      enabled: false
+    nginx:
+      enabled: false
