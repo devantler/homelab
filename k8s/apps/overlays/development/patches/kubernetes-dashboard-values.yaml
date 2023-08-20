@@ -8,5 +8,5 @@ spec:
     - match: Host(`k8s.test`)
       kind: Rule
       services:
-        - name: kubernetes-dashboard-web
+        - name: kubernetes-dashboard
           service: TraefikService
