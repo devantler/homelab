@@ -18,5 +18,4 @@ spec:
       passwordHash: $2a$10$vr6SoalcX35IEjL4AvUFsu68EidQBBGrK2cCH5bRLZKivMKzDKTMG
       username: admin
     ingress:
-      enabled: true
       class: traefik

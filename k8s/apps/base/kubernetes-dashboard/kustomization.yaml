@@ -4,4 +4,4 @@ resources:
   - namespace.yaml
   - repository.yaml
   - release.yaml
-  # - ingress.yaml
+  - ingress.yaml
