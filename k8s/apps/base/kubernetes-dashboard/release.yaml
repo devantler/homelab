@@ -14,9 +14,6 @@ spec:
         name: kubernetes-dashboard
         namespace: kubernetes-dashboard
   values:
-    app:
-      ingress:
-        ingressClassName: traefik
     metrics-server:
       enabled: false
     nginx:

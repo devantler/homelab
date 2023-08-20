@@ -12,7 +12,7 @@ patches:
       name: traefik-dashboard
   - path: patches/kubernetes-dashboard-values.yaml
     target:
-      kind: HelmRelease
+      kind: IngressRoute
       name: kubernetes-dashboard
   - path: patches/gitops-dashboard-values.yaml
     target:
