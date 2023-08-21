@@ -19,7 +19,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 To run the Homelab you must:
 
 1. Create and configure a domain on Cloudflare.
-2. Setup Cloudflare to tunnel service access.
-3. Run the `scripts/provision.sh` script to setup a development and production cluster.
+2. Set up Cloudflare to tunnel service access.
+3. Run the `scripts/provision.sh` script to set up a development and production cluster.
     - The development cluster is accessible on `x.test` (requires `/etc/hosts` configuration).
-    - The production cluster is accessible on `x.devantler.com`.
+    - The production cluster is accessible on `x.devantler.com`. If you want to use a different domain, you must update the domains in the `patches` folders.
