@@ -22,4 +22,4 @@ jobs:
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@main
       - name: Validate manifests
-        run: $SCRIPTS_DIR/validate.sh
+        run: $SCRIPTS_DIR/validate-manifests.sh
