@@ -14,12 +14,14 @@ kubeconform_config=("-strict" "-ignore-missing-schemas" "-schema-location" "defa
 echo "🔍 INFO - Downloading Flux OpenAPI schemas"
 mkdir -p /tmp/flux-crd-schemas/master-standalone-strict
 curl -sL https://github.com/fluxcd/flux2/releases/latest/download/crd-schemas.tar.gz | tar zxf - -C /tmp/flux-crd-schemas/master-standalone-strict
+echo -e "\n"
 
 echo "🔍 INFO - Validating files"
 find . -type f -name '*.yaml' -print0 | while IFS= read -r -d $'\0' file; do
   echo "Validating $file"
   yq e 'true' "$file" >/dev/null
 done
+echo -e "\n"
 
 echo "🔍 INFO - Validating clusters"
 find ./k8s/clusters -maxdepth 2 -type f -name '*.yaml' -print0 | while IFS= read -r -d $'\0' file; do
@@ -28,6 +30,7 @@ find ./k8s/clusters -maxdepth 2 -type f -name '*.yaml' -print0 | while IFS= read
     exit 1
   fi
 done
+echo -e "\n"
 
 echo "🔍 INFO - Validating kustomize overlays"
 find . -type f -name $kustomize_config -print0 | while IFS= read -r -d $'\0' file; do
