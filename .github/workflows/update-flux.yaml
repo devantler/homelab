@@ -1,4 +1,4 @@
-name: update-flux
+name: Update Flux
 
 on:
   workflow_dispatch:
