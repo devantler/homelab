@@ -10,7 +10,7 @@ on:
     tags-ignore: [ '*' ]
 
 jobs:
-  manifests:
+  validate-manifests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

@@ -10,7 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  components:
+  update-flux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
