@@ -23,3 +23,11 @@ To run the Homelab you must:
 3. Run the `scripts/provision.sh` script to set up a development and production cluster.
     - The development cluster is accessible on `x.test` (requires `/etc/hosts` configuration).
     - The production cluster is accessible on `x.devantler.com`. If you want to use a different domain, you must update the domains in the `patches` folders.
+
+## Deployments
+
+The repo is configured to deploy changes with Flux2 according to the following rules:
+
+- The development cluster is updated whenever changes are merged to the main branch.
+- The production cluster is updated whenever a new semver tag is created.
+
