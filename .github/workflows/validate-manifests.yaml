@@ -4,7 +4,6 @@ env:
     SCRIPTS_DIR: ./.github/scripts
 
 on:
-  pull_request:
   push:
     branches: [ '*' ]
     tags-ignore: [ '*' ]
