@@ -8,8 +8,14 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
+if [ -z "$3" ]; then
+    echo "Error: 'environment' argument not set"
+    exit 1
+fi
+
 repository_url=$1
 branch_name=$2
+environment=$3
 
 flux create source git flux-system \
     --url=$repository_url \
@@ -17,4 +23,4 @@ flux create source git flux-system \
     --ignore-paths="k8s/clusters/**/flux-system/"
 flux create kustomization flux-system \
     --source=flux-system \
-    --path=./k8s/clusters/development
+    --path=./k8s/clusters/$environment
