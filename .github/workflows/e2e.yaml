@@ -17,7 +17,7 @@ jobs:
       matrix:
         environment: [development, production]
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Flux
         uses: fluxcd/flux2/action@main
