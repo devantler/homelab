@@ -6,13 +6,16 @@ env:
 on:
   workflow_dispatch:
   push:
-    branches: 'main'
+    branches: "main"
   pull_request:
-    branches: 'main'
+    branches: "main"
 
 jobs:
-  end-to-end-test:
+  e2e-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [development, production]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -31,7 +34,7 @@ jobs:
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation
-        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }}
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} ${{ matrix.environment }}
       - name: Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: Verify helm reconciliation
