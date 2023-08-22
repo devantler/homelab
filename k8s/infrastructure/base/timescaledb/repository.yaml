@@ -1,0 +1,8 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: timescaledb
+  namespace: timescaledb
+spec:
+  interval: 1m
+  url: https://charts.timescale.com
