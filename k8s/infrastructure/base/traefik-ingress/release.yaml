@@ -20,6 +20,6 @@ spec:
           enabled: true
     ingressRoute:
       dashboard:
-        entryPoints: 
+        entryPoints:
           - websecure
 

@@ -8,7 +8,7 @@ spec:
     ingressRoute:
       dashboard:
         matchRule: Host(`traefik.test`)
-        annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-staging
-        tls:
+    tlsStore:
+      default:
+        defaultCertificate:
           secretName: letsencrypt-staging
