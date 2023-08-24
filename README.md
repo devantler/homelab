@@ -35,6 +35,9 @@ Run the `scripts/bootstrap-local.sh` script to:
 1. Create a local cluster with k3d.
 2. Bootstrap Flux2 to sync the local cluster with the branch you are working on.
 
+> [!NOTE]
+> All scripts have been made runnable from VSCode tasks or run configurations. So if you are using VSCode, you can find and run all scripts from the Run and Debug tab, or by pressing `Ctrl+Shift+P` and searching for `Tasks: Run Task`.
+
 To access the services in the cluster you need to update your `/etc/hosts` file with the following entries:
 
 ```bash
