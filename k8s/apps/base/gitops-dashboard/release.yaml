@@ -17,4 +17,4 @@ spec:
       create: true
     ingress:
       enabled: true
-      class: traefik-ingress
+      className: traefik-ingress
