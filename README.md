@@ -21,12 +21,17 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 
 ### Prerequisites
 
+- [yq](https://github.com/mikefarah/yq) for validating YAML files.
+- [kubeconform](https://github.com/yannh/kubeconform) for validating Kubernetes manifests.
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [Flux2 CLI](https://fluxcd.io/docs/installation/#install-the-flux-cli)
 - [k3d](https://k3d.io/#installation) for dev/CI
 - Any cluster provider for **sandbox**, **staging**, and **production**
 
 ### Local Setup
+
+> [!NOTE]
+> The repo includes a few scripts for bootstrapping, destroying and validating the manifest files. All scripts have been made runnable from VSCode tasks or run configurations. So if you are using VSCode, you can find and run all scripts from the Run and Debug tab, or by searching for `Tasks: Run Task` in the command palette.
 
 To get started, you need to create a separate branch to work on your increments. Doing so allows you to bootstrap the local cluster, such that Flux2 can sync any changes you push to the branch.
 
@@ -39,8 +44,8 @@ To access the services in the cluster you need to update your `/etc/hosts` file 
 
 ```bash
 # Please keep this list updated with new services you introduce to the cluster.
-127.0.0.1 traefik.test
-127.0.0.1 gitops.test
+127.0.0.1 traefik.local
+127.0.0.1 gitops.local
 ```
 
 > [!IMPORTANT]
