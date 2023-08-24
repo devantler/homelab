@@ -7,7 +7,7 @@ spec:
   values:
     ingressRoute:
       dashboard:
-        matchRule: Host(`traefik.test`)
+        matchRule: Host(`traefik.local`)
     tlsStore:
       default:
         defaultCertificate:

@@ -10,7 +10,7 @@ spec:
       passwordHash: $2a$12$6twAYNqxU3Pz3PqVYTJN9uE5LaMDj3R1.TgLvalUoKeLnzKsFkK3i
     ingress:
       hosts:
-        - host: gitops.test
+        - host: gitops.local
           paths:
             - path: /
               pathType: ImplementationSpecific

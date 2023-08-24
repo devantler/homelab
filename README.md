@@ -39,8 +39,8 @@ To access the services in the cluster you need to update your `/etc/hosts` file 
 
 ```bash
 # Please keep this list updated with new services you introduce to the cluster.
-127.0.0.1 traefik.test
-127.0.0.1 gitops.test
+127.0.0.1 traefik.local
+127.0.0.1 gitops.local
 ```
 
 > [!IMPORTANT]
