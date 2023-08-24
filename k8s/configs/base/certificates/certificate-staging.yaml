@@ -10,4 +10,4 @@ spec:
     - "*.test"
   issuerRef:
     name: letsencrypt-staging
-    kind: Issuer
+    kind: ClusterIssuer

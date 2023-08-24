@@ -1,8 +1,7 @@
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
-  namespace: traefik-ingress
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
