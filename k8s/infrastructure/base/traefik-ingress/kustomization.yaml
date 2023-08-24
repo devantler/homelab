@@ -4,4 +4,3 @@ resources:
   - namespace.yaml
   - release.yaml
   - repository.yaml
-  - certificate-staging.yaml
