@@ -14,12 +14,12 @@ spec:
         name: traefik
         namespace: traefik-ingress
   values:
-    providers:
-      kubernetesIngress:
-        publishedService:
-          enabled: true
+    ports:
+      web:
+        expose: false
     ingressRoute:
       dashboard:
         entryPoints:
           - websecure
+    
 
