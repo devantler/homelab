@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "bootstrap-local",
+            "type": "shell",
+            "command": "./bootstrap-local.sh",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "destroy-local",
+            "type": "shell",
+            "command": "./destroy-local.sh",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
