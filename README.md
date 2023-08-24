@@ -63,4 +63,4 @@ That is it! You should now be able to work on the cluster, and Flux2 will sync a
   - [flagger](https://fluxcd.io/flagger/): a progressive delivery tool that automates the release process for applications running on Kubernetes.
   - [post-build-variable-substitution](https://fluxcd.io/flux/components/kustomize/kustomization/#post-build-variable-substitution): It is not possible to read variables from the environment with FluxCD, but this is an excellent alternative to feed in dynamic values.
   - [sops](https://fluxcd.io/flux/guides/mozilla-sops/): sops is similar to sealed-secrets, but is a more general tool for encrypting and decrypting values in YAML files. It can be used with a Flux plugin to decrypt secrets in-flight while enabling a more flexible workflow for editing the secrets.
-[terraform](https://developer.hashicorp.com/terraform?product_intent=terraform): infrastructure as code tool that lets you build, change, and version infrastructure safely and efficiently.
+  - [recommendations](https://fluxcd.io/flux/components/kustomize/kustomizations/#working-with-kustomizations)
