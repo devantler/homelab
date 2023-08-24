@@ -5,17 +5,17 @@ env:
 
 on:
   workflow_dispatch:
-  push:
-    branches: "main"
-  pull_request:
-    branches: "main"
+  workflow_run:
+    workflows: ["Validate manifests"]
+    types:
+      - completed
 
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: [development, production]
+        environment: [local] # Add more environments here when needed
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,14 +27,14 @@ jobs:
       - name: Setup Kubernetes
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
-          cluster-name: cluster-test
+          cluster-name: cluster-ci
           k3d-version: v5.5.2
           args: >-
-            --config=$SCRIPTS_DIR/cluster-config/cluster-test.yaml
+            --config=$SCRIPTS_DIR/cluster-config/cluster-ci.yaml
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation
-        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} ${{ matrix.environment }}
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} ${{ matrix.environment }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: Verify helm reconciliation
