@@ -1,0 +1,5 @@
+spec:
+  secretName: certificate-staging-tls
+  dnsNames:
+    - "test"
+    - "*.test"
