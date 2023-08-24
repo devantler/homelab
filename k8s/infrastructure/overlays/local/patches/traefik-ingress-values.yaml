@@ -11,4 +11,4 @@ spec:
     tlsStore:
       default:
         defaultCertificate:
-          secretName: letsencrypt-staging
+          secretName: certificate-staging-tls

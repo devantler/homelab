@@ -1,8 +1,0 @@
-apiVersion: traefik.containo.us/v1alpha1
-kind: TLSStore
-metadata:
-  name: default
-  namespace: traefik-ingress
-spec:
-  defaultCertificate:
-    secretName: letsencrypt-staging
