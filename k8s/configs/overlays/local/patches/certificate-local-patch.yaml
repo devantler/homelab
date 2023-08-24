@@ -4,9 +4,5 @@ metadata:
   name: certificate-local
   namespace: traefik-ingress
 spec:
-  secretName: certificate-local-tls
   dnsNames:
     - *.test
-  issuerRef:
-    name: selfsigned-local
-    kind: ClusterIssuer

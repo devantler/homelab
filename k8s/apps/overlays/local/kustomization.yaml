@@ -4,7 +4,7 @@ resources:
   - ../../base/gitops-dashboard
 
 patches:
-  - path: patches/gitops-dashboard-values.yaml
+  - path: patches/gitops-dashboard-patch.yaml
     target:
       kind: HelmRelease
       name: gitops-dashboard
