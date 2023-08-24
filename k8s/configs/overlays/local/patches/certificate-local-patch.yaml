@@ -5,4 +5,4 @@ metadata:
   namespace: traefik-ingress
 spec:
   dnsNames:
-    - *.test
+    - "*.test"
