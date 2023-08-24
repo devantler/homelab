@@ -8,8 +8,9 @@ spec:
     adminUser:
       username: admin
       passwordHash: $2a$12$6twAYNqxU3Pz3PqVYTJN9uE5LaMDj3R1.TgLvalUoKeLnzKsFkK3i
-    hosts:
-      - host: gitops.test
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
+    ingress:
+      hosts:
+        - host: gitops.test
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
