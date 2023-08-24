@@ -18,6 +18,12 @@
                 "cwd": "${workspaceFolder}/scripts"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "validate-manifests",
+            "type": "shell",
+            "command": "./.github/scripts/validate-manifests.sh",
+            "problemMatcher": []
         }
     ]
 }
