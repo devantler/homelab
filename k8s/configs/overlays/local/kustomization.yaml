@@ -5,7 +5,7 @@ resources:
   - ../../base/certificates/certificate-local.yaml
 
 patches:
-  - path: certificate-local-patch.yaml
+  - path: patches/certificate-local-patch.yaml
     target:
       kind: Certificate
       name: certificate-local
