@@ -1,0 +1,12 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: gitops-dashboard
+  namespace: flux-system
+spec:
+  values:
+    hosts:
+      - host: gitops.test
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
