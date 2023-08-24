@@ -4,4 +4,4 @@ resources:
   - namespace.yaml
   - release.yaml
   - repository.yaml
-  # - basic-auth.yaml
+  - certificate-staging.yaml
