@@ -1,13 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../base/cluster-issuers/letsencrypt-staging.yaml
-  - ../../base/certificates/certificate-staging.yaml
-
-patches:
-  - path: patches/certificate-staging-values.yaml
-    target:
-      kind: Certificate
-      name: certificate-staging
-      namespace: traefik-ingress
+  - ../../base/cluster-issuers/selfsigned-local.yaml
+  - ../../base/certificates/certificate-local.yaml
 

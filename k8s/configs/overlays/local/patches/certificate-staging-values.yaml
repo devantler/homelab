@@ -1,8 +1,0 @@
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: certificate-staging
-  namespace: traefik-ingress
-spec:
-  dnsNames:
-    - "*.test"
