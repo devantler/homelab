@@ -13,3 +13,9 @@ spec:
   path: ./k8s/configs/overlays/local
   prune: true
   wait: true
+  postBuild:
+    substitute:
+      domain: "local"
+      cluster_issuer_certificate_name: "selfsigned-cluster-issuer"
+      basic_auth_username: "admin"
+      basic_auth_password: "admin"

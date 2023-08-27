@@ -12,4 +12,6 @@ spec:
   path: ./k8s/infrastructure/overlays/local
   prune: true
   wait: true
-
+  postBuild:
+    substitute:
+      domain: "local"

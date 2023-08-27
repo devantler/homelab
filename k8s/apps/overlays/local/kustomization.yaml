@@ -2,10 +2,3 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base/gitops-dashboard
-
-patches:
-  - path: patches/gitops-dashboard-patch.yaml
-    target:
-      kind: HelmRelease
-      name: gitops-dashboard
-      namespace: flux-system

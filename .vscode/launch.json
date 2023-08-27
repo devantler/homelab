@@ -2,21 +2,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Bootstrap Local",
+            "name": "🚀 Bootstrap Local",
             "preLaunchTask": "bootstrap-local",
             "request": "attach",
             "type": "node",
             "timeout": 1
         },
         {
-            "name": "Destroy Local",
+            "name": "🔥 Destroy Local",
             "preLaunchTask": "destroy-local",
             "request": "attach",
             "type": "node",
             "timeout": 1
         },
         {
-            "name": "Validate Manifests",
+            "name": "✅ Validate Manifests",
             "preLaunchTask": "validate-manifests",
             "request": "attach",
             "type": "node",

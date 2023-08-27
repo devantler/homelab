@@ -1,8 +1,8 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: basic-auth
+  name: basic-auth-middleware
   namespace: traefik-ingress
 spec:
   basicAuth:
-    secret: admin:$$2y$$05$$GdZ9cv6XpHWQyz77u1ixMu5qjcS.0Ni.mrvn7TWpKmTYA1wM4p1HW
+    secret: basic-auth-secret

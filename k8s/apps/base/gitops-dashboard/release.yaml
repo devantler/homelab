@@ -15,6 +15,13 @@ spec:
   values:
     adminUser:
       create: true
+      username: admin
+      passwordHash: $2a$12$6twAYNqxU3Pz3PqVYTJN9uE5LaMDj3R1.TgLvalUoKeLnzKsFkK3i
     ingress:
       enabled: true
       className: traefik-ingress
+      hosts:
+        - host: gitops.${domain}
+          paths:
+            - path: /
+              pathType: ImplementationSpecific

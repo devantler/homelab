@@ -21,5 +21,13 @@ spec:
       dashboard:
         entryPoints:
           - websecure
+        matchRule: Host(`traefik.${domain}`)
+        middlewares:
+          - name: basic-auth-middleware
+            namespace: traefik-ingress
+    tlsStore:
+      default:
+        defaultCertificate:
+          secretName: cluster-issuer-certificate-tls
     
 
