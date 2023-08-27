@@ -48,7 +48,7 @@ jobs:
       - name: Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: Verify helm reconciliation
-        run: $SCRIPTS_DIR/e2e-verify-helm-reconciliation.sh
+        run: $SCRIPTS_DIR/e2e-verify-helm-reconciliation.sh ${{ matrix.environment }}
       # Run e2e tests for apps here
       # ...
       - name: Debug failure
