@@ -22,9 +22,3 @@ spec:
       secretName: cloudflare-tunnel-secret
       # If true, turn on WARP routing for TCP
       enableWarp: false
-      # Define ingress rules for the tunnel.
-      ingress:
-        - hostname: "*.${domain}"
-          service: https://traefik-ingress
-        - hostname: "${domain}"
-          service: https://traefik-ingress
