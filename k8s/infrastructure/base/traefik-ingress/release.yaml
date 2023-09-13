@@ -26,9 +26,6 @@ spec:
         entryPoints:
           - websecure
         matchRule: Host(`traefik.${domain}`)
-        middlewares:
-          - name: basic-auth-middleware
-            namespace: traefik-ingress
     tlsStore:
       default:
         defaultCertificate:
