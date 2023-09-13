@@ -3,3 +3,4 @@ kind: Kustomization
 resources: 
   - ../../base/cert-manager
   - ../../base/cloudflare-tunnel
+  - secrets/cloudflare-tunnel-secret.sops.yaml
