@@ -19,7 +19,7 @@ spec:
       # Your Cloudflare account number.
       #account: 634e9016d402443e427865dc35457728
       # The name of the tunnel this instance will serve
-      tunnelName: ${cloudflare_tunnel_name}
+      #tunnelName: ${cloudflare_tunnel_name}
       # The ID of the above tunnel.
       #tunnelId: ${cloudflare_tunnel_id}
       # The secret for the tunnel.
