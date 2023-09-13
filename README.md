@@ -93,7 +93,7 @@ This section describes how to manage secrets in the repo, and how to encrypt/dec
 
 ### Setting up SOPS
 
-> [!INFO]
+> [!NOTE]
 > If no GPG key has been added to a cluster, follow [this guide](https://fluxcd.io/flux/guides/mozilla-sops/) to create a new GPG key and add it to the cluster.
 
 1. Import the full key: `gpg --import <path-to-key>`
