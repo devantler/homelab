@@ -19,4 +19,6 @@ spec:
   postBuild:
     substitute:
       domain: devantler.com
+      cloudflare-tunnel-name: homelab-production
+      cloudflare-tunnel-id: fbe68f4f-ef7e-4cc0-bc5a-965a37957b2f
 
