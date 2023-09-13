@@ -20,5 +20,4 @@ spec:
     substitute:
       domain: devantler.com
       cloudflare_tunnel_name: homelab-production
-      cloudflare_tunnel_id: fbe68f4f-ef7e-4cc0-bc5a-965a37957b2f
 
