@@ -1,3 +1,4 @@
+## METHODS
 function test_helm_releases() {
     local releases=()
     local release_file=$(yq eval '.resources[] | select(. == "*release.yaml" )' "$1"/kustomization.yaml)
@@ -16,6 +17,7 @@ function test_helm_releases() {
     fi
 }
 
+## MAIN
 if [ -z "$1" ]; then
     echo "Error: 'environment' argument not set"
     exit 1
@@ -23,10 +25,10 @@ fi
 
 environment=$1
 
-apps_path=$(yq eval '.spec.path' k8s/clusters/$environment/apps.yaml)
 infrastructure_path=$(yq eval '.spec.path' k8s/clusters/$environment/infrastructure.yaml)
-configs_path=$(yq eval '.spec.path' k8s/clusters/$environment/configs.yaml)
+crds_path=$(yq eval '.spec.path' k8s/clusters/$environment/crds.yaml)
+apps_path=$(yq eval '.spec.path' k8s/clusters/$environment/apps.yaml)
 
-for path in $apps_path $infrastructure_path $configs_path; do
+for path in $apps_path $infrastructure_path $crds_path; do
     test_helm_releases $path
 done

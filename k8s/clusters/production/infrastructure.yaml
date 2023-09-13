@@ -4,14 +4,19 @@ metadata:
   name: infrastructure
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
+  retryInterval: 1m
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/infrastructure/overlays/local
+  path: ./k8s/infrastructure/overlays/production
   prune: true
   wait: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-gpg
   postBuild:
     substitute:
-      domain: local
+      domain: devantler.com
 

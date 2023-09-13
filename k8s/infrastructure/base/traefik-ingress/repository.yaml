@@ -4,5 +4,5 @@ metadata:
   name: traefik
   namespace: traefik-ingress
 spec:
-  interval: 1m
+  interval: 5m
   url: https://traefik.github.io/charts

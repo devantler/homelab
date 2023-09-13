@@ -1,5 +1,2 @@
-#DotEnv
-.env
-
-#MacOS
-.DS_STORE
+# MacOS
+.DS_Store

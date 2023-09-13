@@ -5,4 +5,4 @@ metadata:
   namespace: traefik-ingress
 spec:
   basicAuth:
-    secret: basic-auth-secret
+    secret: basic-auth-user

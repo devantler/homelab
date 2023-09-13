@@ -4,4 +4,3 @@ resources:
   - ../../base/certificates/cluster-issuer-certificate.yaml
   - ../../base/cluster-issuers/selfsigned-cluster-issuer.yaml
   - ../../base/middlewares/basic-auth-middleware.yaml
-  - ../../base/secrets/basic-auth-secret.yaml

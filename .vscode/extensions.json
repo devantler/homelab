@@ -1,7 +1,8 @@
 {
     "recommendations": [
         "weaveworks.vscode-gitops-tools",
-        "ms-azuretools.vscode-docker",
-        "ms-kubernetes-tools.vscode-kubernetes-tools"
+        "GitHub.vscode-pull-request-github",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "ShipitSmarter.sops-edit"
     ]
 }

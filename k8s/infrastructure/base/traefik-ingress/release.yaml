@@ -14,9 +14,13 @@ spec:
         name: traefik
         namespace: traefik-ingress
   values:
+    image:
+      tag: v3.0.0-beta3
     ports:
       web:
-        expose: false
+        redirectTo: websecure
+      websecure:
+        asDefault: true
     ingressRoute:
       dashboard:
         entryPoints:

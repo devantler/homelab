@@ -4,5 +4,5 @@ metadata:
   name: cert-manager
   namespace: cert-manager
 spec:
-  interval: 24h
+  interval: 5m
   url: https://charts.jetstack.io

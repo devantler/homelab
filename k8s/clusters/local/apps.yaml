@@ -6,7 +6,6 @@ metadata:
 spec:
   interval: 1m
   dependsOn:
-    - name: configs
     - name: infrastructure
   sourceRef:
     kind: GitRepository
@@ -16,4 +15,4 @@ spec:
   wait: true
   postBuild:
     substitute:
-      domain: "local"
+      domain: local

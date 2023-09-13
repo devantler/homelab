@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: configs
+  name: apps
   namespace: flux-system
 spec:
   interval: 1m
@@ -10,12 +10,13 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/configs/overlays/local
+  path: ./k8s/apps/overlays/production
   prune: true
   wait: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-gpg
   postBuild:
     substitute:
-      domain: "local"
-      cluster_issuer_certificate_name: "selfsigned-cluster-issuer"
-      basic_auth_username: "admin"
-      basic_auth_password: "admin"
+      domain: devantler.com
