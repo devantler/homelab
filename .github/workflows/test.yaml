@@ -5,9 +5,7 @@ env:
 
 on:
   push:
-    paths:
-      - 'k8s/**'
-      - '.github/workflows/**'
+    - main
 
 jobs:
   validate-manifests:
