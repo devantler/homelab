@@ -1,10 +1,6 @@
 name: autoupdate
 on:
-  push:
-    branches:
-      - main
-      - master
-      - trunk
+  push: {}
 jobs:
   autoupdate:
     name: autoupdate
