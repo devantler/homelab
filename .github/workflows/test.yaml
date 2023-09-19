@@ -4,7 +4,7 @@ env:
   SCRIPTS_DIR: ./.github/scripts
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
