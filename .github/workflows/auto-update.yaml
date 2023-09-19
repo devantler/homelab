@@ -1,7 +1,10 @@
 name: autoupdate
 on:
   push:
-    branches: [master]
+    branches:
+      - main
+      - master
+      - trunk
 jobs:
   autoupdate:
     name: autoupdate
