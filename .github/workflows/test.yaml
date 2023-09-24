@@ -5,8 +5,7 @@ env:
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   validate-manifests:
