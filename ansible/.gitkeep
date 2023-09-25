@@ -1,5 +1,0 @@
-# Notes
-
-This folder should contain playbooks to provision a K3s cluster to debian based hosts.
-
-The K3s cluster should be provisioned without traefik, as it will be provisioned by FluxCD.
