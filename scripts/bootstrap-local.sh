@@ -1,5 +1,8 @@
 branch=$(git rev-parse --abbrev-ref HEAD)
 
+echo "🔥 Destroying existing local Kubernetes cluster"
+k3d cluster delete cluster-local
+
 echo "🚀 Provisioning local Kubernetes cluster"
 k3d cluster create cluster-local --config k3d-config.yaml
 
