@@ -4,7 +4,12 @@ on:
     types: [opened, labeled, unlabeled, synchronize]
 jobs:
   require-labels:
-    if: github.triggering_actor != 'dependabot[bot]' && github.triggering_actor != 'renovate[bot]' && github.triggering_actor != 'web-flow' && github.triggering_actor != 'github-actions[bot]'
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'dependabot[bot]' &&
+      github.actor != 'renovate[bot]' && 
+      github.actor != 'web-flow' &&
+      github.event.pull_request.title != 'Update global workflows'
     runs-on: ubuntu-latest
     permissions:
       issues: write
