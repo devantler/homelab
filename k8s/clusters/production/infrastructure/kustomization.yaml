@@ -4,5 +4,5 @@ resources:
   - ../../../infrastructure/secrets/basic-auth-user.yaml
   - ../../../infrastructure/services/cert-manager
   - ../../../infrastructure/services/traefik-ingress
-  - secrets/cloudflare-dns-api-key.sops.yaml
-  - secrets/cloudflare-tunnel-secret.sops.yaml
+  - secrets/cloudflare-dns-api-key.yaml
+  - secrets/cloudflare-tunnel-secret.yaml
