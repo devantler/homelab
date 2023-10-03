@@ -11,6 +11,15 @@
             "problemMatcher": []
         },
         {
+            "label": "bootstrap-production",
+            "type": "shell",
+            "command": "./bootstrap-production.sh",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "destroy-local",
             "type": "shell",
             "command": "./destroy-local.sh",

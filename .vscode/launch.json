@@ -9,6 +9,13 @@
             "timeout": 1
         },
         {
+            "name": "🚀 Bootstrap Production",
+            "preLaunchTask": "bootstrap-production",
+            "request": "attach",
+            "type": "node",
+            "timeout": 1
+        },
+        {
             "name": "🔥 Destroy Local",
             "preLaunchTask": "destroy-local",
             "request": "attach",
