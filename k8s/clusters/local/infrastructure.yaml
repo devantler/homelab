@@ -29,6 +29,7 @@ spec:
   interval: 1m
   dependsOn:
     - name: infrastructure
+    - name: post-build
   sourceRef:
     kind: GitRepository
     name: flux-system

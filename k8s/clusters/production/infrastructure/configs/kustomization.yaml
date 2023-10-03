@@ -1,5 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../base/certificates/cluster-issuer-certificate.yaml
-  - ../../base/cluster-issuers/cloudflare-letsencrypt-cluster-issuer.yaml
+  - ../../../../infrastructure/configs/certificates/cluster-issuer-certificate.yaml
+  - ../../../../infrastructure/configs/cluster-issuers/cloudflare-letsencrypt-cluster-issuer.yaml
+  - ../../../../infrastructure/configs/middlewares/basic-auth-middleware.yaml

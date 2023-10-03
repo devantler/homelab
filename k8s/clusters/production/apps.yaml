@@ -7,10 +7,11 @@ spec:
   interval: 1m
   dependsOn:
     - name: infrastructure
+    - name: post-build
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/clusters/apps
+  path: ./k8s/clusters/production/apps
   prune: true
   wait: true
   decryption:
@@ -18,5 +19,8 @@ spec:
     secretRef:
       name: sops-gpg
   postBuild:
-    substitute:
-      domain: devantler.com
+    substituteFrom:
+      - kind: ConfigMap
+        name: variables
+      - kind: Secret
+        name: variables-sensitive
