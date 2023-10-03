@@ -30,5 +30,7 @@ infrastructure_configs_path=$(yq eval -N '.spec.path' k8s/clusters/$environment/
 apps_path=$(yq eval '.spec.path' k8s/clusters/$environment/apps.yaml)
 
 for path in $apps_path $infrastructure_path $infrastructure_configs_path; do
+    start_time=$(date +%s)
     test_helm_releases $path
+    echo "Time taken for helm releases in $path: $(($(date +%s) - $start_time)) seconds"
 done
