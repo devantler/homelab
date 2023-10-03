@@ -5,8 +5,7 @@ metadata:
 volumes:
   - volume: cluster-local:/tmp/k3dvol
 ports:
-  - port: 8080:80
-  - port: 8443:443
+  - port: 8443:443 # HTTPS
 options:
   k3s:
     extraArgs:
