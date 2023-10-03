@@ -1,3 +1,7 @@
+#!/bin/bash
+
+pushd $(dirname "$0") >/dev/null
+
 branch=$(git rev-parse --abbrev-ref HEAD)
 
 echo "🔥 Destroying existing local Kubernetes cluster"

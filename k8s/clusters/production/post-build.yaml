@@ -1,26 +1,18 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: apps
+  name: post-build
   namespace: flux-system
 spec:
   interval: 1m
-  dependsOn:
-    - name: infrastructure
-    - name: post-build
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/clusters/production/apps
+  path: ./k8s/clusters/production/post-build
   prune: true
   wait: true
   decryption:
     provider: sops
     secretRef:
       name: sops-gpg
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: variables
-      - kind: Secret
-        name: variables-sensitive
+

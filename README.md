@@ -5,7 +5,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 - [Overview](#overview)
   - [Clusters](#clusters)
   - [Infrastructure](#infrastructure)
-  - [CRDs](#crds)
+  - [Infrastructure Configs](#infrastructure-configs)
   - [Apps](#apps)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -22,19 +22,15 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 ```txt
 .
 ├─ ...
-├─ k8s
-│  ├─ apps
-│  │  ├─ base
-│  │  └─ overlays
-│  ├─ clusters
-│  │  └─ ...
-│  ├── crds
-│  │  ├─ base
-│  │  └─ overlays
-│  └─ infrastructure
-│  │  ├─ base
-│  │  └─ overlays
-└─ ...
+└─ k8s
+   ├─ apps
+   ├─ clusters
+   │  ├─ local
+   │  └─ sandbox
+   └─ infrastructure
+      ├─ configs
+      ├─ services
+      └─ secrets
 ```
 
 ### Clusters
@@ -46,7 +42,7 @@ A collection of clusters, each with their own flux manifests, and cluster config
 - [Cert-Manager](https://cert-manager.io/docs/): Cert-Manager is a Kubernetes add-on to automate the management and issuance of TLS certificates from various issuing sources.
 - [Traefik](https://doc.traefik.io/traefik/): Traefik is an open-source Edge Router that makes publishing your services a fun and easy experience.
 
-### CRDs
+### Infrastructure Configs
 
 - Certificates
 - Cluster Issuers

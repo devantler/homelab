@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: variables
+  namespace: flux-system
+data:
+  cloudflare_account_tag: 634e9016d402443e427865dc35457728
+  cloudflare_tunnel_id: 469e932e-c1e8-4f3c-96f6-23807e793f50
+  cloudflare_tunnel_name: homelab-production
+  cluster_issuer_certificate_name: cloudflare-letsencrypt-cluster-issuer
+  domain: devantler.com
+  letsencrypt_email: cluster@devantler.com
+  letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory

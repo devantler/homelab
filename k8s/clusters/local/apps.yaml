@@ -7,12 +7,16 @@ spec:
   interval: 1m
   dependsOn:
     - name: infrastructure
+    - name: post-build
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/apps/overlays/local
+  path: ./k8s/clusters/local/apps
   prune: true
   wait: true
   postBuild:
-    substitute:
-      domain: local
+    substituteFrom:
+      - kind: ConfigMap
+        name: variables
+      - kind: Secret
+        name: variables-sensitive

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: variables-sensitive
+    namespace: flux-system
+type: Opaque
+stringData:
+    cloudflare_dns_api_key: ENC[AES256_GCM,data:WkldjEZ77iHeIxlyKxkds6oLCr+OTLSHygcq8OXXwhl+HCtCZYwGIg==,iv:lJcW7RVK5hcCQEqDx+gYe+Jnvyn/O5Dd0xi3idM630g=,tag:XkhK7oZD47SArUxgMPY3tA==,type:str]
+    cloudflare_tunnel_secret: ENC[AES256_GCM,data:hxX3p623MQc+gpwd9rJdnoSaOv4fw4tdHtywQ4ZqFI5T2Z2iAIQEVKuhcqQcg8wu,iv:o1Pfgv7pQUOK+3wN1inq3n6WewIYbqB716zbEbaVuHw=,tag:DmWHG2K10+0V1Hy2cUTqNw==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2023-10-03T23:25:22Z"
+    mac: ENC[AES256_GCM,data:4tEJsxH/t/Xc2XLFeZNwWC+BkoC1Dk5rxyqLjwBkXdgd96aljwqLZGj9jHiV9ZECkRsjXFbxhm+JPWJD7iQ33vGZNHgFun0HomxQ7fBXpCKY/yxsTDKdg7xcldT9/nqIvOSm85LPxuZpNMDyuS5gwpXBUb/Ma49suMarRCwOAwc=,iv:pEQDHZ8E+BC7VpXXtvY+avh7CgeONXDSfw1mDeFlGwc=,tag:lhFNwp93PKHl8AG34OJj+A==,type:str]
+    pgp:
+        - created_at: "2023-10-03T23:25:22Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA5DlU7A8edrNARAAl2VLhhgtJ/yHLgV+g0Ud9tzL+lsdrPZVYLBV2f6Wr2iL
+            Vx/4U+LVAzjhSnS/WER17SjUJ+avv4XSwU/6paX6UFEeC7NtX4B3T2vPj7UthFtE
+            iu3XDsg+ar7CJbUKhM7bbz+c6X+9qeoMYtNFUJKhlNQIPSj5zOJveBl/PGnYUBdL
+            ctxcKQE9n+wpA4NipZfew35MOSEALoFmZOWFhwtdk2m4nh2VVO5686/E8VZjD/lt
+            0Uaw9+QPknUvTQx2yvNtm8YerXCwH3eHJdh14NFNRmt6GMyP2hOO+3+PLBh/e4Uv
+            4xj7yDGDut+Y5B6KEEZMjXL9taRZeBEmRirrFsK61cf7VKABdz3fzRQXU8mB6wEK
+            I/6Vdn7EgYwhhe3v7/QQ2QSy4ePdkAZ2MeOHVlZT2n0jiHuWfILyP+bY5cB2GAQx
+            BYyUzqh+XP6cdop9B87Sg7D7IKQ6tbKklWY20qDNDyWUo9qJJ+yWdAS4Iad0qcqz
+            IW1e3ZyTadQHiRJxbSJveeDl0WX0QzXIj+U/90xduO63xq93K5FbqsdnpNQUQOsK
+            mt1FNKGxYqYSRmolwXHPsazDqHlmv/JXkXvoXVJo7vNatBz8MqoXtOBXN1rGWNHI
+            WT04yUtggiEC8YVLhzcAOlzH+XVvozKn1KsG3OcQ3A+bY3H5bBwzb8au56jY18TU
+            ZgEJAhD8932/4/oadWX7xznLvyPEhSJA2PzoKrgMfkin/OoTB91Qvo99r2uDA3gm
+            rVZZuLOrsLV8Y7uiLV+IN0xwxv8tfeNOUIPaI6Q1iEmk7zxcpFmfvid3D0t8TLw6
+            pzhfzJewAA==
+            =tgHD
+            -----END PGP MESSAGE-----
+          fp: 1F1A648778E72857BD9CF481EE0834B3CEAC3061
+    encrypted_regex: ^(data|stringData)$
+    version: 3.8.0

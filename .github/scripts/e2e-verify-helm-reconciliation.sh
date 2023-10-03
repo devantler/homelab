@@ -25,10 +25,12 @@ fi
 
 environment=$1
 
-infrastructure_path=$(yq eval '.spec.path' k8s/clusters/$environment/infrastructure.yaml)
-crds_path=$(yq eval '.spec.path' k8s/clusters/$environment/crds.yaml)
+infrastructure_path=$(yq eval -N '.spec.path' k8s/clusters/$environment/infrastructure.yaml | head -n 1)
+infrastructure_configs_path=$(yq eval -N '.spec.path' k8s/clusters/$environment/infrastructure.yaml | tail -n 1)
 apps_path=$(yq eval '.spec.path' k8s/clusters/$environment/apps.yaml)
 
-for path in $apps_path $infrastructure_path $crds_path; do
+for path in $apps_path $infrastructure_path $infrastructure_configs_path; do
+    start_time=$(date +%s)
     test_helm_releases $path
+    echo "Time taken for helm releases in $path: $(($(date +%s) - $start_time)) seconds"
 done
