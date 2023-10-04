@@ -24,11 +24,6 @@ spec:
     # service:
     #   spec:
     #     loadBalancerIP: ${load_balancer_ip}
-    ingressRoute:
-      dashboard:
-        entryPoints:
-          - websecure
-        matchRule: Host(`traefik.${domain}`)
     tlsStore:
       default:
         defaultCertificate:
