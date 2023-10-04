@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: cloudflare-letsencrypt-cluster-issuer
-  namespace: traefik-ingress
+  namespace: cert-manager
 spec:
   acme:
     server: ${letsencrypt_server}
