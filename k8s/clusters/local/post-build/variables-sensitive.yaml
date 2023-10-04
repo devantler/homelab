@@ -4,6 +4,5 @@ metadata:
   name: variables-sensitive
   namespace: flux-system
 type: Opaque
-stringData:
-  basic_auth_password: admin
+stringData: {}
   
