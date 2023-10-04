@@ -4,5 +4,5 @@ resources:
   - namespace.yaml
   - release.yaml
   - repository.yaml
-  - secrets/cloudflare-dns-api-key-secret.yaml
-  - secrets/cloudflare-tunnel-credentials-secret.yaml
+  - secrets/cloudflare-dns-api-key.yaml
+  - secrets/cloudflare-tunnel-credentials.yaml
