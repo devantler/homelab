@@ -4,3 +4,4 @@ resources:
   - namespace.yaml
   - release.yaml
   - repository.yaml
+  - secrets/basic-auth-user.yaml
