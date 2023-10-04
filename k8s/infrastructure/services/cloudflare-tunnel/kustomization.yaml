@@ -1,8 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - cloudflare-dns-api-key.yaml
-  - cloudflare-tunnel-credentials.yaml
+  - cloudflare-dns-api-key-secret.yaml
+  - cloudflare-tunnel-credentials-secret.yaml
   - namespace.yaml
   - release.yaml
   - repository.yaml
