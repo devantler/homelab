@@ -11,3 +11,4 @@ data:
   domain: devantler.com
   letsencrypt_email: cluster@devantler.com
   letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory
+  load_balancer_ip: 10.0.0.200

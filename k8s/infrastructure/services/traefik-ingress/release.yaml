@@ -21,6 +21,9 @@ spec:
         redirectTo: websecure
       websecure:
         asDefault: true
+    service:
+      spec:
+        loadBalancerIP: ${load_balancer_ip}
     ingressRoute:
       dashboard:
         entryPoints:
@@ -30,5 +33,4 @@ spec:
       default:
         defaultCertificate:
           secretName: cluster-issuer-certificate-tls
-    
 
