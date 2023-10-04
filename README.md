@@ -23,12 +23,11 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 .
 ├─ ...
 └─ k8s
-   ├─ apps    # Contains public apps and services
+   ├─ apps    # Contains the base for public apps and services
    ├─ clusters    # Contains environment specific configurations for the different clusters
-   └─ infrastructure
+   └─ infrastructure    # Contains the base for infrastructure resources
       ├─ configs    # Contains CRDs to configure the infrastructure
-      ├─ services
-      └─ secrets
+      └─ ...
 ```
 
 ### Clusters
