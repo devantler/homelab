@@ -23,12 +23,10 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 .
 ├─ ...
 └─ k8s
-   ├─ apps
-   ├─ clusters
-   │  ├─ local
-   │  └─ sandbox
+   ├─ apps    # Contains public apps and services
+   ├─ clusters    # Contains environment specific configurations for the different clusters
    └─ infrastructure
-      ├─ configs
+      ├─ configs    # Contains CRDs to configure the infrastructure
       ├─ services
       └─ secrets
 ```
@@ -41,13 +39,6 @@ A collection of clusters, each with their own flux manifests, and cluster config
 
 - [Cert-Manager](https://cert-manager.io/docs/): Cert-Manager is a Kubernetes add-on to automate the management and issuance of TLS certificates from various issuing sources.
 - [Traefik](https://doc.traefik.io/traefik/): Traefik is an open-source Edge Router that makes publishing your services a fun and easy experience.
-
-### Infrastructure Configs
-
-- Certificates
-- Cluster Issuers
-- Middlewares
-- Ingress Routes
 
 ### Apps
 
