@@ -21,14 +21,9 @@ spec:
         redirectTo: websecure
       websecure:
         asDefault: true
-    # service:
-    #   spec:
-    #     loadBalancerIP: ${load_balancer_ip}
-    ingressRoute:
-      dashboard:
-        entryPoints:
-          - websecure
-        matchRule: Host(`traefik.${domain}`)
+    service:
+      spec:
+        loadBalancerIP: ${load_balancer_ip}
     tlsStore:
       default:
         defaultCertificate:
