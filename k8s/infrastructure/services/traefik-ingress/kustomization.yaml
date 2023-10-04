@@ -1,6 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - basic-auth-user.yaml
   - namespace.yaml
   - release.yaml
   - repository.yaml
