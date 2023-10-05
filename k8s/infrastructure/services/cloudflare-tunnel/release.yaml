@@ -17,8 +17,3 @@ spec:
       tunnelName: ${cloudflare_tunnel_name}
       secretName: cloudflare-tunnel-credentials
       enableWarp: false
-      ingress:
-        - hostname: hello.${domain}
-          service: hello_world
-        - hostname: ${domain}
-          service: traefik-ingress.traefik-ingress
