@@ -12,4 +12,4 @@ data:
   letsencrypt_email: cluster@devantler.com
   letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory
   load_balancer_ip: 10.0.0.200
-  metallb_ip_addresses: 10.0.0.210-10.0.0.219
+  metallb_ip_addresses: 10.0.0.210
