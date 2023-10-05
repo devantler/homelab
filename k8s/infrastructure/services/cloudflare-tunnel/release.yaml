@@ -18,5 +18,5 @@ spec:
       secretName: cloudflare-tunnel-credentials
       enableWarp: false
       ingress:
-        - hostname: hello.devantler.com
+        - hostname: hello.${domain}
           service: hello_world
