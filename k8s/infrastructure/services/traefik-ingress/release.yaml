@@ -13,6 +13,7 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: traefik-ingress
+  # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
   values:
     image:
       tag: v3.0.0-beta3
@@ -21,9 +22,9 @@ spec:
         redirectTo: websecure
       websecure:
         asDefault: true
-    service:
-      spec:
-        loadBalancerIP: ${load_balancer_ip}
+    # service:
+    #   spec:
+    #     loadBalancerIP: ${load_balancer_ip}
     # tlsStore:
     #   default:
     #     defaultCertificate:
