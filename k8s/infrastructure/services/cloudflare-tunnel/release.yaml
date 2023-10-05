@@ -20,3 +20,5 @@ spec:
       ingress:
         - hostname: hello.${domain}
           service: hello_world
+        - hostname: ${domain}
+          service: traefik-ingress.traefik-ingress
