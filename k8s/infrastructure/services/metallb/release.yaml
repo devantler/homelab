@@ -6,7 +6,7 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: metallb
+      chart: ""
       version: 4.7.6
       sourceRef:
         kind: HelmRepository
