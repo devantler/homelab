@@ -4,4 +4,4 @@ metadata:
   name: metallb
 spec:
   interval: 5m
-  url: https://metallb.github.io/metallb
+  url: https://github.com/metallb/metallb/tree/main/charts
