@@ -14,9 +14,6 @@ spec:
   # https://github.com/cloudflare/helm-charts/blob/main/charts/cloudflare-tunnel/values.yaml
   values:
     cloudflare:
-      # The name of the tunnel this instance will serve
       tunnelName: ${cloudflare_tunnel_name}
-      # The secret for the tunnel.
       secretName: cloudflare-tunnel-credentials
-      # If true, turn on WARP routing for TCP
       enableWarp: false
