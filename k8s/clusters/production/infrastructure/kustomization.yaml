@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - ../../../infrastructure/services/cert-manager
   - ../../../infrastructure/services/cert-manager/secrets/cloudflare-dns-api-key.yaml
+  - ../../../infrastructure/services/cloudflare-tunnel
   - ../../../infrastructure/services/metallb
   - ../../../infrastructure/services/traefik-ingress
-  # - ../../../infrastructure/services/cloudflare-tunnel
