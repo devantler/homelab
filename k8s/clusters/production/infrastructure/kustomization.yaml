@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
   # - ../../../infrastructure/services/cert-manager
   # - ../../../infrastructure/services/cloudflare-tunnel
-  - ../../../infrastructure/services/traefik-ingress
+  # ../../../infrastructure/services/traefik-ingress
