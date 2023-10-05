@@ -4,5 +4,4 @@ metadata:
   name: metallb
 spec:
   interval: 5m
-  type: oci
-  url: oci://registry-1.docker.io/bitnamicharts/metallb
+  url: https://metallb.github.io/metallb
