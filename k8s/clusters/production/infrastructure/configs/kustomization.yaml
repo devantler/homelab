@@ -6,6 +6,5 @@ resources:
   - ../../../../infrastructure/configs/middlewares/basic-auth-middleware.yaml
   - ../../../../infrastructure/configs/network/ip-address-pool.yaml
   - ../../../../infrastructure/configs/network/l2-advertisement.yaml
-  - ../../../../infrastructure/configs/storage/mayastor-nvmf.yaml
-  - ../../../../infrastructure/configs/storage/disk-pool-1.yaml
-  - ../../../../infrastructure/configs/storage/disk-pool-2.yaml
+  - ../../../../infrastructure/configs/disk-pools/disk-pool-1.yaml
+  - ../../../../infrastructure/configs/disk-pools/disk-pool-2.yaml
