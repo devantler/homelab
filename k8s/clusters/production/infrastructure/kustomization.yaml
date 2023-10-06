@@ -4,6 +4,6 @@ resources:
   - ../../../infrastructure/services/cert-manager
   - ../../../infrastructure/services/cert-manager/secrets/cloudflare-dns-api-key.yaml
   - ../../../infrastructure/services/cloudflare-tunnel
-  - ../../../infrastructure/services/longhorn
   - ../../../infrastructure/services/metallb
+  - ../../../infrastructure/services/rook
   - ../../../infrastructure/services/traefik-ingress

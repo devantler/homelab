@@ -1,15 +1,14 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: longhorn
+  name: rook-ceph
 spec:
   interval: 5m
   chart:
     spec:
-      chart: longhorn
-      version: 1.5.1
+      chart: rook-ceph
       sourceRef:
         kind: HelmRepository
-        name: longhorn
-  # https://github.com/longhorn/charts/blob/v1.5.x/charts/longhorn/values.yaml
+        name: rook-ceph
+  # https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph-cluster/values.yaml
   values: {}
