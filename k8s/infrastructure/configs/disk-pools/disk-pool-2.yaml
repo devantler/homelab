@@ -1,8 +1,0 @@
-apiVersion: openebs.io/v1alpha1
-kind: MayastorPool
-metadata:
-  name: ${disk_pool_node_2}-disk-pool
-  namespace: mayastor
-spec:
-  node: ${disk_pool_node_2}
-  disks: ["/dev/sda"]

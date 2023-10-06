@@ -1,7 +1,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: mayastor
+  name: longhorn
 spec:
   interval: 5m
-  url: https://openebs.github.io/mayastor-extensions/
+  url: https://charts.longhorn.io
