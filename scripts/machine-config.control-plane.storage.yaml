@@ -1,25 +1,26 @@
 machine:
   sysctls:
     vm.nr_hugepages: "512"
+  nodeLabels:
+    openebs.io/engine: "mayastor"
   kubelet:
     extraMounts:
       - destination: /var/local
         type: bind
         source: /var/local
         options:
-        - rbind
-        - rshared
-        - rw
+          - rbind
+          - rshared
+          - rw
     extraArgs:
       rotate-server-certificates: true
-      node-labels: openebs.io/engine=mayastor
 
   network:
     interfaces:
-    - interface: eth0
-      dhcp: true
-      vip:
-        ip: 10.0.0.200
+      - interface: eth0
+        dhcp: true
+        vip:
+          ip: 10.0.0.200
 cluster:
   extraManifests:
     - https://raw.githubusercontent.com/alex1989hu/kubelet-serving-cert-approver/main/deploy/standalone-install.yaml
