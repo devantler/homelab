@@ -12,10 +12,4 @@ spec:
         kind: HelmRepository
         name: mayastor
   # https://github.com/openebs/mayastor-extensions/blob/develop/chart/values.yaml
-  values:
-    etcd:
-      persistence:
-        storageClass: manual
-    loki-stack:
-      persistence:
-        storageClassName: manual
+  values: {}
