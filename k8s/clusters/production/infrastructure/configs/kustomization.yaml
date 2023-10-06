@@ -6,3 +6,6 @@ resources:
   - ../../../../infrastructure/configs/middlewares/basic-auth-middleware.yaml
   - ../../../../infrastructure/configs/network/ip-address-pool.yaml
   - ../../../../infrastructure/configs/network/l2-advertisement.yaml
+  - ../../../../infrastructure/configs/storage/mayastor-nvmf.yaml
+  - ../../../../infrastructure/configs/storage/talos-rpi-2-disk-pool.yaml
+  - ../../../../infrastructure/configs/storage/talos-rpi-3-disk-pool.yaml
