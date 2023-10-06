@@ -5,19 +5,10 @@ pushd $(dirname "$0") >/dev/null
 echo " Set current cluster to homelab"
 kubectl config use-context homelab
 
-echo "🔧 Patch machine-config on all control-plane nodes"
-talosctl patch mc \
-    -n 10.0.0.201 \
-    --patch @machine-config.control-plane.yaml
-
-echo "🔧 Patch machine-config on all control-plane nodes with storage"
-talosctl patch mc \
-    -n 10.0.0.202 \
-    -n 10.0.0.203 \
-    --patch @machine-config.control-plane.storage.yaml
-
-echo "🔧 Patch machine-config on all worker nodes"
-echo "No worker nodes to patch yet"
+echo "🔧 Patch machine-config on all nodes"
+sops -d machine-config.talos-rpi-1.sops.yaml | talosctl -n 10.0.0.201 apply-config -f /dev/stdin
+sops -d machine-config.talos-rpi-2.sops.yaml | talosctl -n 10.0.0.202 apply-config -f /dev/stdin
+sops -d machine-config.talos-rpi-3.sops.yaml | talosctl -n 10.0.0.203 apply-config -f /dev/stdin
 
 echo "🔐 Adding SOPS GPG key"
 kubectl create namespace flux-system
