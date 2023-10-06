@@ -1,6 +1,4 @@
 machine:
-  install:
-    disk: /dev/sdb
   sysctls:
     vm.nr_hugepages: "512"
   kubelet:
