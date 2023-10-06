@@ -3,8 +3,8 @@ kind: Kustomization
 resources:
   - ../../../../infrastructure/configs/certificates/cluster-issuer-certificate.yaml
   - ../../../../infrastructure/configs/cluster-issuers/cloudflare-letsencrypt-cluster-issuer.yaml
-  #- ../../../../infrastructure/configs/disk-pools/disk-pool-1.yaml
-  #- ../../../../infrastructure/configs/disk-pools/disk-pool-2.yaml
+  - ../../../../infrastructure/configs/disk-pools/disk-pool-1.yaml
+  - ../../../../infrastructure/configs/disk-pools/disk-pool-2.yaml
   - ../../../../infrastructure/configs/middlewares/basic-auth-middleware.yaml
   - ../../../../infrastructure/configs/network/ip-address-pool.yaml
   - ../../../../infrastructure/configs/network/l2-advertisement.yaml
