@@ -1,8 +1,8 @@
 apiVersion: openebs.io/v1alpha1
 kind: MayastorPool
 metadata:
-  name: talos-rpi-3-disk-pool
+  name: ${disk_pool_node_2}-disk-pool
   namespace: mayastor
 spec:
-  node: talos-rpi-3
+  node: ${disk_pool_node_2}
   disks: ["/dev/sda"]
