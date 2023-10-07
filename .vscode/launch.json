@@ -1,33 +1,33 @@
 {
-    "version": "0.2.0",
     "configurations": [
         {
-            "name": "🚀 Bootstrap Local",
-            "preLaunchTask": "bootstrap-local",
+            "name": "🚀 Bootstrap Sandbox",
+            "preLaunchTask": "bootstrap-sandbox",
             "request": "attach",
-            "type": "node",
-            "timeout": 1
+            "timeout": 1,
+            "type": "node"
         },
         {
             "name": "🚀 Bootstrap Production",
             "preLaunchTask": "bootstrap-production",
             "request": "attach",
-            "type": "node",
-            "timeout": 1
+            "timeout": 1,
+            "type": "node"
         },
         {
-            "name": "🔥 Destroy Local",
-            "preLaunchTask": "destroy-local",
+            "name": "🔥 Destroy Sandbox",
+            "preLaunchTask": "destroy-sandbox",
             "request": "attach",
-            "type": "node",
-            "timeout": 1
+            "timeout": 1,
+            "type": "node"
         },
         {
             "name": "✅ Validate Manifests",
             "preLaunchTask": "validate-manifests",
             "request": "attach",
-            "type": "node",
-            "timeout": 1
+            "timeout": 1,
+            "type": "node"
         }
-    ]
+    ],
+    "version": "0.2.0"
 }

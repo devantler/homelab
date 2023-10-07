@@ -4,5 +4,5 @@ metadata:
   name: variables
   namespace: flux-system
 data:
-  domain: local
+  domain: sandbox
   cluster_issuer_certificate_name: selfsigned-cluster-issuer

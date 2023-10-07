@@ -1,38 +1,38 @@
 {
-    "version": "2.0.0",
     "tasks": [
         {
-            "label": "bootstrap-local",
-            "type": "shell",
-            "command": "./bootstrap-local.sh",
+            "command": "./bootstrap-sandbox.sh",
+            "label": "bootstrap-sandbox",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
-            "problemMatcher": []
+            "problemMatcher": [],
+            "type": "shell"
         },
         {
-            "label": "bootstrap-production",
-            "type": "shell",
             "command": "./bootstrap-production.sh",
+            "label": "bootstrap-production",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
-            "problemMatcher": []
+            "problemMatcher": [],
+            "type": "shell"
         },
         {
-            "label": "destroy-local",
-            "type": "shell",
-            "command": "./destroy-local.sh",
+            "command": "./destroy-sandbox.sh",
+            "label": "destroy-sandbox",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
-            "problemMatcher": []
+            "problemMatcher": [],
+            "type": "shell"
         },
         {
-            "label": "validate-manifests",
-            "type": "shell",
             "command": "./.github/scripts/validate-manifests.sh",
-            "problemMatcher": []
+            "label": "validate-manifests",
+            "problemMatcher": [],
+            "type": "shell"
         }
-    ]
+    ],
+    "version": "2.0.0"
 }

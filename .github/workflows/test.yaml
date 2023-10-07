@@ -26,7 +26,7 @@ jobs:
     needs: validate-manifests
     strategy:
       matrix:
-        environment: [local] # Add more environments here when needed. Right now only local is supported.
+        environment: [sandbox] # Add testable environments here.
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,9 +39,9 @@ jobs:
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
           cluster-name: cluster-ci
-          k3d-version: v5.5.2
+          k3d-version: v5.6.0
           args: >-
-            --config=scripts/k3d-config.yaml
+            --config=$SCRIPTS_DIR/k3d-config.yaml
       - name: Install Flux
         run: flux install
       - name: Setup cluster reconciliation

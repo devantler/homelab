@@ -20,7 +20,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./k8s/clusters/local
+  path: ./k8s/clusters/sandbox
   prune: true
   sourceRef:
     kind: GitRepository

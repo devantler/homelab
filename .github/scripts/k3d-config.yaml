@@ -1,9 +1,9 @@
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
-  name: cluster-local
+  name: cluster-ci
 volumes:
-  - volume: cluster-local:/tmp/k3dvol
+  - volume: cluster-ci:/tmp/k3dvol
 ports:
   - port: 8443:443 # HTTPS
 options:

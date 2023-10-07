@@ -5,7 +5,6 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 - [Overview](#overview)
   - [Clusters](#clusters)
   - [Infrastructure](#infrastructure)
-  - [Infrastructure Configs](#infrastructure-configs)
   - [Apps](#apps)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -13,9 +12,8 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
   - [Setting up SOPS](#setting-up-sops)
   - [SOPS VSCode Integration](#sops-vscode-integration)
 - [Cluster Setups](#cluster-setups)
-  - [Local Setup](#local-setup)
+  - [Sandbox Setup](#sandbox-setup)
   - [Production Setup](#production-setup)
-- [Resources](#resources)
 
 ## Overview
 
@@ -36,10 +34,32 @@ A collection of clusters, each with their own flux manifests, and cluster config
 
 ### Infrastructure
 
+The infrastructure folder contains the base for infrastructure resources. The resources are split into two categories: configs and services.
+
+#### Configs
+
+The configs folder contains CRDs that configure specific infrastructure resources.
+
+- Certificates: Certificates are resources that represent a certificate for e.g. TLS communication.
+- Cluster Issuers: Cluster issuers are resources that represent a certificate issuer for e.g. Let's Encrypt or Self-Signed certificates.
+- Ingresses: Ingresses are resources that represent a set of rules for routing external traffic to internal services.
+- Middlewares: Middlewares are resources that represent a set of rules requests and responses should be processed by.
+- Network: Network resources are resources that represent a set of rules for how the cluster should be networked.
+
+#### Services
+
+The services folder contains the base for infrastructure services.
+
 - [Cert-Manager](https://cert-manager.io/docs/): Cert-Manager is a Kubernetes add-on to automate the management and issuance of TLS certificates from various issuing sources.
-- [Traefik](https://doc.traefik.io/traefik/): Traefik is an open-source Edge Router that makes publishing your services a fun and easy experience.
+- [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps): Cloudflare Tunnel is a service that allows you to securely expose your services to the internet, without exposing them directly to the internet.
+- [Flux Webhook Receiver](https://fluxcd.io/flux/guides/webhook-receivers/): Flux Webhook Receiver is a service that allows you to trigger Flux syncs using webhooks, making the reconciliation just as fast as a push-based approach.
+- [MetalLB](https://metallb.universe.tf/): MetalLB is a load-balancer implementation for bare metal Kubernetes clusters, using standard routing protocols.
+- [Rook Ceph](https://rook.io/): Rook is an open source cloud-native storage orchestrator for Kubernetes, providing the platform, framework, and support for managing the Ceph Storage System in Kubernetes with the Rook Operator and custom CRDs.
+- [Traefik Ingress](https://doc.traefik.io/traefik/): Traefik is an open-source reverse proxy and load balancer for HTTP and TCP-based applications that integrates well into Kubernetes environments as an ingress controller.
 
 ### Apps
+
+The apps folder contains the base for public apps and services.
 
 - none
 
@@ -49,26 +69,16 @@ These instructions will guide you through the process of installing the necessar
 
 ### Prerequisites
 
-For running CI locally:
-
-- [yq](https://github.com/mikefarah/yq) for validating YAML files.
-- [kubeconform](https://github.com/yannh/kubeconform) for validating Kubernetes manifests.
-
-For administrating clusters:
-
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- [Helm 3](https://helm.sh/docs/intro/install/)
-
-For bootstrapping clusters:
-
 - [Flux CLI](https://fluxcd.io/docs/installation/#install-the-flux-cli)
-- [k3d](https://k3d.io/#installation) for creating local clusters.
-
-For encrypting/decrypting secrets:
-
 - [gnupg](https://gnupg.org/download/index.html): GnuPG is a complete and free implementation of the OpenPGP standard as defined by RFC4880 (also known as PGP).
 - [sops](https://github.com/getsops/sops): SOPS is an editor of encrypted files that supports YAML, JSON, ENV, INI, and BINARY formats and encrypts with AWS KMS, GCP KMS, Azure Key Vault, and PGP.
-- Access to the private/public PGP key for the environment you are working on.
+- Local Setup
+  - [Docker](https://docs.docker.com/get-docker/) for running talos clusters locally.
+  - [yq](https://github.com/mikefarah/yq) for validating YAML.
+  - [kubeconform](https://github.com/yannh/kubeconform) for validating Kubernetes manifests.
+- Debugging
+  - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for administrating clusters.
+  - [k9s](https://k9scli.io): K9s provides a curses based terminal UI to interact with your Kubernetes clusters.
 
 ## Managing secrets
 
@@ -105,32 +115,31 @@ If you use VSCode, there is an extension called [SOPS easy edit]([ShipitSmarter.
 
 ## Cluster Setups
 
-- **Local** - A local cluster for development purposes.
-  - `<service>.local`
+- **Sandbox** - A sandbox cluster for development purposes.
+  - `<service>.sandbox`
 - **Production** - A production environment for hosting services.
-  - `<service>.devantler.com`
+  - `<service>.<domain>`
 
-### Local Setup
+### Sandbox Setup
 
 > [!NOTE]
 > The repo includes a few scripts for bootstrapping, destroying and validating the manifest files. All scripts have been made runnable from VSCode tasks or run configurations. So if you are using VSCode, you can find and run all scripts from the Run and Debug tab, or by searching for `Tasks: Run Task` in the command palette.
 
-To get started, you need to create a separate branch to work on your increments. Doing so allows you to bootstrap the local cluster, such that Flux can sync any changes you push to the branch:
+The sandbox cluster can be bootstrapped as follows:
 
 ```bash
-./scripts/bootstrap-local.sh
+./scripts/bootstrap-sandbox.sh
 ```
 
 The script will do the following:
 
-1. Create a local cluster with k3d.
-2. Bootstrap Flux2 to sync the local cluster with the branch you are working on.
+1. Create a sandbox cluster with Talos Linux in Docker.
+2. Bootstrap Flux2 to sync the sandbox cluster with the branch you are working on.
 
-To access the services in the cluster you need to update your `/etc/hosts` file with the following entries:
+To access services in the cluster you can use kubernetes port-forwarding, or if the service is exposed through an ingress, you can add the ingress route to your `/etc/hosts` file.
 
 ```bash
 # Please keep this list updated with new services you introduce to the cluster.
-127.0.0.1 traefik.local
 ```
 
 > [!IMPORTANT]
@@ -140,22 +149,12 @@ To access the services in the cluster you need to update your `/etc/hosts` file 
 > - Windows: `ipconfig /flushdns`
 > - Linux: `sudo systemd-resolve --flush-caches`
 
-That is it! You should now be able to work on the cluster, and Flux2 will sync any changes you push to the branch, so you can test your changes locally.
+That is it! You should now be able to work on the cluster, and Flux2 will sync any changes you push to the branch, so you can test your changes locally before creating a PR with your changes.
 
 ### Production Setup
 
-The production cluster is fully managed by Flux2, and should not be modified directly through `kubectl`, `helm`, or similar tools.
+The production cluster is fully managed by Flux2 and GitHub Actions, and it should not be modified directly through `kubectl`, `helm`, or similar tools.
 
 - The **production** cluster is updated whenever changes are merged to the main branch.
 
-In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-production.sh` script.
-
-## Resources
-
-- [flux](https://fluxcd.io/flux/): a tool for keeping Kubernetes clusters in sync with sources of configuration (like Git repositories), and automating updates to the configuration when there is new code to deploy.
-  - [flux-kustomize-helm-example](https://github.com/fluxcd/flux2-kustomize-helm-example): an example repository to demonstrate how to use Flux v2 with Kustomize and Helm. Should be used as a reference for how to structure the repo.
-  - [flagger](https://fluxcd.io/flagger/): a progressive delivery tool that automates the release process for applications running on Kubernetes.
-  - [post-build-variable-substitution](https://fluxcd.io/flux/components/kustomize/kustomization/#post-build-variable-substitution): a way to template manifests before applying them to the cluster. (Should be used over patches, when possible.)
-  - [patches](https://fluxcd.io/flux/components/kustomize/kustomizations/#patches): a way to extend manifests before applying them to the cluster.
-  - [sops](https://fluxcd.io/flux/guides/mozilla-sops/): Mozilla SOPS is a tool to manage secrets using a GitOps workflow, where secrets are encrypted/decrypted using GPG keys, and stored in Git. Flux uses a plugin to decrypt the secrets before applying them to the cluster.
-  - [recommendations](https://fluxcd.io/flux/components/kustomize/kustomizations/#working-with-kustomizations): a list of recommendations for working with Flux Kustomizations.
+In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-production.sh` script. This script will configure a set of Talos Linux nodes and bootstrap Flux2 to sync the cluster.
