@@ -18,8 +18,9 @@ spec:
   # https://github.com/cloudflare/helm-charts/blob/main/charts/cloudflare-tunnel/values.yaml
   values:
     cloudflare:
+      account: ${cloudflare_account_tag}
       tunnelName: ${cloudflare_tunnel_name}
-      secretName: cloudflare-tunnel-credentials
-      enableWarp: false
+      tunnelId: ${cloudflare_tunnel_id}
+      secret: ${cloudflare_tunnel_secret}
     image:
       tag: "2023.8.2"
