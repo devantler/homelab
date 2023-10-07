@@ -21,3 +21,5 @@ spec:
       tunnelName: ${cloudflare_tunnel_name}
       secretName: cloudflare-tunnel-credentials
       enableWarp: false
+    image:
+      tag: "2023.8.2"
