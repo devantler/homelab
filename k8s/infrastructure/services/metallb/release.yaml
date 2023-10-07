@@ -10,6 +10,9 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: metallb
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   # https://github.com/metallb/metallb/blob/main/charts/metallb/values.yaml
   values: {}
-
