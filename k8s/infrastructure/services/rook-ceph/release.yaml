@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: rook-ceph
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: rook-ceph
+      sourceRef:
+        kind: HelmRepository
+        name: rook-ceph
+  # https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph/values.yaml
+  values: {}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: rook-ceph-cluster
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: rook-ceph-cluster
+      sourceRef:
+        kind: HelmRepository
+        name: rook-ceph-cluster
+  # https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph-cluster/values.yaml
+  values: {}
