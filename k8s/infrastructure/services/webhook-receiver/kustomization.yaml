@@ -5,4 +5,3 @@ resources:
   - ingress.yaml
   - receiver.yaml
   - secrets/webhook-receiver-token.yaml
-  - service.yaml
