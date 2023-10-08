@@ -35,7 +35,7 @@ jobs:
       - name: Setup Talos CLI
         run: curl -sL https://talos.dev/install | sh
       - name: Install Talos Cluster
-        run: talosctl cluster create --controlplane 3 --workers 0 --config-patch-control-plane @./.github/machine-configs/control-plane.yaml
+        run: talosctl cluster create --controlplanes 3 --workers 0 --config-patch-control-plane @./.github/machine-configs/control-plane.yaml
       - name: Install Flux
         run: flux install
       - name: Extract branch name
