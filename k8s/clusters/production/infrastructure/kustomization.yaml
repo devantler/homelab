@@ -5,6 +5,7 @@ resources:
   - ../../../infrastructure/services/cert-manager/secrets/cloudflare-dns-api-key.yaml
   - ../../../infrastructure/services/cloudflare-tunnel
   - ../../../infrastructure/services/flux-webhook-receiver
+  - ../../../infrastructure/services/kube-prometheus-stack
   - ../../../infrastructure/services/metallb
   - ../../../infrastructure/services/rook-ceph
   - ../../../infrastructure/services/traefik-ingress
