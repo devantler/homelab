@@ -6,6 +6,8 @@ env:
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 jobs:
   validate-manifests:
@@ -21,3 +23,9 @@ jobs:
         uses: fluxcd/pkg/actions/kustomize@main
       - name: Validate manifests
         run: $SCRIPTS_DIR/validate-manifests.sh
+  verify-and-promote:
+    runs-on: ubuntu-latest
+    steps:
+      - if: github.event_name != 'push'
+        name: Skip
+        run: exit 0

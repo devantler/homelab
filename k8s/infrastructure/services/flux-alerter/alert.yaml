@@ -1,0 +1,11 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta2
+kind: Alert
+metadata:
+  name: flux-system
+spec:
+  providerRef:
+    name: flux-system
+  eventSeverity: error
+  eventSources:
+    - kind: Kustomization
+      name: flux-system
