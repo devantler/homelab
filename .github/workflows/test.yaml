@@ -31,13 +31,17 @@ jobs:
         run: exit 0
       - name: Checkout
         uses: actions/checkout@v4
-      # - uses: autotelic/action-wait-for-status-check@v1
-      #   id: wait-for-status
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     statusName: "An Expected Commit Status Context"
-      # - name: Do something with a passing status
+      - uses: autotelic/action-wait-for-status-check@v1
+        id: wait-for-status
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          statusName: "kustomization/flux-system"
+      # - name: Promote deployment to production
       #   if: steps.wait-for-status.outputs.state == 'success'
-
-      # - name: Do something with a failing status
-      #   if: steps.wait-for-status.outputs.state == 'failure'
+      #   uses: joelwmale/webhook-action@master
+      #   with:
+      #     url: ${{ secrets.WEBHOOK_URL }}
+      #     headers: '{"repository": "joelwmale/webhook-action"}'
+      #     body: '{"event": "deployment", "repository": "joelwmale/webhook-action"}'
+      # - if: steps.wait-for-status.outputs.state == 'failure'
+      #   run: exit 1
