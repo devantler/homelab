@@ -4,7 +4,7 @@ metadata:
   name: infrastructure
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
   dependsOn:
     - name: post-build
   sourceRef:
@@ -26,7 +26,7 @@ metadata:
   name: infrastructure-configs
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
   dependsOn:
     - name: infrastructure
     - name: post-build

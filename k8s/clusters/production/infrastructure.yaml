@@ -30,7 +30,7 @@ metadata:
   name: infrastructure-configs
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
   dependsOn:
     - name: post-build
     - name: infrastructure
