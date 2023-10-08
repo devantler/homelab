@@ -8,8 +8,6 @@ data:
   cloudflare_tunnel_id: 469e932e-c1e8-4f3c-96f6-23807e793f50
   cloudflare_tunnel_name: homelab-production
   cluster_issuer_certificate_name: cloudflare-letsencrypt-cluster-issuer
-  disk_pool_node_1: talos-rpi-1
-  disk_pool_node_2: talos-rpi-2
   domain: devantler.com
   letsencrypt_email: cluster@devantler.com
   letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory
