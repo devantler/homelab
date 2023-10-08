@@ -29,3 +29,15 @@ jobs:
       - if: github.event_name != 'push'
         name: Skip
         run: exit 0
+      - name: Checkout
+        uses: actions/checkout@v4
+      # - uses: autotelic/action-wait-for-status-check@v1
+      #   id: wait-for-status
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     statusName: "An Expected Commit Status Context"
+      # - name: Do something with a passing status
+      #   if: steps.wait-for-status.outputs.state == 'success'
+
+      # - name: Do something with a failing status
+      #   if: steps.wait-for-status.outputs.state == 'failure'
