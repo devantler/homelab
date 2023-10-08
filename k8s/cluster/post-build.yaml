@@ -4,10 +4,14 @@ metadata:
   name: post-build
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/clusters/sandbox/post-build
+  path: ./k8s/cluster/post-build
   prune: true
   wait: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-gpg

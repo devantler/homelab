@@ -1,22 +1,8 @@
 {
     "configurations": [
         {
-            "name": "🚀 Bootstrap Sandbox",
-            "preLaunchTask": "bootstrap-sandbox",
-            "request": "attach",
-            "timeout": 1,
-            "type": "node"
-        },
-        {
             "name": "🚀 Bootstrap Production",
             "preLaunchTask": "bootstrap-production",
-            "request": "attach",
-            "timeout": 1,
-            "type": "node"
-        },
-        {
-            "name": "🔥 Destroy Sandbox",
-            "preLaunchTask": "destroy-sandbox",
             "request": "attach",
             "timeout": 1,
             "type": "node"

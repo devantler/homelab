@@ -24,7 +24,7 @@ jobs:
         id: update
         run: |
           flux install \
-            --export > ./k8s/clusters/${{ matrix.environment }}/flux-system/gotk-components.yaml
+            --export > ./k8s/cluster/flux-system/gotk-components.yaml
 
           VERSION="$(flux -v)"
           echo "flux_version=$VERSION" >> $GITHUB_OUTPUT

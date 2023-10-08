@@ -4,13 +4,13 @@ metadata:
   name: infrastructure
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
   dependsOn:
     - name: post-build
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/clusters/production/infrastructure
+  path: ./k8s/cluster/infrastructure
   prune: true
   wait: true
   decryption:
@@ -30,14 +30,14 @@ metadata:
   name: infrastructure-configs
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
   dependsOn:
     - name: post-build
     - name: infrastructure
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/clusters/production/infrastructure/configs
+  path: ./k8s/cluster/infrastructure/configs
   prune: true
   wait: true
   decryption:
