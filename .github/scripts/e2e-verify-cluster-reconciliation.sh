@@ -11,5 +11,5 @@ kubectl -n flux-system wait kustomization/infrastructure-configs --for=condition
 echo "Time taken for infrastructure-configs kustomization: $(($(date +%s) - $start_time)) seconds"
 
 start_time=$(date +%s)
-kubectl -n flux-system wait kustomization/apps --for=condition=ready --timeout=10m || exit 1
+kubectl -n flux-system wait kustomization/apps --for=condition=ready --timeout=5m || exit 1
 echo "Time taken for apps kustomization: $(($(date +%s) - $start_time)) seconds"
