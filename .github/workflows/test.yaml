@@ -35,7 +35,7 @@ jobs:
       - name: Setup Talos CLI
         run: curl -sL https://talos.dev/install | sh
       - name: Install Talos Cluster
-        run: talosctl create cluster
+        run: talosctl cluster create 
       - name: Install Flux
         run: flux install
       - name: Extract branch name
