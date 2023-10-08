@@ -22,7 +22,7 @@ jobs:
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@main
       - name: Validate manifests
-        run: $SCRIPTS_DIR/validate-manifests.sh
+        run: $SCRIPTS_DIR/validate-manifests.sh || exit 1
   verify-and-promote:
     runs-on: ubuntu-latest
     steps:
