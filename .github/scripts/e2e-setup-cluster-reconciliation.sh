@@ -34,8 +34,8 @@ flux create source git flux-system \
     --branch=$branch_name \
     --username=$github_actor \
     --password=$github_token \
-    --ignore-paths="k8s/clusters/**/flux-system/"
+    --ignore-paths="k8s/cluster/flux-system/"
 
 flux create kustomization flux-system \
     --source=flux-system \
-    --path=./k8s/clusters/$environment
+    --path=./k8s/cluster

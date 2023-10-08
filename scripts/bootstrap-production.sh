@@ -19,4 +19,4 @@ gpg --export-secret-keys --armor "1F1A648778E72857BD9CF481EE0834B3CEAC3061" |
 
 echo "🚀 Installing Flux"
 flux check --pre
-flux bootstrap github --owner=$GITHUB_USER --repository=homelab --path=./k8s/clusters/production --personal --branch=main
+flux bootstrap github --owner=$GITHUB_USER --repository=homelab --path=./k8s/cluster --personal --branch=main

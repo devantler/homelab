@@ -12,7 +12,6 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
   - [Setting up SOPS](#setting-up-sops)
   - [SOPS VSCode Integration](#sops-vscode-integration)
 - [Cluster Setups](#cluster-setups)
-  - [Sandbox Setup](#sandbox-setup)
   - [Production Setup](#production-setup)
 
 ## Overview
@@ -115,41 +114,8 @@ If you use VSCode, there is an extension called [SOPS easy edit]([ShipitSmarter.
 
 ## Cluster Setups
 
-- **Sandbox** - A sandbox cluster for development purposes.
-  - `<service>.sandbox`
 - **Production** - A production environment for hosting services.
   - `<service>.<domain>`
-
-### Sandbox Setup
-
-> [!NOTE]
-> The repo includes a few scripts for bootstrapping, destroying and validating the manifest files. All scripts have been made runnable from VSCode tasks or run configurations. So if you are using VSCode, you can find and run all scripts from the Run and Debug tab, or by searching for `Tasks: Run Task` in the command palette.
-
-The sandbox cluster can be bootstrapped as follows:
-
-```bash
-./scripts/bootstrap-sandbox.sh
-```
-
-The script will do the following:
-
-1. Create a sandbox cluster with Talos Linux in Docker.
-2. Bootstrap Flux2 to sync the sandbox cluster with the branch you are working on.
-
-To access services in the cluster you can use kubernetes port-forwarding, or if the service is exposed through an ingress, you can add the ingress route to your `/etc/hosts` file.
-
-```bash
-# Please keep this list updated with new services you introduce to the cluster.
-```
-
-> [!IMPORTANT]
-> You might need to clear your DNS cache for the changes to take effect.
->
-> - macOS: `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`
-> - Windows: `ipconfig /flushdns`
-> - Linux: `sudo systemd-resolve --flush-caches`
-
-That is it! You should now be able to work on the cluster, and Flux2 will sync any changes you push to the branch, so you can test your changes locally before creating a PR with your changes.
 
 ### Production Setup
 

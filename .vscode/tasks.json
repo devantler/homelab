@@ -1,26 +1,8 @@
 {
     "tasks": [
         {
-            "command": "./bootstrap-sandbox.sh",
-            "label": "bootstrap-sandbox",
-            "options": {
-                "cwd": "${workspaceFolder}/scripts"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
             "command": "./bootstrap-production.sh",
             "label": "bootstrap-production",
-            "options": {
-                "cwd": "${workspaceFolder}/scripts"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
-            "command": "./destroy-sandbox.sh",
-            "label": "destroy-sandbox",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
