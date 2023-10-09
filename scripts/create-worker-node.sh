@@ -1,3 +1,5 @@
+echo "🐳 Starting Docker container..."
+
 docker run -d \
     --name talos-docker-1 \
     --hostname talos-docker-1 \
@@ -19,7 +21,9 @@ docker run -d \
     -p 6443:6443 \
     ghcr.io/siderolabs/talos:v1.5.3
 
+echo "⏰ Sleeping for 5 seconds..."
 sleep 5
 
+echo "🔒 Decrypting and applying machine configuration..."
 sops -d talos-machine-configs/machine-config.talos-docker-1.sops.yaml |
     talosctl -n 127.0.0.1 apply-config --insecure -f /dev/stdin
