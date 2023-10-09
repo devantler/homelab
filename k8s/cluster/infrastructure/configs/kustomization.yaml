@@ -1,8 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources: []
-  # - ../../../infrastructure/configs/certificates/cluster-issuer-certificate.yaml
-  # - ../../../infrastructure/configs/cluster-issuers/cloudflare-letsencrypt-cluster-issuer.yaml
+resources:
+  - ../../../infrastructure/configs/certificates/cluster-issuer-certificate.yaml
+  - ../../../infrastructure/configs/cluster-issuers/cloudflare-letsencrypt-cluster-issuer.yaml
   # - ../../../infrastructure/configs/ingress/webhook-receiver.yaml
   # - ../../../infrastructure/configs/middlewares/basic-auth-middleware.yaml
   # - ../../../infrastructure/configs/network/ip-address-pool.yaml
