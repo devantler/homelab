@@ -27,5 +27,9 @@ spec:
           service: https://traefik-ingress.traefik-ingress:443
           originRequest:
             originServerName: ${domain}
+        - hostname: ${domain}
+          service: https://traefik-ingress.traefik-ingress:443
+          originRequest:
+            originServerName: ${domain}
     image:
       tag: 2023.8.2
