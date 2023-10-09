@@ -4,9 +4,9 @@ metadata:
   name: infrastructure
   namespace: flux-system
 spec:
-  interval: 5m
+  interval: 10m
   dependsOn:
-    - name: post-build
+    - name: variables
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -21,8 +21,10 @@ spec:
     substituteFrom:
       - kind: ConfigMap
         name: variables
+        optional: false
       - kind: Secret
         name: variables-sensitive
+        optional: false
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -32,7 +34,7 @@ metadata:
 spec:
   interval: 5m
   dependsOn:
-    - name: post-build
+    - name: variables
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -47,5 +49,7 @@ spec:
     substituteFrom:
       - kind: ConfigMap
         name: variables
+        optional: false
       - kind: Secret
         name: variables-sensitive
+        optional: false

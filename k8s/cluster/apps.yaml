@@ -6,7 +6,9 @@ metadata:
 spec:
   interval: 5m
   dependsOn:
-    - name: post-build
+    - name: variables
+    - name: infrastructure
+    - name: infrastructure-configs
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -21,5 +23,7 @@ spec:
     substituteFrom:
       - kind: ConfigMap
         name: variables
+        optional: false
       - kind: Secret
         name: variables-sensitive
+        optional: false
