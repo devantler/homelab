@@ -15,5 +15,5 @@ patches:
   - path: patches/cloudflared-patch.yaml
     target:
       kind: Deployment
-      name: cloudflare-tunnel-remote
+      name: cloudflared-cloudflare-tunnel-remote
       namespace: cloudflared

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloudflare-tunnel-remote
+  name: cloudflared-cloudflare-tunnel-remote
   namespace: cloudflared
   annotations:
     secret.reloader.stakater.com/reload: "variables-sensitive"
