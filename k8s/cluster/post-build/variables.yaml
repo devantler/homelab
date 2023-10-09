@@ -3,9 +3,6 @@ kind: ConfigMap
 metadata:
   name: variables
 data:
-  cloudflare_account_tag: 634e9016d402443e427865dc35457728
-  cloudflare_tunnel_id: d19d3305-8375-4040-bd51-f2bc92ad0235
-  cloudflare_tunnel_name: homelab-production
   cluster_issuer_certificate_name: cloudflare-letsencrypt-cluster-issuer
   domain: devantler.com
   letsencrypt_email: cluster@devantler.com
