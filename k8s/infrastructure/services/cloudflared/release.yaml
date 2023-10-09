@@ -21,5 +21,3 @@ spec:
       tunnel_token: ${cloudflare_tunnel_token}
     image:
       tag: 2023.8.2
-    podAnnotations:
-      secret.reloader.stakater.com/reload: "variables-sensitive"
