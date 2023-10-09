@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: cloudflared
   annotations:
-    secret.reloader.stakater.com/reload: "tunnel-token"
+    secret.reloader.stakater.com/reload: "variables-sensitive"
 spec:
   replicas: 2
   selector:
