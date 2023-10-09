@@ -22,11 +22,11 @@ spec:
       tunnelName: ${cloudflare_tunnel_name}
       tunnelId: ${cloudflare_tunnel_id}
       secret: ${cloudflare_tunnel_secret}
-    ingress:
-      - hostname: "*.${domain}"
-        service: https://traefik-ingress.traefik-ingress:443
-        originRequest:
-          originServerName: ${domain}
-      - service: http_status:404
+      ingress:
+        - hostname: "*.${domain}"
+          service: https://traefik-ingress.traefik-ingress:443
+          originRequest:
+            originServerName: ${domain}
+        - service: http_status:404
     image:
       tag: 2023.8.2
