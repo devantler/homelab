@@ -7,7 +7,6 @@ spec:
   type: github
   events:
     - "push"
-    - "ping"
   secretRef:
     name: webhook-receiver-token
   resources:
