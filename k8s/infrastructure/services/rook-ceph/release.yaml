@@ -28,6 +28,6 @@ spec:
       chart: rook-ceph-cluster
       sourceRef:
         kind: HelmRepository
-        name: rook-ceph-cluster
+        name: rook-ceph
   # https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph-cluster/values.yaml
   values: {}
