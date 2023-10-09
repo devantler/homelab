@@ -9,4 +9,5 @@ resources:
   # - ../../infrastructure/services/kube-prometheus-stack
   - ../../infrastructure/services/metallb
   #- ../../infrastructure/services/rook-ceph
+  - ../../infrastructure/services/reloader
   - ../../infrastructure/services/traefik-ingress
