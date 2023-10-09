@@ -24,7 +24,7 @@ spec:
       tunnelSecret: ${cloudflare_tunnel_secret}
     ingress:
       - hostname: "*.${domain}"
-        service: traefik-ingress.traefik-ingress
+        service: https://traefik-ingress.traefik-ingress:443
         originRequest:
           originServerName: ${domain}
       - service: http_staus:404
