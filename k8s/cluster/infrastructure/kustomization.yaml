@@ -11,9 +11,3 @@ resources:
   - ../../infrastructure/services/traefik-ingress
   # - ../../infrastructure/services/kube-prometheus-stack
   #- ../../infrastructure/services/rook-ceph
-patches:
-  - path: patches/cloudflared-patch.yaml
-    target:
-      kind: Deployment
-      name: cloudflared-cloudflare-tunnel-remote
-      namespace: cloudflared
