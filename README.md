@@ -50,9 +50,12 @@ The configs folder contains CRDs that configure specific infrastructure resource
 The services folder contains the base for infrastructure services.
 
 - [Cert-Manager](https://cert-manager.io/docs/): Cert-Manager is a Kubernetes add-on to automate the management and issuance of TLS certificates from various issuing sources.
-- [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps): Cloudflare Tunnel is a service that allows you to securely expose your services to the internet, without exposing them directly to the internet.
+- [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps): Cloudflared is a service that allows you to securely expose your services through a tunnel to cloudflare.
+- [Flux GitHub Status Updater](https://fluxcd.io/flux/components/notification/providers/#git-commit-status-updates): Flux GitHub Status Updater is a service that allows updating the status of a commit on GitHub, making it possible to see whether a commit succesfully reconciled.
 - [Flux Webhook Receiver](https://fluxcd.io/flux/guides/webhook-receivers/): Flux Webhook Receiver is a service that allows you to trigger Flux syncs using webhooks, making the reconciliation just as fast as a push-based approach.
+- [Kube Prometheus Stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack): Kube Prometheus Stack is a collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.
 - [MetalLB](https://metallb.universe.tf/): MetalLB is a load-balancer implementation for bare metal Kubernetes clusters, using standard routing protocols.
+- [Reloader](https://github.com/stakater/Reloader): Reloader is a Kubernetes controller to watch changes in ConfigMap and Secrets and force redeployment of Pods, when a change is detected.
 - [Rook Ceph](https://rook.io/): Rook is an open source cloud-native storage orchestrator for Kubernetes, providing the platform, framework, and support for managing the Ceph Storage System in Kubernetes with the Rook Operator and custom CRDs.
 - [Traefik Ingress](https://doc.traefik.io/traefik/): Traefik is an open-source reverse proxy and load balancer for HTTP and TCP-based applications that integrates well into Kubernetes environments as an ingress controller.
 
