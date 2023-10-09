@@ -18,6 +18,6 @@ spec:
   # https://github.com/cloudflare/helm-charts/blob/main/charts/cloudflare-tunnel-remote/values.yaml
   values:
     cloudflare:
-      tunnel_token: "${cloudflare_tunnel_token}"
+      tunnel_token: ${cloudflare_tunnel_token}
     image:
       tag: 2023.8.2
