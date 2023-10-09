@@ -22,3 +22,9 @@ spec:
       accountTag: ${cloudflare_account_tag}
       tunnelName: ${cloudflare_tunnel_name}
       tunnelSecret: ${cloudflare_tunnel_secret}
+    ingress:
+      - hostname: "*.${domain}"
+        service: traefik-ingress.traefik-ingress
+        originRequest:
+          originServerName: ${domain}
+      - service: http_staus:404
