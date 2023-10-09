@@ -4,8 +4,7 @@ metadata:
   name: flux-system
 spec:
   providerRef:
-    name: flux-system
-  eventSeverity: error
+    name: github-status
   eventSources:
     - kind: Kustomization
       name: flux-system

@@ -4,7 +4,7 @@ resources:
   - ../../infrastructure/services/cert-manager
   - ../../infrastructure/services/cert-manager/secrets/cloudflare-dns-api-key.yaml
   - ../../infrastructure/services/cloudflared
-  - ../../infrastructure/services/flux-alerter
+  - ../../infrastructure/services/flux-github-status-updater
   - ../../infrastructure/services/flux-webhook-receiver
   - ../../infrastructure/services/metallb
   - ../../infrastructure/services/reloader

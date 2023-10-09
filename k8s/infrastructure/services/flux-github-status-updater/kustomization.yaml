@@ -4,4 +4,4 @@ namespace: flux-system
 resources:
   - alert.yaml
   - provider.yaml
-  - secret.yaml
+  - github-token.yaml
