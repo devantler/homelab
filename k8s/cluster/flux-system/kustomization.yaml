@@ -3,3 +3,9 @@ kind: Kustomization
 resources:
 - gotk-components.yaml
 - gotk-sync.yaml
+patches:
+  - patch: |
+      # Enable drift detection and correction
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --feature-gates=DetectDrift=true,CorrectDrift=true
