@@ -6,8 +6,8 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: cloudflare-tunnel
-      version: 0.3.0
+      chart: cloudflare-tunnel-remote
+      version: 0.1.1
       sourceRef:
         kind: HelmRepository
         name: cloudflared
@@ -15,21 +15,9 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-  # https://artifacthub.io/packages/helm/kubitodev/cloudflared?modal=values
+  # https://github.com/cloudflare/helm-charts/blob/main/charts/cloudflare-tunnel-remote/values.yaml
   values:
     cloudflare:
-      account: ${cloudflare_account_tag}
-      tunnelName: ${cloudflare_tunnel_name}
-      tunnelId: ${cloudflare_tunnel_id}
-      secret: ${cloudflare_tunnel_secret}
-      ingress:
-        - hostname: "*.${domain}"
-          service: https://traefik-ingress.traefik-ingress:443
-          originRequest:
-            originServerName: ${domain}
-        - hostname: ${domain}
-          service: https://traefik-ingress.traefik-ingress:443
-          originRequest:
-            originServerName: ${domain}
+      tunnel_token: ${cloudflare_tunnel_token}
     image:
       tag: 2023.8.2
