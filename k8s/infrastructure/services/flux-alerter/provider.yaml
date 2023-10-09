@@ -4,6 +4,6 @@ metadata:
   name: flux-system
 spec:
   type: github
-  address: https://github.com/homelab
+  address: https://github.com/devantler/homelab
   secretRef:
     name: github
