@@ -22,5 +22,3 @@ spec:
       tunnelName: ${cloudflare_tunnel_name}
       tunnelId: ${cloudflare_tunnel_id}
       secret: ${cloudflare_tunnel_secret}
-    image:
-      tag: "2023.8.2"
