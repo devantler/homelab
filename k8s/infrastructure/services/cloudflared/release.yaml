@@ -20,7 +20,7 @@ spec:
     cloudflare:
       account: ${cloudflare_account_tag}
       tunnelName: ${cloudflare_tunnel_name}
-      tunnelID: ${cloudflare_tunnel_id}
+      tunnelId: ${cloudflare_tunnel_id}
       secret: ${cloudflare_tunnel_secret}
     ingress:
       - hostname: "*.${domain}"
