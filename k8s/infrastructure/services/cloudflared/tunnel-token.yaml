@@ -4,4 +4,4 @@ metadata:
   name: tunnel-token
 type: Opaque
 stringData:
-  tunnelToken: ${sops.cloudflared_tunnel_token}
+  tunnelToken: ${cloudflared_tunnel_token}
