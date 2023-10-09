@@ -15,5 +15,6 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+  # https://github.com/cert-manager/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml
   values:
     installCRDs: true
