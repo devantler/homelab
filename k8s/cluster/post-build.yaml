@@ -10,7 +10,6 @@ spec:
     name: flux-system
   path: ./k8s/cluster/post-build
   prune: true
-  wait: true
   decryption:
     provider: sops
     secretRef:
