@@ -35,6 +35,7 @@ spec:
   interval: 5m
   dependsOn:
     - name: variables
+    - name: infrastructure
   sourceRef:
     kind: GitRepository
     name: flux-system
