@@ -4,4 +4,4 @@ metadata:
   name: cloudflare
 spec:
   interval: 5m
-  url: https://cloudflare.github.io/helm-charts
+  url: https://charts.kubito.dev
