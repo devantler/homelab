@@ -21,4 +21,5 @@ docker run -d \
 
 sleep 5
 
-sops -d machine-config.talos-docker-1.sops.yaml | talosctl -n 127.0.0.1 apply-config --insecure -f /dev/stdin
+sops -d talos-machine-configs/machine-config.talos-docker-1.sops.yaml |
+    talosctl -n 127.0.0.1 apply-config --insecure -f /dev/stdin

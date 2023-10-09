@@ -6,9 +6,9 @@ echo " Set current cluster to homelab"
 kubectl config use-context homelab
 
 echo "🔧 Patch machine-config on all nodes"
-sops -d machine-config.talos-rpi-1.sops.yaml | talosctl -n 10.0.0.201 apply-config -f /dev/stdin
-sops -d machine-config.talos-rpi-2.sops.yaml | talosctl -n 10.0.0.202 apply-config -f /dev/stdin
-sops -d machine-config.talos-rpi-3.sops.yaml | talosctl -n 10.0.0.203 apply-config -f /dev/stdin
+sops -d talos-machine-configs/machine-config.talos-rpi-1.sops.yaml | talosctl -n 10.0.0.201 apply-config -f /dev/stdin
+sops -d talos-machine-configs/machine-config.talos-rpi-2.sops.yaml | talosctl -n 10.0.0.202 apply-config -f /dev/stdin
+sops -d talos-machine-configs/machine-config.talos-rpi-3.sops.yaml | talosctl -n 10.0.0.203 apply-config -f /dev/stdin
 
 echo "🔐 Adding SOPS GPG key"
 kubectl create namespace flux-system
@@ -19,4 +19,9 @@ gpg --export-secret-keys --armor "1F1A648778E72857BD9CF481EE0834B3CEAC3061" |
 
 echo "🚀 Installing Flux"
 flux check --pre
-flux bootstrap github --owner=$GITHUB_USER --repository=homelab --path=./k8s/cluster --personal --branch=main
+flux bootstrap github \
+    --owner=$GITHUB_USER \
+    --repository=homelab \
+    --path=./k8s/cluster \
+    --personal \
+    --branch=main
