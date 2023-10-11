@@ -1,4 +1,9 @@
-on: [push]
+name: GitHub Readme Tree
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   tree:
@@ -9,6 +14,12 @@ jobs:
       - name: Create README Tree
         uses: RavelloH/readme-tree@v1.1.0
         with:
-          showdirectoryname: true
-      - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+          showdirectoryname: 'yes'
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: update-readme-tree
+          commit-message: Update README Tree
+          title: Update README Tree
+          body: This PR includes new updates to the README Tree.
+          labels: documentation
