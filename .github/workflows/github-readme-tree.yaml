@@ -1,0 +1,19 @@
+name: GitHub Readme Tree
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  tree:
+    runs-on: ubuntu-latest
+    name: readme-tree
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create README Tree
+        uses: RavelloH/readme-tree@v1.1.0
+        with:
+          showdirectoryname: true
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
