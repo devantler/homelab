@@ -17,6 +17,45 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 ## Overview
 
 <!-- readme-tree start -->
+```
+.
+├── .github
+│   ├── scripts
+│   └── workflows
+├── .vscode
+├── k8s
+│   ├── apps
+│   ├── cluster
+│   │   ├── apps
+│   │   ├── flux-system
+│   │   ├── infrastructure
+│   │   │   └── configs
+│   │   └── variables
+│   └── infrastructure
+│       ├── configs
+│       │   ├── certificates
+│       │   ├── cluster-issuers
+│       │   ├── ingress
+│       │   ├── middlewares
+│       │   └── network
+│       └── services
+│           ├── cert-manager
+│           │   └── secrets
+│           ├── cloudflared
+│           ├── flux-github-status-updater
+│           ├── flux-webhook-receiver
+│           │   └── secrets
+│           ├── kube-prometheus-stack
+│           ├── metallb
+│           ├── reloader
+│           ├── rook-ceph
+│           └── traefik-ingress
+│               └── secrets
+└── scripts
+    └── talos-machine-configs
+
+34 directories
+```
 <!-- readme-tree end -->
 
 ### Clusters
