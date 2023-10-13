@@ -22,17 +22,26 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 ├── .vscode
 ├── k8s
 │   ├── apps
-│   ├── cluster
-│   │   ├── apps
-│   │   ├── flux-system
-│   │   ├── infrastructure
-│   │   │   └── configs
-│   │   └── variables
+│   ├── clusters
+│   │   ├── production
+│   │   │   ├── .bootstrap
+│   │   │   │   └── flux-system
+│   │   │   ├── apps
+│   │   │   ├── infrastructure
+│   │   │   │   └── configs
+│   │   │   └── variables
+│   │   └── sandbox
+│   │       ├── .bootstrap
+│   │       │   └── flux-system
+│   │       ├── apps
+│   │       ├── infrastructure
+│   │       │   └── configs
+│   │       └── variables
 │   └── infrastructure
 │       ├── configs
 │       │   ├── certificates
 │       │   ├── cluster-issuers
-│       │   ├── ingress
+│       │   ├── ingress-routes
 │       │   ├── middlewares
 │       │   └── network
 │       └── services
@@ -49,9 +58,10 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │           └── traefik-ingress
 │               └── secrets
 └── scripts
-    └── talos-machine-configs
+    └── talos-configs
+        └── production
 
-34 directories
+44 directories
 ```
 <!-- readme-tree end -->
 
