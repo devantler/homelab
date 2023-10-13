@@ -4,6 +4,6 @@ metadata:
   name: variables
 data:
   cluster_issuer_certificate_name: selfsigned-cluster-issuer
-  cluster_domain: devantler.com
+  cluster_domain: sandbox
   load_balancer_ip: 172.17.0.210
   metallb_ip_addresses: 172.17.0.210/24
