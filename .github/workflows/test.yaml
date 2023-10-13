@@ -13,16 +13,41 @@ jobs:
   validate-manifests:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: Setup yq
+      - name: ⛴️ Setup yq
         uses: fluxcd/pkg/actions/yq@main
-      - name: Setup kubeconform
+      - name: ⛴️ Setup kubeconform
         uses: fluxcd/pkg/actions/kubeconform@main
-      - name: Setup kustomize
+      - name: ⛴️ Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@main
-      - name: Validate manifests
+      - name: ✅ Validate manifests
         run: $SCRIPTS_DIR/validate-manifests.sh || exit 1
+      - name: ⚙️ Install talosctl
+        run: curl -sL https://talos.dev/install | sh
+      - name: 🐳 Provision Talos Linux cluster in Docker
+        run: talosctl cluster create --name homelab-sandbox
+      - name: 🏡 Set current cluster to 'homelab-sandbox'
+        run: kubectl config use-context 'admin@homelab-sandbox' || exit 1
+      - name: 🔐 Add SOPS GPG key
+        run: |
+          kubectl create secret generic sops-gpg \
+            --namespace=flux-system \
+            --from-literal=sops.asc='${{ secrets.SOPS_GPG_KEY }}'
+      - name: ⚙️ Setup Flux
+        uses: fluxcd/flux2/action@main
+      - name: ⚙️ Install Flux
+        run: flux install --components-extra="image-reflector-controller,image-automation-controller"
+      - name: 🪵 Extract branch name
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: 🔁 Setup cluster reconciliation
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} ${{ matrix.environment }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+      - name: ✅🔁 Verify cluster reconciliation
+        run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
+      - name: Debug failure
+        if: failure()
+        run: $SCRIPTS_DIR/e2e-debug-failure.sh
   verify-and-promote:
     runs-on: ubuntu-latest
     steps:
