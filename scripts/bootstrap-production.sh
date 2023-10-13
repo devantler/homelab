@@ -22,6 +22,6 @@ flux check --pre
 flux bootstrap github \
     --owner=$GITHUB_USER \
     --repository=homelab \
-    --path=./k8s/cluster \
+    --path=./k8s/clusters/production/.bootstrap \
     --personal \
     --branch=main

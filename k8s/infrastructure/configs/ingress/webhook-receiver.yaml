@@ -6,7 +6,7 @@ metadata:
 spec:
   routes:
     - kind: Rule
-      match: Host(`flux-webhook.${domain}`)
+      match: Host(`flux-webhook.${cluster_domain}`)
       services:
         - kind: Service
           name: webhook-receiver

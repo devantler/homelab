@@ -4,7 +4,7 @@ metadata:
   name: variables
 data:
   cluster_issuer_certificate_name: cloudflare-letsencrypt-cluster-issuer
-  domain: devantler.com
+  cluster_domain: devantler.com
   letsencrypt_email: cluster@devantler.com
   letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory
   load_balancer_ip: 10.0.0.210
