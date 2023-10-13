@@ -3,9 +3,6 @@
 This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes clusters. It focuses on providing a secure and reliable infrastructure for my projects, with a focus on ease of use and automation of common tasks, such as safe and secure CI/CD pipelines.
 
 - [Overview](#overview)
-  - [Clusters](#clusters)
-  - [Infrastructure](#infrastructure)
-  - [Apps](#apps)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
 - [Managing secrets](#managing-secrets)
