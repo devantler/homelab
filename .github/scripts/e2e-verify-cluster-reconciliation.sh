@@ -2,7 +2,7 @@ global_start_time=$(date +%s)
 echo "Starting reconciliation of kustomization/flux-system..."
 start_time=$(date +%s)
 echo "Starting reconciliation of kustomization/variables..."
-kubectl -n flux-system wait kustomization/variables --for=condition=ready --timeout=1m || exit 1
+kubectl -n flux-system wait kustomization/variables --for=condition=ready --timeout=30s || exit 1
 echo "Time taken for kustomization/variables: $(($(date +%s) - $start_time)) seconds"
 
 start_time=$(date +%s)
