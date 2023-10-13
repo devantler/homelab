@@ -49,8 +49,8 @@ jobs:
         id: extract_branch
       - name: 🔁 Setup cluster reconciliation
         run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} sandbox ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
-      - name: ✅🔁 Verify cluster reconciliation
+      - name: ✅ Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
-      - name: Debug failure
+      - name: 🐛 Print logs on failure
         if: failure()
         run: $SCRIPTS_DIR/e2e-debug-failure.sh
