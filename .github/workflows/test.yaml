@@ -6,8 +6,6 @@ env:
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
 
 jobs:
   validate-manifests:
@@ -23,6 +21,12 @@ jobs:
         uses: fluxcd/pkg/actions/kustomize@main
       - name: ✅ Validate manifests
         run: $SCRIPTS_DIR/validate-manifests.sh || exit 1
+  e2e-test:
+    runs-on: ubuntu-latest
+    needs: validate-manifests
+    steps:
+      - name: 📑 Checkout
+        uses: actions/checkout@v4
       - name: ⚙️ Install talosctl
         run: curl -sL https://talos.dev/install | sh
       - name: 🐳 Provision Talos Linux cluster in Docker
@@ -42,31 +46,9 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: 🔁 Setup cluster reconciliation
-        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} ${{ matrix.environment }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} sandbox ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: ✅🔁 Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: Debug failure
         if: failure()
         run: $SCRIPTS_DIR/e2e-debug-failure.sh
-  verify-and-promote:
-    runs-on: ubuntu-latest
-    steps:
-      - if: github.event_name != 'push'
-        name: Skip
-        run: exit 0
-      - name: Checkout
-        uses: actions/checkout@v4
-      # - uses: autotelic/action-wait-for-status-check@v1
-      #   id: wait-for-status
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     statusName: "kustomization/flux-system"
-      # - name: Promote deployment to production
-      #   if: steps.wait-for-status.outputs.state == 'success'
-      #   uses: joelwmale/webhook-action@master
-      #   with:
-      #     url: ${{ secrets.WEBHOOK_URL }}
-      #     headers: '{"repository": "joelwmale/webhook-action"}'
-      #     body: '{"event": "deployment", "repository": "joelwmale/webhook-action"}'
-      # - if: steps.wait-for-status.outputs.state == 'failure'
-      #   run: exit 1
