@@ -58,44 +58,6 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 ```
 <!-- readme-tree end -->
 
-### Clusters
-
-A collection of clusters, each with their own flux manifests, and cluster configuration.
-
-### Infrastructure
-
-The infrastructure folder contains the base for infrastructure resources. The resources are split into two categories: configs and services.
-
-#### Configs
-
-The configs folder contains CRDs that configure specific infrastructure resources.
-
-- Certificates: Certificates are resources that represent a certificate for e.g. TLS communication.
-- Cluster Issuers: Cluster issuers are resources that represent a certificate issuer for e.g. Let's Encrypt or Self-Signed certificates.
-- Ingresses: Ingresses are resources that represent a set of rules for routing external traffic to internal services.
-- Middlewares: Middlewares are resources that represent a set of rules requests and responses should be processed by.
-- Network: Network resources are resources that represent a set of rules for how the cluster should be networked.
-
-#### Services
-
-The services folder contains the base for infrastructure services.
-
-- [Cert-Manager](https://cert-manager.io/docs/): Cert-Manager is a Kubernetes add-on to automate the management and issuance of TLS certificates from various issuing sources.
-- [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps): Cloudflared is a service that allows you to securely expose your services through a tunnel to cloudflare.
-- [Flux GitHub Status Updater](https://fluxcd.io/flux/components/notification/providers/#git-commit-status-updates): Flux GitHub Status Updater is a service that allows updating the status of a commit on GitHub, making it possible to see whether a commit succesfully reconciled.
-- [Flux Webhook Receiver](https://fluxcd.io/flux/guides/webhook-receivers/): Flux Webhook Receiver is a service that allows you to trigger Flux syncs using webhooks, making the reconciliation just as fast as a push-based approach.
-- [Kube Prometheus Stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack): Kube Prometheus Stack is a collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.
-- [MetalLB](https://metallb.universe.tf/): MetalLB is a load-balancer implementation for bare metal Kubernetes clusters, using standard routing protocols.
-- [Reloader](https://github.com/stakater/Reloader): Reloader is a Kubernetes controller to watch changes in ConfigMap and Secrets and force redeployment of Pods, when a change is detected.
-- [Rook Ceph](https://rook.io/): Rook is an open source cloud-native storage orchestrator for Kubernetes, providing the platform, framework, and support for managing the Ceph Storage System in Kubernetes with the Rook Operator and custom CRDs.
-- [Traefik Ingress](https://doc.traefik.io/traefik/): Traefik is an open-source reverse proxy and load balancer for HTTP and TCP-based applications that integrates well into Kubernetes environments as an ingress controller.
-
-### Apps
-
-The apps folder contains the base for public apps and services.
-
-- none
-
 ## Getting Started
 
 These instructions will guide you through the process of installing the necessary tools, and setting up your local environment to work on the clusters.
