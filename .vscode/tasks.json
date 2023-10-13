@@ -19,6 +19,15 @@
             "type": "shell"
         },
         {
+            "command": "./destroy-sandbox.sh",
+            "label": "destroy-sandbox",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
             "command": "./.github/scripts/validate-manifests.sh",
             "label": "validate-manifests",
             "problemMatcher": [],
