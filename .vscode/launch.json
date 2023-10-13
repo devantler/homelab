@@ -16,7 +16,7 @@
         },
         {
             "name": "🔥 Destroy Sandbox",
-            "preLaunchTask": "bootstrap-sandbox",
+            "preLaunchTask": "destroy-sandbox",
             "request": "attach",
             "timeout": 1,
             "type": "node"
