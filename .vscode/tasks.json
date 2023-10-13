@@ -10,6 +10,15 @@
             "type": "shell"
         },
         {
+            "command": "./bootstrap-sandbox.sh",
+            "label": "bootstrap-sandbox",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
             "command": "./.github/scripts/validate-manifests.sh",
             "label": "validate-manifests",
             "problemMatcher": [],

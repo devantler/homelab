@@ -6,13 +6,13 @@ echo "🪵 Get current branch"
 branch=$(git branch --show-current)
 
 echo "🔥 Destroy existing Talos Linux cluster in Docker"
-talosctl cluster destroy --config talos-configs/talos-config.local.yaml
+talosctl cluster destroy --name homelab-sandbox
 
 echo "🐳 Provision Talos Linux cluster in Docker"
-talosctl cluster create --config talos-configs/talos-config.local.yaml
+talosctl cluster create --name homelab-sandbox
 
 echo "🏡 Set current cluster to 'homelab-sandbox'"
-kubectl config use-context 'homelab-sandbox'
+kubectl config use-context 'homelab-sandbox' || exit 1
 
 echo "🔐 Adding SOPS GPG key"
 kubectl create namespace flux-system

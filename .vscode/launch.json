@@ -8,6 +8,13 @@
             "type": "node"
         },
         {
+            "name": "🚀 Bootstrap Sandbox",
+            "preLaunchTask": "bootstrap-sandbox",
+            "request": "attach",
+            "timeout": 1,
+            "type": "node"
+        },
+        {
             "name": "✅ Validate Manifests",
             "preLaunchTask": "validate-manifests",
             "request": "attach",
