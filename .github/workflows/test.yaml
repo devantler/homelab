@@ -35,6 +35,7 @@ jobs:
         run: kubectl config use-context 'admin@homelab-sandbox' || exit 1
       - name: 🔐 Add SOPS GPG key
         run: |
+          kubectl create namespace flux-system
           kubectl create secret generic sops-gpg \
             --namespace=flux-system \
             --from-literal=sops.asc='${{ secrets.SOPS_GPG_KEY }}'
