@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../infrastructure/services/cert-manager
-  - ../../infrastructure/services/reloader
-  - ../../infrastructure/services/traefik-ingress
+  - ./k8s/infrastructure/services/cert-manager
+  - ./k8s/infrastructure/services/reloader
+  - ./k8s/infrastructure/services/traefik-ingress
