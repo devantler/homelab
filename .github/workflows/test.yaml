@@ -47,7 +47,9 @@ jobs:
       - name: ⚙️ Setup Flux
         uses: fluxcd/flux2/action@main
       - name: ⚙️ Install Flux
-        run: flux install --components-extra="image-reflector-controller,image-automation-controller"
+        run: |
+          flux check --pre
+          flux install --components-extra="image-reflector-controller,image-automation-controller"
       - name: 🪵 Extract branch name
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
