@@ -13,8 +13,10 @@ spec:
         name: traefik
   install:
     crds: CreateReplace
+    disableWait: true
   upgrade:
     crds: CreateReplace
+    disableWait: true
   # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
   values:
     image:
