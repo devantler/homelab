@@ -30,9 +30,8 @@ metadata:
   name: infrastructure-configs
   namespace: flux-system
 spec:
-  interval: 5m
+  interval: 1m
   dependsOn:
-    - name: variables
     - name: infrastructure
   sourceRef:
     kind: GitRepository
