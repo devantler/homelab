@@ -5,5 +5,5 @@ metadata:
 data:
   cluster_issuer_certificate_name: selfsigned-cluster-issuer
   cluster_domain: sandbox.devantler.com
-  load_balancer_ip: 10.5.0.200
-  metallb_ip_addresses: 10.5.0.200/24
+  load_balancer_ip: 10.0.0.200
+  metallb_ip_addresses: 10.0.0.200/24
