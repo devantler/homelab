@@ -23,3 +23,5 @@ if kubectl -n flux-system logs deploy/helm-controller | grep -i 'error'; then
     echo "📝 Flux logs - helm-controller errors"
     kubectl -n flux-system logs deploy/helm-controller | grep -i 'error'
 fi
+
+kubectl describe helmreleases -A
