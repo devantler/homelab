@@ -9,6 +9,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
   - [Setting up SOPS](#setting-up-sops)
   - [SOPS VSCode Integration](#sops-vscode-integration)
 - [Cluster Setups](#cluster-setups)
+  - [Sandbox Setup](#sandbox-setup)
   - [Production Setup](#production-setup)
 
 ## Overview
@@ -117,8 +118,21 @@ If you use VSCode, there is an extension called [SOPS easy edit]([ShipitSmarter.
 
 ## Cluster Setups
 
+- **Sandbox** - A sandbox environment for testing new services.
+  - `<service>.sandbox.<domain>`
 - **Production** - A production environment for hosting services.
   - `<service>.<domain>`
+
+### Sandbox Setup
+
+> [!NOTE]
+> Currently the sandbox cluster is setup to run in Docker, and is not intended to be used for anything other than testing new services locally. This will change as the maintainer gets more hardware, and it makes sense to scale out into multiple environments.
+
+The sandbox cluster is fully managed by Flux2 and GitHub Actions, and it should not be modified directly through `kubectl`, `helm`, or similar tools.
+
+- The **sandbox** cluster is updated whenever changes are merged to the main branch.
+
+In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-sandbox.sh` script. This script will configure a set of Talos Linux nodes in Docker and bootstrap Flux2 to sync the cluster.
 
 ### Production Setup
 
@@ -127,4 +141,3 @@ The production cluster is fully managed by Flux2 and GitHub Actions, and it shou
 - The **production** cluster is updated whenever changes are merged to the main branch.
 
 In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-production.sh` script. This script will configure a set of Talos Linux nodes and bootstrap Flux2 to sync the cluster.
-
