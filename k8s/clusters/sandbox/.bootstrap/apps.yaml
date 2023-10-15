@@ -6,6 +6,8 @@ metadata:
 spec:
   interval: 5m
   dependsOn:
+    - name: variables
+    - name: infrastructure
     - name: infrastructure-configs
   sourceRef:
     kind: GitRepository

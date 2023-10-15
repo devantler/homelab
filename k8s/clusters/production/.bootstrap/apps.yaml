@@ -23,7 +23,5 @@ spec:
     substituteFrom:
       - kind: ConfigMap
         name: variables
-        optional: false
       - kind: Secret
         name: variables-sensitive
-        optional: false
