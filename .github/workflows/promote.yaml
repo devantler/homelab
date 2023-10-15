@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      # - uses: autotelic/action-wait-for-status-check@v1
-      #   id: wait-for-status
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     statusName: "kustomization/flux-system"
+      - uses: autotelic/action-wait-for-status-check@v1
+        id: wait-for-status
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          statusName: "kustomization/flux-system/79be6292"
       # - name: Promote deployment to production
       #   if: steps.wait-for-status.outputs.state == 'success'
       #   uses: joelwmale/webhook-action@master
