@@ -35,7 +35,7 @@ jobs:
       - name: ⚙️ Install talosctl
         run: curl -sL https://talos.dev/install | sh
       - name: 🐳 Provision Talos Linux cluster in Docker
-        run: talosctl cluster create --name homelab-sandbox
+        run: talosctl cluster create --name homelab-sandbox --wait
       - name: 🏡 Set current cluster to 'homelab-sandbox'
         run: kubectl config use-context 'admin@homelab-sandbox' || exit 1
       - name: 🔐 Add SOPS GPG key

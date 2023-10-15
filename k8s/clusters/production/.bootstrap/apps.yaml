@@ -12,7 +12,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/cluster/apps
+  path: ./k8s/clusters/production/apps
   prune: true
   wait: true
   decryption:
