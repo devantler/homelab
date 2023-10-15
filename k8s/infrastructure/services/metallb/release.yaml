@@ -12,6 +12,7 @@ spec:
         name: metallb
   install:
     crds: CreateReplace
+    disableWait: true
   upgrade:
     crds: CreateReplace
   # https://github.com/metallb/metallb/blob/main/charts/metallb/values.yaml
