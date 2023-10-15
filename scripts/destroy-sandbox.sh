@@ -8,3 +8,5 @@ talosctl config context default
 talosctl config remove homelab-sandbox -y
 kubectl config delete-context admin@homelab-sandbox
 kubectl config delete-cluster homelab-sandbox
+kubectl config delete-user admin@homelab-sandbox
+kubectl config unset current-context
