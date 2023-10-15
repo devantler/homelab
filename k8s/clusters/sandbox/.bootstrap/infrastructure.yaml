@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s//clusters/sandbox/infrastructure
+  path: ./k8s/clusters/sandbox/infrastructure
   prune: true
   wait: true
   decryption:
