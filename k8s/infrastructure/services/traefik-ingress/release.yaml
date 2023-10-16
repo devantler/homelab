@@ -13,10 +13,8 @@ spec:
         name: traefik
   install:
     crds: CreateReplace
-    disableWait: true
   upgrade:
     crds: CreateReplace
-    disableWait: true
   # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
   values:
     image:
@@ -27,8 +25,7 @@ spec:
       websecure:
         asDefault: true
     service:
-      spec:
-        loadBalancerIP: ${load_balancer_ip}
+      type: ClusterIP
     tlsStore:
       default:
         defaultCertificate:
