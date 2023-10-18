@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: traefik-ingress
+  name: traefik
 spec:
   interval: 5m
   chart:
@@ -11,12 +11,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: traefik
-  install:
-    crds: CreateReplace
-    disableWait: true
-  upgrade:
-    crds: CreateReplace
-    disableWait: true
   # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
   values:
     image:
@@ -26,10 +20,11 @@ spec:
         redirectTo: websecure
       websecure:
         asDefault: true
-    service:
-      spec:
-        loadBalancerIP: ${load_balancer_ip}
     tlsStore:
       default:
         defaultCertificate:
           secretName: cluster-issuer-certificate-tls
+    service:
+      type: ${traefik_service_type:=LoadBalancer}
+      spec:
+        loadBalancerIP: ${traefik_load_balancer_ip}

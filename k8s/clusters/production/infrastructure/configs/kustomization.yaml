@@ -5,5 +5,3 @@ resources:
   - ../../../../infrastructure/configs/cluster-issuers/cloudflare-letsencrypt-cluster-issuer.yaml
   - ../../../../infrastructure/configs/ingress-routes/webhook-receiver.yaml
   - ../../../../infrastructure/configs/middlewares/basic-auth-middleware.yaml
-  - ../../../../infrastructure/configs/network/ip-address-pool.yaml
-  - ../../../../infrastructure/configs/network/l2-advertisement.yaml

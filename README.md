@@ -56,7 +56,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │           ├── metallb
 │           ├── reloader
 │           ├── rook-ceph
-│           └── traefik-ingress
+│           └── traefik
 │               └── secrets
 └── scripts
     └── talos-configs
