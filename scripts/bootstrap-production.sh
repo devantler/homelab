@@ -2,13 +2,8 @@
 
 pushd $(dirname "$0") >/dev/null
 
-echo " Set current cluster to 'admin@homelab'"
-kubectl config use-context 'admin@homelab'
-
-echo "🔧 Patch machine-config on all nodes"
-sops -d talos-configs/production/machine-config.talos-rpi-1.sops.yaml | talosctl -n 10.0.0.201 apply-config -f /dev/stdin
-sops -d talos-configs/production/machine-config.talos-rpi-2.sops.yaml | talosctl -n 10.0.0.202 apply-config -f /dev/stdin
-sops -d talos-configs/production/machine-config.talos-rpi-3.sops.yaml | talosctl -n 10.0.0.203 apply-config -f /dev/stdin
+echo " Set current cluster to 'homelab-production'"
+kubectl config use-context 'homelab-production'
 
 echo "🔐 Adding SOPS GPG key"
 kubectl create namespace flux-system

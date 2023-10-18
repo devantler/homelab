@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: traefik-ingress
+  name: traefik
 spec:
   interval: 5m
   chart:
@@ -24,9 +24,11 @@ spec:
         redirectTo: websecure
       websecure:
         asDefault: true
-    service:
-      type: ClusterIP
     tlsStore:
       default:
         defaultCertificate:
           secretName: cluster-issuer-certificate-tls
+    service:
+      type: ${traefik_service_type:=LoadBalancer}
+      spec:
+        loadBalancerIP: ${traefik_load_balancer_ip}
