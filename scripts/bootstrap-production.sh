@@ -2,8 +2,8 @@
 
 pushd $(dirname "$0") >/dev/null
 
-echo " Set current cluster to 'admin@homelab-production'"
-kubectl config use-context 'admin@homelab-production'
+echo " Set current cluster to 'homelab-production'"
+kubectl config use-context 'homelab-production'
 
 echo "🩹 Apply patches to Talos cluster"
 ./apply-patches.sh
