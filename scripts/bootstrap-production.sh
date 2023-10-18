@@ -2,8 +2,8 @@
 
 pushd $(dirname "$0") >/dev/null
 
-echo " Set current cluster to 'admin@homelab'"
-kubectl config use-context 'admin@homelab'
+echo " Set current cluster to 'admin@homelab-production'"
+kubectl config use-context 'admin@homelab-production'
 
 echo "🔧 Patch machine-config on all nodes"
 sops -d talos-configs/production/machine-config.talos-rpi-1.sops.yaml | talosctl -n 10.0.0.201 apply-config -f /dev/stdin
