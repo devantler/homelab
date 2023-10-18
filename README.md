@@ -43,8 +43,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │       │   ├── certificates
 │       │   ├── cluster-issuers
 │       │   ├── ingress-routes
-│       │   ├── middlewares
-│       │   └── network
+│       │   └── middlewares
 │       └── services
 │           ├── cert-manager
 │           │   └── secrets
@@ -59,10 +58,15 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │           └── traefik
 │               └── secrets
 └── scripts
-    └── talos-configs
-        └── production
+    └── talos-config-patches
+        └── homelab-production
+            ├── controlplane
+            ├── talos-rpi-1
+            ├── talos-rpi-2
+            ├── talos-rpi-3
+            └── worker
 
-44 directories
+48 directories
 ```
 <!-- readme-tree end -->
 
