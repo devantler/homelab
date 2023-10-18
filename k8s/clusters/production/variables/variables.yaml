@@ -7,3 +7,4 @@ data:
   cluster_domain: devantler.com
   letsencrypt_email: cluster@devantler.com
   letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory
+  traefik_service_type: ClusterIP
