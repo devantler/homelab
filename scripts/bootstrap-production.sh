@@ -5,9 +5,6 @@ pushd $(dirname "$0") >/dev/null
 echo " Set current cluster to 'homelab-production'"
 kubectl config use-context 'homelab-production'
 
-echo "🩹 Apply patches to Talos cluster"
-./apply-patches.sh
-
 echo "🔐 Adding SOPS GPG key"
 kubectl create namespace flux-system
 gpg --export-secret-keys --armor "1F1A648778E72857BD9CF481EE0834B3CEAC3061" |
