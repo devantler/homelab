@@ -22,6 +22,8 @@ kind: HelmRelease
 metadata:
   name: rook-ceph-cluster
 spec:
+  dependsOn:
+    - name: rook-ceph
   interval: 5m
   chart:
     spec:
