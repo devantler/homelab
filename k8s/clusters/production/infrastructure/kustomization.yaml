@@ -6,7 +6,7 @@ resources:
   - ../../../infrastructure/services/cloudflared
   - ../../../infrastructure/services/flux-github-status-updater
   - ../../../infrastructure/services/flux-webhook-receiver
+  - ../../../infrastructure/services/kube-prometheus-stack
   - ../../../infrastructure/services/reloader
+  - ../../../infrastructure/services/rook-ceph
   - ../../../infrastructure/services/traefik
-  # - ../../../infrastructure/services/kube-prometheus-stack
-  #- ../../../infrastructure/services/rook-ceph

@@ -60,3 +60,5 @@ jobs:
       - name: 🐛 Print logs on failure
         if: failure()
         run: $SCRIPTS_DIR/e2e-debug-failure.sh
+      - name: ⚠️ Check for use of deprecated APIs
+        run: $SCRIPTS_DIR/e2e-check-deprecated-apis.sh
