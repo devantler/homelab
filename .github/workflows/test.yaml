@@ -62,5 +62,5 @@ jobs:
         run: $SCRIPTS_DIR/e2e-debug-failure.sh
       - name: ⚠️ Check for use of deprecated APIs
         run: |
-          sh -c "$(curl -sSL https://git.io/install-kubent)"
-          kubent -e
+          curl -sSL https://git.io/install-kubent) | sh
+          kubent
