@@ -63,4 +63,5 @@ jobs:
       - name: ⚠️ Check for use of deprecated APIs
         run: |
           sh -c "$(curl -sSL https://git.io/install-kubent)"
-          bash kubent
+          TERM=xterm; export TERM
+          kubent
