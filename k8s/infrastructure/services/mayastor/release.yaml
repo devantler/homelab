@@ -17,5 +17,4 @@ spec:
     crds: CreateReplace
   # https://github.com/openebs/mayastor-extensions/blob/develop/chart/values.yaml
   values:
-    nodeSelector:
-      kubernetes.io/arch: amd64
+    nodeSelector: {}
