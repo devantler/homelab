@@ -3,6 +3,8 @@ kind: HelmRelease
 metadata:
   name: traefik
 spec:
+  dependsOn:
+    - name: cert-manager
   interval: 5m
   chart:
     spec:
