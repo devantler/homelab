@@ -57,6 +57,10 @@ jobs:
         run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} sandbox ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: ✅ Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
+      - name: ⚠️ Check for use of deprecated APIs
+        run: |
+          sh -c "$(curl -sSL https://git.io/install-kubent)"
+          kubent
       - name: 🐛 Print logs on failure
         if: failure()
         run: $SCRIPTS_DIR/e2e-debug-failure.sh
