@@ -4,5 +4,5 @@ resources:
   - ../../../infrastructure/services/cert-manager
   - ../../../infrastructure/services/kube-prometheus-stack
   - ../../../infrastructure/services/reloader
-  - ../../../infrastructure/services/rook-ceph
+  # - ../../../infrastructure/services/rook-ceph
   - ../../../infrastructure/services/traefik

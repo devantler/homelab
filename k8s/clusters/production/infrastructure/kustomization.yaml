@@ -8,5 +8,5 @@ resources:
   - ../../../infrastructure/services/flux-webhook-receiver
   - ../../../infrastructure/services/kube-prometheus-stack
   - ../../../infrastructure/services/reloader
-  - ../../../infrastructure/services/rook-ceph
+  # - ../../../infrastructure/services/rook-ceph
   - ../../../infrastructure/services/traefik
