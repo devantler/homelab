@@ -61,12 +61,4 @@ jobs:
         if: failure()
         run: $SCRIPTS_DIR/e2e-debug-failure.sh
       - name: ⚠️ Check for use of deprecated APIs
-        run: |
-          release = curl -sL "https://api.github.com/repos/doitintl/kube-no-trouble/releases/latest" \
-            | grep -oE '"tag_name": "[^"]*' \
-            | grep -oE '[^"]*$
-          os=$(uname -s | tr '[:upper:]' '[:lower:]')"}
-          arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"}
-          curl -L -o- "https://github.com/doitintl/kube-no-trouble/releases/download/${release}/kubent-${release}-$(target_os}-${arch}.tar.gz"
-          tar xvzf release-artifacts/kubent-*-$(target_os}-${arch}.tar.gz
-          ./kubent
+        run: $SCRIPTS_DIR/e2e-check-deprecated-apis.sh
