@@ -64,4 +64,4 @@ jobs:
         run: |
           sh -c "$(curl -sSL https://git.io/install-kubent)"
           TERM=xterm; export TERM
-          kubent
+          kubent -e
