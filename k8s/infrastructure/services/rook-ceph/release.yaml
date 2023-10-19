@@ -29,5 +29,9 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: rook-ceph
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   # https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph-cluster/values.yaml
   values: {}
