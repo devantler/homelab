@@ -60,7 +60,7 @@ jobs:
       - name: ⚠️ Check for use of deprecated APIs
         run: |
           sh -c "$(curl -sSL https://git.io/install-kubent)"
-          kubent
+          kubent -e
       - name: 🐛 Print logs on failure
         if: failure()
         run: $SCRIPTS_DIR/e2e-debug-failure.sh
