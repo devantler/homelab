@@ -3,11 +3,6 @@ kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
 spec:
-  dependsOn:
-    - name: rook-ceph
-      namespace: rook-ceph
-    - name: rook-ceph-cluster
-      namespace: rook-ceph
   interval: 5m
   chart:
     spec:
