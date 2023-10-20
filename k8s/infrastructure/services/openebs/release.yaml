@@ -7,12 +7,11 @@ spec:
   chart:
     spec:
       chart: openebs
+      version: 3.9.0
       sourceRef:
         kind: HelmRepository
         name: openebs
-  install:
-    crds: CreateReplace
   upgrade:
     crds: CreateReplace
-  # https://github.com/openebs/mayastor-extensions/blob/develop/chart/values.yaml
+  # https://github.com/openebs/charts/blob/main/charts/openebs/values.yaml
   values: {}
