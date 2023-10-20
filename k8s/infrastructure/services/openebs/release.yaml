@@ -1,0 +1,18 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: openebs
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: openebs
+      sourceRef:
+        kind: HelmRepository
+        name: openebs
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  # https://github.com/openebs/mayastor-extensions/blob/develop/chart/values.yaml
+  values: {}
