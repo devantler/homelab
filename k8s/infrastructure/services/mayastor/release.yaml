@@ -22,8 +22,7 @@ spec:
       nodeSelector:
         openebs.io/engine: mayastor
     image:
-      repo: xin3liang
+      repo: k8s.gcr.io
     csi:
       image:
-        registry: docker.io
-        repo: xin3liang
+        registry: k8s.gcr.io
