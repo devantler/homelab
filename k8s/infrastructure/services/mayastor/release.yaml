@@ -17,5 +17,6 @@ spec:
     crds: CreateReplace
   # https://github.com/openebs/mayastor-extensions/blob/develop/chart/values.yaml
   values:
-    nodeSelector:
+    nodeSelector: {}
+    io_engine:
       openebs.io/engine: mayastor
