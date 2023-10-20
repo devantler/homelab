@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: mayastor
 resources:
   - namespace.yaml
-  #- release.yaml
+  - release.yaml
   - repository.yaml
 # patches:
 #   - patch: |-
