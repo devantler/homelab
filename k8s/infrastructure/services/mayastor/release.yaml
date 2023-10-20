@@ -21,3 +21,5 @@ spec:
     io_engine:
       nodeSelector:
         openebs.io/engine: mayastor
+    loki-stack:
+      enabled: false
