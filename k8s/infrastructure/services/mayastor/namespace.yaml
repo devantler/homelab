@@ -4,11 +4,3 @@ metadata:
   name: mayastor
   labels:
     pod-security.kubernetes.io/enforce: privileged
-patches:
-  patch: |
-    - op: add
-      path: /metadata/labels/pod-security.kubernetes.io~1enforce
-      value: privileged
-  target:
-    kind: Namespace
-    name: default
