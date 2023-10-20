@@ -21,8 +21,3 @@ spec:
     io_engine:
       nodeSelector:
         openebs.io/engine: mayastor
-    image:
-      repo: k8s.gcr.io
-    csi:
-      image:
-        registry: k8s.gcr.io
