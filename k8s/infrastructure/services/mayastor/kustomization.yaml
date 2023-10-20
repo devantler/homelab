@@ -3,16 +3,5 @@ kind: Kustomization
 namespace: mayastor
 resources:
   - namespace.yaml
-  # - release.yaml
-  # - repository.yaml
-patches:
-  - patch: |
-      - op: add
-        path: /metadata/labels/pod-security.kubernetes.io/enforce
-        value: privileged
-      - op: add
-        path: /metadata/labels/env
-        value: dev
-    target:
-      kind: Namespace
-      name: default
+  - release.yaml
+  - repository.yaml
