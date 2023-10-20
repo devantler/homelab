@@ -23,6 +23,3 @@ spec:
         openebs.io/engine: mayastor
     loki-stack:
       enabled: false
-    etcd:
-      volumePermissions:
-        enabled: false
