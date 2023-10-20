@@ -52,6 +52,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │           ├── flux-webhook-receiver
 │           │   └── secrets
 │           ├── kube-prometheus-stack
+│           ├── mayastor
 │           ├── reloader
 │           ├── rook-ceph
 │           └── traefik
@@ -59,13 +60,14 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 └── scripts
     └── talos-config-patches
         └── homelab-production
+            ├── cluster
             ├── controlplane
             ├── talos-rpi-1
             ├── talos-rpi-2
             ├── talos-rpi-3
             └── worker
 
-47 directories
+49 directories
 ```
 <!-- readme-tree end -->
 
