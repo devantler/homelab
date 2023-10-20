@@ -10,6 +10,9 @@ patches:
       - op: add
         path: /metadata/labels/pod-security.kubernetes.io/enforce
         value: privileged
+      - op: add
+        path: /metadata/labels/env
+        value: dev
     target:
       kind: Namespace
       name: default
