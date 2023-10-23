@@ -11,8 +11,8 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: openebs
-  upgrade:
-    crds: CreateReplace
+  # upgrade:
+  #   crds: CreateReplace
   # https://github.com/openebs/charts/blob/main/charts/openebs/values.yaml
   values:
     mayastor:
