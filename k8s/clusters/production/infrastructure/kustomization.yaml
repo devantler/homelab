@@ -7,6 +7,6 @@ resources:
   - ../../../infrastructure/services/flux-github-status-updater
   - ../../../infrastructure/services/flux-webhook-receiver
   - ../../../infrastructure/services/kube-prometheus-stack
-  #- ../../../infrastructure/services/openebs
+  - ../../../infrastructure/services/openebs
   - ../../../infrastructure/services/reloader
   - ../../../infrastructure/services/traefik
