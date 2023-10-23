@@ -17,3 +17,5 @@ spec:
   values:
     mayastor:
       enabled: true
+    rbac:
+      pspEnabled: true
