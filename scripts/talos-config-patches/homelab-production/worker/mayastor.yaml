@@ -1,0 +1,5 @@
+machine:
+  nodeLabels:
+    openebs.io/engine: mayastor
+  sysctls:
+    vm.nr_hugepages: "1024"

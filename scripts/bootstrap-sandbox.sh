@@ -6,7 +6,14 @@ echo "🪵 Get current branch"
 branch=$(git branch --show-current)
 
 echo "🐳 Provision Talos Linux cluster in Docker"
-talosctl cluster create --name homelab-sandbox --cidr "10.6.0.0/24" --wait
+talosctl cluster create --name homelab-sandbox --cidr "10.6.0.0/24" --with-kubespan --wait
+
+echo "🩹 Apply cluster wide patches"
+talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-sandbox/cluster/extra-mounts.yaml
+talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-sandbox/cluster/metrics-server.yaml
+
+echo "🩹 Apply controlplane patches"
+talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-sandbox/controlplane/scheduling.yaml
 
 echo "🏡 Set current cluster to 'homelab-sandbox'"
 kubectl config use-context 'admin@homelab-sandbox' || exit 1
