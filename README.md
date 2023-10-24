@@ -58,15 +58,16 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │               └── secrets
 └── scripts
     └── talos-config-patches
-        └── homelab-production
+        ├── homelab-production
+        │   ├── cluster
+        │   ├── controlplane
+        │   └── worker
+        └── homelab-sandbox
             ├── cluster
             ├── controlplane
-            ├── talos-rpi-1
-            ├── talos-rpi-2
-            ├── talos-rpi-3
             └── worker
 
-48 directories
+49 directories
 ```
 <!-- readme-tree end -->
 
