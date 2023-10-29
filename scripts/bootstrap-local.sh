@@ -9,13 +9,13 @@ echo "🐳 Provision Talos Linux cluster in Docker"
 talosctl cluster create --name homelab-local --cidr "10.6.0.0/24" --with-kubespan --wait
 
 echo "🩹 Apply cluster wide patches"
-talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/cluster/metrics-server.yaml
+talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/metrics-server.yaml
 
 echo "🩹 Apply controlplane patches"
-talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/controlplane/scheduling.yaml
+talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/controlplane/scheduling.yaml
 
 echo "🩹 Apply worker patches"
-talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/worker/mayastor.yaml
+talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/worker/mayastor.yaml
 
 echo "🏡 Set current cluster to 'homelab-local'"
 kubectl config use-context 'admin@homelab-local' || exit 1
