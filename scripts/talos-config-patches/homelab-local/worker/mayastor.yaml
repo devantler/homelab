@@ -3,3 +3,12 @@ machine:
     openebs.io/engine: mayastor
   sysctls:
     vm.nr_hugepages: "1024"
+  kubelet:
+    extraMounts:
+      - destination: /var/local
+        type: bind
+        source: /var/local
+        options:
+        - rbind
+        - rshared
+        - rw
