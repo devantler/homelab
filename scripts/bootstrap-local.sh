@@ -12,18 +12,12 @@ talosctl cluster create \
   --with-kubespan \
   --controlplanes 3 \
   --workers 3 \
+  --config-patch @./../talos/patches/cluster/extra-mounts.yaml \
+  --config-patch @./../talos/patches/cluster/kubespan.yaml \
+  --config-patch @./../talos/patches/cluster/metrics-server.yaml \
+  --config-patch-control-plane @./../talos/patches/controlplane/scheduling.yaml \
+  --config-patch-worker @./../talos/patches/worker/mayastor.yaml \
   --wait
-
-echo "🩹 Apply cluster wide patches"
-talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/extra-mounts.yaml
-talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/kubespan.yaml
-talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/metrics-server.yaml
-
-echo "🩹 Apply controlplane patches"
-talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/controlplane/scheduling.yaml
-
-echo "🩹 Apply worker patches"
-talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/worker/mayastor.yaml
 
 echo "🏡 Set current cluster to 'homelab-local'"
 kubectl config use-context 'admin@homelab-local' || exit 1
