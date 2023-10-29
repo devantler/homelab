@@ -15,6 +15,7 @@ talosctl cluster create \
   --wait
 
 echo "🩹 Apply cluster wide patches"
+talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/extra-mounts.yaml
 talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/kubespan.yaml
 talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/metrics-server.yaml
 
