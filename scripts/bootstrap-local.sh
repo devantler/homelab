@@ -10,7 +10,7 @@ talosctl cluster create \
   --name homelab-local \
   --cidr "10.6.0.0/24" \
   --with-kubespan \
-  --controlplanes 3 \
+  --controlplanes 1 \
   --workers 3 \
   --config-patch @./../talos/patches/cluster/extra-mounts.yaml \
   --config-patch @./../talos/patches/cluster/kubespan.yaml \
