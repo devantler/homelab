@@ -8,7 +8,6 @@ branch=$(git branch --show-current)
 echo "🐳 Provision Talos Linux cluster in Docker"
 talosctl cluster create \
   --name homelab-local \
-  --arch arm64 \
   --cidr "10.6.0.0/24" \
   --with-kubespan \
   --controlplanes 1 \
