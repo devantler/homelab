@@ -6,9 +6,16 @@ echo "🪵 Get current branch"
 branch=$(git branch --show-current)
 
 echo "🐳 Provision Talos Linux cluster in Docker"
-talosctl cluster create --name homelab-local --cidr "10.6.0.0/24" --with-kubespan --wait
+talosctl cluster create \
+  --name homelab-local \
+  --cidr "10.6.0.0/24" \
+  --with-kubespan \
+  --controlplanes 3 \
+  --workers 3 \
+  --wait
 
 echo "🩹 Apply cluster wide patches"
+talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/kubespan.yaml
 talosctl patch mc -n 127.0.0.1 --patch @./../talos/patches/cluster/metrics-server.yaml
 
 echo "🩹 Apply controlplane patches"
