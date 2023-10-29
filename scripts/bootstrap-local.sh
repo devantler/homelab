@@ -9,7 +9,6 @@ echo "🐳 Provision Talos Linux cluster in Docker"
 talosctl cluster create --name homelab-local --cidr "10.6.0.0/24" --with-kubespan --wait
 
 echo "🩹 Apply cluster wide patches"
-talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-local/cluster/extra-mounts.yaml
 talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-local/cluster/metrics-server.yaml
 
 echo "🩹 Apply controlplane patches"
