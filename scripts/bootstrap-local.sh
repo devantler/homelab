@@ -14,6 +14,9 @@ talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-local/clu
 echo "🩹 Apply controlplane patches"
 talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-local/controlplane/scheduling.yaml
 
+echo "🩹 Apply worker patches"
+talosctl patch mc -n 127.0.0.1 --patch @./talos-config-patches/homelab-local/worker/mayastor.yaml
+
 echo "🏡 Set current cluster to 'homelab-local'"
 kubectl config use-context 'admin@homelab-local' || exit 1
 
