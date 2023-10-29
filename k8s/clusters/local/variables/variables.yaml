@@ -4,5 +4,5 @@ metadata:
   name: variables
 data:
   cluster_issuer_certificate_name: selfsigned-cluster-issuer
-  cluster_domain: sandbox.devantler.com
+  cluster_domain: local.devantler.com
   traefik_service_type: ClusterIP

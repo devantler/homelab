@@ -35,9 +35,9 @@ jobs:
       - name: ⚙️ Install talosctl
         run: curl -sL https://talos.dev/install | sh
       - name: 🐳 Provision Talos Linux cluster in Docker
-        run: talosctl cluster create --name homelab-sandbox --wait
-      - name: 🏡 Set current cluster to 'homelab-sandbox'
-        run: kubectl config use-context 'admin@homelab-sandbox' || exit 1
+        run: talosctl cluster create --name homelab-local --wait
+      - name: 🏡 Set current cluster to 'homelab-local'
+        run: kubectl config use-context 'admin@homelab-local' || exit 1
       - name: 🔐 Add SOPS GPG key
         run: |
           kubectl create namespace flux-system
@@ -54,7 +54,7 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: 🔁 Setup cluster reconciliation
-        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} sandbox ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} local ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: ✅ Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: 🐛 Print logs on failure

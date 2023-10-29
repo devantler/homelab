@@ -8,7 +8,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./k8s/clusters/sandbox/variables
+  path: ./k8s/clusters/local/variables
   prune: true
   decryption:
     provider: sops

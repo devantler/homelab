@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - ../../../infrastructure/services/cert-manager
   - ../../../infrastructure/services/kube-prometheus-stack
+  - ../../../infrastructure/services/openebs
   - ../../../infrastructure/services/reloader
   - ../../../infrastructure/services/traefik

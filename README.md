@@ -9,7 +9,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
   - [Setting up SOPS](#setting-up-sops)
   - [SOPS VSCode Integration](#sops-vscode-integration)
 - [Cluster Setups](#cluster-setups)
-  - [Sandbox Setup](#sandbox-setup)
+  - [Local Setup](#local-setup)
   - [Production Setup](#production-setup)
 
 ## Overview
@@ -31,7 +31,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │   │   │   ├── infrastructure
 │   │   │   │   └── configs
 │   │   │   └── variables
-│   │   └── sandbox
+│   │   └── local
 │   │       ├── .bootstrap
 │   │       │   └── flux-system
 │   │       ├── apps
@@ -62,7 +62,7 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
         │   ├── cluster
         │   ├── controlplane
         │   └── worker
-        └── homelab-sandbox
+        └── homelab-local
             ├── cluster
             ├── controlplane
             └── worker
@@ -123,21 +123,21 @@ If you use VSCode, there is an extension called [SOPS easy edit]([ShipitSmarter.
 
 ## Cluster Setups
 
-- **Sandbox** - A sandbox environment for testing new services.
-  - `<service>.sandbox.<domain>`
+- **Local** - A local environment for testing new services.
+  - `<service>.local.<domain>`
 - **Production** - A production environment for hosting services.
   - `<service>.<domain>`
 
-### Sandbox Setup
+### Local Setup
 
 > [!NOTE]
-> Currently the sandbox cluster is setup to run in Docker, and is not intended to be used for anything other than testing new services locally. This will change as the maintainer gets more hardware, and it makes sense to scale out into multiple environments.
+> Currently the local cluster is setup to run in Docker, and is not intended to be used for anything other than testing new services locally. This will change as the maintainer gets more hardware, and it makes sense to scale out into multiple environments.
 
-The sandbox cluster is fully managed by Flux2 and GitHub Actions, and it should not be modified directly through `kubectl`, `helm`, or similar tools.
+The local cluster is fully managed by Flux2 and GitHub Actions, and it should not be modified directly through `kubectl`, `helm`, or similar tools.
 
-- The **sandbox** cluster is updated whenever changes are merged to the main branch.
+- The **local** cluster is updated whenever changes are merged to the main branch.
 
-In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-sandbox.sh` script. This script will configure a set of Talos Linux nodes in Docker and bootstrap Flux2 to sync the cluster.
+In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-local.sh` script. This script will configure a set of Talos Linux nodes in Docker and bootstrap Flux2 to sync the cluster.
 
 ### Production Setup
 

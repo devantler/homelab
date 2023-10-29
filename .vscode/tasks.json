@@ -10,8 +10,8 @@
             "type": "shell"
         },
         {
-            "command": "./bootstrap-sandbox.sh",
-            "label": "bootstrap-sandbox",
+            "command": "./bootstrap-local.sh",
+            "label": "bootstrap-local",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
@@ -19,8 +19,8 @@
             "type": "shell"
         },
         {
-            "command": "./destroy-sandbox.sh",
-            "label": "destroy-sandbox",
+            "command": "./destroy-local.sh",
+            "label": "destroy-local",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },

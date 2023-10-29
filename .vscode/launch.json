@@ -8,15 +8,15 @@
             "type": "node"
         },
         {
-            "name": "🚀 Bootstrap Sandbox",
-            "preLaunchTask": "bootstrap-sandbox",
+            "name": "🚀 Bootstrap Local",
+            "preLaunchTask": "bootstrap-local",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "🔥 Destroy Sandbox",
-            "preLaunchTask": "destroy-sandbox",
+            "name": "🔥 Destroy Local",
+            "preLaunchTask": "destroy-local",
             "request": "attach",
             "timeout": 1,
             "type": "node"
