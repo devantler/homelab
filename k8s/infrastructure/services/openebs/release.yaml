@@ -21,7 +21,7 @@ spec:
         # -- Image registry's namespace
         repo: cdkbot
         # -- Release tag for Mayastor images
-        tag: v2.0.0-microk8s-1
+        tag: v2.0.0-microk8s-1-arm64
       nodeSelector: {}
       io_engine:
         nodeSelector:
