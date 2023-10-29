@@ -5,6 +5,6 @@ machine:
         type: bind
         source: /var/local
         options:
-        - rbind
-        - rshared
-        - rw
+          - rbind
+          - rshared
+          - rw
