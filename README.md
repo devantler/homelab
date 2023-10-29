@@ -24,14 +24,14 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 ├── k8s
 │   ├── apps
 │   ├── clusters
-│   │   ├── production
+│   │   ├── local
 │   │   │   ├── .bootstrap
 │   │   │   │   └── flux-system
 │   │   │   ├── apps
 │   │   │   ├── infrastructure
 │   │   │   │   └── configs
 │   │   │   └── variables
-│   │   └── local
+│   │   └── production
 │   │       ├── .bootstrap
 │   │       │   └── flux-system
 │   │       ├── apps
@@ -58,11 +58,11 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 │               └── secrets
 └── scripts
     └── talos-config-patches
-        ├── homelab-production
+        ├── homelab-local
         │   ├── cluster
         │   ├── controlplane
         │   └── worker
-        └── homelab-local
+        └── homelab-production
             ├── cluster
             ├── controlplane
             └── worker
