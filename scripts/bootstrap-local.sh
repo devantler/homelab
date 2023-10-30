@@ -5,6 +5,9 @@ pushd $(dirname "$0") >/dev/null
 echo "🪵 Get current branch"
 branch=$(git branch --show-current)
 
+echo "🔥 Destroy Local"
+./destroy-local.sh
+
 echo "🐳 Provision Talos Linux cluster in Docker"
 talosctl cluster create \
   --name homelab-local \
@@ -16,6 +19,7 @@ talosctl cluster create \
   --config-patch @./../talos/patches/cluster/extra-mounts.yaml \
   --config-patch @./../talos/patches/cluster/kubespan.yaml \
   --config-patch @./../talos/patches/cluster/metrics-server.yaml \
+  --config-patch @./../talos/patches/cluster/pull-through-registries.yaml \
   --config-patch-control-plane @./../talos/patches/controlplane/scheduling.yaml \
   --config-patch-worker @./../talos/patches/worker/mayastor.yaml \
   --wait

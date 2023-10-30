@@ -1,0 +1,15 @@
+machine:
+  registries:
+    mirrors:
+      docker.io:
+        endpoints:
+          - http://10.5.0.1:5000
+      gcr.io:
+        endpoints:
+          - http://10.5.0.1:5003
+      ghcr.io:
+        endpoints:
+          - http://10.5.0.1:5004
+      registry.k8s.io:
+        endpoints:
+          - http://10.5.0.1:5001
