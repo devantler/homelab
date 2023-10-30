@@ -15,13 +15,14 @@ spec:
     crds: CreateReplace
   # https://github.com/openebs/charts/blob/main/charts/openebs/values.yaml
   values:
+    nodeSelector: {}
     mayastor:
       enabled: true
       image:
         # -- Image registry's namespace
         repo: cdkbot
         # -- Release tag for Mayastor images
-        tag: v2.0.0-microk8s-1-arm64
+        tag: v2.0.0-microk8s-1
       nodeSelector: {}
       io_engine:
         nodeSelector:
