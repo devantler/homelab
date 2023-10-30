@@ -70,6 +70,8 @@ jobs:
       - name: 🩹 Patch variables
         run: |
           yq e '.data.mayastor_node_arch = "amd64"' -i k8s/clusters/local/variables/variables.yaml
+          git commit -am "bot: update variables"
+          git push
       - name: 🔁 Setup cluster reconciliation
         run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} local ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: ✅ Verify cluster reconciliation

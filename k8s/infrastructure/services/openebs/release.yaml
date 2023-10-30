@@ -22,6 +22,8 @@ spec:
         repo: cdkbot
         # -- Release tag for Mayastor images
         tag: v2.0.0-microk8s-1
+      # TODO: Find a way to enable true muli-arch support.
+      # This is a hack, as it was not possible to set the nodeSelector to an empty value.
       nodeSelector:
         kubernetes.io/arch: ${ mayastor_node_arch }
       io_engine:
