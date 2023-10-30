@@ -6,3 +6,4 @@ data:
   cluster_issuer_certificate_name: selfsigned-cluster-issuer
   cluster_domain: local.devantler.com
   traefik_service_type: ClusterIP
+  mayastor_node_arch: arm64

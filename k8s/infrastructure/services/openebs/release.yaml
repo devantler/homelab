@@ -22,7 +22,8 @@ spec:
         repo: cdkbot
         # -- Release tag for Mayastor images
         tag: v2.0.0-microk8s-1
-      nodeSelector: { "empty": "empty" }
+      nodeSelector:
+        kubernetes.io/arch: ${ mayastor_node_arch }
       io_engine:
         nodeSelector:
           openebs.io/engine: mayastor
