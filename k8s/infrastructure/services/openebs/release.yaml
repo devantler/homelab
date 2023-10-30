@@ -23,7 +23,6 @@ spec:
         repo: cdkbot
         # -- Release tag for Mayastor images
         tag: v2.0.0-microk8s-1
-      nodeSelector: {}
       io_engine:
         nodeSelector:
           openebs.io/engine: mayastor
