@@ -7,7 +7,7 @@ spec:
   chart:
     spec:
       chart: openebs
-      version: 3.9.0
+      version: 3.5.0
       sourceRef:
         kind: HelmRepository
         name: openebs
@@ -31,4 +31,4 @@ spec:
           enabled: false
       io_engine:
         nodeSelector:
-          penebs.io/engine: mayastor
+          openebs.io/engine: mayastor
