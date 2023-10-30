@@ -8,6 +8,27 @@ branch=$(git branch --show-current)
 echo "🔥 Destroy Local"
 ./destroy-local.sh
 
+echo "🧮 Add pull-through registries"
+docker run -d -p 5001:5000 \
+  -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+  --restart always \
+  --name registry-docker.io registry:2
+
+docker run -d -p 5002:5000 \
+  -e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io \
+  --restart always \
+  --name registry-registry.k8s.io registry:2
+
+docker run -d -p 5003:5000 \
+  -e REGISTRY_PROXY_REMOTEURL=https://gcr.io \
+  --restart always \
+  --name registry-gcr.io registry:2
+
+docker run -d -p 5004:5000 \
+  -e REGISTRY_PROXY_REMOTEURL=https://ghcr.io \
+  --restart always \
+  --name registry-ghcr.io registry:2
+
 echo "🐳 Provision Talos Linux cluster in Docker"
 talosctl cluster create \
   --name homelab-local \
@@ -16,10 +37,13 @@ talosctl cluster create \
   --with-kubespan \
   --controlplanes 1 \
   --workers 3 \
+  --registry-mirror docker.io=http://172.17.0.1:5001 \
+  --registry-mirror registry.k8s.io=http://172.17.0.1:5002 \
+  --registry-mirror gcr.io=http://172.17.0.1:5003 \
+  --registry-mirror ghcr.io=http://172.17.0.1:5004 \
   --config-patch @./../talos/patches/cluster/extra-mounts.yaml \
   --config-patch @./../talos/patches/cluster/kubespan.yaml \
   --config-patch @./../talos/patches/cluster/metrics-server.yaml \
-  --config-patch @./../talos/patches/cluster/pull-through-registries.yaml \
   --config-patch-control-plane @./../talos/patches/controlplane/scheduling.yaml \
   --config-patch-worker @./../talos/patches/worker/mayastor.yaml \
   --wait
