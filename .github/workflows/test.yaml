@@ -69,7 +69,7 @@ jobs:
         uses: fluxcd/pkg/actions/yq@main
       - name: 🩹 Patch variables
         run: |
-          yq write k8s/clusters/local/variables/variables.yaml 'data.mayastor_node_arch' 'amd64' -i
+          yq e '.data.mayastor_node_arch = "amd64"' -i k8s/clusters/local/variables/variables.yaml
       - name: 🔁 Setup cluster reconciliation
         run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} local ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: ✅ Verify cluster reconciliation
