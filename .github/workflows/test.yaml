@@ -37,7 +37,7 @@ jobs:
       - name: 🐳 Provision Talos Linux cluster in Docker
         run: |
           talosctl cluster create \
-            --name homelab-local \
+            --name homelab-ci \
             --cidr "10.6.0.0/24" \
             --with-kubespan \
             --controlplanes 1 \
@@ -48,8 +48,8 @@ jobs:
             --config-patch-control-plane @./talos/patches/controlplane/scheduling.yaml \
             --config-patch-worker @./talos/patches/worker/mayastor.yaml \
             --wait
-      - name: 🏡 Set current cluster to 'homelab-local'
-        run: kubectl config use-context 'admin@homelab-local' || exit 1
+      - name: 🏡 Set current cluster to 'homelab-ci'
+        run: kubectl config use-context 'admin@homelab-ci' || exit 1
       - name: 🔐 Add SOPS GPG key
         run: |
           kubectl create namespace flux-system
@@ -65,15 +65,8 @@ jobs:
       - name: 🪵 Extract branch name
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: ⛴️ Setup yq
-        uses: fluxcd/pkg/actions/yq@main
-      - name: 🩹 Patch variables
-        run: |
-          yq e '.data.mayastor_node_arch = "amd64"' -i k8s/clusters/local/variables/variables.yaml
-          git commit -am "bot: update variables"
-          git push
       - name: 🔁 Setup cluster reconciliation
-        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} local ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} ci ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: ✅ Verify cluster reconciliation
         run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
       - name: 🐛 Print logs on failure
