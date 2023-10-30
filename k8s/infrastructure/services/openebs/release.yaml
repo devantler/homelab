@@ -22,8 +22,8 @@ spec:
         repo: cdkbot
         # -- Release tag for Mayastor images
         tag: v2.0.0-microk8s-1
-      nodeSelector:
-        kubernetes.io/arch: arm64 # TODO: Set this to empty to make the nodeSelector multi-arch (it did not work with '{}')
+      nodeSelector: null
+      #  kubernetes.io/arch: arm64 # TODO: Set this to empty to make the nodeSelector multi-arch (it did not work with '{}')
       io_engine:
         nodeSelector:
           openebs.io/engine: mayastor
