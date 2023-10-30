@@ -15,7 +15,6 @@ spec:
     crds: CreateReplace
   # https://github.com/openebs/charts/blob/main/charts/openebs/values.yaml
   values:
-    nodeSelector: {}
     mayastor:
       enabled: true
       image:
@@ -23,6 +22,8 @@ spec:
         repo: cdkbot
         # -- Release tag for Mayastor images
         tag: v2.0.0-microk8s-1
+      nodeSelector:
+        kubernetes.io/arch: arm64
       io_engine:
         nodeSelector:
           openebs.io/engine: mayastor
