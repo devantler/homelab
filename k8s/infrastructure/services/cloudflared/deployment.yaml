@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: cloudflared
-          image: "cloudflare/cloudflared:2023.8.2"
+          image: "cloudflare/cloudflared:2023.10.0"
           imagePullPolicy: IfNotPresent
           command:
             - cloudflared
