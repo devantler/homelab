@@ -15,22 +15,30 @@ function add_pull_through_registries() {
   docker run -d -p 5001:5000 \
     -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
     --restart always \
-    --name registry-docker.io registry:2
+    --name registry-docker.io \
+    --volume registry-docker.io:/var/lib/registry \
+    registry:2
 
   docker run -d -p 5002:5000 \
     -e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io \
     --restart always \
-    --name registry-registry.k8s.io registry:2
+    --name registry-registry.k8s.io \
+    --volume registry-k8s.io:/var/lib/registry \
+    registry:2
 
   docker run -d -p 5003:5000 \
     -e REGISTRY_PROXY_REMOTEURL=https://gcr.io \
     --restart always \
-    --name registry-gcr.io registry:2
+    --name registry-gcr.io \
+    --volume registry-gcr.io:/var/lib/registry \
+    registry:2
 
   docker run -d -p 5004:5000 \
     -e REGISTRY_PROXY_REMOTEURL=https://ghcr.io \
     --restart always \
-    --name registry-ghcr.io registry:2
+    --name registry-ghcr.io \
+    --volume registry-ghcr.io:/var/lib/registry \
+    registry:2
 }
 
 function provision_talos_linux_cluster() {
