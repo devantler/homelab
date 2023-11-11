@@ -2,6 +2,7 @@ name: Test
 
 env:
   SCRIPTS_DIR: ./.github/scripts
+  CODE_DIR: ./code
 
 on:
   pull_request:
@@ -13,8 +14,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate-manifests:
+  changes:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      docker: ${{ steps.filter.outputs.docker }}
+      action: ${{ steps.filter.outputs.action }}
+      k8s: ${{ steps.filter.outputs.k8s }}
+    steps:
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            action:
+              - '.github/workflows/test.yaml'
+            k8s:
+              - 'k8s/**'
+  k8s-validate:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.k8s == 'true' || needs.changes.outputs.action == 'true' }}
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
@@ -25,10 +46,13 @@ jobs:
       - name: ⛴️ Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@main
       - name: ✅ Validate manifests
-        run: $SCRIPTS_DIR/validate-manifests.sh || exit 1
-  e2e-test:
+        run: $SCRIPTS_DIR/k8s-validate-manifests.sh || exit 1
+  k8s-e2e:
     runs-on: ubuntu-latest
-    needs: validate-manifests
+    needs:
+      - changes
+      - k8s-validate
+    if: ${{ github.event.pull_request.draft == false && (needs.changes.outputs.k8s == 'true' || needs.changes.outputs.action == 'true') }}
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
@@ -43,13 +67,12 @@ jobs:
             --controlplanes 1 \
             --workers 3 \
             --config-patch @./talos/patches/cluster/extra-mounts.yaml \
-            --config-patch @./talos/patches/cluster/kubespan.yaml \
             --config-patch @./talos/patches/cluster/metrics-server.yaml \
             --config-patch-control-plane @./talos/patches/controlplane/scheduling.yaml \
             --config-patch-worker @./talos/patches/worker/mayastor.yaml \
             --wait
-      - name: 🏡 Set current cluster to 'homelab-ci'
-        run: kubectl config use-context 'admin@homelab-ci' || exit 1
+      - name: 🏡 Set current cluster to 'homelab'
+        run: kubectl config use-context 'admin@homelab' || exit 1
       - name: 🔐 Add SOPS GPG key
         run: |
           kubectl create namespace flux-system
@@ -66,11 +89,11 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: 🔁 Setup cluster reconciliation
-        run: $SCRIPTS_DIR/e2e-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} ci ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+        run: $SCRIPTS_DIR/e2e-k8s-setup-cluster-reconciliation.sh ${{ github.event.repository.html_url }} ${{ steps.extract_branch.outputs.branch }} local ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: ✅ Verify cluster reconciliation
-        run: $SCRIPTS_DIR/e2e-verify-cluster-reconciliation.sh
+        run: $SCRIPTS_DIR/e2e-k8s-verify-cluster-reconciliation.sh
       - name: 🐛 Print logs on failure
         if: failure()
-        run: $SCRIPTS_DIR/e2e-debug-failure.sh
+        run: $SCRIPTS_DIR/e2e-k8s-debug-failure.sh
       - name: ⚠️ Check for use of deprecated APIs
-        run: $SCRIPTS_DIR/e2e-check-deprecated-apis.sh
+        run: $SCRIPTS_DIR/e2e-k8s-check-deprecated-apis.sh
