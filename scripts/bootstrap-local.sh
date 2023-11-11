@@ -6,7 +6,6 @@ function get_current_branch() {
 }
 
 function destroy_local() {
-  echo "🔥 Destroy Local"
   ./destroy-local.sh
 }
 
@@ -54,7 +53,6 @@ function provision_talos_linux_cluster() {
     --registry-mirror gcr.io=http://172.17.0.1:5003 \
     --registry-mirror ghcr.io=http://172.17.0.1:5004 \
     --config-patch @./../talos/patches/cluster/extra-mounts.yaml \
-    --config-patch @./../talos/patches/cluster/kubespan.yaml \
     --config-patch @./../talos/patches/cluster/metrics-server.yaml \
     --config-patch-control-plane @./../talos/patches/controlplane/scheduling.yaml \
     --config-patch-worker @./../talos/patches/worker/mayastor.yaml \
