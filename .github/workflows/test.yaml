@@ -62,6 +62,12 @@ jobs:
         run: talosctl cluster create --name homelab --wait
       - name: 🏡 Set current cluster to 'homelab'
         run: kubectl config use-context 'admin@homelab' || exit 1
+      - name: 🔐 Add SOPS GPG key
+        run: |
+          kubectl create namespace flux-system
+          kubectl create secret generic sops-gpg \
+            --namespace=flux-system \
+            --from-literal=sops.asc='${{ secrets.SOPS_GPG_KEY }}'
       - name: ⚙️ Setup Flux
         uses: fluxcd/flux2/action@main
       - name: ⚙️ Install Flux
