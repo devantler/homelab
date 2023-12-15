@@ -33,6 +33,6 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           MERGE_LABELS: ""
           MERGE_METHOD: "squash"
-          MERGE_RETRIES: 60
+          MERGE_RETRIES: 120
           UPDATE_LABELS: ""
           UPDATE_METHOD: "rebase"
