@@ -54,7 +54,10 @@ function create_oci_registries() {
 function provision_cluster() {
   local cluster_name=${1}
   echo "🐳 Provision ${cluster_name} in Docker"
-  talosctl cluster create --name ${cluster_name} --with-kubespan --wait
+  talosctl cluster create \
+    --name ${cluster_name} \
+    --with-kubespan \
+    --wait
   # echo "🩹 Apply cluster wide patches"
   # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/cluster/metrics-server.yaml
 
