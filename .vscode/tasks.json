@@ -1,12 +1,12 @@
 {
     "tasks": [
         {
-            "command": "./provision-clusters.sh",
+            "command": "./provision-cluster.sh",
             "group": {
                 "isDefault": true,
                 "kind": "build"
             },
-            "label": "provision-clusters",
+            "label": "provision-cluster",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
@@ -14,11 +14,11 @@
             "type": "shell"
         },
         {
-            "command": "./update-clusters.sh",
+            "command": "./update-cluster.sh",
             "group": {
                 "kind": "none"
             },
-            "label": "update-clusters",
+            "label": "update-cluster",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
@@ -38,11 +38,11 @@
             "type": "shell"
         },
         {
-            "command": "./destroy-clusters.sh",
+            "command": "./destroy-cluster.sh",
             "group": {
                 "kind": "none"
             },
-            "label": "destroy-clusters",
+            "label": "destroy-cluster",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },

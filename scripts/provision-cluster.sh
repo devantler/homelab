@@ -75,6 +75,7 @@ function provision_cluster() {
     echo "🚨 Flux installation failed. Exiting..."
     exit 1
   }
+
 }
 
 function add_sops_gpg_key() {
@@ -103,7 +104,6 @@ function install_flux() {
     echo "🚨 Flux installation failed. Exiting..."
     exit 1
   }
-
   local source_url="oci://192.168.65.254:5050/${cluster_name}"
   flux create source oci flux-system \
     --url=$source_url \
@@ -115,7 +115,7 @@ function install_flux() {
 
   flux create kustomization flux-system \
     --source=OCIRepository/flux-system \
-    --path=./clusters/$cluster_name/.flux || {
+    --path=./clusters/docker/.flux || {
     echo "🚨 Flux kustomization creation failed. Exiting..."
     exit 1
   }
@@ -125,11 +125,11 @@ function main() {
   pushd $(dirname "$0") >/dev/null
   local cluster_name=${1}
   create_oci_registries
-  ./update-clusters.sh $cluster_name || {
+  ./update-cluster.sh $cluster_name || {
     echo "🚨 Cluster update failed. Exiting..."
     exit 1
   }
-  ./destroy-clusters.sh $cluster_name
+  ./destroy-cluster.sh $cluster_name
   provision_cluster $cluster_name || {
     echo "🚨 Cluster provisioning failed. Exiting..."
     exit 1

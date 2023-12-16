@@ -1,22 +1,22 @@
 {
     "configurations": [
         {
-            "name": "⏏️⛴️ Provision Clusters",
-            "preLaunchTask": "provision${input:pickCluster}",
+            "name": "⏏️⛴️ Provision Cluster",
+            "preLaunchTask": "provision-cluster",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "🔄⛴️ Update Clusters",
-            "preLaunchTask": "update-clusters",
+            "name": "🔄⛴️ Update Cluster",
+            "preLaunchTask": "update-cluster",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "⏺️⛴️ Destroy Clusters",
-            "preLaunchTask": "destroy${input:pickCluster}",
+            "name": "⏺️⛴️ Destroy Cluster",
+            "preLaunchTask": "destroy-cluster",
             "request": "attach",
             "timeout": 1,
             "type": "node"
@@ -27,20 +27,6 @@
             "request": "attach",
             "timeout": 1,
             "type": "node"
-        }
-    ],
-    "inputs": [
-        {
-            "id": "pickCluster",
-            "description": "What cluster do you want to provision?",
-            "default": "-clusters",
-            "type": "pickString",
-            "options": [
-                {
-                    "label": "All",
-                    "value": "-clusters"
-                }
-            ]
         }
     ],
     "version": "0.2.0"
