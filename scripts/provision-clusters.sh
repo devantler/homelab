@@ -56,14 +56,13 @@ function provision_cluster() {
   echo "⛴️ Provision ${cluster_name} cluster"
   talosctl cluster create \
     --name ${cluster_name} \
-    --cidr 10.5.0.0/24 \
-    --registry-mirror docker.io=http://10.5.0.1:5001 \
-    --registry-mirror hub.docker.com=http://10.5.0.1:5002 \
-    --registry-mirror registry.k8s.io=http://10.5.0.1:5003 \
-    --registry-mirror gcr.io=http://10.5.0.1:5004 \
-    --registry-mirror ghcr.io=http://10.5.0.1:5005 \
-    --registry-mirror quay.io=http://10.5.0.1:5006 \
-    --registry-mirror manifests=http://10.5.0.1:5050 \
+    --registry-mirror docker.io=http://192.168.65.254:5001 \
+    --registry-mirror hub.docker.com=http://192.168.65.254:5002 \
+    --registry-mirror registry.k8s.io=http://192.168.65.254:5003 \
+    --registry-mirror gcr.io=http://192.168.65.254:5004 \
+    --registry-mirror ghcr.io=http://192.168.65.254:5005 \
+    --registry-mirror quay.io=http://192.168.65.254:5006 \
+    --registry-mirror manifests=http://192.168.65.254:5050 \
     --wait || {
     echo "🚨 Cluster creation failed. Exiting..."
     exit 1
@@ -105,7 +104,7 @@ function install_flux() {
     exit 1
   }
 
-  local source_url="oci://172.17.0.1:5050/${cluster_name}"
+  local source_url="oci://192.168.65.254:5050/${cluster_name}"
   flux create source oci flux-system \
     --url=$source_url \
     --insecure=true \
