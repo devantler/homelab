@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: ./k8s/clusters/docker/infrastructure
+  path: ./clusters/docker/infrastructure
   prune: true
   wait: true
   decryption:
@@ -21,8 +21,6 @@ spec:
     substituteFrom:
       - kind: ConfigMap
         name: variables
-      - kind: Secret
-        name: variables-sensitive
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -37,7 +35,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: ./k8s/clusters/docker/infrastructure/configs
+  path: ./clusters/docker/infrastructure/configs
   prune: true
   wait: true
   decryption:
@@ -48,5 +46,3 @@ spec:
     substituteFrom:
       - kind: ConfigMap
         name: variables
-      - kind: Secret
-        name: variables-sensitive
