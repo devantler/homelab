@@ -4,6 +4,10 @@ metadata:
   name: kube-prometheus-stack
 spec:
   interval: 5m
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   chart:
     spec:
       chart: kube-prometheus-stack
@@ -11,9 +15,5 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: kube-prometheus-stack
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   # https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
   values: {}

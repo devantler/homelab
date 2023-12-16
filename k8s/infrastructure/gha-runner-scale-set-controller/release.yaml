@@ -4,6 +4,10 @@ metadata:
   name: gha-runner-scale-set-controller
 spec:
   interval: 5m
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   chart:
     spec:
       chart: gha-runner-scale-set-controller
