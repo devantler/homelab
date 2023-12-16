@@ -56,13 +56,14 @@ function provision_cluster() {
   echo "⛴️ Provision ${cluster_name} cluster"
   talosctl cluster create \
     --name ${cluster_name} \
-    --registry-mirror docker.io=http://172.17.0.1:5001 \
-    --registry-mirror hub.docker.com=http://172.17.0.1:5002 \
-    --registry-mirror registry.k8s.io=http://172.17.0.1:5003 \
-    --registry-mirror gcr.io=http://172.17.0.1:5004 \
-    --registry-mirror ghcr.io=http://172.17.0.1:5005 \
-    --registry-mirror quay.io=http://172.17.0.1:5006 \
-    --registry-mirror manifests=http://172.17.0.1:5050 \
+    --cidr 10.5.0.0/24 \
+    --registry-mirror docker.io=http://10.5.0.1:5001 \
+    --registry-mirror hub.docker.com=http://10.5.0.1:5002 \
+    --registry-mirror registry.k8s.io=http://10.5.0.1:5003 \
+    --registry-mirror gcr.io=http://10.5.0.1:5004 \
+    --registry-mirror ghcr.io=http://10.5.0.1:5005 \
+    --registry-mirror quay.io=http://10.5.0.1:5006 \
+    --registry-mirror manifests=http://10.5.0.1:5050 \
     --wait || {
     echo "🚨 Cluster creation failed. Exiting..."
     exit 1
