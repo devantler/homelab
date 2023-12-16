@@ -10,5 +10,5 @@ spec:
   secretRef:
     name: webhook-receiver-token
   resources:
-    - kind: GitRepository
+    - kind: OCIRepository
       name: flux-system

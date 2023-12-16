@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 1m
   sourceRef:
-    kind: GitRepository
+    kind: OCIRepository
     name: flux-system
   path: ./k8s/clusters/local/variables
   prune: true
