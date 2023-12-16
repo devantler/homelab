@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infrastructure
+  name: infrastructure-services
   namespace: flux-system
 spec:
   interval: 1m
@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: ./clusters/docker/infrastructure
+  path: ./clusters/docker/infrastructure/services
   prune: true
   wait: true
   decryption:
@@ -31,7 +31,7 @@ spec:
   interval: 1m
   dependsOn:
     - name: variables
-    - name: infrastructure
+    - name: infrastructure-services
   sourceRef:
     kind: OCIRepository
     name: flux-system
