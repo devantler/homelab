@@ -4,12 +4,14 @@
             "path": ".."
         }
     ],
-    "runOnSave.commands": [
-        {
-            "command": "${workspaceFolder}/scripts/update-cluster.sh",
-            "finishStatusMessage": ">${fileBasename} changed: Deployment artifact created.",
-            "globMatch": "${workspaceFolder}/k8s/**/*.yaml",
-            "runningStatusMessage": ">${fileBasename} changed: Creating new deployment artifact."
-        }
-    ]
+    "settings": {
+        "runOnSave.commands": [
+            {
+                "command": "${workspaceFolder}/scripts/update-cluster.sh",
+                "finishStatusMessage": ">${fileBasename} changed: Deployment artifact created.",
+                "globMatch": "${workspaceFolder}/k8s/**/*.yaml",
+                "runningStatusMessage": ">${fileBasename} changed: Creating new deployment artifact."
+            }
+        ]
+    }
 }
