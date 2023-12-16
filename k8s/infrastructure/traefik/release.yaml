@@ -8,9 +8,9 @@ spec:
     - name: cert-manager
       namespace: cert-manager
   install:
-    crds: CreateReplace
+    crds: Skip
   upgrade:
-    crds: CreateReplace
+    crds: Skip
   chart:
     spec:
       chart: traefik
