@@ -55,15 +55,14 @@ function provision_cluster() {
   local cluster_name=${1}
   echo "🐳 Provision ${cluster_name} in Docker"
   talosctl cluster create --name ${cluster_name} --with-kubespan --wait
+  # echo "🩹 Apply cluster wide patches"
+  # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/cluster/metrics-server.yaml
 
-  echo "🩹 Apply cluster wide patches"
-  talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/cluster/metrics-server.yaml
+  # echo "🩹 Apply controlplane patches"
+  # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/controlplane/scheduling.yaml
 
-  echo "🩹 Apply controlplane patches"
-  talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/controlplane/scheduling.yaml
-
-  echo "🩹 Apply worker patches"
-  talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/worker/mayastor.yaml
+  # echo "🩹 Apply worker patches"
+  # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/worker/mayastor.yaml
   #add_sops_gpg_key
   install_flux $cluster_name
 }
