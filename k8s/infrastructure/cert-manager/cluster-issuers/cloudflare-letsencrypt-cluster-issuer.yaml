@@ -15,3 +15,12 @@ spec:
             apiTokenSecretRef:
               name: cloudflare-dns-api-key
               key: api-token
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-dns-api-key
+  namespace: cert-manager
+type: Opaque
+stringData:
+  api-token: ${cloudflare_dns_api_key}

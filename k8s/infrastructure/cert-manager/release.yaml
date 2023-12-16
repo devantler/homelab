@@ -7,14 +7,12 @@ spec:
   chart:
     spec:
       chart: cert-manager
-      version: v1.13.1
+      version: 1.13.2
       sourceRef:
         kind: HelmRepository
         name: cert-manager
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   # https://github.com/cert-manager/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml
   values:
+    # This configures cert-manager to install and upgrade CRDs as part of the Helm release.
+    # https://cert-manager.io/docs/installation/helm/#helm-installation
     installCRDs: true
