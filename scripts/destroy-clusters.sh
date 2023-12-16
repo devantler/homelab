@@ -6,10 +6,10 @@ function destroy_cluster() {
   talosctl cluster destroy --name ${cluster_name} --force
   talosctl config context default
   talosctl config remove ${cluster_name} -y
+  kubectl config unset current-context
   kubectl config delete-context admin@${cluster_name}
   kubectl config delete-cluster ${cluster_name}
   kubectl config delete-user admin@${cluster_name}
-  kubectl config unset current-context
 }
 
 function main() {

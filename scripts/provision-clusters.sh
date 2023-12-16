@@ -53,7 +53,7 @@ function create_oci_registries() {
 
 function provision_cluster() {
   local cluster_name=${1}
-  echo "🐳 Provision ${cluster_name} in Docker"
+  echo "⛴️ Provision ${cluster_name} cluster"
   talosctl cluster create \
     --name ${cluster_name} \
     --with-kubespan \
@@ -119,6 +119,7 @@ function main() {
   local cluster_name=${1}
   create_oci_registries
   ./update-clusters.sh $cluster_name
+  ./destroy-clusters.sh $cluster_name
   provision_cluster $cluster_name
 }
 
