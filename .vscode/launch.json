@@ -1,32 +1,46 @@
 {
     "configurations": [
         {
-            "name": "🚀 Bootstrap Production",
-            "preLaunchTask": "bootstrap-production",
+            "name": "⏏️⛴️ Provision Clusters",
+            "preLaunchTask": "provision${input:pickCluster}",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "🚀 Bootstrap Local",
-            "preLaunchTask": "bootstrap-local",
+            "name": "🔄⛴️ Update Clusters",
+            "preLaunchTask": "update-clusters",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "🔥 Destroy Local",
-            "preLaunchTask": "destroy-local",
+            "name": "⏺️⛴️ Destroy Clusters",
+            "preLaunchTask": "destroy${input:pickCluster}",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "✅ Validate Manifests",
-            "preLaunchTask": "validate-manifests",
+            "name": "🌐 Update hosts",
+            "preLaunchTask": "update-hosts",
             "request": "attach",
             "timeout": 1,
             "type": "node"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "pickCluster",
+            "description": "What cluster do you want to provision?",
+            "default": "-clusters",
+            "type": "pickString",
+            "options": [
+                {
+                    "label": "All",
+                    "value": "-clusters"
+                }
+            ]
         }
     ],
     "version": "0.2.0"

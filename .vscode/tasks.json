@@ -1,8 +1,12 @@
 {
     "tasks": [
         {
-            "command": "./bootstrap-production.sh",
-            "label": "bootstrap-production",
+            "command": "./provision-clusters.sh",
+            "group": {
+                "isDefault": true,
+                "kind": "build"
+            },
+            "label": "provision-clusters",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
@@ -10,8 +14,11 @@
             "type": "shell"
         },
         {
-            "command": "./bootstrap-local.sh",
-            "label": "bootstrap-local",
+            "command": "./update-clusters.sh",
+            "group": {
+                "kind": "none"
+            },
+            "label": "update-clusters",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
@@ -19,8 +26,11 @@
             "type": "shell"
         },
         {
-            "command": "./destroy-local.sh",
-            "label": "destroy-local",
+            "command": "./update-hosts.sh",
+            "group": {
+                "kind": "none"
+            },
+            "label": "update-hosts",
             "options": {
                 "cwd": "${workspaceFolder}/scripts"
             },
@@ -28,8 +38,14 @@
             "type": "shell"
         },
         {
-            "command": "./.github/scripts/validate-manifests.sh",
-            "label": "validate-manifests",
+            "command": "./destroy-clusters.sh",
+            "group": {
+                "kind": "none"
+            },
+            "label": "destroy-clusters",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
             "problemMatcher": [],
             "type": "shell"
         }

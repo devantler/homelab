@@ -2,4 +2,4 @@
 
 Describe your PR...
 
-Closes `#issue-number`
+Closes #issue-number

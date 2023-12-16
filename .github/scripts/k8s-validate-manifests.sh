@@ -24,7 +24,7 @@ done
 echo -e "\n"
 
 echo "🔍 INFO - Validating clusters"
-find ./k8s/clusters -maxdepth 2 -type f -name '*.yaml' -print0 | while IFS= read -r -d $'\0' file; do
+find ./infra/k8s/clusters -maxdepth 2 -type f -name '*.yaml' -print0 | while IFS= read -r -d $'\0' file; do
   kubeconform "${kubeconform_flags[@]}" "${kubeconform_config[@]}" "${file}"
   if [[ ${PIPESTATUS[0]} != 0 ]]; then
     exit 1
