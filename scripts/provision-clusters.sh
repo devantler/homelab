@@ -56,7 +56,7 @@ function provision_cluster() {
   echo "⛴️ Provision ${cluster_name} cluster"
   talosctl cluster create \
     --name ${cluster_name} \
-    --registry-mirror registry-1.docker.io=http://172.17.0.1:5001 \
+    --registry-mirror docker.io=http://172.17.0.1:5001 \
     --registry-mirror hub.docker.com=http://172.17.0.1:5002 \
     --registry-mirror registry.k8s.io=http://172.17.0.1:5003 \
     --registry-mirror gcr.io=http://172.17.0.1:5004 \
