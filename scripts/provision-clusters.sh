@@ -66,7 +66,7 @@ function provision_cluster() {
 
   # echo "🩹 Apply worker patches"
   # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/worker/mayastor.yaml
-  #add_sops_gpg_key
+  add_sops_gpg_key
   install_flux $cluster_name
 }
 
@@ -74,7 +74,7 @@ function add_sops_gpg_key() {
   echo "🔐 Adding SOPS GPG key"
   kubectl create namespace flux-system
   if [[ -z ${SOPS_GPG_KEY} ]]; then
-    gpg --export-secret-keys --armor "" |
+    gpg --export-secret-keys --armor "F78D523ADB73F206EA60976DED58208970F326C8" |
       kubectl create secret generic sops-gpg \
         --namespace=flux-system \
         --from-file=sops.asc=/dev/stdin
