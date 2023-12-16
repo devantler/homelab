@@ -56,18 +56,25 @@ function provision_cluster() {
   echo "⛴️ Provision ${cluster_name} cluster"
   talosctl cluster create \
     --name ${cluster_name} \
-    --with-kubespan \
-    --wait
-  # echo "🩹 Apply cluster wide patches"
-  # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/cluster/metrics-server.yaml
-
-  # echo "🩹 Apply controlplane patches"
-  # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/controlplane/scheduling.yaml
-
-  # echo "🩹 Apply worker patches"
-  # talosctl patch mc -n 127.0.0.1 --patch @./../talos-config-patches/${cluster_name}/worker/mayastor.yaml
-  add_sops_gpg_key
-  install_flux $cluster_name
+    --registry-mirror registry-1.docker.io=http://172.17.0.1:5001 \
+    --registry-mirror hub.docker.com=http://172.17.0.1:5002 \
+    --registry-mirror registry.k8s.io=http://172.17.0.1:5003 \
+    --registry-mirror gcr.io=http://172.17.0.1:5004 \
+    --registry-mirror ghcr.io=http://172.17.0.1:5005 \
+    --registry-mirror quay.io=http://172.17.0.1:5006 \
+    --registry-mirror manifests=http://172.17.0.1:5050 \
+    --wait || {
+    echo "🚨 Cluster creation failed. Exiting..."
+    exit 1
+  }
+  add_sops_gpg_key || {
+    echo "🚨 SOPS GPG key creation failed. Exiting..."
+    exit 1
+  }
+  install_flux $cluster_name || {
+    echo "🚨 Flux installation failed. Exiting..."
+    exit 1
+  }
 }
 
 function add_sops_gpg_key() {
@@ -97,7 +104,7 @@ function install_flux() {
     exit 1
   }
 
-  local source_url="oci://host.docker.internal:5050/${cluster_name}"
+  local source_url="oci://172.17.0.1:5050/${cluster_name}"
   flux create source oci flux-system \
     --url=$source_url \
     --insecure=true \
@@ -118,9 +125,15 @@ function main() {
   pushd $(dirname "$0") >/dev/null
   local cluster_name=${1}
   create_oci_registries
-  ./update-clusters.sh $cluster_name
+  ./update-clusters.sh $cluster_name || {
+    echo "🚨 Cluster update failed. Exiting..."
+    exit 1
+  }
   ./destroy-clusters.sh $cluster_name
-  provision_cluster $cluster_name
+  provision_cluster $cluster_name || {
+    echo "🚨 Cluster provisioning failed. Exiting..."
+    exit 1
+  }
 }
 
 main "homelab-docker"
