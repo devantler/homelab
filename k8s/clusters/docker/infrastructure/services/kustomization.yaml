@@ -4,3 +4,4 @@ resources:
   - ../../../../infrastructure/cert-manager
   - ../../../../infrastructure/reloader
   - ../../../../infrastructure/traefik
+  - ../../../../infrastructure/vertical-pod-autoscaler
