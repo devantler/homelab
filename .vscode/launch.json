@@ -22,6 +22,20 @@
             "type": "node"
         },
         {
+            "name": "🔎⛴️ Validate Cluster",
+            "preLaunchTask": "validate-cluster",
+            "request": "attach",
+            "timeout": 1,
+            "type": "node"
+        },
+        {
+            "name": "✅⛴️ Verify Cluster",
+            "preLaunchTask": "verify-cluster",
+            "request": "attach",
+            "timeout": 1,
+            "type": "node"
+        },
+        {
             "name": "🌐 Update hosts",
             "preLaunchTask": "update-hosts",
             "request": "attach",

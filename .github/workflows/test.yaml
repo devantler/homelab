@@ -30,59 +30,36 @@ jobs:
             k8s:
               - 'k8s/**'
 
-  k8s-validate:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ needs.changes.outputs.k8s == 'true' || needs.changes.outputs.action == 'true' }}
-    steps:
-      - name: 📑 Checkout
-        uses: actions/checkout@v4
-      - name: ⛴️ Setup yq
-        uses: fluxcd/pkg/actions/yq@main
-      - name: ⛴️ Setup kubeconform
-        uses: fluxcd/pkg/actions/kubeconform@main
-      - name: ⛴️ Setup kustomize
-        uses: fluxcd/pkg/actions/kustomize@main
-      - name: ✅ Validate manifests
-        run: $GITHUB_SCRIPTS_DIR/k8s-validate-manifests.sh || exit 1
-
   k8s-e2e:
     runs-on: ubuntu-latest
     needs:
       - changes
-      - k8s-validate
     if: ${{ github.event.pull_request.draft == false && (needs.changes.outputs.k8s == 'true' || needs.changes.outputs.action == 'true') }}
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: ⚙️ Install talosctl
-        run: curl -sL https://talos.dev/install | sh
-      - name: ⚙️ Install Flux
-        uses: fluxcd/flux2/action@main
       - name: ⛴️ Provision cluster
         run: $SCRIPTS_DIR/provision-cluster.sh homelab-docker
         env:
           SOPS_GPG_KEY: ${{ secrets.SOPS_GPG_KEY }}
-      - name: ✅ Verify reconciliation
-        run: $GITHUB_SCRIPTS_DIR/e2e-k8s-verify-cluster-reconciliation.sh
       - name: 🐎 Print free CPU
         if: always()
         run: |
           top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,'|awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "%"}'
-      - name: 📥 Print free memory
+      - name: 🧠 Print free memory
         if: always()
         run: free -m
-      - name: 🐛 Print namespaces on failure
+      - name: ⚠️💬 Print namespaces on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-namespaces.sh
-      - name: 🐛 Print errors on failure
+      - name: ⚠️⛔️ Print errors on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-errors.sh
-      - name: 🐛 Print logs on failure
+      - name: ⚠️📝 Print logs on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-logs.sh
-      - name: 🐛 Print descriptions on failure
+      - name: ⚠️📑 Print descriptions on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-descriptions.sh
-      - name: ⚠️ Check for use of deprecated APIs
+      - name: 🚦 Check for use of deprecated APIs
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-check-deprecated-apis.sh
