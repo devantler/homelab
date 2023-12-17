@@ -67,6 +67,17 @@ function provision_cluster() {
     echo "🚨 Cluster creation failed. Exiting..."
     exit 1
   }
+
+  echo "🩹 Patch ${cluster_name} cluster"
+  talosctl patch mc -n 127.0.0.1 --patch @./../talos/cluster/rotate-server-certificates.yaml || {
+    echo "🚨 Cluster patching failed. Exiting..."
+    exit 1
+  }
+
+  echo "🩹 Patch ${cluster_name} controlplanes"
+
+  echo "🩹 Patch ${cluster_name} workers"
+
   add_sops_gpg_key || {
     echo "🚨 SOPS GPG key creation failed. Exiting..."
     exit 1

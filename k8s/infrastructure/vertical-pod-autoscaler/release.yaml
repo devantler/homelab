@@ -4,6 +4,9 @@ metadata:
   name: vertical-pod-autoscaler
 spec:
   interval: 5m
+  dependsOn:
+    - name: metrics-server
+      namespace: metrics-server
   install:
     crds: CreateReplace
   upgrade:
