@@ -55,7 +55,7 @@ function install_dependencies() {
       echo "📦✅ Talosctl already installed. Skipping..."
     else
       echo "📦🔨 Installing Talosctl"
-      brew install talosctl
+      brew install siderolabs/talos/talosctl
       echo "📦✅ Talosctl installed"
     fi
 
