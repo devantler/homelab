@@ -43,14 +43,6 @@ function install_dependencies() {
       echo "📦✅ Flux installed"
     fi
 
-    if command -v sops &>/dev/null; then
-      echo "📦✅ SOPS already installed. Skipping..."
-    else
-      echo "📦🔨 Installing SOPS"
-      brew install sops
-      echo "📦✅ SOPS installed"
-    fi
-
     if command -v gpg &>/dev/null; then
       echo "📦✅ GPG already installed. Skipping..."
     else
