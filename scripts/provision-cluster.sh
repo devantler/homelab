@@ -1,54 +1,149 @@
 #!/bin/bash
 
+function install_dependencies() {
+  echo "📦 Installing dependencies"
+  if [[ "$OSTYPE" == "darwin"* || "$OSTYPE" == "linux-gnu"* ]]; then
+    if command -v brew &>/dev/null; then
+      echo "📦✅ Homebrew already installed. Updating..."
+      brew upgrade
+    else
+      echo "📦🔨 Installing Homebrew"
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      echo "📦✅ Homebrew installed"
+    fi
+
+    if command -v docker &>/dev/null; then
+      echo "📦✅ Docker already installed. Skipping..."
+    else
+      echo "📦🔨 Installing Docker"
+      brew install --cask docker
+      echo "📦✅ Docker installed"
+    fi
+
+    if command -v talosctl &>/dev/null; then
+      echo "📦✅ Talosctl already installed. Skipping..."
+    else
+      echo "📦🔨 Installing Talosctl"
+      brew install talosctl
+      echo "📦✅ Talosctl installed"
+    fi
+
+    if command -v flux &>/dev/null; then
+      echo "📦✅ Flux already installed. Skipping..."
+    else
+      echo "📦🔨 Installing Flux"
+      brew install fluxcd/tap/flux
+      echo "📦✅ Flux installed"
+    fi
+
+    if command -v sops &>/dev/null; then
+      echo "📦✅ SOPS already installed. Skipping..."
+    else
+      echo "📦🔨 Installing SOPS"
+      brew install sops
+      echo "📦✅ SOPS installed"
+    fi
+
+    if command -v gpg &>/dev/null; then
+      echo "📦✅ GPG already installed. Skipping..."
+    else
+      echo "📦🔨 Installing GPG"
+      brew install gpg
+      echo "📦✅ GPG installed"
+    fi
+  else
+    echo "🚨 Unsupported OS. Exiting..."
+    exit 1
+  fi
+  echo ""
+}
+
 function create_oci_registries() {
   echo "🧮 Add pull-through registries"
-  docker run -d -p 5001:5000 \
-    -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
-    --restart always \
-    --name proxy-docker.io \
-    --volume proxy-docker.io:/var/lib/registry \
-    registry:2
+  # Check if registries already exist
+  if (docker volume ls | grep -q proxy-docker.io) && (docker container ls -a | grep -q proxy-docker.io); then
+    echo "🧮✅ Registry 'proxy-docker.io' already exists. Skipping..."
+  else
+    echo "🧮🔨 Creating registry 'proxy-docker.io'"
+    docker run -d -p 5001:5000 \
+      -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+      --restart always \
+      --name proxy-docker.io \
+      --volume proxy-docker.io:/var/lib/registry \
+      registry:2
+  fi
 
-  docker run -d -p 5002:5000 \
-    -e REGISTRY_PROXY_REMOTEURL=https://hub.docker.com \
-    --restart always \
-    --name proxy-docker-hub.com \
-    --volume proxy-docker-hub.com:/var/lib/registry \
-    registry:2
+  if (docker volume ls | grep -q proxy-docker-hub.com) && (docker container ls -a | grep -q proxy-docker-hub.com); then
+    echo "🧮✅ Registry 'proxy-docker-hub.com' already exists. Skipping..."
+  else
+    echo "🧮🔨 Creating registry 'proxy-docker-hub.com'"
+    docker run -d -p 5002:5000 \
+      -e REGISTRY_PROXY_REMOTEURL=https://hub.docker.com \
+      --restart always \
+      --name proxy-docker-hub.com \
+      --volume proxy-docker-hub.com:/var/lib/registry \
+      registry:2
+  fi
 
-  docker run -d -p 5003:5000 \
-    -e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io \
-    --restart always \
-    --name proxy-registry.k8s.io \
-    --volume proxy-registry.k8s.io:/var/lib/registry \
-    registry:2
+  if (docker volume ls | grep -q proxy-registry.k8s.io) && (docker container ls -a | grep -q proxy-registry.k8s.io); then
+    echo "🧮✅ Registry 'proxy-registry.k8s.io' already exists. Skipping..."
+  else
+    echo "🧮🔨 Creating registry 'proxy-registry.k8s.io'"
+    docker run -d -p 5003:5000 \
+      -e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io \
+      --restart always \
+      --name proxy-registry.k8s.io \
+      --volume proxy-registry.k8s.io:/var/lib/registry \
+      registry:2
+  fi
 
-  docker run -d -p 5004:5000 \
-    -e REGISTRY_PROXY_REMOTEURL=https://gcr.io \
-    --restart always \
-    --name proxy-gcr.io \
-    --volume proxy-gcr.io:/var/lib/registry \
-    registry:2
+  if (docker volume ls | grep -q proxy-gcr.io) && (docker container ls -a | grep -q proxy-gcr.io); then
+    echo "🧮✅ Registry 'proxy-gcr.io' already exists. Skipping..."
+  else
+    echo "🧮🔨 Creating registry 'proxy-gcr.io'"
+    docker run -d -p 5004:5000 \
+      -e REGISTRY_PROXY_REMOTEURL=https://gcr.io \
+      --restart always \
+      --name proxy-gcr.io \
+      --volume proxy-gcr.io:/var/lib/registry \
+      registry:2
+  fi
 
-  docker run -d -p 5005:5000 \
-    -e REGISTRY_PROXY_REMOTEURL=https://ghcr.io \
-    --restart always \
-    --name proxy-ghcr.io \
-    --volume proxy-ghcr.io:/var/lib/registry \
-    registry:2
+  if (docker volume ls | grep -q proxy-ghcr.io) && (docker container ls -a | grep -q proxy-ghcr.io); then
+    echo "🧮✅ Registry 'proxy-ghcr.io' already exists. Skipping..."
+  else
+    echo "🧮🔨 Creating registry 'proxy-ghcr.io'"
+    docker run -d -p 5005:5000 \
+      -e REGISTRY_PROXY_REMOTEURL=https://ghcr.io \
+      --restart always \
+      --name proxy-ghcr.io \
+      --volume proxy-ghcr.io:/var/lib/registry \
+      registry:2
+  fi
 
-  docker run -d -p 5006:5000 \
-    -e REGISTRY_PROXY_REMOTEURL=https://quay.io \
-    --restart always \
-    --name proxy-quay.io \
-    --volume proxy-quay.io:/var/lib/registry \
-    registry:2
+  if (docker volume ls | grep -q proxy-quay.io) && (docker container ls -a | grep -q proxy-quay.io); then
+    echo "🧮✅ Registry 'proxy-quay.io' already exists. Skipping..."
+  else
+    echo "🧮🔨 Creating registry 'proxy-quay.io'"
+    docker run -d -p 5006:5000 \
+      -e REGISTRY_PROXY_REMOTEURL=https://quay.io \
+      --restart always \
+      --name proxy-quay.io \
+      --volume proxy-quay.io:/var/lib/registry \
+      registry:2
+  fi
 
-  docker run -d -p 5050:5000 \
-    --restart always \
-    --name manifests \
-    --volume manifests:/var/lib/registry \
-    registry:2
+  if (docker volume ls | grep -q manifests) && (docker container ls -a | grep -q manifests); then
+    echo "🧮✅ Registry 'manifests' already exists. Skipping..."
+  else
+    echo "🧮🔨 Creating registry 'manifests'"
+    docker run -d -p 5050:5000 \
+      --restart always \
+      --name manifests \
+      --volume manifests:/var/lib/registry \
+      registry:2
+  fi
+  echo ""
 }
 
 function provision_cluster() {
@@ -90,7 +185,7 @@ function provision_cluster() {
     echo "🚨 Flux installation failed. Exiting..."
     exit 1
   }
-
+  echo ""
 }
 
 function add_sops_gpg_key() {
@@ -140,6 +235,10 @@ function install_flux() {
 function main() {
   pushd $(dirname "$0") >/dev/null
   local cluster_name=${1}
+  install_dependencies || {
+    echo "🚨 Dependencies installation failed. Exiting..."
+    exit 1
+  }
   create_oci_registries
   ./update-cluster.sh $cluster_name || {
     echo "🚨 Cluster update failed. Exiting..."
