@@ -7,10 +7,7 @@ spec:
   dependsOn:
     - name: cert-manager
       namespace: cert-manager
-  install:
-    crds: Skip
-  upgrade:
-    crds: Skip
+  # install.crds does not work with this chart.
   chart:
     spec:
       chart: traefik
@@ -34,4 +31,4 @@ spec:
     service:
       type: ${traefik_service_type:=LoadBalancer}
       spec:
-        loadBalancerIP: ${traefik_load_balancer_ip:=}
+        loadBalancerIP: ${traefik_load_balancer_ip}
