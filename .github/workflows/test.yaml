@@ -69,20 +69,20 @@ jobs:
         if: always()
         run: |
           top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,'|awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "%"}'
-      - name: 📥 Print free memory
+      - name: 🧠 Print free memory
         if: always()
         run: free -m
-      - name: 🐛 Print namespaces on failure
+      - name: ⚠️💬 Print namespaces on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-namespaces.sh
-      - name: 🐛 Print errors on failure
+      - name: ⚠️⛔️ Print errors on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-errors.sh
-      - name: 🐛 Print logs on failure
+      - name: ⚠️📝 Print logs on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-logs.sh
-      - name: 🐛 Print descriptions on failure
+      - name: ⚠️📑 Print descriptions on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-descriptions.sh
-      - name: ⚠️ Check for use of deprecated APIs
+      - name: 🚦 Check for use of deprecated APIs
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-check-deprecated-apis.sh
