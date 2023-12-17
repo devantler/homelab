@@ -162,8 +162,8 @@ function provision_cluster() {
     --registry-mirror ghcr.io=http://$docker_gateway_ip:5005 \
     --registry-mirror quay.io=http://$docker_gateway_ip:5006 \
     --registry-mirror manifests=http://$docker_gateway_ip:5050 \
-    --config-patch @./../talos/cluster/rotate-server-certificates.yaml
-  --wait || {
+    --config-patch @./../talos/cluster/rotate-server-certificates.yaml \
+    --wait || {
     echo "🚨 Cluster creation failed. Exiting..."
     exit 1
   }
