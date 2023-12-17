@@ -284,6 +284,15 @@ function main() {
     echo "🚨 Cluster verification failed. Exiting..."
     exit 1
   }
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    echo "🐎 Print free CPU"
+    top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,' | awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "%"}'
+  fi
+
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    echo "🧠 Print free memory in this format"
+    free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
+  fi
 }
 
 main "homelab-docker"

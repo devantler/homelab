@@ -42,13 +42,6 @@ jobs:
         run: $SCRIPTS_DIR/provision-cluster.sh homelab-docker
         env:
           SOPS_GPG_KEY: ${{ secrets.SOPS_GPG_KEY }}
-      - name: 🐎 Print free CPU
-        if: always()
-        run: |
-          top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,'|awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "%"}'
-      - name: 🧠 Print free memory
-        if: always()
-        run: free -m
       - name: ⚠️💬 Print namespaces on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-namespaces.sh
