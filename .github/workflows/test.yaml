@@ -44,7 +44,6 @@ jobs:
           SOPS_GPG_KEY: ${{ secrets.SOPS_GPG_KEY }}
       - name: 🐎 Print free CPU
         if: always()
-        # FORMAT = CPU Usage: 0.00% (n cores)
         run: |
           top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,' | awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "% (" cores " cores)"}'
       - name: 🧠 Print free memory
