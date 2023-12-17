@@ -19,6 +19,30 @@ function install_dependencies() {
       echo "📦✅ Homebrew installed"
     fi
 
+    if command -v yq &>/dev/null; then
+      echo "📦✅ YQ already installed. Skipping..."
+    else
+      echo "📦🔨 Installing YQ"
+      brew install yq
+      echo "📦✅ YQ installed"
+    fi
+
+    if command -v kubeconform &>/dev/null; then
+      echo "📦✅ Kubeconform already installed. Skipping..."
+    else
+      echo "📦🔨 Installing Kubeconform"
+      brew install kubeconform
+      echo "📦✅ Kubeconform installed"
+    fi
+
+    if command -v kustomize &>/dev/null; then
+      echo "📦✅ Kustomize already installed. Skipping..."
+    else
+      echo "📦🔨 Installing Kustomize"
+      brew install kustomize
+      echo "📦✅ Kustomize installed"
+    fi
+
     if command -v docker &>/dev/null; then
       echo "📦✅ Docker already installed. Skipping..."
     else
@@ -49,6 +73,14 @@ function install_dependencies() {
       echo "📦🔨 Installing GPG"
       brew install gpg
       echo "📦✅ GPG installed"
+    fi
+
+    if command -v kubectl &>/dev/null; then
+      echo "📦✅ Kubectl already installed. Skipping..."
+    else
+      echo "📦🔨 Installing Kubectl"
+      brew install kubectl
+      echo "📦✅ Kubectl installed"
     fi
   else
     echo "🚨 Unsupported OS. Exiting..."
@@ -246,6 +278,10 @@ function main() {
   ./destroy-cluster.sh $cluster_name
   provision_cluster $cluster_name || {
     echo "🚨 Cluster provisioning failed. Exiting..."
+    exit 1
+  }
+  ./verify-cluster.sh $cluster_name || {
+    echo "🚨 Cluster verification failed. Exiting..."
     exit 1
   }
 }

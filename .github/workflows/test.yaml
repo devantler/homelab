@@ -30,27 +30,10 @@ jobs:
             k8s:
               - 'k8s/**'
 
-  k8s-validate:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ needs.changes.outputs.k8s == 'true' || needs.changes.outputs.action == 'true' }}
-    steps:
-      - name: 📑 Checkout
-        uses: actions/checkout@v4
-      - name: ⛴️ Setup yq
-        uses: fluxcd/pkg/actions/yq@main
-      - name: ⛴️ Setup kubeconform
-        uses: fluxcd/pkg/actions/kubeconform@main
-      - name: ⛴️ Setup kustomize
-        uses: fluxcd/pkg/actions/kustomize@main
-      - name: ✅ Validate manifests
-        run: $GITHUB_SCRIPTS_DIR/k8s-validate-manifests.sh || exit 1
-
   k8s-e2e:
     runs-on: ubuntu-latest
     needs:
       - changes
-      - k8s-validate
     if: ${{ github.event.pull_request.draft == false && (needs.changes.outputs.k8s == 'true' || needs.changes.outputs.action == 'true') }}
     steps:
       - name: 📑 Checkout
