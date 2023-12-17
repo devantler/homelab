@@ -45,10 +45,11 @@ jobs:
       - name: 🐎 Print free CPU
         if: always()
         run: |
-          top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,'|awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "%"}'
+          top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,' | awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "% (" cores " cores)"}'
       - name: 🧠 Print free memory
         if: always()
-        run: free -m
+        run: |
+          free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
       - name: ⚠️💬 Print namespaces on failure
         if: failure()
         run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-namespaces.sh
