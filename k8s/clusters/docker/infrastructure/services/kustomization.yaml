@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - ../../../../infrastructure/cert-manager
   - ../../../../infrastructure/metrics-server
+  - ../../../../infrastructure/kubelet-serving-cert-approver
   - ../../../../infrastructure/reloader
   - ../../../../infrastructure/traefik
-  - ../../../../infrastructure/vertical-pod-autoscaler
