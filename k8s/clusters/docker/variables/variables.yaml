@@ -5,4 +5,3 @@ metadata:
 data:
   cluster_domain: hl
   cluster_issuer_name: selfsigned-cluster-issuer
-  traefik_service_type: ClusterIP
