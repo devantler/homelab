@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-issuer-certificate
+  namespace: traefik
+spec:
+  secretName: cluster-issuer-certificate-tls
+  dnsNames:
+    - "${cluster_domain}"
+    - "*.${cluster_domain}"
+  issuerRef:
+    name: ${cluster_issuer_name}
+    kind: ClusterIssuer

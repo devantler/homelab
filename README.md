@@ -137,7 +137,7 @@ The local cluster is fully managed by Flux2 and GitHub Actions, and it should no
 
 - The **local** cluster is updated whenever changes are merged to the main branch.
 
-In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-local.sh` script. This script will configure a set of Talos Linux nodes in Docker and bootstrap Flux2 to sync the cluster.
+In case the cluster needs to be recreated or upgraded, you can run the `scripts/provision-local.sh` script. This script will configure a set of Talos Linux nodes in Docker and bootstrap Flux2 to sync the cluster.
 
 ### Production Setup
 
@@ -145,4 +145,4 @@ The production cluster is fully managed by Flux2 and GitHub Actions, and it shou
 
 - The **production** cluster is updated whenever changes are merged to the main branch.
 
-In case the cluster needs to be recreated or upgraded, you can run the `scripts/bootstrap-production.sh` script. This script will configure a set of Talos Linux nodes and bootstrap Flux2 to sync the cluster.
+In case the cluster needs to be recreated or upgraded, you can run the `scripts/provision-production.sh` script. This script will configure a set of Talos Linux nodes and bootstrap Flux2 to sync the cluster.

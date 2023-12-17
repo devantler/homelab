@@ -1,11 +1,13 @@
 name: Promote
 
-env:
-  SCRIPTS_DIR: ./.github/scripts
-
 on:
   push:
-    branches: [main]
+    paths:
+      - ".github/workflows/promote.yaml"
+      - "k8s/**"
+    branches: ["main"]
+    tags:
+      - v*.*.*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,19 +17,28 @@ jobs:
   promote:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 📑 Checkout
         uses: actions/checkout@v4
-      - uses: autotelic/action-wait-for-status-check@v1
-        id: wait-for-status
+      - name: "⏰ Wait for sandbox deployment to finish"
+        uses: autotelic/action-wait-for-status-check@v1
+        id: wait-for-sandbox
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           statusName: "kustomization/flux-system/79be6292"
       # - name: Promote deployment to production
-      #   if: steps.wait-for-status.outputs.state == 'success'
+      #   if: steps.wait-for-sandbox.outputs.state == 'success'
       #   uses: joelwmale/webhook-action@master
       #   with:
       #     url: ${{ secrets.WEBHOOK_URL }}
       #     headers: '{"repository": "joelwmale/webhook-action"}'
       #     body: '{"event": "deployment", "repository": "joelwmale/webhook-action"}'
-      # - if: steps.wait-for-status.outputs.state == 'failure'
+      # - if: steps.wait-for-sandbox.outputs.state == 'failure'
       #   run: exit 1
+
+      # Rollbacks
+      # - name: "🔙 Rollback production deployment"
+      #   if: failure()
+      # - name: "🔙 Rollback staging deployment"
+      #   if: failure()
+      # - name: "🔙 Rollback sandbox deployment"
+      #   if: failure()

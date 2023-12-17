@@ -3,6 +3,8 @@
         "weaveworks.vscode-gitops-tools",
         "GitHub.vscode-pull-request-github",
         "ms-kubernetes-tools.vscode-kubernetes-tools",
-        "ShipitSmarter.sops-edit"
+        "ShipitSmarter.sops-edit",
+        "ms-azuretools.vscode-docker",
+        "pucelle.run-on-save"
     ]
 }

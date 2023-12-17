@@ -1,0 +1,22 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: reloader
+spec:
+  interval: 5m
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  chart:
+    spec:
+      chart: reloader
+      version: 1.0.51
+      sourceRef:
+        kind: HelmRepository
+        name: reloader
+  # https://github.com/stakater/Reloader/blob/master/deployments/kubernetes/chart/reloader/values.yaml
+  values:
+    reloader:
+      # This strategy is useful when using GitOps as it will cause Flux to detect configuration drift.
+      reloadStrategy: annotations

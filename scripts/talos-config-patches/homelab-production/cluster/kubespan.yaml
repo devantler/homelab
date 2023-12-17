@@ -1,7 +1,0 @@
-machine:
-  network:
-    kubespan:
-      enabled: true
-cluster:
-  discovery:
-    enabled: true

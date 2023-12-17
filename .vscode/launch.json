@@ -1,29 +1,29 @@
 {
     "configurations": [
         {
-            "name": "🚀 Bootstrap Production",
-            "preLaunchTask": "bootstrap-production",
+            "name": "⏏️⛴️ Provision Cluster",
+            "preLaunchTask": "provision-cluster",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "🚀 Bootstrap Local",
-            "preLaunchTask": "bootstrap-local",
+            "name": "🔄⛴️ Update Cluster",
+            "preLaunchTask": "update-cluster",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "🔥 Destroy Local",
-            "preLaunchTask": "destroy-local",
+            "name": "⏺️⛴️ Destroy Cluster",
+            "preLaunchTask": "destroy-cluster",
             "request": "attach",
             "timeout": 1,
             "type": "node"
         },
         {
-            "name": "✅ Validate Manifests",
-            "preLaunchTask": "validate-manifests",
+            "name": "🌐 Update hosts",
+            "preLaunchTask": "update-hosts",
             "request": "attach",
             "timeout": 1,
             "type": "node"

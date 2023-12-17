@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: gha-runner-scale-set
+spec:
+  interval: 5m
+  dependsOn:
+    - name: gha-runner-scale-set-controller
+      namespace: gha-runner-scale-set-controller
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  chart:
+    spec:
+      chart: gha-runner-scale-set
+      version: 0.7.0
+      sourceRef:
+        kind: HelmRepository
+        name: gha-runner-scale-set
+  # https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml
+  values:
+    githubConfigUrl: https://github.com/${github_org}/${github_repo}
+    githubConfigSecret: github-token
+    runnerScaleSetName: gha-runner-${domain}

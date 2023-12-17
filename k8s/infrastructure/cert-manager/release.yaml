@@ -1,0 +1,18 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: cert-manager
+      version: 1.13.2
+      sourceRef:
+        kind: HelmRepository
+        name: cert-manager
+  # https://github.com/cert-manager/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml
+  values:
+    # This configures cert-manager to install and upgrade CRDs as part of the Helm release.
+    # https://cert-manager.io/docs/installation/helm/#helm-installation
+    installCRDs: true
