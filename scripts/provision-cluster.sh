@@ -53,16 +53,20 @@ function create_oci_registries() {
 
 function provision_cluster() {
   local cluster_name=${1}
+  local docker_gateway_ip=$(docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}')
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    docker_gateway_ip="192.168.65.254"
+  fi
   echo "⛴️ Provision ${cluster_name} cluster"
   talosctl cluster create \
     --name ${cluster_name} \
-    --registry-mirror docker.io=http://192.168.65.254:5001 \
-    --registry-mirror hub.docker.com=http://192.168.65.254:5002 \
-    --registry-mirror registry.k8s.io=http://192.168.65.254:5003 \
-    --registry-mirror gcr.io=http://192.168.65.254:5004 \
-    --registry-mirror ghcr.io=http://192.168.65.254:5005 \
-    --registry-mirror quay.io=http://192.168.65.254:5006 \
-    --registry-mirror manifests=http://192.168.65.254:5050 \
+    --registry-mirror docker.io=http://$docker_gateway_ip:5001 \
+    --registry-mirror hub.docker.com=http://$docker_gateway_ip:5002 \
+    --registry-mirror registry.k8s.io=http://$docker_gateway_ip:5003 \
+    --registry-mirror gcr.io=http://$docker_gateway_ip:5004 \
+    --registry-mirror ghcr.io=http://$docker_gateway_ip:5005 \
+    --registry-mirror quay.io=http://$docker_gateway_ip:5006 \
+    --registry-mirror manifests=http://$docker_gateway_ip:5050 \
     --wait || {
     echo "🚨 Cluster creation failed. Exiting..."
     exit 1
@@ -82,7 +86,7 @@ function provision_cluster() {
     echo "🚨 SOPS GPG key creation failed. Exiting..."
     exit 1
   }
-  install_flux $cluster_name || {
+  install_flux $cluster_name $docker_gateway_ip || {
     echo "🚨 Flux installation failed. Exiting..."
     exit 1
   }
@@ -106,6 +110,7 @@ function add_sops_gpg_key() {
 
 function install_flux() {
   local cluster_name=${1}
+  local docker_gateway_ip=${2}
   echo "🚀 Installing Flux"
   flux check --pre || {
     echo "🚨 Flux prerequisites check failed. Exiting..."
@@ -115,7 +120,7 @@ function install_flux() {
     echo "🚨 Flux installation failed. Exiting..."
     exit 1
   }
-  local source_url="oci://192.168.65.254:5050/${cluster_name}"
+  local source_url="oci://$docker_gateway_ip:5050/${cluster_name}"
   flux create source oci flux-system \
     --url=$source_url \
     --insecure=true \
