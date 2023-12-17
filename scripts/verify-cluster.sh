@@ -1,3 +1,4 @@
+echo "✅ Verifying cluster..."
 global_start_time=$(date +%s)
 echo "Starting reconciliation of kustomization/flux-system..."
 if [[ $(kubectl -n flux-system get kustomization/variables -o jsonpath='{.metadata.name}' 2>/dev/null) == "" ]]; then
@@ -38,3 +39,4 @@ fi
 
 kubectl -n flux-system wait kustomization/flux-system --for=condition=ready --timeout=1m || exit 1
 echo "Time taken for kustomization/flux-system: $(($(date +%s) - $global_start_time)) seconds"
+echo "✅ Cluster verified successfully"

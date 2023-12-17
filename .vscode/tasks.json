@@ -26,6 +26,30 @@
             "type": "shell"
         },
         {
+            "command": "./validate-cluster.sh",
+            "group": {
+                "kind": "none"
+            },
+            "label": "validate-cluster",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
+            "command": "./verify-cluster.sh",
+            "group": {
+                "kind": "none"
+            },
+            "label": "verify-cluster",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
             "command": "./update-hosts.sh",
             "group": {
                 "kind": "none"
