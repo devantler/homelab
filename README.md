@@ -24,50 +24,45 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 ├── k8s
 │   ├── apps
 │   ├── clusters
-│   │   ├── local
-│   │   │   ├── .bootstrap
-│   │   │   │   └── flux-system
-│   │   │   ├── apps
-│   │   │   ├── infrastructure
-│   │   │   │   └── configs
-│   │   │   └── variables
-│   │   └── production
-│   │       ├── .bootstrap
-│   │       │   └── flux-system
-│   │       ├── apps
+│   │   └── docker
+│   │       ├── .flux
 │   │       ├── infrastructure
-│   │       │   └── configs
+│   │       │   ├── configs
+│   │       │   └── services
 │   │       └── variables
 │   └── infrastructure
-│       ├── configs
+│       ├── cert-manager
 │       │   ├── certificates
-│       │   ├── cluster-issuers
+│       │   └── cluster-issuers
+│       ├── cloudflared
+│       ├── flux-github-status-updater
+│       ├── flux-webhook-receiver
 │       │   ├── ingress-routes
-│       │   └── middlewares
-│       └── services
-│           ├── cert-manager
-│           │   └── secrets
-│           ├── cloudflared
-│           ├── flux-github-status-updater
-│           ├── flux-webhook-receiver
-│           │   └── secrets
-│           ├── kube-prometheus-stack
-│           ├── openebs
-│           ├── reloader
-│           └── traefik
-│               └── secrets
-└── scripts
-    └── talos-config-patches
-        ├── homelab-local
-        │   ├── cluster
-        │   ├── controlplane
-        │   └── worker
-        └── homelab-production
-            ├── cluster
-            ├── controlplane
-            └── worker
+│       │   └── secrets
+│       ├── gha-runner-scale-set
+│       ├── gha-runner-scale-set-controller
+│       ├── harbor
+│       ├── kube-prometheus-stack
+│       ├── kubelet-serving-cert-approver
+│       ├── local-storage
+│       ├── metrics-server
+│       ├── openebs
+│       ├── pulumi-operator
+│       │   └── programs
+│       ├── redis
+│       ├── reloader
+│       ├── strapi
+│       ├── testkube
+│       ├── traefik
+│       └── vertical-pod-autoscaler
+├── pulumi
+├── scripts
+└── talos
+    ├── cluster
+    ├── controlplane
+    └── worker
 
-49 directories
+44 directories
 ```
 <!-- readme-tree end -->
 
