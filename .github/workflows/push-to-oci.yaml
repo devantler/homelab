@@ -8,7 +8,7 @@ on:
   push:
     paths:
       - ".github/workflows/push-to-oci.yaml"
-      - "k8s/**"
+      - "k8s/**/*.yaml"
     branches:
       - main
     tags:
