@@ -102,7 +102,7 @@ metadata:
   namespace: pulumi-operator
 spec:
   stack: harbor-pulumi-stack
-  backend: ${pulumi_backend}
+  backend: ${pulumi_backend}${pulumi_backend_path}
   programRef:
     name: harbor-pulumi-program
   envRefs:

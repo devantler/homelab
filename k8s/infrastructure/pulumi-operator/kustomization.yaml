@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: pulumi-operator
 resources:
   - namespace.yaml
-  - persistence.yaml
+  - pvc.yaml
   - release.yaml
   - repository.yaml
