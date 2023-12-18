@@ -224,11 +224,18 @@ function add_sops_gpg_key() {
     gpg --export-secret-keys --armor "F78D523ADB73F206EA60976DED58208970F326C8" |
       kubectl create secret generic sops-gpg \
         --namespace=flux-system \
-        --from-file=sops.asc=/dev/stdin
+        --from-file=sops.asc=/dev/stdin || {
+      echo "🚨 SOPS GPG key creation failed. Exiting..."
+      exit 1
+    }
   else
     kubectl create secret generic sops-gpg \
       --namespace=flux-system \
-      --from-literal=sops.asc="${SOPS_GPG_KEY}"
+      --from-literal=sops.asc="${SOPS_GPG_KEY}" ||
+      {
+        echo "🚨 SOPS GPG key creation failed. Exiting..."
+        exit 1
+      }
   fi
 }
 
@@ -268,12 +275,18 @@ function main() {
     echo "🚨 Dependencies installation failed. Exiting..."
     exit 1
   }
-  create_oci_registries
+  create_oci_registries || {
+    echo "🚨 OCI registries creation failed. Exiting..."
+    exit 1
+  }
   ./update-cluster.sh $cluster_name || {
     echo "🚨 Cluster update failed. Exiting..."
     exit 1
   }
-  ./destroy-cluster.sh $cluster_name
+  ./destroy-cluster.sh $cluster_name || {
+    echo "🚨 Cluster destruction failed. Exiting..."
+    exit 1
+  }
   provision_cluster $cluster_name || {
     echo "🚨 Cluster provisioning failed. Exiting..."
     exit 1
@@ -284,4 +297,7 @@ function main() {
   }
 }
 
-main "homelab-docker"
+main "homelab-docker" || {
+  echo "🚨 Provisioning failed. Exiting..."
+  exit 1
+}

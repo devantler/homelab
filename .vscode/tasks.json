@@ -14,7 +14,7 @@
             "type": "shell"
         },
         {
-            "command": "./update-cluster.sh",
+            "command": "./update-cluster.sh homelab-docker",
             "group": {
                 "kind": "none"
             },
