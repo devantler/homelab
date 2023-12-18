@@ -1,10 +1,10 @@
 #!/bin/bash
 
+pushd $(dirname "$0") >/dev/null
 ./validate-cluster.sh || {
   echo "🚨 Cluster validation failed. Exiting..."
   exit 1
 }
-
 pushd $(dirname "$0") >/dev/null
 
 TIME=$(date +%s)
