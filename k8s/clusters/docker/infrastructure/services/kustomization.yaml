@@ -6,3 +6,4 @@ resources:
   - ../../../../infrastructure/kubelet-serving-cert-approver
   - ../../../../infrastructure/reloader
   - ../../../../infrastructure/traefik
+  - ../../../../infrastructure/local-storage
