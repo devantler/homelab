@@ -17,12 +17,12 @@ jobs:
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: "⏰ Wait for sandbox deployment to finish"
-        uses: autotelic/action-wait-for-status-check@v1
-        id: wait-for-sandbox
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          statusName: "kustomization/flux-system/79be6292"
+      # - name: "⏰ Wait for sandbox deployment to finish"
+      #   uses: autotelic/action-wait-for-status-check@v1
+      #   id: wait-for-sandbox
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     statusName: "kustomization/flux-system/79be6292"
       # - name: Promote deployment to production
       #   if: steps.wait-for-sandbox.outputs.state == 'success'
       #   uses: joelwmale/webhook-action@master
