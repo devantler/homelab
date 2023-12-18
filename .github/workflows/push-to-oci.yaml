@@ -30,7 +30,7 @@ jobs:
             --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)" \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
           flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
-            --tag ${{ github.ref }} \
+            --tag ${{ github.ref_name }} \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
           flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
             --tag latest \
