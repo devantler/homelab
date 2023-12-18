@@ -30,7 +30,7 @@ jobs:
       - id: auto-merge
         uses: "pascalgn/automerge-action@v0.15.6"
         env:
-          GITHUB_TOKEN: "${{ secrets.CUSTOM_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           MERGE_LABELS: ""
           MERGE_METHOD: "squash"
           MERGE_RETRIES: 120
