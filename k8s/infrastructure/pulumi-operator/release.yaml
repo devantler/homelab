@@ -4,13 +4,6 @@ metadata:
   name: pulumi-operator
 spec:
   interval: 5m
-  dependsOn:
-    - name: local-storage
-      namespace: local-storage
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   chart:
     spec:
       chart: pulumi-kubernetes-operator
@@ -26,4 +19,4 @@ spec:
         claimName: pulumi-backend-pvc
     extraVolumeMounts:
       - name: backend-data
-        mountPath: /backend
+        mountPath: ${pulumi_backend_path}
