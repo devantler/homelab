@@ -2,12 +2,12 @@ name: Push to OCI
 
 on:
   push:
-    paths:
-      - ".github/workflows/push-to-oci.yaml"
-      - "k8s/**/*"
     branches: ["main"]
     tags:
       - v*.*.*
+    paths:
+      - ".github/workflows/push-to-oci.yaml"
+      - "k8s/**/*"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
