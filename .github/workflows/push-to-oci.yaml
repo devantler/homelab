@@ -27,8 +27,11 @@ jobs:
           flux push artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
             --path=./k8s \
             --source="$(git config --get remote.origin.url)" \
-            --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)"
+            --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)" \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
           flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
-            --tag ${{ github.ref }}
+            --tag ${{ github.ref }} \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
           flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
-            --tag latest
+            --tag latest \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
