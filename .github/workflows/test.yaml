@@ -38,6 +38,8 @@ jobs:
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
+      - name: ⚙️ Install Flux
+        uses: fluxcd/flux2/action@main
       - name: ⛴️ Provision cluster
         run: $SCRIPTS_DIR/provision-cluster.sh homelab-docker
         env:

@@ -8,7 +8,7 @@ pushd $(dirname "$0") >/dev/null
 pushd $(dirname "$0") >/dev/null
 
 TIME=$(date +%s)
-CLUSTER_NAME="homelab-docker"
+CLUSTER_NAME=${1}
 echo "🗳️ Push OCI artifact to Docker"
 flux push artifact oci://localhost:5050/${CLUSTER_NAME}:$TIME \
   --path=./../k8s \
