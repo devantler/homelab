@@ -29,11 +29,11 @@ jobs:
         uses: fluxcd/flux2/action@main
       - name: 🗳️ Push to OCI
         run: |
-          flux push artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
+          flux push artifact oci://ghcr.io/${{github.actor}}/${{ github.repository }}:${{ github.sha }} \
             --path=./k8s \
             --source="$(git config --get remote.origin.url)" \
             --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)"
-          flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
+          flux tag artifact oci://ghcr.io/${{github.actor}}/${{ github.repository }}:${{ github.sha }} \
             --tag ${{ github.ref }}
-          flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
+          flux tag artifact oci://ghcr.io/${{github.actor}}/${{ github.repository }}:${{ github.sha }} \
             --tag latest
