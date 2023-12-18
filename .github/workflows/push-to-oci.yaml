@@ -1,0 +1,39 @@
+name: Push to OCI
+
+env:
+  GITHUB_SCRIPTS_DIR: ./.github/scripts
+  SCRIPTS_DIR: ./scripts
+
+on:
+  push:
+    paths:
+      - ".github/workflows/push-to-oci.yaml"
+      - "k8s/**"
+    branches:
+      - main
+    tags:
+      - v*.*.*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  push-to-oci:
+    name: Push to OCI
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📑 Checkout
+        uses: actions/checkout@v4
+      - name: ⚙️ Setup flux
+        uses: fluxcd/flux2/action@main
+      - name: 🗳️ Push to OCI
+        run: |
+          flux push artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
+            --path=./k8s \
+            --source="$(git config --get remote.origin.url)" \
+            --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)"
+          flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
+            --tag ${{ github.ref }}
+          flux tag artifact oci://ghcr.io/${{ github.repository }}:${{ github.sha }} \
+            --tag latest
