@@ -3,8 +3,6 @@ kind: Kustomization
 resources:
   - ../../../../infrastructure/cert-manager
   - ../../../../infrastructure/kubelet-serving-cert-approver
-  - ../../../../infrastructure/local-storage
   - ../../../../infrastructure/metrics-server
-  - ../../../../infrastructure/redis
   - ../../../../infrastructure/reloader
   - ../../../../infrastructure/traefik
