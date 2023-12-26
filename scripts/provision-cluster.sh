@@ -255,6 +255,13 @@ function install_flux() {
     exit 1
   }
 
+  flux create source oci devantler-oci-registry \
+    -url=oci://ghcr.io/devantler/oci-registry \
+    --tag=latest || {
+    echo "🚨 Flux OCI source creation failed. Exiting..."
+    exit 1
+  }
+
   flux create kustomization flux-system \
     --source=OCIRepository/flux-system \
     --path=./clusters/docker/.flux || {

@@ -9,7 +9,7 @@ spec:
     - name: variables
   sourceRef:
     kind: OCIRepository
-    name: flux-system
+    name: devantler-oci-registry
   path: ./clusters/docker/infrastructure/services
   prune: true
   wait: true
@@ -34,7 +34,7 @@ spec:
     - name: infrastructure-services
   sourceRef:
     kind: OCIRepository
-    name: flux-system
+    name: devantler-oci-registry
   path: ./clusters/docker/infrastructure/configs
   prune: true
   wait: true
