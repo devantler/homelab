@@ -1,0 +1,3 @@
+[submodule "k8s/oci-registry"]
+	path = oci-registry
+	url = https://github.com/devantler/oci-registry
