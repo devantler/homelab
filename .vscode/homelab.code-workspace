@@ -1,7 +1,12 @@
 {
     "folders": [
         {
+            "name": "🏡 Homelab",
             "path": ".."
+        },
+        {
+            "name": "📥 oci-registry",
+            "path": "../oci-registry"
         }
     ],
     "settings": {
