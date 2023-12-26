@@ -1,8 +1,0 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: pulumi-operator
-spec:
-  type: oci
-  interval: 5m
-  url: oci://ghcr.io/pulumi/helm-charts

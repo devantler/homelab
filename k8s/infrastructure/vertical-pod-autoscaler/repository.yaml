@@ -1,7 +1,0 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: vertical-pod-autoscaler
-spec:
-  interval: 5m
-  url: https://cowboysysop.github.io/charts
