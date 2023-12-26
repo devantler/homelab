@@ -59,8 +59,6 @@
 
 This Homelab is a [flux-based GitOps repository](https://github.com/fluxcd/flux2-kustomize-helm-example) to manage my personal Kubernetes clusters. It focuses on providing a secure and reliable infrastructure for my projects, with a focus on ease of use and automation of common tasks, such as safe and secure CI/CD pipelines.
 
-It is also an [OCI registry](https://opencontainers.org) with [kustomize bases](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/#bases-and-overlays) for all infrastructure service, that provide templating with [flux post-build variables](https://fluxcd.io/flux/components/kustomize/kustomizations/#post-build-variable-substitution), or full control with [kustomize patches](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/#customizing). As such, it provides a simple way to deploy services without the overhead of [Helm charts](https://helm.sh/docs/topics/charts/), and the complexity of writing your own Kubernetes manifests. However, it comes with the tradeoff of being less flexible than the helm charts in its templated setup, and as such it might not be suitable for all use cases in its current state. Feel free to open an issue or a PR if you require more helm values to be exposed, or if you have any other suggestions.
-
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
 - [Managing secrets](#managing-secrets)
