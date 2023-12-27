@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: devantler-manifests
-  path: ./clusters/docker/infrastructure/services
+  path: ./
   prune: true
   wait: true
   decryption:
@@ -35,7 +35,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: devantler-manifests
-  path: ./clusters/docker/infrastructure/configs
+  path: ./
   prune: true
   wait: true
   decryption:
