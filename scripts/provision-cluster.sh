@@ -260,8 +260,8 @@ function install_flux() {
     exit 1
   }
 
-  flux create source oci devantler-oci-registry \
-    --url=oci://ghcr.io/devantler/oci-registry \
+  flux create source oci devantler-manifests \
+    --url=oci://ghcr.io/devantler/oci-registry/manifests \
     --tag=latest || {
     echo "🚨 Flux OCI source creation failed. Exiting..."
     exit 1
