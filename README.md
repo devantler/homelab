@@ -1,18 +1,7 @@
 # Welcome to Devantler's Homelab 🚀
 
-This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes clusters. It focuses on providing a secure and reliable infrastructure for my projects, with a focus on ease of use and automation of common tasks, such as safe and secure CI/CD pipelines.
-
-- [Overview](#overview)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-- [Managing secrets](#managing-secrets)
-  - [Setting up SOPS](#setting-up-sops)
-  - [SOPS VSCode Integration](#sops-vscode-integration)
-- [Cluster Setups](#cluster-setups)
-  - [Local Setup](#local-setup)
-  - [Production Setup](#production-setup)
-
-## Overview
+<details>
+  <summary>Show/Hide Folder Structure</summary>
 
 <!-- readme-tree start -->
 ```
@@ -66,22 +55,31 @@ This Homelab is a Flux2-based GitOps repository to manage my personal Kubernetes
 ```
 <!-- readme-tree end -->
 
+</details>
+
+This Homelab is a [flux-based GitOps repository](https://github.com/fluxcd/flux2-kustomize-helm-example) to manage my personal Kubernetes clusters. It focuses on providing a secure and reliable infrastructure for my projects, with a focus on ease of use and automation of common tasks, such as safe and secure CI/CD pipelines.
+
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+- [Managing secrets](#managing-secrets)
+  - [Setting up SOPS](#setting-up-sops)
+  - [SOPS VSCode Integration](#sops-vscode-integration)
+- [Cluster Setups](#cluster-setups)
+  - [Local Setup](#local-setup)
+  - [Production Setup](#production-setup)
+
 ## Getting Started
 
-These instructions will guide you through the process of installing the necessary tools, and setting up your local environment to work on the clusters.
+This section will guide through the process of running the homelab locally in Docker, or how to setup the Homelab as a flux OCI source.
 
 ### Prerequisites
 
-- [Flux CLI](https://fluxcd.io/docs/installation/#install-the-flux-cli)
-- [gnupg](https://gnupg.org/download/index.html): GnuPG is a complete and free implementation of the OpenPGP standard as defined by RFC4880 (also known as PGP).
-- [sops](https://github.com/getsops/sops): SOPS is an editor of encrypted files that supports YAML, JSON, ENV, INI, and BINARY formats and encrypts with AWS KMS, GCP KMS, Azure Key Vault, and PGP.
-- Local Setup
-  - [Docker](https://docs.docker.com/get-docker/) for running talos clusters locally.
-  - [yq](https://github.com/mikefarah/yq) for validating YAML.
-  - [kubeconform](https://github.com/yannh/kubeconform) for validating Kubernetes manifests.
-- Debugging
-  - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for administrating clusters.
-  - [k9s](https://k9scli.io): K9s provides a curses based terminal UI to interact with your Kubernetes clusters.
+- MacOS or Linux: This setup is not tested on Windows, but it should work with WSL2. It uses shell scripts to provision the docker setup, and these scripts are written to work on MacOS and Linux.
+
+> [!NOTE]
+> All dependencies needed to run and debug the clusters are installed with Homebrew in the different scripts. As such, you do not need to install any dependencies manually. However, it is recommended that you install the following tools to make it easier to work with the clusters:
+>
+> - [k9s](https://k9scli.io)
 
 ## Managing secrets
 
@@ -93,9 +91,11 @@ This section describes how to manage secrets in the repo, and how to encrypt/dec
 ### Setting up SOPS
 
 > [!NOTE]
-> If no GPG key has been added to a cluster, follow [this guide](https://fluxcd.io/flux/guides/mozilla-sops/) to create a new GPG key and add it to the cluster.
+> If no GPG key has been created for the cluster, follow [this guide](https://fluxcd.io/flux/guides/mozilla-sops/) to create a new GPG key.
 
-1. Import the full key: `gpg --import <path-to-key>`
+1. Create or import a new GPG key:
+   - `gpg --full-generate-key`
+   - `gpg --import <path-to-key>`
 
 After doing so you will be able to encrypt and decrypt secrets locally.
 
