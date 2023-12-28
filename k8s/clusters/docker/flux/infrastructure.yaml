@@ -8,7 +8,7 @@ spec:
   dependsOn:
     - name: variables
   sourceRef:
-    kind: OCIRepository
+    kind: GitRepository
     name: devantler-manifests
   path: ./
   prune: true
@@ -33,7 +33,7 @@ spec:
     - name: variables
     - name: infrastructure-services
   sourceRef:
-    kind: OCIRepository
+    kind: GitRepository
     name: devantler-manifests
   path: ./
   prune: true
