@@ -8,9 +8,9 @@ spec:
   dependsOn:
     - name: variables
   sourceRef:
-    kind: GitRepository
-    name: devantler-manifests
-  path: ./k8s
+    kind: OCIRepository
+    name: flux-system
+  path: ./clusters/docker/infrastructure/services
   prune: true
   wait: true
   decryption:
@@ -33,9 +33,9 @@ spec:
     - name: variables
     - name: infrastructure-services
   sourceRef:
-    kind: GitRepository
-    name: devantler-manifests
-  path: ./k8s
+    kind: OCIRepository
+    name: flux-system
+  path: ./clusters/docker/infrastructure/configs
   prune: true
   wait: true
   decryption:
