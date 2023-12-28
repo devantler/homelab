@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: devantler-manifests
-  path: ./
+  path: ./k8s
   prune: true
   wait: true
   decryption:
@@ -35,7 +35,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: devantler-manifests
-  path: ./
+  path: ./k8s
   prune: true
   wait: true
   decryption:
