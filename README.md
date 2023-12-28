@@ -12,38 +12,14 @@
 ├── .vscode
 ├── k8s
 │   ├── apps
-│   ├── clusters
-│   │   └── docker
-│   │       ├── .flux
-│   │       ├── infrastructure
-│   │       │   ├── configs
-│   │       │   └── services
-│   │       └── variables
-│   └── infrastructure
-│       ├── cert-manager
-│       │   ├── certificates
-│       │   └── cluster-issuers
-│       ├── cloudflared
-│       ├── flux-github-status-updater
-│       ├── flux-webhook-receiver
-│       │   ├── ingress-routes
-│       │   └── secrets
-│       ├── gha-runner-scale-set
-│       ├── gha-runner-scale-set-controller
-│       ├── harbor
-│       ├── kube-prometheus-stack
-│       ├── kubelet-serving-cert-approver
-│       ├── local-storage
-│       ├── metrics-server
-│       ├── openebs
-│       ├── pulumi-operator
-│       │   └── programs
-│       ├── redis
-│       ├── reloader
-│       ├── strapi
-│       ├── testkube
-│       ├── traefik
-│       └── vertical-pod-autoscaler
+│   └── clusters
+│       └── docker
+│           ├── flux
+│           ├── infrastructure
+│           │   ├── configs
+│           │   └── services
+│           └── variables
+├── oci-registry
 ├── pulumi
 ├── scripts
 └── talos
@@ -51,7 +27,7 @@
     ├── controlplane
     └── worker
 
-44 directories
+20 directories
 ```
 <!-- readme-tree end -->
 
