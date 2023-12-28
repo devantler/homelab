@@ -260,13 +260,6 @@ function install_flux() {
     exit 1
   }
 
-  flux create source git devantler-manifests \
-    --url=https://github.com/devantler/oci-registry \
-    --branch=main || {
-    echo "🚨 Flux Git source creation failed. Exiting..."
-    exit 1
-  }
-
   flux create kustomization flux-system \
     --source=OCIRepository/flux-system \
     --path=./clusters/docker/flux || {
