@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - k8s/cert-manager
   - k8s/kubelet-serving-cert-approver
-  - https://github.com/devantler/oci-registry/tree/main/k8s/metrics-server
+  - k8s/metrics-server
   - https://github.com/devantler/oci-registry/tree/main/k8s/reloader
   - https://github.com/devantler/oci-registry/tree/main/k8s/traefik
