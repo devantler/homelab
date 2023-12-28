@@ -4,5 +4,5 @@ resources:
   - k8s/cert-manager
   - k8s/kubelet-serving-cert-approver
   - k8s/metrics-server
-  - https://github.com/devantler/oci-registry/tree/main/k8s/reloader
-  - https://github.com/devantler/oci-registry/tree/main/k8s/traefik
+  - k8s/reloader
+  - k8s/traefik
