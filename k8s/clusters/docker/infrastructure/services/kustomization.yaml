@@ -1,9 +1,8 @@
-# IGNORE VALIDATION
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - cert-manager
-  - kubelet-serving-cert-approver
-  - metrics-server
-  - reloader
-  - traefik
+  - https://github.com/devantler/oci-registry/tree/main/k8s/cert-manager
+  - https://github.com/devantler/oci-registry/tree/main/k8s/kubelet-serving-cert-approver
+  - https://github.com/devantler/oci-registry/tree/main/k8s/metrics-server
+  - https://github.com/devantler/oci-registry/tree/main/k8s/reloader
+  - https://github.com/devantler/oci-registry/tree/main/k8s/traefik
