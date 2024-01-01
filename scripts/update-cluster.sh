@@ -16,4 +16,4 @@ flux push artifact oci://localhost:5050/${CLUSTER_NAME}:$TIME \
   --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)"
 flux tag artifact oci://localhost:5050/${CLUSTER_NAME}:$TIME \
   --tag latest
-echo ""
+echo

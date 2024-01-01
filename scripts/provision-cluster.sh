@@ -84,7 +84,7 @@ function install_dependencies() {
     echo "🚨 Unsupported OS. Exiting..."
     exit 1
   fi
-  echo ""
+  echo
 }
 
 function create_oci_registries() {
@@ -172,7 +172,7 @@ function create_oci_registries() {
       --volume manifests:/var/lib/registry \
       registry:2
   fi
-  echo ""
+  echo
 }
 
 function provision_cluster() {
@@ -214,7 +214,7 @@ function provision_cluster() {
     echo "🚨 Flux installation failed. Exiting..."
     exit 1
   }
-  echo ""
+  echo
 }
 
 function add_sops_gpg_key() {

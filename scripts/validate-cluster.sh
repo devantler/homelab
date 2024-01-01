@@ -40,4 +40,4 @@ find . -type f -name $kustomize_config -print0 | while IFS= read -r -d $'\0' fil
     exit 1
   fi
 done
-echo ""
+echo
