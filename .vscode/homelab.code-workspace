@@ -7,6 +7,10 @@
         {
             "name": "📥 OCI Registry",
             "path": "../oci-registry"
+        },
+        {
+            "name": "⛴️🐳 KSail",
+            "path": "../ksail"
         }
     ],
     "settings": {

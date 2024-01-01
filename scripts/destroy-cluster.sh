@@ -22,7 +22,7 @@ function main() {
   pushd $(dirname "$0") >/dev/null
   local cluster_name=${1}
   destroy_cluster $cluster_name
-  echo ""
+  echo
 }
 
 main "homelab-docker"
