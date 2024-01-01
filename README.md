@@ -19,6 +19,7 @@
 │           │   ├── configs
 │           │   └── services
 │           └── variables
+├── ksail
 ├── oci-registry
 ├── pulumi
 ├── scripts
@@ -27,7 +28,7 @@
     ├── controlplane
     └── worker
 
-20 directories
+21 directories
 ```
 <!-- readme-tree end -->
 
