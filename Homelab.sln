@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ksail", "ksail", "{49FB714F-30A9-4A8C-8024-2A83D28F201D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F3291229-6429-4B81-8142-810EF4054481}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KSail", "ksail\src\KSail\KSail.csproj", "{3A61AA78-81C0-43EE-9386-0EC0C88344FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6E22DC0F-CEA8-4ED8-B04E-4CB7B6AB09FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KSail.Tests.Integration", "ksail\tests\KSail.Tests.Integration\KSail.Tests.Integration.csproj", "{2293506E-02D9-4775-B4AB-A8E23F37E696}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KSail.Tests.Unit", "ksail\tests\KSail.Tests.Unit\KSail.Tests.Unit.csproj", "{8805C25C-9AF2-4C3E-B113-AD40F2CEE242}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A61AA78-81C0-43EE-9386-0EC0C88344FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A61AA78-81C0-43EE-9386-0EC0C88344FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A61AA78-81C0-43EE-9386-0EC0C88344FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A61AA78-81C0-43EE-9386-0EC0C88344FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2293506E-02D9-4775-B4AB-A8E23F37E696}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2293506E-02D9-4775-B4AB-A8E23F37E696}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2293506E-02D9-4775-B4AB-A8E23F37E696}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2293506E-02D9-4775-B4AB-A8E23F37E696}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8805C25C-9AF2-4C3E-B113-AD40F2CEE242}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8805C25C-9AF2-4C3E-B113-AD40F2CEE242}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8805C25C-9AF2-4C3E-B113-AD40F2CEE242}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8805C25C-9AF2-4C3E-B113-AD40F2CEE242}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F3291229-6429-4B81-8142-810EF4054481} = {49FB714F-30A9-4A8C-8024-2A83D28F201D}
+		{3A61AA78-81C0-43EE-9386-0EC0C88344FA} = {F3291229-6429-4B81-8142-810EF4054481}
+		{6E22DC0F-CEA8-4ED8-B04E-4CB7B6AB09FB} = {49FB714F-30A9-4A8C-8024-2A83D28F201D}
+		{2293506E-02D9-4775-B4AB-A8E23F37E696} = {6E22DC0F-CEA8-4ED8-B04E-4CB7B6AB09FB}
+		{8805C25C-9AF2-4C3E-B113-AD40F2CEE242} = {6E22DC0F-CEA8-4ED8-B04E-4CB7B6AB09FB}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4898ECDC-D44F-4216-B863-A669C84E4412}
+	EndGlobalSection
+EndGlobal
