@@ -7,28 +7,20 @@
 ```
 .
 ├── .github
-│   ├── scripts
 │   └── workflows
 ├── .vscode
-├── k8s
-│   ├── apps
-│   └── clusters
-│       └── docker
-│           ├── flux
-│           ├── infrastructure
-│           │   ├── configs
-│           │   └── services
-│           └── variables
-├── ksail
-├── oci-artifacts
-├── pulumi
-├── scripts
-└── talos
-    ├── cluster
-    ├── controlplane
-    └── worker
+└── k8s
+    ├── apps
+    │   └── podinfo
+    ├── clusters
+    │   └── homelab
+    │       ├── flux-system
+    │       └── variables
+    └── infrastructure
+        ├── configs
+        └── services
 
-21 directories
+13 directories
 ```
 <!-- readme-tree end -->
 
