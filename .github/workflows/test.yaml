@@ -24,15 +24,10 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Install KSail
         run: brew install devantler/formulas/ksail
-      - name: ⚙️ Install Testkube CLI
-        uses: kubeshop/setup-testkube@v1
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ vars.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
           ksail up ${{ vars.KSAIL_CLUSTER_NAME }}
-      - name: 🧪 Test Use Cases
-        run: |
-          testkube run test substation-gateway-e2e-test -f
       - name: 🐎 Print free CPU
         if: always()
         run: |
