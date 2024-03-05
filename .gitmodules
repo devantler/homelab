@@ -1,8 +1,0 @@
-[submodule "oci-registry"]
-path = oci-registry
-url = https://github.com/devantler/oci-registry
-branch = main
-[submodule "ksail"]
-path = ksail
-url = https://github.com/devantler/ksail
-branch = main
