@@ -1,49 +1,33 @@
 name: Test
 
-env:
-  GITHUB_SCRIPTS_DIR: ./.github/scripts
-  SCRIPTS_DIR: ./scripts
-
 on:
   pull_request:
     branches: [main]
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - edited
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  changes:
+  test-cluster:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-    outputs:
-      action: ${{ steps.filter.outputs.action }}
-      k8s: ${{ steps.filter.outputs.k8s }}
-    steps:
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            action:
-              - '.github/workflows/test.yaml'
-            k8s:
-              - 'k8s/**/*.yaml'
-
-  k8s-e2e:
-    runs-on: ubuntu-latest
-    needs:
-      - changes
-    if: ${{ github.event.pull_request.draft == false && (needs.changes.outputs.k8s == 'true' || needs.changes.outputs.action == 'true') }}
+    if: ${{ !startsWith(github.event.pull_request.title, '[DRAFT]') }}
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: ⚙️ Install Flux
-        uses: fluxcd/flux2/action@main
+      - name: ⚙️ Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: ⚙️ Install KSail
+        run: brew install devantler/formulas/ksail
       - name: ⛴️ Provision cluster
-        run: $SCRIPTS_DIR/provision-cluster.sh homelab-docker
-        env:
-          SOPS_GPG_KEY: ${{ secrets.SOPS_GPG_KEY }}
+        run: |
+          ksail sops ${{ vars.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
+          ksail up ${{ vars.KSAIL_CLUSTER_NAME }}
       - name: 🐎 Print free CPU
         if: always()
         run: |
@@ -52,17 +36,6 @@ jobs:
         if: always()
         run: |
           free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
-      - name: ⚠️💬 Print namespaces on failure
-        if: failure()
-        run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-namespaces.sh
-      - name: ⚠️⛔️ Print errors on failure
-        if: failure()
-        run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-errors.sh
-      - name: ⚠️📝 Print logs on failure
-        if: failure()
-        run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-logs.sh
-      - name: ⚠️📑 Print descriptions on failure
-        if: failure()
-        run: $GITHUB_SCRIPTS_DIR/e2e-k8s-debug-failure-descriptions.sh
-      - name: 🚦 Check for use of deprecated APIs
-        run: $GITHUB_SCRIPTS_DIR/e2e-k8s-check-deprecated-apis.sh
+      - name: 🔥 Teardown cluster
+        if: always()
+        run: ksail down ${{ vars.KSAIL_CLUSTER_NAME }}

@@ -1,0 +1,7 @@
+# You need to encrypt this file with SOPS manually.
+# ksail sops --encrypt variables-sensitive.sops.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: variables-sensitive
+stringData: {}

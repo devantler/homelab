@@ -10,20 +10,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tree:
+  reame-tree:
     runs-on: ubuntu-latest
-    name: readme-tree
     steps:
-      - uses: actions/checkout@v4
-      - name: Create README Tree
+      - name: 📄 Checkout
+        uses: actions/checkout@v4
+      - name: 🌲 Create README Tree
         uses: RavelloH/readme-tree@v1.1.0
         with:
           showdirectoryname: "yes"
-      - name: Create Pull Request
+      - name: ✍🏻 Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           branch: update-readme-tree
           commit-message: Update README Tree
           title: Update README Tree
           body: This PR includes new updates to the README Tree.
-          labels: chore
+          labels: documentation

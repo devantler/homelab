@@ -5,22 +5,24 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  dependsOn:
+  dependsOn: 
     - name: variables
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: ./clusters/docker/infrastructure/services
+  path: infrastructure/services
   prune: true
   wait: true
   decryption:
     provider: sops
     secretRef:
-      name: sops-gpg
+      name: sops-age
   postBuild:
-    substituteFrom:
+    substituteFrom: 
       - kind: ConfigMap
         name: variables
+      - kind: Secret
+        name: variables-sensitive
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -29,20 +31,21 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  dependsOn:
-    - name: variables
+  dependsOn: 
     - name: infrastructure-services
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: ./clusters/docker/infrastructure/configs
+  path: infrastructure/configs
   prune: true
   wait: true
   decryption:
     provider: sops
     secretRef:
-      name: sops-gpg
+      name: sops-age
   postBuild:
-    substituteFrom:
+    substituteFrom: 
       - kind: ConfigMap
         name: variables
+      - kind: Secret
+        name: variables-sensitive

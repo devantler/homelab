@@ -1,4 +1,5 @@
 creation_rules:
   - path_regex: .sops.yaml
     encrypted_regex: ^(data|stringData)$
-    pgp: F78D523ADB73F206EA60976DED58208970F326C8
+    age: |-
+      age1xn5xyj5f4mpjh3r8a4rkcnudnle49a6r4xqkujeermshep0hzeuq25tfwn
