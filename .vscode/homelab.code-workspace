@@ -7,7 +7,7 @@
     ],
     "settings": {
         "files.exclude": {
-            "oci-registry": true,
+            "oci-artifacts": true,
         },
         "runOnSave.commands": [
           {

@@ -20,7 +20,7 @@
 │           │   └── services
 │           └── variables
 ├── ksail
-├── oci-registry
+├── oci-artifacts
 ├── pulumi
 ├── scripts
 └── talos
