@@ -10,12 +10,12 @@
             "oci-registry": true,
         },
         "runOnSave.commands": [
-            {
-                "command": "${workspaceFolder}/scripts/update-cluster.sh homelab-docker",
-                "finishStatusMessage": ">${fileBasename} changed: Deployment artifact created.",
-                "globMatch": "${workspaceFolder}/k8s/**/*.yaml",
-                "runningStatusMessage": ">${fileBasename} changed: Creating new deployment artifact."
-            }
+          {
+            "command": "ksail update homelab-ksail",
+            "finishStatusMessage": ">${fileBasename} changed: Clusters updated...",
+            "globMatch": "${workspaceFolder}/k8s/**/*.yaml",
+            "runningStatusMessage": ">${fileBasename} changed: Updating clusters..."
+          }
         ]
     }
 }

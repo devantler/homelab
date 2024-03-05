@@ -5,12 +5,16 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
+  dependsOn: []
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: ./clusters/docker/variables
+  path: clusters/homelab/variables
   prune: true
+  wait: true
   decryption:
     provider: sops
     secretRef:
-      name: sops-gpg
+      name: sops-age
+  postBuild:
+    substituteFrom: []
