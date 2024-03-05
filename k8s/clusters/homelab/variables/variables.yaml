@@ -3,5 +3,4 @@ kind: ConfigMap
 metadata:
   name: variables
 data:
-  cluster_domain: test
   cluster_issuer_name: selfsigned-cluster-issuer

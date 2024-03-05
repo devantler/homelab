@@ -3,5 +3,27 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: variables-sensitive
-stringData: {}
+    name: variables-sensitive
+stringData:
+    cluster_domain: ENC[AES256_GCM,data:FflJp2Ds4W7CEPqVAQ==,iv:EEdjkIwEmH6TWxtLzEgciiofOjic0/YdOfbf91HCSUQ=,tag:VMsaATmLh9vTfjWqqPfrTQ==,type:str]
+    cloudflared_tunnel_token: ENC[AES256_GCM,data:ofkBraEwis02xXJ8Q3LM/kZ0y/F7Q6QBQ+DcRBEn8vsj/aIGeg/yQPn5GpBv/WDJRoCJIrrN5wdC8qXmW/mZXz0XoyhZT6b/BlukGXTpx1sj5BZtkb6uiNbZSSLfg22U6s54QAgHfUzhUp0E5F6ASA5zADn1OjazTHRIrGJo7KOe4Cwbptu1Dse5e3cRIeoulZYTkwFTVOWZlEecg7Zg2KhVDznEQ1bTv+Uh6Beml3mDi+LroN92fw==,iv:eScklOP0pw1lnrPl4rP4AECZSCtNydjk+KEdDozjCN0=,tag:FEvPOt1DRXuWCYAQmTTEAw==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1xn5xyj5f4mpjh3r8a4rkcnudnle49a6r4xqkujeermshep0hzeuq25tfwn
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPL2VPODB5OSt5QkJpeUJ1
+            aUdLTXRDV3lkVXJpdXRuNVZ3c0dkL1RYSEZVCmpwYkFoS2w1N3FIYSs1KytXejYx
+            eVN6cDhILzNHaGovMFgzMm02cGkxZHcKLS0tIGVZQWdxNkdXaEtISU9qcmp6cjZV
+            S29xdWpLWUM2L05qWU5LVWdiOGxQRk0K7n9RYCBmwH2mnbf3bjfaLof6ZeMez7dE
+            BVO/S38a3eikUzIuMdus37QjCrx1W8/jUoRbZQLxVyq1xFwi3AfeYg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2024-03-05T23:03:34Z"
+    mac: ENC[AES256_GCM,data:uiylpvo347j7qnONNbbd414SauE5GxJLIo3x7y7tsPQgvCbyHWEPEJsdQlf11FMw56gUsCne/sLghFZ1uHdz6NSwKvAZPRjJ+b8Nv2476wK6BjqzgNIEWQg1NbBR3zax2S5H+Nnb0jeKLFr1zWfPHoZ0AZmmAD6RXylF1QbeTTI=,iv:xN+wxRDXVc1QAsc22nHCAbQWX6po4c4AEH52XMSZGTA=,tag:Z5lU0lxEUu9jJw88OprxbA==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData)$
+    version: 3.8.1
