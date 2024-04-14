@@ -1,21 +1,9 @@
 {
-    "folders": [
-        {
-            "name": "🏠 Homelab",
-            "path": ".."
-        }
-    ],
-    "settings": {
-        "files.exclude": {
-            "oci-artifacts": true,
-        },
-        "runOnSave.commands": [
-          {
-            "command": "ksail update homelab-ksail",
-            "finishStatusMessage": ">${fileBasename} changed: Clusters updated...",
-            "globMatch": "${workspaceFolder}/k8s/**/*.yaml",
-            "runningStatusMessage": ">${fileBasename} changed: Updating clusters..."
-          }
-        ]
+  "folders": [
+    {
+      "name": "🏠 Homelab",
+      "path": ".."
     }
+  ],
+  "settings": {}
 }
