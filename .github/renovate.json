@@ -1,9 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    ":disableDependencyDashboard"
-  ],
+  "extends": ["config:recommended", ":disableDependencyDashboard"],
   "flux": {
     "fileMatch": [
       "^k8s/.+\\.ya?ml$"
@@ -16,5 +13,11 @@
   },
   "github-actions": {
     "enabled": false
+  },
+  "minor": {
+    "automerge": true
+  },
+  "patch": {
+    "automerge": true
   }
 }
