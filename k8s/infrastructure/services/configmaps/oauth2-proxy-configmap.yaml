@@ -9,3 +9,7 @@ data:
     provider = "github"
     email_domains = [ "*" ]
     github_users = [ "devantler" ]
+    reverse_proxy=true
+    upstreams=["static://202"]
+    skip_provider_button=true
+    cookie_domains=[".${cluster_domain}"]
