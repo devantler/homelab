@@ -35,7 +35,7 @@ jobs:
             --tag latest \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
   deploy-prod:
-    runs-on: homelab-prod
+    runs-on: ubuntu-latest
     needs: push-to-oci-prod
     environment: prod
     steps:
