@@ -4,3 +4,4 @@ metadata:
   name: variables
 data:
   cluster_issuer_name: selfsigned-cluster-issuer
+  oauth2_proxy_client_id: Ov23liQ4UtmGpfwiYpSZ
