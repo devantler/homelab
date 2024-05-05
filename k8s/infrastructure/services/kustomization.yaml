@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - https://github.com/devantler/oci-artifacts//k8s/cert-manager
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared
+  - https://github.com/devantler/oci-artifacts//k8s/homepage
   - https://github.com/devantler/oci-artifacts//k8s/traefik
