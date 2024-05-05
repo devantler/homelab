@@ -5,8 +5,8 @@ kind: Secret
 metadata:
     name: variables-sensitive
 stringData:
-    cluster_domain: ENC[AES256_GCM,data:43ehVcfJmPQ+REQlbhFBfLBDKohR,iv:/yVzcjF8m6Wx7QIyLi23bOwGIhXLmL3/JfjPKB6Acg4=,tag:UBflckoNsqju2crORUhrZw==,type:str]
-    cloudflared_tunnel_token: ENC[AES256_GCM,data:LODypDq5Bm1zjR3OlZvYJiTz75myIpmmjijDFQQ7CEObgTHyGD6ilaJRtQtFfe4TmzC1K5GiqoNtdt1TJbYhRZibEJN2Z4v2tjd81ueEwZPomJD/PiwXO+Evp26HLV+Kopi2imk6+bD/E2C4F6DZsrS1nWJBEGeJV/se8tUT+PfPAAOWeKwPqc4DQ16JdmClc00O7GP0IcIZESX6dWbo54Z8Me/p4TFYIQL/hdb/28oaeV3QNB4r3w==,iv:GbT9UF8CsE/ztneoBsOJRUAgeP5q2pAHJKIdG8gZBHI=,tag:t1cWhRHzRn+D16o00nQXfw==,type:str]
+    cluster_domain: ENC[AES256_GCM,data:7QZZtBiWm1VpZGQTGQ==,iv:uiwoFxPXmoPBqzwXebPntsD9VA7iWyH93ADjNAx4Hks=,tag:gJzHzzeDf84qm6TpE38OUg==,type:str]
+    cloudflared_tunnel_token: ENC[AES256_GCM,data:JkUEOcbFmC/Pm1KAdj7+fHuyMQsXd93hLJu+H2g2Anl+R2Yvi8mVaWasy6LL2nfjZuv/J3Ay5JNlDqyzlrcyg1mLucXS3iEW4t00NVU7cfX6X3Gey9ioOiRoZh/YZ1wyKWFEtZf3BYJhHnVROk9o93EhMseG22GAG3mfWWPqcL7okYKg9M1QHv4TGSgs9jIMmDyaOmO2szri2RODcW7JBtrWhPkJwGv3AEwrroTjcMddyA0n+92kNA==,iv:/uwAWa8rnc4BOkAQACs9IuFpsp5ZHQ7ULzz9VgMus5o=,tag:rWnQWgrSdhJJme5deTwQrQ==,type:str]
 sops:
     kms: []
     gcp_kms: []
@@ -16,14 +16,14 @@ sops:
         - recipient: age1qwpktma4zpd8grfp9a462fu5qqqg9qcltn7g9wjw5jmnat7d8snq3wwsc3
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA4SVVhdWRPRFJLRm1uenJk
-            Z1F6bFdOWnJMTjlLNW5lMjhPNFhFaUt4eFdjClR5N040VjY2bVd0MlpZNW1uYmNW
-            UWFXK3Y4ZFZLdjV5MUpvOVVIT3k5eVEKLS0tIEUwMzdqMEt1eW13OFF0TDFGcmZk
-            enFZcmhWTFpYd0ZaRDkrWmRLbzQ2dDQK8RhWF9WuP8lHR9wLMXOWIJdFFY6t+P2v
-            RNG1pjVn3u7yw5bb+DHHgdkMGaaKkhvtTWqEh/0qoPsKvQa1RVt3wg==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBhcWl1SDZaS3ZXY3VTM1FU
+            L1ZOS0IzZmg3aXJtanh1UEFGVHcxQkFJRVV3CjFkVS9NT001TjlZTnFDSDllVjUy
+            NGFBd2lHdE5qN05ldE1rd0tSbTcyazQKLS0tIHFuOHdaUVh0b3pvRHJpY1JsL3k4
+            SE50OGhlRnNtYXZKWkJYSEwyUXFxTTgKFs7OmPzWzWDWf7z6kibHXyA8v5EmGhZO
+            RcRhf0yM209xTLdxZSb4ncCLfcabrK6pLYOo/XH/Fw6+zsGLYB0UPQ==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2024-05-05T18:32:44Z"
-    mac: ENC[AES256_GCM,data:roZqn7db+NATtXwpdimrGGKfYj/dVbBndRgWMX9nnwodGiksKzF6bylY3+sdDRiz8cqe6bhKWa84K2QDQgLofEK+Fo/vqMKFCMhA3a9jLGjSlPygS3jXxmdOPisrdUfezx7Zn7wPeZLI8XsXBvLNrm+mCO4y/HBQ1rXOL5Yo6IQ=,iv:ulDzE8r4QPh5OO1DQI5PaFcFFSHERiSPHagVNnsh05c=,tag:5ilXbB0DWMprsxYfffPKiw==,type:str]
+    lastmodified: "2024-05-05T19:03:58Z"
+    mac: ENC[AES256_GCM,data:yoZiCl8kjAEXYBcuTW4qjoveKomPPqdNq1NpalwB96vdud+Oz9jt8Mi5l7fHuR3b4JIrEy+eZt1NgGQxTAAIYjiKPCgf3dUlkBRa645ZbnQeLJioPCQjTqi4PbnqZtyNal25ygc7fv0zq4kYoJk7OcWTP0yg85roIXVWSvDUO4E=,iv:VODel1X/kTdsEZ2R7SCYlT7qbsrOklnfoul+ElCC6ro=,tag:AeA7MDVm6JemSVFjxX4Gew==,type:str]
     pgp: []
     encrypted_regex: ^(data|stringData)$
     version: 3.8.1
