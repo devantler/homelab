@@ -18,9 +18,12 @@
     │       └── variables
     └── infrastructure
         ├── configs
+        │   └── middlewares
         └── services
+            ├── configmaps
+            └── patches
 
-13 directories
+16 directories
 ```
 <!-- readme-tree end -->
 
