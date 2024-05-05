@@ -6,6 +6,6 @@ metadata:
 data:
   # https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview
   oauth2_proxy.cfg: |-
-    provider="github"
-    email_domains=[ "*" ]
-    github_user="devantler"
+    provider = "github"
+    email_domains = [ "*" ]
+    github_users = [ "devantler" ]
