@@ -57,6 +57,7 @@ jobs:
           flux install
           flux create source oci flux-system \
             --url ghcr.io/${{ github.repository }}/manifests-prod \
+            --tag latest
       - name: 🔐 Create secret for SOPS
         uses: azure/k8s-create-secret@v5
         with:
