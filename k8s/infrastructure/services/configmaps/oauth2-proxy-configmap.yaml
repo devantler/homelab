@@ -6,9 +6,9 @@ metadata:
 data:
   # https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview
   oauth2_proxy.cfg: |-
-    provider = "github"
-    email_domains = [ "*" ]
-    github_users = [ "devantler" ]
+    provider="github"
+    email_domains=["*"]
+    github_users=["devantler"]
     reverse_proxy=true
     upstreams=["static://202"]
     skip_provider_button=true
