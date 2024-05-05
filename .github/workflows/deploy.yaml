@@ -34,8 +34,8 @@ jobs:
             --tag latest
       - uses: azure/k8s-set-context@v4
         with:
-            method: kubeconfig
-            kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
       - name: 🔐 Create secret for SOPS
         uses: azure/k8s-create-secret@v5
         with:
@@ -50,7 +50,7 @@ jobs:
             --tag=latest
           flux create kustomization flux-system \
             --source=OCIRepository/flux-system \
-            --path=k8s
+            --path=${{ vars.PROD_FLUX_KUSTOMIZATION_PATH }}
   push-to-oci-prod:
     runs-on: ubuntu-latest
     environment: prod
