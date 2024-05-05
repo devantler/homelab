@@ -49,7 +49,6 @@ jobs:
             --path=k8s
   push-to-oci-prod:
     runs-on: ubuntu-latest
-    needs: init-flux-prod
     environment: prod
     steps:
       - name: 📑 Checkout
@@ -71,7 +70,9 @@ jobs:
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
   deploy-prod:
     runs-on: ubuntu-latest
-    needs: push-to-oci-prod
+    needs:
+      - init-flux-prod
+      - push-to-oci-prod
     environment: prod
     steps:
       - name: 📑 Checkout
