@@ -32,6 +32,10 @@ jobs:
           flux create source oci flux-system \
             --url oci://ghcr.io/${{ github.repository }}/manifests-prod \
             --tag latest
+      - uses: azure/k8s-set-context@v4
+        with:
+            method: kubeconfig
+            kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
       - name: 🔐 Create secret for SOPS
         uses: azure/k8s-create-secret@v5
         with:
