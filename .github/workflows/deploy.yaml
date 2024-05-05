@@ -51,6 +51,27 @@ jobs:
         run: |
           mkdir ~/.kube
           echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
+      - name: ⚙️ Install Flux
+        run: |
+          flux check --pre
+          flux install
+          flux create source oci flux-system \
+            --url ghcr.io/${{ github.repository }}/manifests-prod \
+      - name: 🔐 Create secret for SOPS
+        uses: azure/k8s-create-secret@v5
+        with:
+          secret-type: generic
+          secret-name: sops-age
+          namespace: flux-system
+          string-data: '{ "sops.agekey": "${{ secrets.PROD_SOPS_AGE_KEY }}" }'
+      - name: 🔁 Create OCI Source and Kustomization
+        run: |
+          flux create source oci flux-system \
+            --url=ghcr.io/${{ github.repository }}/manifests-prod \
+            --tag=latest
+          flux create kustomization flux-system \
+            --source=OCIRepository/flux-system \
+            --path=k8s
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
