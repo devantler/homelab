@@ -34,10 +34,10 @@ spec:
               showLabel: true
       services:
         - Monitoring:
-            - Traefik (dev):
+            - Traefik:
                 icon: traefik
-                href: https://traefik.dev.substation-data.energinet-lab.net
-                description: Traefik dashboard for the development environment
+                href: https://traefik.devantler.com
+                description: A central place that shows you the current active routes handled by Traefik.
       bookmarks:
         - Development:
             - GitHub:
