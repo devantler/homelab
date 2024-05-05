@@ -41,10 +41,12 @@ jobs:
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: ⚙️ Setup flux
-        uses: fluxcd/flux2/action@main
       - name: ⚙️ Setup homebrew
         uses: Homebrew/actions/setup-homebrew@master
+      - name: ⚙️ Setup flux
+        uses: fluxcd/flux2/action@main
+      - name: ⚙️ Setup Krew
+        run: brew install krew
       - name: ⚙️ Install KSail
         run: brew install devantler/formulas/ksail
       - name: 🔨 Create kubeconfig
