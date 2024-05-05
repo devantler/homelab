@@ -1,0 +1,57 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  push-to-oci-prod:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: 📑 Checkout
+        uses: actions/checkout@v4
+      - name: ⚙️ Setup flux
+        uses: fluxcd/flux2/action@main
+      - name: 🗳️ Push to GHCR OCI
+        run: |
+          flux push artifact oci://ghcr.io/${{ github.repository }}/manifests-prod:${{ github.sha }} \
+            --path=./k8s \
+            --source="$(git config --get remote.origin.url)" \
+            --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)" \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-prod:${{ github.sha }} \
+            --tag ${{ github.ref_name }} \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-prod:${{ github.sha }} \
+            --tag latest \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+  deploy-prod:
+    runs-on: homelab-prod
+    needs: push-to-oci-prod
+    environment: prod
+    steps:
+      - name: 📑 Checkout
+        uses: actions/checkout@v4
+      - name: ⚙️ Setup flux
+        uses: fluxcd/flux2/action@main
+      - name: ⚙️ Setup homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: ⚙️ Install KSail
+        run: brew install devantler/formulas/ksail
+      - name: 🔨 Create kubeconfig
+        run: |
+          mkdir ~/.kube
+          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
+      - name: 🔁 Reconcile
+        run: flux reconcile source oci flux-system
+      - name: 👀 Check reconciliation
+        run: ksail check admin@homelab-prod
