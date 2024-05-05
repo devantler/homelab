@@ -42,7 +42,7 @@ spec:
         - Development:
             - GitHub:
                 - icon: github
-                  href: https://github.com/energinet-digitalisering
+                  href: https://github.com
             - Renovate:
                 - abbr: RNV
                   href: https://developer.mend.io
