@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
+  values:
+    image:
+      tag: v3.0
+    ports:
+      websecure:
+        middlewares:
+          - traefik-traefik-auth-headers@kubernetescrd
+    ingressRoute:
+      dashboard:
+        middlewares:
+          - name: traefik-forward-auth
+            namespace: traefik
+
+

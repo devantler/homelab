@@ -4,4 +4,17 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/cert-manager
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared
   - https://github.com/devantler/oci-artifacts//k8s/homepage
+  - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy
   - https://github.com/devantler/oci-artifacts//k8s/traefik
+
+patches:
+  - path: patches/homepage-patch.yaml
+    target:
+      kind: HelmRelease
+      name: homepage
+      namespace: homepage
+  - path: patches/traefik-patch.yaml
+    target:
+      kind: HelmRelease
+      name: traefik
+      namespace: traefik

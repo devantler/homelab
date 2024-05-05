@@ -1,0 +1,51 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
+  values:
+    ingress:
+      main:
+        annotations:
+          traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
+    config:
+      widgets:
+        - resources:
+            backend: kubernetes
+            expanded: true
+            cpu: true
+            memory: true
+        - search:
+            provider: google
+            target: _blank
+        - kubernetes:
+            cluster:
+              show: true
+              cpu: true
+              memory: true
+              showLabel: true
+              label: "cluster"
+            nodes:
+              show: true
+              cpu: true
+              memory: true
+              showLabel: true
+      services:
+        - Monitoring:
+            - Traefik (dev):
+                icon: traefik
+                href: https://traefik.dev.substation-data.energinet-lab.net
+                description: Traefik dashboard for the development environment
+      bookmarks:
+        - Development:
+            - GitHub:
+                - icon: github
+                  href: https://github.com/energinet-digitalisering
+            - Renovate:
+                - abbr: RNV
+                  href: https://developer.mend.io
+
+
+
