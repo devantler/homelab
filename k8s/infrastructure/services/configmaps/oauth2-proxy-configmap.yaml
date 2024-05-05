@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-configmap
+  namespace: oauth2-proxy
+data:
+  # https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview
+  oauth2_proxy.cfg: |-
+    provider="github"
+    email_domains = [ "*" ]
+    github_user="devantler"
