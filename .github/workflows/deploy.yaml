@@ -68,7 +68,7 @@ jobs:
       - name: 🔁 Create OCI Source and Kustomization
         run: |
           flux create source oci flux-system \
-            --url=ghcr.io/${{ github.repository }}/manifests-prod \
+            --url=oci://ghcr.io/${{ github.repository }}/manifests-prod \
             --tag=latest
           flux create kustomization flux-system \
             --source=OCIRepository/flux-system \
