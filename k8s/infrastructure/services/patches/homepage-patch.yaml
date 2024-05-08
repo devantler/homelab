@@ -10,6 +10,9 @@ spec:
   # https://pictogrammers.com/library/mdi/ Prefix with mdi-
   # https://simpleicons.org/ Prefix with si-
   values:
+    image:
+      repository: ghcr.io/gethomepage/homepage
+      tag: v0.8.13
     ingress:
       main:
         annotations:
