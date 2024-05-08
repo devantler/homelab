@@ -5,6 +5,10 @@ metadata:
   namespace: homepage
 spec:
   # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
+  # Icons:
+  # https://github.com/walkxcode/dashboard-icons No prefix
+  # https://pictogrammers.com/library/mdi/ Prefix with mdi-
+  # https://simpleicons.org/ Prefix with si-
   values:
     ingress:
       main:
@@ -60,6 +64,3 @@ spec:
             - Renovate:
                 - icon: si-renovatebot
                   href: https://developer.mend.io
-
-
-
