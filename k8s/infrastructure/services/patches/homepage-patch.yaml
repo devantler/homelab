@@ -33,18 +33,32 @@ spec:
               memory: true
               showLabel: true
       services:
+        - Networking:
+            - UniFi:
+                icon: unifi
+                href: https://unifi.ui.com
+                description: A central hub for all things related to my physical UniFi network infrastructure.
+            - Cloudflare:
+                icon: cloudflare
+                href: https://dash.cloudflare.com
+                description: A central hub for managing my domain names, DNS records, and other network-related services.
+        - Management:
+            - Omni:
+                icon: si-omni
+                href: https://devantler.omni.siderolabs.io
+                description: A management platform for provisioning and managing Talos Linux clusters.
         - Monitoring:
             - Traefik:
                 icon: traefik
                 href: https://traefik.devantler.com
-                description: A central place that shows you the current active routes handled by Traefik.
+                description: A simple dashboard that shows the current active routes handled by Traefik.
       bookmarks:
         - Development:
             - GitHub:
                 - icon: github
                   href: https://github.com
             - Renovate:
-                - abbr: RNV
+                - icon: si-renovatebot
                   href: https://developer.mend.io
 
 
