@@ -60,6 +60,10 @@ spec:
                 href: https://traefik.devantler.com
                 description: A simple dashboard that shows the current active routes handled by Traefik.
       bookmarks:
+        - Personal:
+            - GitHub Pages:
+                - icon: github
+                  href: https://devantler.com
         - Development:
             - GitHub:
                 - icon: github
