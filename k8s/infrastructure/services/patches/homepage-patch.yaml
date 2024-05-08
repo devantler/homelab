@@ -51,7 +51,7 @@ spec:
                 description: A central hub for managing my domain names, DNS records, and other network-related services.
         - Management:
             - Omni:
-                icon: si-omni
+                icon: si-talos-#FF7300
                 href: https://devantler.omni.siderolabs.io
                 description: A management platform for provisioning and managing Talos Linux clusters.
         - Monitoring:
@@ -65,5 +65,5 @@ spec:
                 - icon: github
                   href: https://github.com
             - Renovate:
-                - icon: si-renovatebot
+                - icon: si-renovatebot-#1A1F6C
                   href: https://developer.mend.io
