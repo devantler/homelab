@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - configmaps/oauth2-proxy-configmap.yaml
+  - https://github.com/devantler/oci-artifacts//k8s/capacitor
   - https://github.com/devantler/oci-artifacts//k8s/cert-manager
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared
   - https://github.com/devantler/oci-artifacts//k8s/homepage
