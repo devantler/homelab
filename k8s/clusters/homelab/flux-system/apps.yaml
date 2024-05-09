@@ -5,8 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  dependsOn: 
-    - name: infrastructure-configs
+  dependsOn:
+    - name: crds
   sourceRef:
     kind: OCIRepository
     name: flux-system
@@ -18,7 +18,7 @@ spec:
     secretRef:
       name: sops-age
   postBuild:
-    substituteFrom: 
+    substituteFrom:
       - kind: ConfigMap
         name: variables
       - kind: Secret
