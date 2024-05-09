@@ -1,16 +1,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infrastructure
+  name: crds
   namespace: flux-system
 spec:
   interval: 1m
   dependsOn:
-    - name: variables
+    - name: infrastructure
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: infrastructure
+  path: crds
   prune: true
   wait: true
   decryption:
@@ -23,4 +23,3 @@ spec:
         name: variables
       - kind: Secret
         name: variables-sensitive
-
