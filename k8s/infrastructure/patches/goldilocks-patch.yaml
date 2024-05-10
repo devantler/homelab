@@ -1,0 +1,11 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: goldilocks
+  namespace: goldilocks
+spec:
+  # https://github.com/FairwindsOps/charts/blob/master/stable/goldilocks/values.yaml
+  values:
+    ingress:
+      annotations:
+        traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
