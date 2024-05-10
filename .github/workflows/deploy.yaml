@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
+      - name: ⚙️ Setup homebrew
+        uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
       - name: 🔨 Create kubeconfig
@@ -28,7 +30,7 @@ jobs:
       - name: ⚙️ Install Flux
         run: |
           flux check --pre
-          flux install
+          timoni bundle apply -f flux-aio.cue
           flux create source oci flux-system \
             --url oci://ghcr.io/${{ github.repository }}/manifests-prod \
             --tag latest

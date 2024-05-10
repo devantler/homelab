@@ -1,6 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - cilium
   - configmaps/oauth2-proxy-configmap.yaml
   - https://github.com/devantler/oci-artifacts//k8s/cert-manager
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared
@@ -8,7 +9,6 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/metrics-server
   - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy
   - https://github.com/devantler/oci-artifacts//k8s/openebs
-  - https://github.com/devantler/oci-artifacts//k8s/traefik
 
 patches:
   - path: patches/homepage-patch.yaml
