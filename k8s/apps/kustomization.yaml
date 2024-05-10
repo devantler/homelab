@@ -4,7 +4,7 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/homepage
 
 patches:
-  - path: homepage/patch.yaml
+  - path: homepage/homepage-patch.yaml
     target:
       kind: HelmRelease
       name: homepage
