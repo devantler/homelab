@@ -14,14 +14,14 @@
     │   └── homelab
     │       ├── flux-system
     │       └── variables
+    ├── crds
+    │   └── middlewares
     └── infrastructure
-        ├── configs
-        │   └── middlewares
-        └── services
-            ├── configmaps
-            └── patches
+        ├── configmaps
+        ├── ingresses
+        └── patches
 
-16 directories
+14 directories
 ```
 <!-- readme-tree end -->
 
