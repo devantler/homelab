@@ -10,7 +10,6 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy
   - https://github.com/devantler/oci-artifacts//k8s/openebs
   - https://github.com/devantler/oci-artifacts//k8s/traefik
-  - https://github.com/devantler/oci-artifacts//k8s/vertical-pod-autoscaler
   - ingresses/cilium-hubble-ingress.yaml
 
 patches:
