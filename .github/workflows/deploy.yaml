@@ -19,12 +19,25 @@ jobs:
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
+      - name: ⚙️ Setup homebrew
+        uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
+      - name: ⚙️ Setup Cilium
+        run: brew install cilium-cli
       - name: 🔨 Create kubeconfig
         run: |
           mkdir ~/.kube
           echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
+      - name: ⚙️ Install Cilium
+        run: |
+          cilium install \
+            --helm-set=ipam.mode=kubernetes \
+            --helm-set=kubeProxyReplacement=disabled \
+            --helm-set=securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+            --helm-set=securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+            --helm-set=cgroup.autoMount.enabled=false \
+            --helm-set=cgroup.hostRoot=/sys/fs/cgroup
       - name: ⚙️ Install Flux
         run: |
           flux check --pre
