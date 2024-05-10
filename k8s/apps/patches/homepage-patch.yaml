@@ -57,13 +57,17 @@ spec:
         - Monitoring:
             - Traefik:
                 icon: traefik
-                href: https://traefik.devantler.com
+                href: https://traefik.${cluster_domain}
                 description: A simple dashboard that shows the current active routes handled by Traefik.
+            - Cilium Hubble:
+                icon: cilium
+                href: https://hubble-ui.${cluster_domain}
+                description: A simple dashboard that shows the current active routes handled by Cilium.
       bookmarks:
         - Personal:
             - GitHub Pages:
                 - icon: github
-                  href: https://devantler.com
+                  href: https://${cluster_domain}
         - Development:
             - GitHub:
                 - icon: github
