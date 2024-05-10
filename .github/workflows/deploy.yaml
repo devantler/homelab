@@ -41,7 +41,9 @@ jobs:
             --set=securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
             --set=cgroup.autoMount.enabled=false \
             --set=cgroup.hostRoot=/sys/fs/cgroup \
-            --set=operator.replicas=1
+            --set=operator.replicas=1 \
+            --set hubble.relay.enabled=true \
+            --set hubble.ui.enabled=true
       - name: ⚙️ Install Flux
         run: |
           flux check --pre
