@@ -62,7 +62,7 @@ spec:
             - Cilium Hubble:
                 icon: cilium
                 href: https://hubble-ui.${cluster_domain}
-                description: A simple dashboard that shows the current active routes handled by Cilium.
+                description: A dashboard to visualize the network traffic in the cluster.
       bookmarks:
         - Personal:
             - GitHub Pages:
