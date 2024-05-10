@@ -10,8 +10,6 @@
 │   └── workflows
 ├── .vscode
 └── k8s
-    ├── apps
-    │   └── podinfo
     ├── clusters
     │   └── homelab
     │       ├── flux-system
