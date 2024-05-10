@@ -12,11 +12,6 @@ resources:
   - ingresses/cilium-hubble-ingress.yaml
 
 patches:
-  - path: patches/homepage-patch.yaml
-    target:
-      kind: HelmRelease
-      name: homepage
-      namespace: homepage
   - path: patches/traefik-patch.yaml
     target:
       kind: HelmRelease
