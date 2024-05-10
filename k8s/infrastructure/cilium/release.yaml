@@ -15,8 +15,10 @@ spec:
         kind: HelmRepository
         name: cilium
       interval: 12h
+  # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
   values:
     ipam:
       mode: kubernetes
     operator:
       replicas: 1
+    kubeProxyReplacement: false
