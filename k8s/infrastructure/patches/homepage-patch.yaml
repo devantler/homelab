@@ -41,28 +41,32 @@ spec:
               showLabel: true
       services:
         - Networking:
-            - UniFi:
-                icon: unifi
-                href: https://unifi.ui.com
-                description: A central hub for all things related to my physical UniFi network infrastructure.
             - Cloudflare:
                 icon: cloudflare
                 href: https://dash.cloudflare.com
-                description: A central hub for managing my domain names, DNS records, and other network-related services.
+                description: One of the world's largest networks. Provides domain registration, DNS, and much more.
+            - UniFi:
+                icon: unifi
+                href: https://unifi.ui.com
+                description: Central hub for managing UniFi network infrastructure.
         - Management:
             - Omni:
                 icon: si-talos-#FF7300
                 href: https://devantler.omni.siderolabs.io
-                description: A management platform for provisioning and managing Talos Linux clusters.
+                description: Platform for provisioning and managing Talos Linux clusters.
         - Monitoring:
-            - Traefik:
-                icon: traefik
-                href: https://traefik.${cluster_domain}
-                description: A simple dashboard that shows the current active routes handled by Traefik.
             - Cilium Hubble:
                 icon: cilium
                 href: https://hubble-ui.${cluster_domain}
-                description: A dashboard to visualize the network traffic in the cluster.
+                description: Observability for Cilium, a high-performance Container Network Interface (CNI).
+            - Goldilocks:
+                icon: mdi-white-balance-sunny
+                href: https://goldilocks.${cluster_domain}
+                description: Dashboard for automated vertical pod autoscaling recommendations.
+            - Traefik:
+                icon: traefik
+                href: https://traefik.${cluster_domain}
+                description: Dashboard for Reverse Proxy.
       bookmarks:
         - Personal:
             - GitHub Pages:
