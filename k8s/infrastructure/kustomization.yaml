@@ -24,12 +24,16 @@ patches:
       kind: HelmRelease
       name: homepage
       namespace: homepage
-  - path: patches/kube-system-patch.yaml
-    target:
-      kind: Namespace
-      name: kube-system
   - path: patches/traefik-patch.yaml
     target:
       kind: HelmRelease
       name: traefik
       namespace: traefik
+  - path: patches/vpa-enable-patch.yaml
+    target:
+      kind: Namespace
+      name: flux-system
+  - path: patches/vpa-enable-patch.yaml
+    target:
+      kind: Namespace
+      name: kube-system
