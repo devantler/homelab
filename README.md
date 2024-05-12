@@ -9,19 +9,21 @@
 ├── .github
 │   └── workflows
 ├── .vscode
-└── k8s
-    ├── clusters
-    │   └── homelab
-    │       ├── flux-system
-    │       └── variables
-    ├── crds
-    │   └── middlewares
-    └── infrastructure
-        ├── configmaps
-        ├── ingresses
-        └── patches
+├── k8s
+│   ├── clusters
+│   │   └── homelab
+│   │       ├── flux-system
+│   │       └── variables
+│   ├── crds
+│   │   └── middlewares
+│   └── infrastructure
+│       ├── configmaps
+│       ├── ingresses
+│       └── patches
+└── talos
+    └── patches
 
-14 directories
+16 directories
 ```
 <!-- readme-tree end -->
 
