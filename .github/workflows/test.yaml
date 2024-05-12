@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-cluster:
+  test:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.event.pull_request.title, '[DRAFT]') }}
     steps:
