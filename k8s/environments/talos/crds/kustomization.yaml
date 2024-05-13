@@ -1,0 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../crds
+  - https://raw.githubusercontent.com/devantler/oci-artifacts/main/k8s/cert-manager/cluster-issuers/cloudflare-letsencrypt-cluster-issuer.yaml

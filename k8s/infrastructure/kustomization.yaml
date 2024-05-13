@@ -4,6 +4,7 @@ resources:
   - configmaps/oauth2-proxy-configmap.yaml
   - https://github.com/devantler/oci-artifacts//k8s/cert-manager?ref=v0.0.7
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared?ref=v0.0.7
+  - https://github.com/devantler/oci-artifacts//k8s/crossplane?ref=v0.0.7
   - https://github.com/devantler/oci-artifacts//k8s/goldilocks?ref=v0.0.7
   - https://github.com/devantler/oci-artifacts//k8s/homepage?ref=v0.0.7
   - https://github.com/devantler/oci-artifacts//k8s/kubelet-serving-cert-approver?ref=v0.0.7

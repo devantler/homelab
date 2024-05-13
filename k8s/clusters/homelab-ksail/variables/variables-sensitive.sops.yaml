@@ -1,0 +1,32 @@
+# You need to encrypt this file with SOPS manually.
+# ksail sops --encrypt variables-sensitive.sops.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+    name: variables-sensitive
+    namespace: flux-system
+stringData:
+    cloudflared_tunnel_token: ENC[AES256_GCM,data:r94F6QBe5D6nIpuBQoM8YmyVjGorLUQQ+/ki5cxMgwXx4Y2NWLlYCnkN2orbph8d78cCjog/AEGiIRooSvr6MUgcVSnSDE7xH/Qr8Jc3toIftagiOqOp2flsRz7nDAMit86mAoM2bMb2DNw65+XJCpkgOLbGWuQDysTP0h0GeU7IQPfNv19gnHSokkL1DaadxdiMyHTmDWktCeU0Hn0sYaesB3+NE/4Mbn1cwybDzwd9eJLlRawzGQ==,iv:cdKkUJjo0xDmrrUhTKIM5sDVvVOH1wk+ozVGSym0L7Q=,tag:feYpSn8tPo3Jp8hZ+iCx0w==,type:str]
+    cluster_domain: ENC[AES256_GCM,data:FQN2LLdWjzcPGSA=,iv:kSUrqi/CYOdSSiEq74GY1KT6Xbyp0LsGMvQZX0uJEWo=,tag:a7T+0epu5iYVrkeMdRc7Mw==,type:str]
+    oauth2_proxy_client_secret: ENC[AES256_GCM,data:ngOB/iMwGtgpSANcfu7f65GKpQPsE1AiEKUZGN+0Hv45ucly97mzUA==,iv:fNogE/htYZ1o96rHh+QE2p+bm5gzDkpfCt86jijQO5s=,tag:dtKw4SWd26f1514dfDordg==,type:str]
+    oauth2_proxy_cookie_secret: ENC[AES256_GCM,data:wyiK3NzQRNRlt0ys3NPmI/gvCjG+CWgcZ0Ipi2VpToI+S9DPJz/rr6GTQgg=,iv:5JjC177mbUL1QYEkQ/zmEwUJLHRE+/GDAf6HOUNPGfU=,tag:csoQj22ChU+qy4/kVhqPUg==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1erkfmdwhussmxpu9eryqemy5px33a0ghahy8dgtplc0e4halfy3qegra5q
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBWTkd5UzRWd0hUNlJrVlRq
+            eHpNT2ZDOWxPanZlZE9GK25oVXlZemh5aFQwCjdmSCtnbVBqcjExN3FBcC8ycHQz
+            amx0QTRMeFF6b1hZTklTc0N6UW1JdWcKLS0tIEFLZWZOcmhGM2psa2gvQ29ZVUd5
+            SnpxR1FEVW1TdnNwU3NzOU40ZGVESzQK7+YpbzQXAPJXi4e6w5J6nJN4k3UNClj+
+            V2Ah/ahhY41aGC+dn5wAPVXpTncy3ADnuqbCTBdwQePDSvu+EJsrPg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2024-05-13T23:09:43Z"
+    mac: ENC[AES256_GCM,data:hX8wPjrV3uKJe5CO+MRHqcq8jIwMAx/2Rwng31w2JysvKAQmw6Z7V1ECjn3iPdYD6aL9cSLIffHHSTjc7VKynC14NMC3EqQOROBOlWK4rkc5HXu9rwjAp5uLFuYviHfVPN6ucTS5cqXdqCrDh7tJwHGL0y8lnLdCZ3LeddIVjOA=,iv:urXL4iuTJU/5zWL59M7yO8WZSuK0pWs2H0nJMMszM2k=,tag:vel0++YBp0nY1LzcnW+gug==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData)$
+    version: 3.8.1

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: variables
+  namespace: flux-system
+data:
+  cluster_issuer_name: cloudflare-letsencrypt-cluster-issuer
+  oauth2_proxy_client_id: Ov23liQ4UtmGpfwiYpSZ
+  cloudflare_letsencrypt_cluster_issuer_server: https://acme-v02.api.letsencrypt.org/directory
+  cloudflare_letsencrypt_cluster_issuer_email: ned@devantler.com
