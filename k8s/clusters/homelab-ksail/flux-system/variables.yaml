@@ -9,7 +9,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: clusters/homelab/variables
+  path: clusters/homelab-ksail/variables
   prune: true
   wait: true
   decryption:
