@@ -54,6 +54,10 @@ spec:
                 icon: si-talos-#FF7300
                 href: https://devantler.omni.siderolabs.io
                 description: Platform for provisioning and managing Talos Linux clusters.
+            - Harbor:
+                icon: harbor
+                href: https://harbor.${cluster_domain}
+                description: Open Source Container Registry.
         - Monitoring:
             - Cilium Hubble:
                 icon: cilium
