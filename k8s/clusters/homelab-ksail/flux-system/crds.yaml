@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: environments/ksail/crds
+  path: manifests/crds
   prune: true
   wait: true
   decryption:

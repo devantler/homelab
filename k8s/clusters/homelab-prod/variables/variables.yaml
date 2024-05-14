@@ -4,7 +4,5 @@ metadata:
   name: variables
   namespace: flux-system
 data:
-  cloudflare_letsencrypt_cluster_issuer_email: ned@devantler.com
-  cloudflare_letsencrypt_cluster_issuer_server: https://acme-v02.api.letsencrypt.org/directory
-  cluster_issuer_name: cloudflare-letsencrypt-cluster-issuer
+  cluster_issuer_name: selfsigned-cluster-issuer
   oauth2_proxy_client_id: Ov23liQ4UtmGpfwiYpSZ
