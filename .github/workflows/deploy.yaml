@@ -27,6 +27,7 @@ jobs:
         run: |
           mkdir ~/.kube
           echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
       - name: ⚙️ Install Cilium
         run: |
           helm repo add cilium https://helm.cilium.io/
