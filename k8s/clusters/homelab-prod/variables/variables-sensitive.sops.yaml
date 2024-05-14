@@ -1,16 +1,14 @@
-# You need to encrypt this file with SOPS manually.
-# ksail sops --encrypt variables-sensitive.sops.yaml
 apiVersion: v1
 kind: Secret
 metadata:
     name: variables-sensitive
     namespace: flux-system
 stringData:
-    cloudflare_dns_api_key: ENC[AES256_GCM,data:Gbt8VY9Y8uyvqVJKGfnXbcEh/+/ln3b3H7QkEWQOlYfGrSrtVPSmrA==,iv:v0GrPmDi46SBJ2r1imGFkn1E/DpG20Jijzsm6ApMME4=,tag:K1HLs5r2ep1LzDykzp6DKA==,type:str]
-    cloudflared_tunnel_token: ENC[AES256_GCM,data:jAJFTo3asAcYUq2fPjTI6zULMq4saQ25YuCZEVjRl6O4cWR72nmO7BHrM0or5Cne1s0f7odzKth5f7gXtm89eQyOU4/Dvpk/Fp01zMZHFZxLeGVNSfN2+Q8OTVQ03J+wtDSTBGXWj9UwUg6elNYBwjfQVxm7SS8xQzvvToVic43A4VqonGfpyDntE5I6assvdBl+b7QThnXfygjeFbHyzjq/Sb6m4mowht8MFYu8PZY48R0OE3NAVw==,iv:oolIT19gGxaCE+J+8B3oUOAUl2tkq+thvkm4/4f+ZBc=,tag:H1zG3BHEhsS6fvNfyKVajQ==,type:str]
-    cluster_domain: ENC[AES256_GCM,data:5v6UiMSjjVcaztiiNg==,iv:69FzV37wRivgH33wL5/Yx8aDehl/GTv9GYTnnXU9F9c=,tag:8zQsw01xaDAjckoxRZsq+A==,type:str]
-    oauth2_proxy_client_secret: ENC[AES256_GCM,data:vSqjasqeD/TJ7wu142kDKDW460jq7j9I3O/tqGfZN7Fs3uTiat0uzg==,iv:nZonLco4YQoS58kxfGGzTZ5ovJM3OJDk4+sOIu84Pgg=,tag:6KolcBo9RzJXPXAPF2dwog==,type:str]
-    oauth2_proxy_cookie_secret: ENC[AES256_GCM,data:RHFqJGMaoI2S3KWSCWwPqTxXAOFF1wkKbKGm6dFjEKrAe/6ppRsy2b3J/L8=,iv:eO81DmmQ5ytWgyIy4lxweISHW9KnW4jXDzwPF8Khx30=,tag:T52aulsWGQN+89ZBUJ7wTw==,type:str]
+    cloudflare_dns_api_key: ENC[AES256_GCM,data:P3Zv6YYpmRW7hGiJ1sKf0SGI+pIRB1m7Ks/PYFjndj0H7WlbwsXAXw==,iv:BLF1ZFHnr9FZLGtlgOKvTQxn6PO9wgNMTD4JSwhuU/0=,tag:eqGomf/9lXDfafAGw/5DGQ==,type:str]
+    cloudflared_tunnel_token: ENC[AES256_GCM,data:Ef70g1/rd5DoSKuyfABZEdW+/JlI3QnuH+dos1BcH+QklH7FeLcv7ssY+rvzXYxoV4AWht0iyXP4a8TM6Tz0nxveMVNP0aGwZ7LOt+3GD5DSM2NIR38/Lhxw33V9UWFssFMeEu8d3Yeqp3Q+k9qBVo0XTyBAcbsRzggNfP/mq6N6pNp+3/vwzIQJ2mJ2suV56+0HuoVQkTGNUgUjco5NIX3PPaRqk3rgDvFMazys4J6kJN9wWpnY0Q==,iv:prHL8QxymgLCCDuG7HqdePqr9ZcLAY47Nd+mj9lu7xc=,tag:EFgBTNx63Y3HnGosyZvBsw==,type:str]
+    cluster_domain: ENC[AES256_GCM,data:pL/JjIqVb7Y1yH0iEg==,iv:BeigI3lVdfa6ndR7TxvrxjTRg+PbUd4qO3Gxp7oRAiU=,tag:Yb+iQoNTB/L1mOlFw3dj8w==,type:str]
+    oauth2_proxy_client_secret: ENC[AES256_GCM,data:O19eEBtNhooboF/ks1U+V682hQ5X2HgkoGqcNydVQA7Nyp7EcmLbew==,iv:2xj5nUpw1/YFR+wXMrl0EcBLuYatsYst2i9+zEpv904=,tag:NUGdV5YAFJyBD/8zhtJk0w==,type:str]
+    oauth2_proxy_cookie_secret: ENC[AES256_GCM,data:hyHApujCrmebIdrzND9BJM2o5ZSqalMizcTtnv77ZK9IdfzhbO8rE0R/ZTo=,iv:2CjgwdT+uGnSxa2ggdmcsEFLZxjPJJc+atjfCYLqSyI=,tag:J57uoMcMN6KwL8PrQBnfvQ==,type:str]
 sops:
     kms: []
     gcp_kms: []
@@ -20,14 +18,14 @@ sops:
         - recipient: age1qwpktma4zpd8grfp9a462fu5qqqg9qcltn7g9wjw5jmnat7d8snq3wwsc3
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvZXR1akhVOEpUWWc5QU4w
-            QjNjK01xSVdBSVNqYjhqS1E4MWFPc0xqb3ljCnE1OFZaSXBleEo1a0JEZStsalBk
-            QzFYbFhHcGNQYngwNE9NV2R2cTIwaXcKLS0tIHhhVzk1KzI3bmI3ZjdIWTRtVytN
-            d1UzU3hpdk9HSDBvMkxSdkJRVlpieFkK8Ntmq+lVp8rrdJIeRnifOe3oM6O/dvDV
-            MFxSU03FKnPYjwNidNdyPdXnpt9Bn/VtQpHu5h7d8BU+RRVLQ92jPA==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA0RkpZTnl5dC9ydzVoaXVU
+            SWkwcDNyRjlzVklGVGdRSGFYS0MvTFFUTW40CmhhV3E1VkJna1Evb09ZS2ZLRTll
+            ZDBCRGtkN1AvRkw4WDdSRlAzaGxoVU0KLS0tIE1QYVBqVFRXR0tPdlFYUHJBUEhy
+            OG5LVDh1OTFVbENMOVk4dEZEWFd4SDgKAqfilhlsDivSFZrpTcSq2W/BWLZvwZKp
+            bxYsbwZBb0GQNFxi+M00nvZXhSj0ZOrr3CG3eOZXq69/lD8oIyPbMg==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2024-05-14T17:04:05Z"
-    mac: ENC[AES256_GCM,data:KedEDT9x+GBce8yXpEDFAtefpP8xUeGSOUkX+9Dmw5e29cigvBHFaJmSR+OO+SsT4AKbHQG1J2P6o/qqbMAfpI+d8D17iaMtVYrOXPZRIEd/vVwnPUs/cJ+nSR4S2m3EUzdHFfy/A1CrogUBbYld6vXpiJMAcaF4DIgqx/WkvrI=,iv:iRL/a9FjvpsMHbnBgYM1h5H9Z7I+LAnuQk0pfYs44PM=,tag:4WAKWadsFFDv5l+9G/N2+Q==,type:str]
+    lastmodified: "2024-05-14T17:05:11Z"
+    mac: ENC[AES256_GCM,data:Zu5yOGTyLpjWL+5NP/jhN/fzAF1n9BmpDwZl6gF1T/LDGwkvMydHqQlrNo6fmY2ILtK4HNJKIWlXL8HcMm1k+FGqgD8F/vfn8MqbyrIUe1JwMofoKIQNu1hhaX8sUakCm8YpRCWT3er4N/fMtM7pa5AAI/uKO5RImmJHuvxXll8=,iv:7IKXApU4dMbYmWBYm7KmODwYYAPAt0PX3LGKuZG241E=,tag:kLAjW1XUZxUF8sxl83HYvA==,type:str]
     pgp: []
     encrypted_regex: ^(data|stringData)$
     version: 3.8.1
