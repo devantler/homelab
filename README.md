@@ -11,19 +11,26 @@
 ├── .vscode
 ├── k8s
 │   ├── clusters
-│   │   └── homelab
+│   │   ├── homelab-ksail
+│   │   │   ├── flux-system
+│   │   │   └── variables
+│   │   └── homelab-prod
 │   │       ├── flux-system
 │   │       └── variables
-│   ├── crds
-│   │   └── middlewares
-│   └── infrastructure
-│       ├── configmaps
-│       ├── ingresses
-│       └── patches
+│   ├── environments
+│   │   ├── ksail
+│   │   └── talos
+│   └── manifests
+│       ├── crds
+│       │   └── middlewares
+│       └── infrastructure
+│           ├── configmaps
+│           ├── ingresses
+│           └── patches
 └── talos
     └── patches
 
-16 directories
+23 directories
 ```
 <!-- readme-tree end -->
 
