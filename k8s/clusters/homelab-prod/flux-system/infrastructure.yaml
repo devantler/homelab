@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: manifests/infrastructure
+  path: environments/talos/infrastructure
   prune: true
   wait: true
   decryption:
