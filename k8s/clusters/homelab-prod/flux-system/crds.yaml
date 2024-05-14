@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: crds
+  path: environments/talos/crds
   prune: true
   wait: true
   decryption:

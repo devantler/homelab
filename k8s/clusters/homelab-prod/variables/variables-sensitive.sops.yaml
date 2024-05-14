@@ -1,0 +1,33 @@
+# You need to encrypt this file with SOPS manually.
+# ksail sops --encrypt variables-sensitive.sops.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+    name: variables-sensitive
+    namespace: flux-system
+stringData:
+    cloudflare_dns_api_key: ENC[AES256_GCM,data:t4FEGe3Bk9dCoFhvrhHb3rR9m94XhbFU39lHXVxyCIVsHdhb2zzHAQ==,iv:4hHOD/343dWZZxEZWsfb53RPfi+aveKVtecleqjYFYk=,tag:JpxvGQFU0eHx3nT8RluRIQ==,type:str]
+    cloudflared_tunnel_token: ENC[AES256_GCM,data:GlmiRNUGJ7OZ++k9S1FzfVCBjIH1uU/pFP02y8kFu8JzPx0Dl2LRgMy04dWczg5T8c6g9ad3UB1S3pr3QBauoWoWoEJATCqEipMEAXRYX6nTY4+2ktOUa2U7NMhLv2sTQIDq1rSE5DumSd6M50E0Z3mW/2jvWFeFXSxFEqgOpzDdWnbbaiJOQYr2NAoIgnpUl+HAR8ADgkOzhvAV7Na1uuKDon2CaPRtgMAoxrvM42OjJ10wlgsStA==,iv:bH6rnXAKcKYSd4hHXR0OwFd+6FOD6Wvk40FLGde/pYM=,tag:TdCWVB2Q574k5/2Qx+EN/w==,type:str]
+    cluster_domain: ENC[AES256_GCM,data:SUpf01KwTkVPcVkThQ==,iv:kSIMSVOmtWmaGPrB/XQGTT4Mpk2YwQNN33/frNqYUmA=,tag:IkBzVb1imdvrDIep/pnR9w==,type:str]
+    oauth2_proxy_client_secret: ENC[AES256_GCM,data:7g4jybS9itGJFNit8pqhaar+oZoEt6jQou/3xD6cnS7ET5zq+HM3GQ==,iv:yxOLN8f/IZIKq3deSWec701vsnPs3nFyMcl4G173lF8=,tag:GrBrcWs8x0ZK0BnHK/EEwg==,type:str]
+    oauth2_proxy_cookie_secret: ENC[AES256_GCM,data:OQFERx2r85LA9EUOM7ZqU/jmez1ZUSpRS4IZAdaOBmdyzsRMuxFsrOLdxNc=,iv:M1Ye31zD5AgAS6Jw9vVa+AjsZ1LI9pIvLuT0vwpchNA=,tag:D9E/AiJp8YHJAZ+LLngibQ==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1qwpktma4zpd8grfp9a462fu5qqqg9qcltn7g9wjw5jmnat7d8snq3wwsc3
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB2STZ3ODhJZFlwZjdyT1B4
+            eXppRysrU0h2Q0dZc2VPYSszcHdoZFo0OUNnClVEQlpZMm1FMjF1NE92aXlzUDEx
+            T3JjTkJZbFpxWWpyNW4zMDArMFRzK2sKLS0tIFNnVDN3WDN4eHdsUlRkZVFHaS9j
+            MnNDc1diKzVJdkxzcDhuZFpKcTNqaUkKkibGM7CPdCs7lb3O5/SfuUkhOdQ7Qw24
+            oryn68OMM52VhBhAoFpeE4AQAKCGgRhROqSiQvXknekIarix9P9/BA==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2024-05-13T23:14:42Z"
+    mac: ENC[AES256_GCM,data:yGotXcQj6hxJz1jbWt+h0XnkKV3S7MQiD304qjBy7aDaeiojFKOuQ8RlUJI/LnpLAVhPdpzzU9WT1yEApCz+/cUhplSmYl59f5fkPfArkG8Dquivg/MhsXEIAP6uyf80orQGJGIhSWF8BAgfG6CTmi2EhI1FRTyPGsTLIIEjg3k=,iv:Qp/ugCxS+qCWmjvUMDNS0uwLahAu8+5V2yfRU1wGKG8=,tag:DLyB1gPIaClrqinQzZyW1A==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData)$
+    version: 3.8.1
