@@ -26,6 +26,11 @@ patches:
       kind: HelmRelease
       name: homepage
       namespace: homepage
+  - path: patches/openebs-patch.yaml
+    target:
+      kind: HelmRelease
+      name: openebs
+      namespace: openebs
   - path: patches/traefik-patch.yaml
     target:
       kind: HelmRelease
