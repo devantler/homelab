@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - configmaps/oauth2-proxy-configmap.yaml
-  #- https://github.com/devantler/oci-artifacts//k8s/cert-manager?ref=v0.0.8
+  - https://github.com/devantler/oci-artifacts//k8s/cert-manager?ref=v0.0.8
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared?ref=v0.0.8
   - https://github.com/devantler/oci-artifacts//k8s/crossplane?ref=v0.0.8
   - https://github.com/devantler/oci-artifacts//k8s/goldilocks?ref=v0.0.8
@@ -11,7 +11,7 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/metrics-server?ref=v0.0.8
   - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy?ref=v0.0.8
   - https://github.com/devantler/oci-artifacts//k8s/openebs?ref=v0.0.8
-  #- https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.8
+  - https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.8
   - ingresses/cilium-hubble-ingress.yaml
 
 patches:
@@ -25,11 +25,11 @@ patches:
       kind: HelmRelease
       name: homepage
       namespace: homepage
-  # - path: patches/traefik-patch.yaml
-  #   target:
-  #     kind: HelmRelease
-  #     name: traefik
-  #     namespace: traefik
+  - path: patches/traefik-patch.yaml
+    target:
+      kind: HelmRelease
+      name: traefik
+      namespace: traefik
   - path: patches/vpa-enable-patch.yaml
     target:
       kind: Namespace
