@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  init-flux-prod:
+  bootstrap-prod:
     runs-on: ubuntu-latest
     environment: prod
     steps:
@@ -94,7 +94,7 @@ jobs:
   deploy-prod:
     runs-on: ubuntu-latest
     needs:
-      - init-flux-prod
+      - bootstrap-prod
       - push-to-oci-prod
     environment: prod
     steps:
