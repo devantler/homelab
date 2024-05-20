@@ -9,8 +9,8 @@ spec:
     ingress:
       annotations:
         traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
-    # cephBlockPools:
-    #   - name: ceph-blockpool
-    #     spec:
-    #       replicated:
-    #         size: ${rook_ceph_cluster_ceph_blockpool_replicated_size:=1}
+    cephBlockPools:
+      - name: ceph-blockpool
+        spec:
+          replicated:
+            size: 1

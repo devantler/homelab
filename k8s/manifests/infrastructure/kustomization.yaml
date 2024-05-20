@@ -10,7 +10,7 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/kubelet-serving-cert-approver?ref=v0.0.20
   - https://github.com/devantler/oci-artifacts//k8s/metrics-server?ref=v0.0.20
   - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy?ref=v0.0.20
-  # - https://github.com/devantler/oci-artifacts//k8s/rook-ceph?ref=v0.0.20
+  - https://github.com/devantler/oci-artifacts//k8s/rook-ceph?ref=v0.0.20
   - https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.20
   - ingresses/cilium-hubble-ingress.yaml
 
