@@ -21,6 +21,8 @@
 │   │   ├── ksail
 │   │   └── talos
 │   └── manifests
+│       ├── apps
+│       │   └── patches
 │       ├── configuration
 │       │   └── middlewares
 │       └── infrastructure
@@ -30,7 +32,7 @@
 └── talos
     └── patches
 
-23 directories
+25 directories
 ```
 <!-- readme-tree end -->
 
