@@ -14,7 +14,7 @@
 │   │   ├── homelab-ksail
 │   │   │   ├── flux-system
 │   │   │   └── variables
-│   │   └── homelab
+│   │   └── homelab-prod
 │   │       ├── flux-system
 │   │       └── variables
 │   ├── environments
