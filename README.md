@@ -21,7 +21,7 @@
 │   │   ├── ksail
 │   │   └── talos
 │   └── manifests
-│       ├── crds
+│       ├── configuration
 │       │   └── middlewares
 │       └── infrastructure
 │           ├── configmaps
