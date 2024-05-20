@@ -47,7 +47,7 @@ spec:
                 description: One of the world's largest networks. Provides domain registration, DNS, and much more.
             - UniFi:
                 icon: unifi
-                href: https://unifi.${cluster_domain}
+                href: https://unifi.ui.com
                 description: Central hub for managing UniFi network infrastructure.
         - Management:
             - Omni:
