@@ -6,7 +6,6 @@ metadata:
 spec:
   # https://github.com/rook/rook/blob/release-1.14/deploy/charts/rook-ceph/values.yaml
   values:
-    enableDiscoveryDaemon: ${rook_ceph_cluster_enable_discovery_daemon:=true}
     ingress:
       annotations:
         traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
