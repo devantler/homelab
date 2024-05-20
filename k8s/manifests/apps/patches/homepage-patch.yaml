@@ -54,10 +54,10 @@ spec:
                 icon: si-talos-#FF7300
                 href: https://devantler.omni.siderolabs.io
                 description: Platform for provisioning and managing Talos Linux clusters.
-            - Rook-Ceph:
+            - Ceph:
                 icon: ceph
-                href: https://rook-ceph.${cluster_domain}
-                description: Cloud-native storage orchestrator.
+                href: https://ceph.${cluster_domain}
+                description: Cloud-native storage.
             - Harbor:
                 icon: harbor
                 href: https://harbor.${cluster_domain}
