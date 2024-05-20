@@ -20,6 +20,11 @@ patches:
       kind: HelmRelease
       name: goldilocks
       namespace: goldilocks
+  - path: patches/harbor-patch.yaml
+    target:
+      kind: HelmRelease
+      name: harbor
+      namespace: harbor
   - path: patches/openebs-patch.yaml
     target:
       kind: HelmRelease
