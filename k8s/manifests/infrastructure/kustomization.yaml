@@ -12,7 +12,6 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/rook-ceph?ref=main
   - https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.13
   - ingresses/cilium-hubble-ingress.yaml
-  - ingresses/rook-ceph-mgr-dashboard-ingress.yaml
   #- https://github.com/devantler/oci-artifacts//k8s/harbor?ref=v0.0.12
 
 patches:
