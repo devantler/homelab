@@ -2,4 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../../manifests/infrastructure
-  #- minimal-ceph-cluster.yaml
+  - ceph-cluster.yaml
+
+patches:
+  - path: patches/harbor-patch.yaml
+    target:
+      kind: HelmRelease
+      name: harbor
+      namespace: harbor
