@@ -1,7 +1,7 @@
 apiVersion: ceph.rook.io/v1
 kind: CephCluster
 metadata:
-  name: ceph-cluster
+  name: rook-ceph-cluster
   namespace: rook-ceph
 spec:
   dataDirHostPath: /var/lib/rook
@@ -48,7 +48,7 @@ spec:
 apiVersion: ceph.rook.io/v1
 kind: CephBlockPool
 metadata:
-  name: builtin-mgr
+  name: rook-ceph-mgr
   namespace: rook-ceph # namespace:cluster
 spec:
   name: .mgr
@@ -64,6 +64,7 @@ metadata:
     storageclass.kubernetes.io/is-default-class: "true"
 provisioner: rook-ceph.rbd.csi.ceph.com
 parameters:
+  clusterID: rook-ceph
   pool: replicapool
   imageFormat: "2"
   imageFeatures: layering
