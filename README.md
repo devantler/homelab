@@ -18,8 +18,9 @@
 │   │       ├── flux-system
 │   │       └── variables
 │   ├── environments
-│   │   ├── ksail
 │   │   └── talos
+│   │       ├── core
+│   │       └── infrastructure
 │   └── manifests
 │       ├── apps
 │       │   └── patches
@@ -32,7 +33,7 @@
 └── talos
     └── patches
 
-25 directories
+26 directories
 ```
 <!-- readme-tree end -->
 
