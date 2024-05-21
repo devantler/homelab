@@ -24,7 +24,6 @@ spec:
   storage:
     useAllNodes: true
     useAllDevices: true
-    #deviceFilter:
   monitoring:
     enabled: false
   healthCheck:
