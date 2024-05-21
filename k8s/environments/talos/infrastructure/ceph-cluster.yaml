@@ -48,7 +48,7 @@ apiVersion: ceph.rook.io/v1
 kind: CephBlockPool
 metadata:
   name: rook-ceph-block-pool
-  namespace: rook-ceph # namespace:cluster
+  namespace: rook-ceph
 spec:
   name: .mgr
   replicated:
@@ -64,7 +64,7 @@ metadata:
 provisioner: rook-ceph.rbd.csi.ceph.com
 parameters:
   clusterID: rook-ceph
-  pool: rook-ceph-block-pool
+  pool: .mgr
   imageFormat: "2"
   imageFeatures: layering
   csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
