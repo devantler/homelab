@@ -3,10 +3,3 @@ kind: Kustomization
 resources:
   - ../../../manifests/infrastructure
   - ceph-cluster.yaml
-
-patches:
-  - path: patches/harbor-patch.yaml
-    target:
-      kind: HelmRelease
-      name: harbor
-      namespace: harbor
