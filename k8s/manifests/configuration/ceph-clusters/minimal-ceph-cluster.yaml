@@ -60,6 +60,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: rook-ceph-block
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
 provisioner: rook-ceph.rbd.csi.ceph.com # csi-provisioner-name
 parameters:
   clusterID: ceph-cluster
