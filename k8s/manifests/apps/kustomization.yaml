@@ -1,6 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - https://github.com/devantler/oci-artifacts//k8s/harbor?ref=v0.0.20
   - https://github.com/devantler/oci-artifacts//k8s/homepage?ref=v0.0.20
 
 patches:

@@ -62,7 +62,7 @@ metadata:
   name: rook-ceph-block
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
-provisioner: rook-ceph.rbd.csi.ceph.com # csi-provisioner-name
+provisioner: rook-ceph.rbd.csi.ceph.com
 parameters:
   clusterID: ceph-cluster
   pool: replicapool
