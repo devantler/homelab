@@ -20,21 +20,11 @@ patches:
       kind: HelmRelease
       name: goldilocks
       namespace: goldilocks
-  - path: patches/harbor-patch.yaml
-    target:
-      kind: HelmRelease
-      name: harbor
-      namespace: harbor
   - path: patches/openebs-patch.yaml
     target:
       kind: HelmRelease
       name: openebs
       namespace: openebs
-  - path: patches/rook-ceph-cluster-patch.yaml
-    target:
-      kind: HelmRelease
-      name: rook-ceph-cluster
-      namespace: rook-ceph
   - path: patches/traefik-patch.yaml
     target:
       kind: HelmRelease
