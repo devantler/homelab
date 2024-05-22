@@ -38,3 +38,5 @@
 <!-- readme-tree end -->
 
 </details>
+
+<img width="1737" alt="image" src="https://github.com/devantler/homelab/assets/26203420/19df9600-b8c9-4615-beda-723fbf9fa21c">
