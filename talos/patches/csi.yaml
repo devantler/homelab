@@ -1,0 +1,10 @@
+machine:
+  kubelet:
+    extraMounts:
+      - destination: /var
+        type: bind
+        source: /var
+        options:
+          - bind
+          - rshared
+          - rw
