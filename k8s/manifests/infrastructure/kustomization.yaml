@@ -10,8 +10,6 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/metrics-server?ref=v0.0.22
   - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy?ref=v0.0.22
   - https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.22
-  - ingresses/cilium-hubble-ingress.yaml
-  - ingresses/ceph-ingress.yaml
 
 patches:
   - path: patches/goldilocks-patch.yaml
