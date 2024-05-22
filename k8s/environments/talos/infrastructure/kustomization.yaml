@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - ../../../manifests/infrastructure
   - https://github.com/devantler/oci-artifacts//k8s/kubelet-serving-cert-approver?ref=v0.0.23
+  - https://github.com/devantler/oci-artifacts//k8s/openebs?ref=main
   #- https://github.com/devantler/oci-artifacts//k8s/rook-ceph?ref=main
