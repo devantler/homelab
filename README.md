@@ -25,10 +25,10 @@
 │       ├── apps
 │       │   └── patches
 │       ├── configuration
+│       │   ├── ingresses
 │       │   └── middlewares
 │       └── infrastructure
 │           ├── configmaps
-│           ├── ingresses
 │           └── patches
 └── talos
     └── patches
