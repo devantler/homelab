@@ -3,7 +3,5 @@ kind: Kustomization
 resources:
   - https://raw.githubusercontent.com/devantler/oci-artifacts/main/k8s/cert-manager/certificates/cluster-issuer-certificate.yaml
   - https://raw.githubusercontent.com/devantler/oci-artifacts/main/k8s/cert-manager/cluster-issuers/selfsigned-cluster-issuer.yaml
-  - ingresses/ceph-ingress.yaml
-  - ingresses/cilium-hubble-ingress.yaml
   - middlewares/traefik-auth-headers.yaml
   - middlewares/traefik-forward-auth.yaml

@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 1m
   dependsOn:
-    - name: core
+    - name: storage-crds
   sourceRef:
     kind: OCIRepository
     name: flux-system

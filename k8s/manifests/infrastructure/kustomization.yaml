@@ -4,12 +4,13 @@ resources:
   - configmaps/oauth2-proxy-configmap.yaml
   - https://github.com/devantler/oci-artifacts//k8s/cert-manager?ref=v0.0.22
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared?ref=v0.0.22
-  - https://github.com/devantler/oci-artifacts//k8s/crossplane?ref=v0.0.22
+  # - https://github.com/devantler/oci-artifacts//k8s/crossplane?ref=v0.0.22
   - https://github.com/devantler/oci-artifacts//k8s/goldilocks?ref=v0.0.22
-  - https://github.com/devantler/oci-artifacts//k8s/harbor?ref=v0.0.22
+  # - https://github.com/devantler/oci-artifacts//k8s/harbor?ref=v0.0.22
   - https://github.com/devantler/oci-artifacts//k8s/metrics-server?ref=v0.0.22
   - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy?ref=v0.0.22
   - https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.22
+  - ingresses/cilium-hubble-ingress.yaml
 
 patches:
   - path: patches/goldilocks-patch.yaml
@@ -17,11 +18,6 @@ patches:
       kind: HelmRelease
       name: goldilocks
       namespace: goldilocks
-  - path: patches/openebs-patch.yaml
-    target:
-      kind: HelmRelease
-      name: openebs
-      namespace: openebs
   - path: patches/traefik-patch.yaml
     target:
       kind: HelmRelease

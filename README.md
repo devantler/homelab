@@ -19,12 +19,12 @@
 │   │       └── variables
 │   ├── environments
 │   │   └── talos
-│   │       ├── core
+│   │       ├── storage
 │   │       └── infrastructure
 │   └── manifests
 │       ├── apps
 │       │   └── patches
-│       ├── configuration
+│       ├── infrastructure-crds
 │       │   ├── ingresses
 │       │   └── middlewares
 │       └── infrastructure
