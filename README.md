@@ -19,7 +19,6 @@
 │   │       └── variables
 │   ├── environments
 │   │   └── talos
-│   │       ├── storage
 │   │       └── infrastructure
 │   └── manifests
 │       ├── apps
