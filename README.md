@@ -23,16 +23,16 @@
 │   └── manifests
 │       ├── apps
 │       │   └── patches
-│       ├── infrastructure-crds
+│       ├── infrastructure
+│       │   ├── configmaps
 │       │   ├── ingresses
-│       │   └── middlewares
-│       └── infrastructure
-│           ├── configmaps
-│           └── patches
+│       │   └── patches
+│       └── infrastructure-crds
+│           └── middlewares
 └── talos
     └── patches
 
-26 directories
+25 directories
 ```
 <!-- readme-tree end -->
 
