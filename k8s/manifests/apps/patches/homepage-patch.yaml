@@ -18,15 +18,6 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
     config:
-      title: ✨ Devantler's Portal ✨
-      theme: dark
-      color: slate
-      background:
-        image: https://images.unsplash.com/photo-1502790671504-542ad42d5189?auto=format&fit=crop&w=2560&q=80
-        blur: sm
-        saturate: 50
-        brightness: 50
-        opacity: 50
       widgets:
         - resources:
             backend: kubernetes
@@ -54,7 +45,7 @@ spec:
             labels: true
             nodes: true
         - unifi_console:
-            url: https://unifi.ui.com
+            url: https://192.168.1.1
             username: devantler
             password: ${unifi_password}
         - datetime:
