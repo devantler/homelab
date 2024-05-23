@@ -20,6 +20,7 @@
 │   ├── environments
 │   │   └── talos
 │   │       └── infrastructure
+│   │           └── patches
 │   └── manifests
 │       ├── apps
 │       │   └── patches
@@ -32,7 +33,7 @@
 └── talos
     └── patches
 
-25 directories
+26 directories
 ```
 <!-- readme-tree end -->
 
