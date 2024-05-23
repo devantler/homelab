@@ -40,6 +40,10 @@ spec:
               memory: true
               showLabel: true
       services:
+        - Websites:
+            - GitHub Pages:
+                - icon: github
+                  href: https://${cluster_domain}
         - Networking:
             - Cloudflare:
                 icon: cloudflare
@@ -77,10 +81,18 @@ spec:
                 href: https://traefik.${cluster_domain}
                 description: Dashboard for Reverse Proxy.
       bookmarks:
-        - Personal:
-            - GitHub Pages:
+        - News:
+            - GitHub Blog:
                 - icon: github
-                  href: https://${cluster_domain}
+                  href: https://github.blog
+            - CNCF Blog:
+                - icon: si-cncf-#231F20
+                  href: https://www.cncf.io/blog
+            - OpenAI Blog:
+                - icon: openai
+                  href: https://openai.com/blog
+        - Releases:
+            - VSCode Releases:
         - Development:
             - GitHub:
                 - icon: github
@@ -88,3 +100,5 @@ spec:
             - Renovate:
                 - icon: si-renovatebot-#1A1F6C
                   href: https://developer.mend.io
+                - icon: vscode
+                  href: https://code.visualstudio.com/updates
