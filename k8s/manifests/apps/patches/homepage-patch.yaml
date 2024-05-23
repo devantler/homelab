@@ -57,6 +57,10 @@ spec:
             url: https://unifi.ui.com
             username: devantler
             password: ${unifi_password}
+        - datetime:
+            text_size: xl
+            format:
+              timeStyle: short
       services:
         - Websites:
             - GitHub Pages:
