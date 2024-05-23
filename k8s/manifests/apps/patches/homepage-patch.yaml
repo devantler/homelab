@@ -48,6 +48,11 @@ spec:
               cpu: true
               memory: true
               showLabel: true
+        - longhorn:
+            expanded: true
+            total: true
+            labels: true
+            nodes: true
       services:
         - Websites:
             - GitHub Pages:
@@ -111,3 +116,6 @@ spec:
                   href: https://developer.mend.io
                 - icon: vscode
                   href: https://code.visualstudio.com/updates
+      providers:
+        longhorn:
+          url: http://longhorn.longhorn-system
