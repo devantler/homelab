@@ -44,10 +44,6 @@ spec:
             total: true
             labels: true
             nodes: true
-        - unifi_console:
-            url: https://192.168.1.1:443
-            username: devantler
-            password: ${unifi_password}
         - datetime:
             text_size: xl
             format:
@@ -66,6 +62,12 @@ spec:
                 icon: unifi
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
+                widget:
+                  type: unifi
+                  url: http://192.168.1.1:80
+                  username: devantler
+                  password: ${unifi_password}
+                  site: Cloud Gateway Ultra - Home
         - Provisioning:
             - Omni:
                 icon: si-talos-#FF7300
