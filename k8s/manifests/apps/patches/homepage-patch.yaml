@@ -95,7 +95,7 @@ spec:
                 description: Dashboard for Reverse Proxy.
                 widget:
                   type: traefik
-                  url: http://traefik.traefik:8000
+                  url: http://traefik.traefik:80
       bookmarks:
         - News:
             - GitHub Blog:
@@ -118,3 +118,6 @@ spec:
                   href: https://developer.mend.io
                 - icon: vscode
                   href: https://code.visualstudio.com/updates
+      providers:
+        longhorn:
+          url: http://longhorn-frontend.longhorn-system:80
