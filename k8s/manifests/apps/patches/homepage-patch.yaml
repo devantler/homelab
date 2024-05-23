@@ -62,12 +62,6 @@ spec:
                 icon: unifi
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
-                widget:
-                  type: unifi
-                  url: http://192.168.1.1:80
-                  username: devantler
-                  password: ${unifi_password}
-                  site: Cloud Gateway Ultra - Home
         - Provisioning:
             - Omni:
                 icon: si-talos-#FF7300
