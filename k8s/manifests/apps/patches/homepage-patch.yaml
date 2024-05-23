@@ -53,6 +53,10 @@ spec:
             total: true
             labels: true
             nodes: true
+        - unifi_console:
+            url: https://unifi.ui.com
+            username: devantler
+            password: ${unifi_password}
       services:
         - Websites:
             - GitHub Pages:
