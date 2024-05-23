@@ -18,6 +18,19 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
     config:
+      settings:
+        title: ✨ Devantler's Portal ✨
+        theme: dark
+        color: slate
+        background:
+          image: https://images.unsplash.com/photo-1502790671504-542ad42d5189?auto=format&fit=crop&w=2560&q=80
+          blur: sm
+          saturate: 50
+          brightness: 50
+          opacity: 50
+        providers:
+          longhorn:
+            url: http://longhorn-frontend.longhorn-system:80
       widgets:
         - resources:
             backend: kubernetes
@@ -114,6 +127,3 @@ spec:
                   href: https://developer.mend.io
                 - icon: vscode
                   href: https://code.visualstudio.com/updates
-      providers:
-        longhorn:
-          url: http://longhorn-frontend.longhorn-system:80
