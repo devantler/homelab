@@ -102,6 +102,9 @@ spec:
                 icon: traefik
                 href: https://traefik.${cluster_domain}
                 description: Dashboard for Reverse Proxy.
+                widget:
+                  type: traefik
+                  url: https://traefik.${cluster_domain}
       bookmarks:
         - News:
             - GitHub Blog:
