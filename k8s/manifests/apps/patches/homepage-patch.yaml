@@ -95,7 +95,7 @@ spec:
                 description: Dashboard for Reverse Proxy.
                 widget:
                   type: traefik
-                  url: https://traefik.${cluster_domain}
+                  url: https://traefik.traefik:8443
       bookmarks:
         - News:
             - GitHub Blog:
