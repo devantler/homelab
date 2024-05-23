@@ -118,6 +118,3 @@ spec:
                   href: https://developer.mend.io
                 - icon: vscode
                   href: https://code.visualstudio.com/updates
-      providers:
-        longhorn:
-          url: http://longhorn.devantler.com
