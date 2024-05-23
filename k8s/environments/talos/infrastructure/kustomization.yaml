@@ -4,3 +4,10 @@ resources:
   - ../../../manifests/infrastructure
   - https://github.com/devantler/oci-artifacts//k8s/kubelet-serving-cert-approver?ref=v0.0.23
   - https://github.com/devantler/oci-artifacts//k8s/longhorn?ref=main
+
+patches:
+  - path: patches/longhorn-patch.yaml
+    target:
+      kind: HelmRelease
+      name: longhorn
+      namespace: longhorn-system
