@@ -54,9 +54,9 @@ spec:
                 icon: si-talos-#FF7300
                 href: https://omni.${cluster_domain}
                 description: Platform for provisioning and managing Talos Linux clusters.
-            - Ceph:
-                icon: ceph
-                href: https://ceph.${cluster_domain}
+            - Longhorn:
+                icon: longhorn
+                href: https://longhorn.${cluster_domain}
                 description: Cloud-native storage.
             - Harbor:
                 icon: harbor

@@ -1,0 +1,11 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: longhorn
+  namespace: longhorn-system
+spec:
+  # https://github.com/longhorn/charts/blob/v1.6.x/charts/longhorn/values.yaml
+  values:
+    ingress:
+      annotations:
+        traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
