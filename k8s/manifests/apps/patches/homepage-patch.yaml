@@ -45,7 +45,7 @@ spec:
             labels: true
             nodes: true
         - unifi_console:
-            url: https://192.168.1.1
+            url: http://192.168.1.1:443
             username: devantler
             password: ${unifi_password}
         - datetime:
