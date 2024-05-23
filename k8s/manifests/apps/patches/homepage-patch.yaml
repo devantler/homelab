@@ -49,11 +49,12 @@ spec:
                 icon: unifi
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
-        - Management:
+        - Provisioning:
             - Omni:
                 icon: si-talos-#FF7300
                 href: https://omni.${cluster_domain}
                 description: Platform for provisioning and managing Talos Linux clusters.
+        - Storage:
             - Longhorn:
                 icon: longhorn
                 href: https://longhorn.${cluster_domain}
