@@ -32,8 +32,10 @@
 │           └── middlewares
 └── talos
     └── patches
+        ├── cluster
+        └── nodes
 
-26 directories
+28 directories
 ```
 <!-- readme-tree end -->
 
