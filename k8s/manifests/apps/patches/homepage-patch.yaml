@@ -18,16 +18,6 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
     config:
-      settings:
-        title: ✨ Devantler's Portal ✨
-        theme: dark
-        color: slate
-        background:
-          image: https://images.unsplash.com/photo-1502790671504-542ad42d5189?auto=format&fit=crop&w=2560&q=80
-          blur: sm
-          saturate: 50
-          brightness: 50
-          opacity: 50
       widgets:
         - resources:
             backend: kubernetes
@@ -72,9 +62,6 @@ spec:
                 icon: unifi
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
-                widget:
-                  type: unifi
-                  url:
         - Provisioning:
             - Omni:
                 icon: si-talos-#FF7300
@@ -85,19 +72,27 @@ spec:
                 icon: longhorn
                 href: https://longhorn.${cluster_domain}
                 description: Cloud-native storage.
+                app: longhorn
+                namespace: longhorn-system
             - Harbor:
                 icon: harbor
                 href: https://harbor.${cluster_domain}
                 description: Cloud-native Container Registry.
+                app: harbor
+                namespace: harbor
         - Monitoring:
             - Cilium Hubble:
                 icon: cilium
                 href: https://hubble-ui.${cluster_domain}
                 description: Observability for Cilium, a high-performance Container Network Interface (CNI).
+                app: hubble-ui
+                namespace: kube-system
             - Goldilocks:
                 icon: mdi-white-balance-sunny
                 href: https://goldilocks.${cluster_domain}
                 description: Dashboard for automated vertical pod autoscaling recommendations.
+                app: goldilocks
+                namespace: goldilocks
             - Traefik:
                 icon: traefik
                 href: https://traefik.${cluster_domain}
