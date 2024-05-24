@@ -64,8 +64,9 @@ spec:
       services:
         - Websites:
             - GitHub Pages:
-                - icon: github
-                  href: https://${cluster_domain}
+                icon: github
+                href: https://${cluster_domain}
+                description: Personal website and blog.
         - Networking:
             - Cloudflare:
                 icon: cloudflare
