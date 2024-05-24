@@ -39,4 +39,5 @@
 
 </details>
 
-<img width="1737" alt="image" src="https://github.com/devantler/homelab/assets/26203420/19df9600-b8c9-4615-beda-723fbf9fa21c">
+<img width="1720" alt="image" src="https://github.com/devantler/homelab/assets/26203420/de0268be-cadb-4128-90d1-11da5925450a">
+
