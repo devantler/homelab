@@ -112,6 +112,8 @@ spec:
                   href: https://openai.com/blog
         - Releases:
             - VSCode Releases:
+                - icon: vscode
+                  href: https://code.visualstudio.com/updates
         - Development:
             - GitHub:
                 - icon: github
@@ -119,5 +121,3 @@ spec:
             - Renovate:
                 - icon: si-renovatebot-#1A1F6C
                   href: https://developer.mend.io
-                - icon: vscode
-                  href: https://code.visualstudio.com/updates
