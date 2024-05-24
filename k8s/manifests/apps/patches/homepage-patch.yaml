@@ -28,9 +28,6 @@ spec:
           saturate: 50
           brightness: 50
           opacity: 50
-        providers:
-          longhorn:
-            url: http://longhorn-frontend.longhorn-system:80
       widgets:
         - resources:
             backend: kubernetes
@@ -75,6 +72,9 @@ spec:
                 icon: unifi
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
+                widget:
+                  type: unifi
+                  url:
         - Provisioning:
             - Omni:
                 icon: si-talos-#FF7300
@@ -102,9 +102,8 @@ spec:
                 icon: traefik
                 href: https://traefik.${cluster_domain}
                 description: Dashboard for Reverse Proxy.
-                widget:
-                  type: traefik
-                  url: http://traefik.traefik:80
+                app: traefik
+                namespace: traefik
       bookmarks:
         - News:
             - GitHub Blog:
