@@ -113,6 +113,9 @@ spec:
                 description: Dashboard for Reverse Proxy.
                 app: traefik
                 namespace: traefik
+                widget:
+                  type: traefik
+                  url: https://traefik.${cluster_domain}
       bookmarks:
         - News:
             - GitHub Blog:
