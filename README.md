@@ -45,7 +45,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 
 ## Cluster Nodes
 
-- 1x Mac Mini M2 Pro (Split into 2x UTM VMs)
+- 1x Mac Mini M2 Pro (Split into 2x UTM (QEMU) VMs)
 - 1x Zima Board
 
 ## Supporting Hardware
