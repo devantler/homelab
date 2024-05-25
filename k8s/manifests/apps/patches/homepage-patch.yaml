@@ -75,7 +75,7 @@ spec:
                 href: https://${cluster_domain}
                 description: Personal website and blog.
             - Llama GPT:
-                icon: llama
+                icon: https://camo.githubusercontent.com/e1124b5366d660690886e9750960b4ac9949a690b1ad10426a876156e1ae739e/68747470733a2f2f692e696d6775722e636f6d2f4c4935396375692e706e67
                 href: https://llama-gpt.${cluster_domain}
                 description: AI-powered text generation.
                 app: llama-gpt-ui
