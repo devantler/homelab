@@ -13,6 +13,7 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/pulumi-operator?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.24
   - ingresses/cilium-hubble-ingress.yaml
+  - pvcs/pulumi-backend-pvc.yaml
 
 patches:
   - path: patches/goldilocks-patch.yaml
@@ -20,6 +21,11 @@ patches:
       kind: HelmRelease
       name: goldilocks
       namespace: goldilocks
+  - path: patches/pulumi-operator-patch.yaml
+    target:
+      kind: HelmRelease
+      name: pulumi-operator
+      namespace: pulumi-operator
   - path: patches/traefik-patch.yaml
     target:
       kind: HelmRelease
