@@ -5,6 +5,7 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/cert-manager?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/cloudflared?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/crossplane?ref=v0.0.24
+  - https://github.com/devantler/oci-artifacts//k8s/gha-runner-scale-set?ref=main
   - https://github.com/devantler/oci-artifacts//k8s/goldilocks?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/harbor?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/metrics-server?ref=v0.0.24
