@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: llama-gpt-ingress
+  namespace: kube-system
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
+spec:
+  rules:
+  - host: llama-gpt.${cluster_domain}
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: llama-gpt-ui
+            port:
+              number: 3000
