@@ -70,6 +70,11 @@ spec:
                 icon: cloudflare
                 href: https://cloudflare.${cluster_domain}
                 description: Central hub for managing public networking, e.g. FQDN, DNS and remote tunneling.
+                widget:
+                  type: cloudflared
+                  accountid: 634e9016d402443e427865dc35457728
+                  tunnelid: 3284a342-3b0f-4530-a60e-07338e2bec17
+                  key: ${cloudflared_tunnel_token}
             - UniFi:
                 icon: unifi
                 href: https://unifi.ui.com
