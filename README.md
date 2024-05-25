@@ -27,8 +27,7 @@
 │       ├── infrastructure
 │       │   ├── configmaps
 │       │   ├── ingresses
-│       │   ├── patches
-│       │   └── pvcs
+│       │   └── patches
 │       └── infrastructure-crds
 │           └── middlewares
 └── talos
@@ -36,7 +35,7 @@
         ├── cluster
         └── nodes
 
-29 directories
+28 directories
 ```
 <!-- readme-tree end -->
 
