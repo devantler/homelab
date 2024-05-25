@@ -7,8 +7,8 @@ spec:
   # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
   # Icons:
   # https://github.com/walkxcode/dashboard-icons No prefix
-  # https://pictogrammers.com/library/mdi/ Prefix with mdi-
   # https://simpleicons.org/ Prefix with si-
+  # https://pictogrammers.com/library/mdi/ Prefix with mdi-
   values:
     image:
       repository: ghcr.io/gethomepage/homepage
@@ -75,13 +75,13 @@ spec:
                 href: https://${cluster_domain}
                 description: Personal website and blog.
             - PlantUML:
-                icon: plantuml
+                icon: https://static-00.iconduck.com/assets.00/file-type-plantuml-icon-512x485-f776vhc4.png
                 href: https://plantuml.${cluster_domain}
                 description: Text-based UML diagramming tool.
                 app: plantuml
                 namespace: plantuml
             - Draw.io:
-                icon: drawio
+                icon: draw-io
                 href: https://drawio.${cluster_domain}
                 description: Drag and drop based UML diagramming tool.
                 app: drawio
