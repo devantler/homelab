@@ -10,6 +10,7 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/harbor?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/metrics-server?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/oauth2-proxy?ref=v0.0.24
+  - https://github.com/devantler/oci-artifacts//k8s/pulumi-operator?ref=v0.0.24
   - https://github.com/devantler/oci-artifacts//k8s/traefik?ref=v0.0.24
   - ingresses/cilium-hubble-ingress.yaml
 
