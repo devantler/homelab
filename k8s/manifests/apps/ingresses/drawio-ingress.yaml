@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: drawio
+  namespace: drawio
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
+spec:
+  rules:
+    - host: drawio.${cluster_domain}
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: drawio
+                port:
+                  number: 10214
