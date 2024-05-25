@@ -5,6 +5,4 @@ metadata:
   namespace: flux-system
 data:
   cluster_issuer_name: selfsigned-cluster-issuer
-  gha_runner_scale_set_name: homelab-ksail
-  gha_runner_scale_set_url: https://github.com/devantler
   oauth2_proxy_client_id: Ov23liTxrJtJ081Hiq35
