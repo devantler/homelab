@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: llama-gpt-ingress
-  namespace: kube-system
+  namespace: llama-gpt
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
 spec:
