@@ -30,14 +30,27 @@ spec:
           longhorn:
             url: http://longhorn-frontend.longhorn-system:80
       widgets:
+        - logo: {}
+        - greeting:
+            text_size: xl
+            text: Welcome to Devantler's Homelab! 🚀
+        - search:
+            provider: google
+            target: _blank
+        - datetime:
+            text_size: xl
+            format:
+              dateStyle: long
+              timeStyle: short
+              hourCycle: h23
+        - openmeteo:
+            units: metric
+            cache: 5
         - resources:
             backend: kubernetes
             expanded: true
             cpu: true
             memory: true
-        - search:
-            provider: google
-            target: _blank
         - kubernetes:
             cluster:
               show: true
@@ -55,10 +68,6 @@ spec:
             total: true
             labels: true
             nodes: true
-        - datetime:
-            text_size: xl
-            format:
-              timeStyle: short
       services:
         - Websites:
             - GitHub Pages:
