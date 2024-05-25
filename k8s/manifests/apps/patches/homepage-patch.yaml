@@ -83,7 +83,7 @@ spec:
                   type: cloudflared
                   accountid: 634e9016d402443e427865dc35457728
                   tunnelid: 3284a342-3b0f-4530-a60e-07338e2bec17
-                  key: ${cloudflared_tunnel_token}
+                  key: ${cloudflared_tunnel_api_token}
             - UniFi:
                 icon: unifi
                 href: https://unifi.ui.com
