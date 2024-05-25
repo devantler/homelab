@@ -74,6 +74,12 @@ spec:
                 icon: github
                 href: https://${cluster_domain}
                 description: Personal website and blog.
+            - Llama GPT:
+                icon: llama
+                href: https://llama-gpt.${cluster_domain}
+                description: AI-powered text generation.
+                app: llama-gpt-ui
+                namespace: llama-gpt
         - Networking:
             - Cloudflare:
                 icon: cloudflare
