@@ -2,6 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - https://github.com/devantler/oci-artifacts//k8s/homepage?ref=v0.0.26
+  - https://github.com/devantler/oci-artifacts//k8s/llama-gpt?ref=main
+  - ingresses/llama-gpt-ingress.yaml
 
 patches:
   - path: patches/homepage-patch.yaml
