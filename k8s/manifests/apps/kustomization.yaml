@@ -4,9 +4,9 @@ resources:
   - https://github.com/devantler/oci-artifacts//k8s/drawio?ref=main
   - https://github.com/devantler/oci-artifacts//k8s/homepage?ref=v0.0.27
   - https://github.com/devantler/oci-artifacts//k8s/plantuml?ref=v0.0.27
-  - ingresses/llama-gpt-ingress.yaml
   - ingresses/drawio-ingress.yaml
   # - https://github.com/devantler/oci-artifacts//k8s/llama-gpt?ref=v0.0.27 # Did not work as expected
+  #- ingresses/llama-gpt-ingress.yaml
 
 patches:
   - path: patches/homepage-patch.yaml
