@@ -23,6 +23,7 @@
 │   │           └── patches
 │   └── manifests
 │       ├── apps
+│       │   ├── ingresses
 │       │   └── patches
 │       ├── infrastructure
 │       │   ├── configmaps
@@ -35,7 +36,7 @@
         ├── cluster
         └── nodes
 
-28 directories
+29 directories
 ```
 <!-- readme-tree end -->
 
