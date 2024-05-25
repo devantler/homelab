@@ -69,7 +69,7 @@ spec:
             labels: true
             nodes: true
       services:
-        - Websites:
+        - Web Apps:
             - GitHub Pages:
                 icon: github
                 href: https://${cluster_domain}
