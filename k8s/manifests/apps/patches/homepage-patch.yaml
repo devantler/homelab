@@ -77,9 +77,15 @@ spec:
             - PlantUML:
                 icon: plantuml
                 href: https://plantuml.${cluster_domain}
-                description: Web-based UML diagramming tool.
+                description: Text-based UML diagramming tool.
                 app: plantuml
                 namespace: plantuml
+            - Draw.io:
+                icon: drawio
+                href: https://drawio.${cluster_domain}
+                description: Drag and drop based UML diagramming tool.
+                app: drawio
+                namespace: drawio
             # - Llama GPT:
             #     icon: https://camo.githubusercontent.com/e1124b5366d660690886e9750960b4ac9949a690b1ad10426a876156e1ae739e/68747470733a2f2f692e696d6775722e636f6d2f4c4935396375692e706e67
             #     href: https://llama-gpt.${cluster_domain}
