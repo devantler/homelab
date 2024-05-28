@@ -29,7 +29,7 @@
 │       │   ├── configmaps
 │       │   ├── ingresses
 │       │   └── patches
-│       └── infrastructure-crds
+│       └── infrastructure-config
 │           └── middlewares
 └── talos
     └── patches

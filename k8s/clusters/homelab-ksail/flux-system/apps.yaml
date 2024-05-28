@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 1m
   dependsOn:
-    - name: infrastructure-crds
+    - name: infrastructure-config
   sourceRef:
     kind: OCIRepository
     name: flux-system
