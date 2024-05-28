@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: oci-artifacts
+  namespace: flux-system
+spec:
+  interval: 5m0s
+  url: oci://ghcr.io/devantler/oci-artifacts/manifests
+  ref:
+    tag: v0.0.27

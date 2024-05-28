@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 1m
   dependsOn:
-    - name: variables
+    - name: repositories
   sourceRef:
     kind: OCIRepository
     name: flux-system

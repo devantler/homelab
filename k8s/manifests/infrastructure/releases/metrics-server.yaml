@@ -1,16 +1,15 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infrastructure
+  name: metrics-server
   namespace: flux-system
 spec:
   interval: 1m
-  dependsOn:
-    - name: repositories
+  targetNamespace: kube-system
   sourceRef:
     kind: OCIRepository
-    name: flux-system
-  path: manifests/infrastructure
+    name: oci-artifacts
+  path: metrics-server
   prune: true
   wait: true
   decryption:
