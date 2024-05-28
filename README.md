@@ -26,11 +26,11 @@
 │       │   ├── ingresses
 │       │   └── patches
 │       ├── infrastructure
-│       │   ├── configmaps
+│       │   └── releases
+│       ├── infrastructure-config
 │       │   ├── ingresses
-│       │   └── patches
-│       └── infrastructure-config
-│           └── middlewares
+│       │   └── middlewares
+│       └── repositories
 └── talos
     └── patches
         ├── cluster
