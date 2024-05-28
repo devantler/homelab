@@ -6,8 +6,6 @@ metadata:
 spec:
   # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
   values:
-    image:
-      tag: v3.0
     ports:
       websecure:
         middlewares:
