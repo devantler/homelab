@@ -1,6 +1,0 @@
-- op: add
-  path: /metadata/labels/goldilocks.fairwinds.com~1enabled
-  value: "true"
-- op: add
-  path: /metadata/labels/goldilocks.fairwinds.com~1vpa-update-mode
-  value: "auto"
