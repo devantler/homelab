@@ -16,15 +16,17 @@ patches:
     target:
       kind: HelmRelease
       name: goldilocks
+      namespace: goldilocks
   - path: patches/traefik-patch.yaml
     target:
       kind: HelmRelease
       name: traefik
-  - path: patches/vpa-enable-patch.yaml
-    target:
-      kind: Namespace
-      name: flux-system
-  - path: patches/vpa-enable-patch.yaml
-    target:
-      kind: Namespace
-      name: kube-system
+      namespace: traefik
+  # - path: patches/vpa-enable-patch.yaml
+  #   target:
+  #     kind: Namespace
+  #     name: flux-system
+  # - path: patches/vpa-enable-patch.yaml
+  #   target:
+  #     kind: Namespace
+  #     name: kube-system
