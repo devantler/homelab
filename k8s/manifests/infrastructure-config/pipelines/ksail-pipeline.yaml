@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: ksail-pipeline
-  namespace: tekton-pipeline
+  namespace: tekton
 spec:
   description: |
     This pipeline clones a git repo containing a KSail project, and then provisions and tests that the KSail cluster can reconcile.

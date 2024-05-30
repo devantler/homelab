@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: ksail-down
-  namespace: tekton-pipeline
+  namespace: tekton
 spec:
   steps:
     - name: echo
