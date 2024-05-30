@@ -37,19 +37,3 @@ spec:
       workspaces:
         - name: output
           workspace: shared-data
-    - name: ksail-up
-      runAfter:
-        - ksail-install
-      taskRef:
-        name: ksail-up
-      workspaces:
-        - name: output
-          workspace: shared-data
-    - name: ksail-down
-      runAfter:
-        - ksail-up
-      taskRef:
-        name: ksail-down
-      workspaces:
-        - name: output
-          workspace: shared-data
