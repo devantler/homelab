@@ -9,4 +9,8 @@ spec:
       image: alpine
       script: |
         #!/bin/sh
-        echo "Hello World"
+        curl -LOJ "https://getbin.io/devantler/ksail"
+        chmod +x ksail-linux-amd64
+        mv ksail-linux-amd64 /usr/local/bin/ksail
+        ksail version
+
