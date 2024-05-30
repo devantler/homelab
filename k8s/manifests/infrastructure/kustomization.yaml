@@ -7,5 +7,5 @@ resources:
   - releases/harbor.yaml
   - releases/metrics-server.yaml
   - releases/oauth2-proxy.yaml
-  - releases/tekton-pipelines.yaml
+  - releases/tekton-pipeline.yaml
   - releases/traefik.yaml

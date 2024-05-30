@@ -1,8 +1,8 @@
-apiVersion: tekton-pipelines.dev/v1beta1
+apiVersion: tekton-pipeline.dev/v1beta1
 kind: Task
 metadata:
   name: ksail-up
-  namespace: tekton-pipelines
+  namespace: tekton-pipeline
 spec:
   steps:
     - name: echo
