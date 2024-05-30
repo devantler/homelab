@@ -7,4 +7,4 @@ spec:
   interval: 5m0s
   url: oci://ghcr.io/devantler/oci-artifacts/manifests
   ref:
-    tag: v1.0.2
+    tag: v1.0.3
