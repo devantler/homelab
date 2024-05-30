@@ -4,22 +4,52 @@ metadata:
   name: ksail-pipeline
   namespace: tekton-pipeline
 spec:
+  description: |
+    This pipeline clones a git repo containing a KSail project, and then provisions and tests that the KSail cluster can reconcile.
+  params:
+    - name: repo-url
+      type: string
+      description: The git repo URL to clone from.
+  workspaces:
+    - name: shared-data
+      description: |
+        This workspace contains the cloned repo files, so they can be read by the
+        next task.
+    - name: git-credentials
+      description: Your SSH credentials
   tasks:
     - name: checkout
       taskRef:
-        name: checkout
+        name: git-clone
+      workspaces:
+      - name: output
+        workspace: shared-data
+      - name: ssh-directory
+        workspace: git-credentials
+      params:
+      - name: url
+        value: $(params.repo-url)
     - name: ksail-install
       runAfter:
         - checkout
       taskRef:
         name: ksail-install
+      workspaces:
+        - name: output
+          workspace: shared-data
     - name: ksail-up
       runAfter:
         - ksail-install
       taskRef:
         name: ksail-up
+      workspaces:
+        - name: output
+          workspace: shared-data
     - name: ksail-down
       runAfter:
         - ksail-up
       taskRef:
         name: ksail-down
+      workspaces:
+        - name: output
+          workspace: shared-data
