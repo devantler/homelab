@@ -5,11 +5,11 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  targetNamespace: tekton-pipeline
+  targetNamespace: tekton
   sourceRef:
     kind: OCIRepository
     name: oci-artifacts
-  path: tekton-pipeline
+  path: tekton
   prune: true
   wait: true
   decryption:
