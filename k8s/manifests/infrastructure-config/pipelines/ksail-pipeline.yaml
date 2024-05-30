@@ -1,8 +1,8 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton-pipelines.dev/v1beta1
 kind: Pipeline
 metadata:
   name: ksail-pipeline
-  namespace: tekton
+  namespace: tekton-pipelines
 spec:
   tasks:
     - name: checkout
