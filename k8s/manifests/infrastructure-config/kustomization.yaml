@@ -7,6 +7,4 @@ resources:
   - middlewares/traefik-auth-headers.yaml
   - middlewares/traefik-forward-auth.yaml
   - pipelines/ksail-pipeline.yaml
-  - tasks/ksail-down.yaml
-  - tasks/ksail-install.yaml
-  - tasks/ksail-up.yaml
+  - tasks/ksail.yaml

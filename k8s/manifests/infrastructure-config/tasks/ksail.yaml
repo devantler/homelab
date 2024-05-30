@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ksail-install
+  namespace: tekton
+spec:
+  steps:
+    - name: echo
+      image: alpine
+      script: |
+        #!/bin/sh
+        echo "⚙️ Installing curl"
+        apk add --no-cache curl
+
+        echo "⚙️ Installing KSail"
+        curl -LOJ "https://getbin.io/devantler/ksail?os=darwin&arch=arm64"
+        chmod +x ksail-darwin-arm64
+        mv ksail-darwin-arm64 /usr/local/bin/ksail
+        ksail version
+
+        echo "🚀 Provision cluster"
+        ksail init test
+        ksail up test
+
+        echo "🔥 Destroy cluster"
+        ksail down test
+
