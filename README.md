@@ -29,14 +29,16 @@
 │       │   └── releases
 │       ├── infrastructure-config
 │       │   ├── ingresses
-│       │   └── middlewares
+│       │   ├── middlewares
+│       │   ├── pipelines
+│       │   └── tasks
 │       └── repositories
 └── talos
     └── patches
         ├── cluster
         └── nodes
 
-29 directories
+31 directories
 ```
 <!-- readme-tree end -->
 
