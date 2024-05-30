@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: checkout
+  namespace: tekton
 spec:
   steps:
     - name: echo

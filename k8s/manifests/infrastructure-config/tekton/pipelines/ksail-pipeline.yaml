@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ksail-pipeline
+  namespace: tekton
+spec:
+  tasks:
+    - name: checkout
+      taskRef:
+        name: checkout
+    - name: ksail-install
+      runAfter:
+        - checkout
+      taskRef:
+        name: ksail-install
+    - name: ksail-up
+      runAfter:
+        - ksail-install
+      taskRef:
+        name: ksail-up
+    - name: ksail-down
+      runAfter:
+        - ksail-up
+      taskRef:
+        name: ksail-down
