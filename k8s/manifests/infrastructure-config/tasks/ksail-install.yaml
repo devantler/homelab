@@ -5,7 +5,7 @@ metadata:
   namespace: tekton
 spec:
   steps:
-    - name: echo
+    - name: ksail-install
       image: alpine
       script: |
         #!/bin/sh
@@ -16,5 +16,6 @@ spec:
         curl -LOJ "https://getbin.io/devantler/ksail?os=darwin&arch=arm64"
         chmod +x ksail-darwin-arm64
         mv ksail-darwin-arm64 /usr/local/bin/ksail
-        ksail version
+        ls -l /usr/local/bin
+        ksail --version
 
