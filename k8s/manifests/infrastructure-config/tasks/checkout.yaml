@@ -1,4 +1,4 @@
-apiVersion: tekton-pipeline.dev/v1beta1
+apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: checkout
