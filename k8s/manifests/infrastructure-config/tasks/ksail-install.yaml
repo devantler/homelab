@@ -18,10 +18,3 @@ spec:
         mv ksail-darwin-arm64 /usr/local/bin/ksail
         ksail version
 
-        echo "🚀 Provision cluster"
-        ksail init test
-        ksail up test
-
-        echo "🔥 Destroy cluster"
-        ksail down test
-
