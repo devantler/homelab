@@ -6,14 +6,14 @@ metadata:
 spec:
   steps:
     - name: ksail-install
-      image: alpine
+      image: ubuntu
       script: |
         #!/bin/sh
         echo "⚙️ Installing curl"
         apk add --no-cache curl
 
         echo "⚙️ Installing Homebrew"
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
         echo "⚙️ Installing KSail"
         brew install devantler/formulas/ksail
