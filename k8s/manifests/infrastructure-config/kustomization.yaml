@@ -6,5 +6,5 @@ resources:
   - ingresses/cilium-hubble-ingress.yaml
   - middlewares/traefik-auth-headers.yaml
   - middlewares/traefik-forward-auth.yaml
-  - pipelines/ksail-pipeline.yaml
-  - tasks/ksail-install.yaml
+  # - pipelines/ksail-pipeline.yaml
+  - tasks/ksail.yaml
