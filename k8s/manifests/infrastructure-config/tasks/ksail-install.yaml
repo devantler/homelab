@@ -13,7 +13,7 @@ spec:
         apk add --no-cache curl
 
         echo "⚙️ Installing Homebrew"
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
 
         echo "⚙️ Installing KSail"
         brew install devantler/formulas/ksail
