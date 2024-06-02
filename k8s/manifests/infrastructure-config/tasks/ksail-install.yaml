@@ -9,13 +9,5 @@ spec:
       image: alpine
       script: |
         #!/bin/sh
-        echo "⚙️ Installing curl"
-        apk add --no-cache curl
-
-        echo "⚙️ Installing KSail"
-        curl -LOJ "https://getbin.io/devantler/ksail?os=darwin&arch=arm64"
-        chmod +x ksail-darwin-arm64
-        mv ksail-darwin-arm64 /usr/local/bin/ksail
-        ls -l /usr/local/bin
-        ksail --version
-
+        brew tap devantler/formulas
+        brew install ksail

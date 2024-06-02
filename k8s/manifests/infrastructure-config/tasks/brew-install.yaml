@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: brew-install
+  namespace: tekton
+spec:
+  steps:
+    - name: brew-install
+      image: alpine
+      script: |
+        #!/bin/sh
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
