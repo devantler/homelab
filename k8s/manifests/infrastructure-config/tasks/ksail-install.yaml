@@ -10,7 +10,7 @@ spec:
       script: |
         #!/bin/sh
         echo "⚙️ Installing curl"
-        apk add --no-cache curl
+        apt-get update && apt-get install -y curl
 
         echo "⚙️ Installing Homebrew"
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
