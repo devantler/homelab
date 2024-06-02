@@ -10,6 +10,9 @@ spec:
     - name: repo-url
       type: string
       description: The git repo URL to clone from.
+    - name: ksail-project
+      type: string
+      description: The name of the KSail project to reconcile.
   workspaces:
     - name: shared-data
       description: |
@@ -22,18 +25,32 @@ spec:
       taskRef:
         name: git-clone
       workspaces:
-      - name: output
-        workspace: shared-data
-      - name: ssh-directory
-        workspace: git-credentials
+        - name: output
+          workspace: shared-data
+        - name: ssh-directory
+          workspace: git-credentials
       params:
-      - name: url
-        value: $(params.repo-url)
-    - name: ksail-install
+        - name: url
+          value: $(params.repo-url)
+    - name: ksail-up
       runAfter:
         - checkout
       taskRef:
-        name: ksail-install
+        name: ksail
       workspaces:
         - name: output
           workspace: shared-data
+      params:
+        - name: args
+          value: up $(params.ksail-project)
+    - name: ksail-down
+      runAfter:
+        - ksail-up
+      taskRef:
+        name: ksail
+      workspaces:
+        - name: output
+          workspace: shared-data
+      params:
+        - name: args
+          value: down $(params.ksail-project)
