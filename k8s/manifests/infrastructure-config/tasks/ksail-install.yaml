@@ -13,6 +13,7 @@ spec:
         apt-get update && apt-get install -y curl
 
         echo "⚙️ Installing Homebrew"
+        export NONINTERACTIVE=1
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
         echo "⚙️ Installing KSail"
