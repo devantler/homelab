@@ -9,5 +9,11 @@ spec:
       image: alpine
       script: |
         #!/bin/sh
-        brew tap devantler/formulas
-        brew install ksail
+        echo "⚙️ Installing curl"
+        apk add --no-cache curl
+
+        echo "⚙️ Installing Homebrew"
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+        echo "⚙️ Installing KSail"
+        brew install devantler/formulas/ksail
