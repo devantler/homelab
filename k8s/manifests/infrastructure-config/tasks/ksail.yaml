@@ -13,3 +13,13 @@ spec:
       image: ghcr.io/devantler/ksail
       args:
         - $(params.args)
+  sidecars:
+    - image: docker
+      name: docker
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /var/lib/docker
+          name: dind-storage
+        - mountPath: /var/run/
+          name: dind-socket
