@@ -13,6 +13,9 @@ spec:
       image: ghcr.io/devantler/ksail
       args:
         - $(params.args)
+      volumeMounts:
+        - mountPath: /var/run/
+          name: dind-socket
   sidecars:
     - image: docker
       name: docker
