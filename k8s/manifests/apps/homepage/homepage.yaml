@@ -1,0 +1,195 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: homepage
+  namespace: flux-system
+spec:
+  interval: 1m
+  targetNamespace: homepage
+  sourceRef:
+    kind: OCIRepository
+    name: oci-artifacts
+  path: homepage
+  prune: true
+  wait: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: variables
+      - kind: Secret
+        name: variables-sensitive
+  patches:
+    - target:
+        name: homepage
+        kind: HelmRelease
+      patch: |-
+        apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        metadata:
+          name: homepage
+        spec:
+          # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
+          # Icons:
+          # https://github.com/walkxcode/dashboard-icons No prefix
+          # https://simpleicons.org/ Prefix with si-
+          # https://pictogrammers.com/library/mdi/ Prefix with mdi-
+          values:
+            image:
+              repository: ghcr.io/gethomepage/homepage
+              tag: v0.8.13
+            ingress:
+              main:
+                annotations:
+                  traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
+            config:
+              settings:
+                title: Homelab
+                theme: dark
+                color: slate
+                background:
+                  image: https://images.unsplash.com/photo-1512652683497-9d8ee4641be1?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
+                  blur: sm
+                  opacity: 70
+                providers:
+                  longhorn:
+                    url: http://longhorn-frontend.longhorn-system:80
+              widgets:
+                - logo: {}
+                - greeting:
+                    text_size: xl
+                    text: Welcome to Devantler's Homelab! 🚀
+                - search:
+                    provider: google
+                    target: _blank
+                - datetime:
+                    text_size: xl
+                    format:
+                      dateStyle: long
+                      timeStyle: short
+                      hourCycle: h23
+                - openmeteo:
+                    units: metric
+                    cache: 5
+                - resources:
+                    backend: kubernetes
+                    expanded: true
+                    cpu: true
+                    memory: true
+                - kubernetes:
+                    cluster:
+                      show: true
+                      cpu: true
+                      memory: true
+                      showLabel: true
+                      label: "cluster"
+                    nodes:
+                      show: true
+                      cpu: true
+                      memory: true
+                      showLabel: true
+                - longhorn:
+                    expanded: true
+                    total: true
+                    labels: true
+                    nodes: true
+              services:
+                - Web Apps:
+                    - GitHub Pages:
+                        icon: github
+                        href: https://${cluster_domain}
+                        description: Personal website and blog.
+                    - PlantUML:
+                        icon: https://static-00.iconduck.com/assets.00/file-type-plantuml-icon-512x485-f776vhc4.png
+                        href: https://plantuml.${cluster_domain}
+                        description: Text-based UML diagramming tool.
+                        app: plantuml
+                        namespace: plantuml
+                    - Draw.io:
+                        icon: draw-io
+                        href: https://drawio.${cluster_domain}
+                        description: Drag and drop based UML diagramming tool.
+                        app: drawio
+                        namespace: drawio
+                    # - Llama GPT:
+                    #     icon: https://camo.githubusercontent.com/e1124b5366d660690886e9750960b4ac9949a690b1ad10426a876156e1ae739e/68747470733a2f2f692e696d6775722e636f6d2f4c4935396375692e706e67
+                    #     href: https://llama-gpt.${cluster_domain}
+                    #     description: AI-powered text generation.
+                    #     app: llama-gpt-ui
+                    #     namespace: llama-gpt
+                - Networking:
+                    - Cloudflare:
+                        icon: cloudflare
+                        href: https://cloudflare.${cluster_domain}
+                        description: Central hub for managing public networking, e.g. FQDN, DNS and remote tunneling.
+                        widget:
+                          type: cloudflared
+                          accountid: 634e9016d402443e427865dc35457728
+                          tunnelid: 3284a342-3b0f-4530-a60e-07338e2bec17
+                          key: ${cloudflared_tunnel_api_token}
+                    - UniFi:
+                        icon: unifi
+                        href: https://unifi.ui.com
+                        description: Central hub for managing on-prem UniFi network infrastructure.
+                - Provisioning:
+                    - Omni:
+                        icon: si-talos-#FF7300
+                        href: https://omni.${cluster_domain}
+                        description: Platform for provisioning and managing Talos Linux clusters.
+                - Storage:
+                    - Longhorn:
+                        icon: longhorn
+                        href: https://longhorn.${cluster_domain}
+                        description: Cloud-native storage.
+                        app: longhorn
+                        namespace: longhorn-system
+                    - Harbor:
+                        icon: harbor
+                        href: https://harbor.${cluster_domain}
+                        description: Cloud-native Container Registry.
+                        app: harbor
+                        namespace: harbor
+                - Monitoring:
+                    - Cilium Hubble:
+                        icon: cilium
+                        href: https://hubble-ui.${cluster_domain}
+                        description: Observability for Cilium, a high-performance Container Network Interface (CNI).
+                        app: hubble-ui
+                        namespace: kube-system
+                    - Goldilocks:
+                        icon: mdi-white-balance-sunny
+                        href: https://goldilocks.${cluster_domain}
+                        description: Dashboard for automated vertical pod autoscaling recommendations.
+                        app: goldilocks
+                        namespace: goldilocks
+                    - Traefik:
+                        icon: traefik
+                        href: https://traefik.${cluster_domain}
+                        description: Dashboard for Reverse Proxy.
+                        app: traefik
+                        namespace: traefik
+              bookmarks:
+                - News:
+                    - GitHub Blog:
+                        - icon: github
+                          href: https://github.blog
+                    - CNCF Blog:
+                        - icon: si-cncf-#231F20
+                          href: https://www.cncf.io/blog
+                    - OpenAI Blog:
+                        - icon: openai
+                          href: https://openai.com/blog
+                - Releases:
+                    - VSCode Releases:
+                        - icon: vscode
+                          href: https://code.visualstudio.com/updates
+                - Development:
+                    - GitHub:
+                        - icon: github
+                          href: https://github.com
+                    - Renovate:
+                        - icon: si-renovatebot-#1A1F6C
+                          href: https://developer.mend.io

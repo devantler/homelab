@@ -1,0 +1,39 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: longhorn
+  namespace: flux-system
+spec:
+  interval: 1m
+  targetNamespace: longhorn-system
+  sourceRef:
+    kind: OCIRepository
+    name: oci-artifacts
+  path: longhorn
+  prune: true
+  wait: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: variables
+      - kind: Secret
+        name: variables-sensitive
+  patches:
+    - target:
+        name: longhorn
+        kind: HelmRelease
+      patch: |-
+        apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        metadata:
+          name: longhorn
+        spec:
+          # https://github.com/longhorn/charts/blob/v1.6.x/charts/longhorn/values.yaml
+          values:
+            ingress:
+              annotations:
+                traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd

@@ -1,16 +1,15 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infrastructure-config
+  name: kubelet-cert-serving-approver
   namespace: flux-system
 spec:
   interval: 1m
-  dependsOn:
-    - name: infrastructure
+  targetNamespace: kubelet-cert-serving-approver
   sourceRef:
     kind: OCIRepository
-    name: flux-system
-  path: manifests/infrastructure-config
+    name: oci-artifacts
+  path: kubelet-cert-serving-approver
   prune: true
   wait: true
   decryption:

@@ -1,11 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - releases/cert-manager.yaml
-  - releases/cloudflared.yaml
-  - releases/goldilocks.yaml
-  - releases/harbor.yaml
-  - releases/metrics-server.yaml
-  - releases/oauth2-proxy.yaml
-  - releases/tekton.yaml
-  - releases/traefik.yaml
+  - cert-manager
+  - cloudflared
+  - goldilocks
+  - harbor
+  - metrics-server
+  - oauth2-proxy
+  - tekton
+  - traefik

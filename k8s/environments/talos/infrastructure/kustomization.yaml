@@ -2,12 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../../manifests/infrastructure
-  - https://github.com/devantler/oci-artifacts//k8s/kubelet-serving-cert-approver?ref=v1.0.8
-  - https://github.com/devantler/oci-artifacts//k8s/longhorn?ref=v1.0.8
-
-patches:
-  - path: patches/longhorn-patch.yaml
-    target:
-      kind: HelmRelease
-      name: longhorn
-      namespace: longhorn-system
+  - kubelet-serving-cert-approver
+  - longhorn
+  - selfsigned-cluster-issuer
