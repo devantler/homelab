@@ -101,11 +101,10 @@ jobs:
         uses: fluxcd/flux2/action@main
       - name: ⚙️ Install KSail
         run: brew install devantler/formulas/ksail
-      - name: 🔨 Create kubeconfig
-        run: |
-          mkdir ~/.kube
-          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
+      - uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
