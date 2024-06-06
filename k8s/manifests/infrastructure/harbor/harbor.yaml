@@ -6,6 +6,8 @@ metadata:
 spec:
   interval: 1m
   targetNamespace: harbor
+  dependsOn:
+    - name: longhorn
   sourceRef:
     kind: OCIRepository
     name: oci-artifacts
