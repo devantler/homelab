@@ -23,11 +23,10 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
-      - name: 🔨 Create kubeconfig
-        run: |
-          mkdir ~/.kube
-          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
+      - uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
       - name: ⚙️ Install Cilium
         run: |
           helm repo add cilium https://helm.cilium.io/
@@ -49,13 +48,7 @@ jobs:
         run: |
           flux check --pre
           flux install
-          flux create source oci flux-system \
-            --url oci://ghcr.io/${{ github.repository }}/manifests-prod \
-            --tag latest
-      - uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+
       - name: 🔐 Create secret for SOPS
         uses: azure/k8s-create-secret@v5
         with:
@@ -70,7 +63,9 @@ jobs:
             --tag=latest
           flux create kustomization flux-system \
             --source=OCIRepository/flux-system \
-            --path=${{ vars.PROD_FLUX_KUSTOMIZATION_PATH }}
+            --path=${{ vars.PROD_FLUX_KUSTOMIZATION_PATH }} \
+            --prune=true \
+            --wait=true
   push-to-oci-prod:
     runs-on: ubuntu-latest
     environment: prod
