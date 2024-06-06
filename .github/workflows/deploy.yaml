@@ -48,7 +48,6 @@ jobs:
         run: |
           flux check --pre
           flux install
-
       - name: 🔐 Create secret for SOPS
         uses: azure/k8s-create-secret@v5
         with:
