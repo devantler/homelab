@@ -20,25 +20,30 @@
 │   ├── environments
 │   │   └── talos
 │   │       └── infrastructure
-│   │           └── patches
+│   │           ├── kubelet-serving-cert-approver
+│   │           ├── longhorn
+│   │           └── selfsigned-cluster-issuer
 │   └── manifests
 │       ├── apps
-│       │   ├── ingresses
-│       │   └── patches
+│       │   ├── homepage
+│       │   └── plantuml
 │       ├── infrastructure
-│       │   └── releases
-│       ├── infrastructure-config
-│       │   ├── ingresses
-│       │   ├── middlewares
-│       │   ├── pipelines
-│       │   └── tasks
+│       │   ├── cert-manager
+│       │   ├── cilium
+│       │   ├── cloudflared
+│       │   ├── goldilocks
+│       │   ├── harbor
+│       │   ├── metrics-server
+│       │   ├── oauth2-proxy
+│       │   ├── tekton
+│       │   └── traefik
 │       └── repositories
 └── talos
     └── patches
         ├── cluster
         └── nodes
 
-31 directories
+36 directories
 ```
 <!-- readme-tree end -->
 
