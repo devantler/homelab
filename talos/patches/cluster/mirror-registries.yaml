@@ -1,37 +1,38 @@
-registries:
-  mirrors:
-    docker-hub.com:
-      endpoints:
-        - https://harbor.<domain>/v2/proxy-docker-hub.com # Use harbor as the primary registry
-        - https://docker-hub.com # Fallback to the original registry
-      overridePath: true
-    docker.io:
-      endpoints:
-        - https://harbor.<domain>/v2/proxy-docker.io # Use harbor as the primary registry
-        - https://docker.io # Fallback to the original registry
-      overridePath: true
-    gcr.io:
-      endpoints:
-        - https://harbor.<domain>/v2/proxy-gcr.io # Use harbor as the primary registry
-        - https://gcr.io # Fallback to the original registry
-      overridePath: true
-    ghcr.io:
-      endpoints:
-        - https://harbor.<domain>/v2/proxy-ghcr.io # Use harbor as the primary registry
-        - https://ghcr.io # Fallback to the original registry
-      overridePath: true
-    quay.io:
-      endpoints:
-        - https://harbor.<domain>/v2/proxy-quay.io # Use harbor as the primary registry
-        - https://quay.io # Fallback to the original registry
-      overridePath: true
-    registry.k8s.io:
-      endpoints:
-        - https://harbor.<domain>/v2/proxy-registry.k8s.io # Use harbor as the primary registry
-        - https://registry.k8s.io # Fallback to the original registry
-      overridePath: true
-  config:
-    harbor.<domain>:
-      auth:
-        username: admin
-        password: <password>
+machine:
+  registries:
+    mirrors:
+      docker-hub.com:
+        endpoints:
+          - https://harbor.<domain>/v2/proxy-docker-hub.com # Use harbor as the primary registry
+          - https://docker-hub.com # Fallback to the original registry
+        overridePath: true
+      docker.io:
+        endpoints:
+          - https://harbor.<domain>/v2/proxy-docker.io # Use harbor as the primary registry
+          - https://docker.io # Fallback to the original registry
+        overridePath: true
+      gcr.io:
+        endpoints:
+          - https://harbor.<domain>/v2/proxy-gcr.io # Use harbor as the primary registry
+          - https://gcr.io # Fallback to the original registry
+        overridePath: true
+      ghcr.io:
+        endpoints:
+          - https://harbor.<domain>/v2/proxy-ghcr.io # Use harbor as the primary registry
+          - https://ghcr.io # Fallback to the original registry
+        overridePath: true
+      quay.io:
+        endpoints:
+          - https://harbor.<domain>/v2/proxy-quay.io # Use harbor as the primary registry
+          - https://quay.io # Fallback to the original registry
+        overridePath: true
+      registry.k8s.io:
+        endpoints:
+          - https://harbor.<domain>/v2/proxy-registry.k8s.io # Use harbor as the primary registry
+          - https://registry.k8s.io # Fallback to the original registry
+        overridePath: true
+    config:
+      harbor.<domain>:
+        auth:
+          username: admin
+          password: <password>
