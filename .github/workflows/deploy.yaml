@@ -13,17 +13,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-    - uses: azure/k8s-set-context@v4
-      with:
-        method: kubeconfig
-        kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
-    - name: Test
-      run: |
-        ls -la ~/.kube
   bootstrap-prod:
     runs-on: ubuntu-latest
     environment: prod
@@ -34,10 +23,11 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
-      - uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+      - name: 🔨 Create kubeconfig
+        run: |
+          mkdir ~/.kube
+          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
       - name: ⚙️ Install Cilium
         run: |
           helm repo add cilium https://helm.cilium.io/
@@ -111,10 +101,11 @@ jobs:
         uses: fluxcd/flux2/action@main
       - name: ⚙️ Install KSail
         run: brew install devantler/formulas/ksail
-      - uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+      - name: 🔨 Create kubeconfig
+        run: |
+          mkdir ~/.kube
+          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
