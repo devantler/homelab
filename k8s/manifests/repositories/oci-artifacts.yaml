@@ -4,7 +4,7 @@ metadata:
   name: oci-artifacts
   namespace: flux-system
 spec:
-  interval: 1m0s
+  interval: 1m
   url: oci://ghcr.io/devantler/oci-artifacts/manifests
   ref:
     tag: latest
