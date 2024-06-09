@@ -7,5 +7,5 @@ resources:
   - harbor
   - metrics-server
   - oauth2-proxy
-  - tekton
+  # - tekton
   - traefik
