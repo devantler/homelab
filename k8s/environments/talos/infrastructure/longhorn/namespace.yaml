@@ -3,6 +3,7 @@ kind: Namespace
 metadata:
   name: longhorn-system
   labels:
+    pod-security.kubernetes.io/enforce: privileged
     goldilocks.fairwinds.com/enabled: "true"
     goldilocks.fairwinds.com/vpa-update-mode: "auto"
     goldilocks.fairwinds.com/vpa-min-replicas: "1"
