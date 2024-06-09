@@ -23,12 +23,10 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
-      - name: 🔨 Create kubeconfig
-        run: |
-          mkdir ~/.kube
-          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
-          export KUBECONFIG=~/.kube/config
+      - uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
       - name: ⚙️ Install Cilium
         run: |
           helm repo add cilium https://helm.cilium.io/
@@ -108,6 +106,7 @@ jobs:
           echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
           export KUBECONFIG=~/.kube/config
+          export KUBE_CONFIG_PATH=~/.kube/config
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
