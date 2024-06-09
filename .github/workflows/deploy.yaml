@@ -107,4 +107,4 @@ jobs:
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
-        run: ksail check admin@homelab
+        run: ksail check homelab
