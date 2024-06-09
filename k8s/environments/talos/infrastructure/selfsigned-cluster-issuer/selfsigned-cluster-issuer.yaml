@@ -7,7 +7,6 @@ spec:
   interval: 1m
   dependsOn:
     - name: cert-manager
-  targetNamespace: cert-manager
   sourceRef:
     kind: OCIRepository
     name: oci-artifacts
