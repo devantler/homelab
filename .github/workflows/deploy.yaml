@@ -28,6 +28,7 @@ jobs:
           mkdir ~/.kube
           echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
+          export KUBECONFIG=~/.kube/config
       - name: ⚙️ Install Cilium
         run: |
           helm repo add cilium https://helm.cilium.io/
@@ -106,6 +107,7 @@ jobs:
           mkdir ~/.kube
           echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
+          export KUBECONFIG=~/.kube/config
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
