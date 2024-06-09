@@ -4,7 +4,7 @@ resources:
   - cert-manager
   - cloudflared
   - goldilocks
-  - harbor
+  # - harbor
   - metrics-server
   - oauth2-proxy
   # - tekton
