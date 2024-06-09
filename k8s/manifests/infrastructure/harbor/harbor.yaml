@@ -5,6 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
+  dependsOn:
+    - name: longhorn
   targetNamespace: harbor
   sourceRef:
     kind: OCIRepository
