@@ -5,6 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
+  dependsOn:
+    - name: traefik
   targetNamespace: traefik
   sourceRef:
     kind: OCIRepository
