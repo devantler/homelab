@@ -13,6 +13,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+    - uses: azure/k8s-set-context@v4
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+    - name: Test
+      run: |
+        ls -la /home/runner/.kube
   bootstrap-prod:
     runs-on: ubuntu-latest
     environment: prod
