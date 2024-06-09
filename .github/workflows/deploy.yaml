@@ -23,7 +23,7 @@ jobs:
         kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
     - name: Test
       run: |
-        ls -la /home/runner/.kube
+        ls -la ~/.kube
   bootstrap-prod:
     runs-on: ubuntu-latest
     environment: prod
@@ -118,4 +118,4 @@ jobs:
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
-        run: ksail check homelab --kubeconfig ~/.kube/config
+        run: ksail check homelab
