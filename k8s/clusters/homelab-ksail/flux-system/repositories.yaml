@@ -4,7 +4,7 @@ metadata:
   name: repositories
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 30s
   dependsOn:
     - name: variables
   sourceRef:

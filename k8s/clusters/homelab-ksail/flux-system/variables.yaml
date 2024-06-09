@@ -4,7 +4,7 @@ metadata:
   name: variables
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 30s
   dependsOn: []
   sourceRef:
     kind: OCIRepository
