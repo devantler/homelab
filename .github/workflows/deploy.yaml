@@ -63,8 +63,7 @@ jobs:
           flux create kustomization flux-system \
             --source=OCIRepository/flux-system \
             --path=${{ vars.PROD_FLUX_KUSTOMIZATION_PATH }} \
-            --prune=true \
-            --wait=true
+            --prune=true
   push-to-oci-prod:
     runs-on: ubuntu-latest
     environment: prod
