@@ -1,9 +1,9 @@
 machine:
   kubelet:
     extraMounts:
-      - destination: /var/mnt/storage
+      - destination: /var/mnt
         type: bind
-        source: /var/mnt/storage
+        source: /var/mnt
         options:
           - bind
           - rshared
@@ -12,4 +12,4 @@ machine:
   disks:
       - device: /dev/sdX # replace with correct disk
         partitions:
-          - mountpoint: /var/mnt/storage
+          - mountpoint: /var/mnt
