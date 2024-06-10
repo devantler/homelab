@@ -10,6 +10,6 @@ machine:
           - rw
 
   disks:
-      - device: /dev/sdX # replace with correct disk
+      - device: /dev/sdX
         partitions:
-          - mountpoint: /var/mnt
+          - mountpoint: /var/mnt/sdX
