@@ -37,3 +37,5 @@ spec:
             ingress:
               annotations:
                 traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
+            persistence:
+              defaultClassReplicaCount: 2
