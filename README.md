@@ -53,17 +53,16 @@
 
 This repo contains the deployment artifacts for Devantler's Homelab. The Homelab is a Kubernetes cluster that is highly automated with the use of Flux GitOps, CI/CD with Automated Testing, and much more. Feel free to look around. You might find some inspiration 🙌🏻
 
-## Cluster Nodes
+## Nodes
 
 - 1x Mac Mini M2 Pro (Split into 2x UTM (QEMU) VMs)
-- 1x Zima Board
 
-## Supporting Hardware
+## Hardware
 
 - Unifi Cloud Gateway
 - External Disks
 
-## Supporting Software
+## Software
 
 - Unifi
 - Talos Omni
