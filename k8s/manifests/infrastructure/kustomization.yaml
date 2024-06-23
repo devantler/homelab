@@ -10,3 +10,41 @@ resources:
   - oauth2-proxy
   - tekton
   - traefik
+
+patches:
+  - patch: |
+      apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+      kind: Kustomization
+      metadata:
+        name: all
+      spec:
+        decryption:
+          provider: sops
+          secretRef:
+            name: sops-age
+    target:
+      kind: Kustomization
+      labelSelector: app.kubernetes.io/sops=enabled
+  - patch: |
+      apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+      kind: Kustomization
+      metadata:
+        name: all
+      spec:
+        postBuild:
+          substituteFrom:
+            - kind: ConfigMap
+              name: variables
+            - kind: Secret
+              name: variables-sensitive
+            - kind: ConfigMap
+              name: environment-variables
+            - kind: Secret
+              name: environment-variables-sensitive
+            - kind: ConfigMap
+              name: global-variables
+            - kind: Secret
+              name: global-variables-sensitive
+    target:
+      kind: Kustomization
+      labelSelector: app.kubernetes.io/post-build-variables=enabled

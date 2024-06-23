@@ -3,6 +3,9 @@ kind: Kustomization
 metadata:
   name: oauth2-proxy
   namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
+    app.kubernetes.io/post-build-variables: enabled
 spec:
   interval: 1m
   targetNamespace: oauth2-proxy
@@ -12,16 +15,6 @@ spec:
   path: oauth2-proxy
   prune: true
   wait: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: variables
-      - kind: Secret
-        name: variables-sensitive
   patches:
     - target:
         kind: HelmRelease

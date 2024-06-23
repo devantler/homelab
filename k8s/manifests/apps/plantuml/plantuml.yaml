@@ -3,6 +3,9 @@ kind: Kustomization
 metadata:
   name: plantuml
   namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
+    app.kubernetes.io/post-build-variables: enabled
 spec:
   interval: 1m
   targetNamespace: plantuml
@@ -12,16 +15,6 @@ spec:
   path: plantuml
   prune: true
   wait: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: variables
-      - kind: Secret
-        name: variables-sensitive
   patches:
     - target:
         name: plantuml

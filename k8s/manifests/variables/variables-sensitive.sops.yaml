@@ -1,0 +1,37 @@
+# You need to encrypt this file with SOPS manually.
+# ksail sops --encrypt variables-sensitive.sops.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+    name: global-variables-sensitive
+    namespace: flux-system
+stringData: {}
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1qwpktma4zpd8grfp9a462fu5qqqg9qcltn7g9wjw5jmnat7d8snq3wwsc3
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkMEVsa3VhVlBuQTBQZGxT
+            dmYyU2hsVWVrd2YzaDBwZFNvQ09wZVhYVUEwClNEdGpCZGJCMDVFM3Z4Zlkvbnhn
+            eGM2VXkrVGloT2tJNklVN2t2UFgycG8KLS0tIEJuWHJBcnREOTBDRkhvZTA1VVRW
+            Ym45ajlCb1dJSE9YRWxhMUtPSFc0TnMKQ3rqxa8FNw/RSy2XqwSfOqzRCsaoyoLO
+            qIzH+zjdWnbasrabN2902xm4jRIP/1Ju+/aRyIcVfbDIfq90Lk3yNQ==
+            -----END AGE ENCRYPTED FILE-----
+        - recipient: age1erkfmdwhussmxpu9eryqemy5px33a0ghahy8dgtplc0e4halfy3qegra5q
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVdkUyTDRqT3c4eFBvTkpL
+            YndnQmhPeVBiL1NUSW1lL3pQUzcrbThHWWxrCkxCNkV6dDRhYzBvVDFaVHpsVVdT
+            c3ErQ3BEZzhZYVY5VzhjcTE2TzJvWWcKLS0tIHZiVkpkL0VJV2hqbmVMRDFUSlFL
+            VzA4VFROR05uV0hGeFVFT1Vob1NzczgKvMwHQQgkWXCC4eUOXGkZ8WIdoYLHxZwT
+            YmI2vkx9uVy9XFLXfPwUtfWZO83gqTpgvTJCQgZWaXFTuYCjTQSzHg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2024-06-23T19:43:10Z"
+    mac: ENC[AES256_GCM,data:nua3gOjRPZM9pvjlHftmXCR1at8qo9ftygzYjR3J6gTb/ZbkBCHwtQwZVkbJNSH430D1peTfGofmBcsd/V1njvuxpEr1FGi1GOiQNNqa+nJzdgTGUEUAVATLm8lX/ufORUb7RAyLzn4kXSysSIREXeRS+ml/aNNPoAn6yj4Mukg=,iv:QJwPzpiDl1EZlE1UJwev6aBAJJlMkAOASkPjun1WGJk=,tag:PVYUb98p7eiUNPyOFsBXPQ==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData)$
+    version: 3.8.1

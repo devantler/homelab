@@ -3,6 +3,8 @@ kind: Kustomization
 metadata:
   name: variables
   namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
 spec:
   interval: 30s
   dependsOn: []
@@ -12,9 +14,37 @@ spec:
   path: clusters/homelab-ksail/variables
   prune: true
   wait: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-  postBuild:
-    substituteFrom: []
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: environment-variables
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
+spec:
+  interval: 30s
+  dependsOn: []
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: environments/k3s/variables
+  prune: true
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: global-variables
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
+spec:
+  interval: 30s
+  dependsOn: []
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: manifests/variables
+  prune: true
+  wait: true
