@@ -18,11 +18,14 @@
 │   │       ├── flux-system
 │   │       └── variables
 │   ├── environments
+│   │   ├── k3s
+│   │   │   └── variables
 │   │   └── talos
-│   │       └── infrastructure
-│   │           ├── kubelet-serving-cert-approver
-│   │           ├── longhorn
-│   │           └── selfsigned-cluster-issuer
+│   │       ├── infrastructure
+│   │       │   ├── kubelet-serving-cert-approver
+│   │       │   ├── longhorn
+│   │       │   └── selfsigned-cluster-issuer
+│   │       └── variables
 │   └── manifests
 │       ├── apps
 │       │   ├── homepage
@@ -37,13 +40,14 @@
 │       │   ├── oauth2-proxy
 │       │   ├── tekton
 │       │   └── traefik
-│       └── repositories
+│       ├── repositories
+│       └── variables
 └── talos
     └── patches
         ├── cluster
         └── nodes
 
-36 directories
+40 directories
 ```
 <!-- readme-tree end -->
 
