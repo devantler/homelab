@@ -1,0 +1,6 @@
+machine:
+  # Node-specific disk configuration
+  disks: []
+      # - device: /dev/sdX
+      #   partitions:
+      #     - mountpoint: /var/mnt/sdX
