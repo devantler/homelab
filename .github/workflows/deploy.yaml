@@ -17,13 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     steps:
-      - name: 📑 Checkout
-        uses: actions/checkout@v4
-      - name: ⚙️ Setup homebrew
-        uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
-      - uses: azure/k8s-set-context@v4
+      - name: ⚙️ Set kubernetes context
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
@@ -92,8 +89,6 @@ jobs:
       - push-to-oci-prod
     environment: prod
     steps:
-      - name: 📑 Checkout
-        uses: actions/checkout@v4
       - name: ⚙️ Setup homebrew
         uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
