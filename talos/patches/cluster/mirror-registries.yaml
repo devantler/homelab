@@ -26,6 +26,10 @@ machine:
           - https://harbor.devantler.com/v2/proxy-registry.k8s.io # Use harbor as the primary registry
           - https://registry.k8s.io # Fallback to the original registry
         overridePath: true
+      mcr.microsoft.com:
+        endpoints:
+          - https://harbor.devantler.com/v2/proxy-mcr.microsoft.com # Use harbor as the primary registry
+          - https://mcr.microsoft.com # Fallback to the original registry
     config:
       harbor.devantler.com:
         auth:
