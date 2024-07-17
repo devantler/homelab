@@ -7,3 +7,6 @@
 
 # Temporary files
 *.tmp.*
+
+# hcloud
+talos/hcloud/media
