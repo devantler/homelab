@@ -7,8 +7,8 @@ resources:
   # - gha-runner-scale-set-controller
   # - goldilocks
   # - harbor
-  # - metrics-server
-  # - oauth2-proxy
+  - metrics-server
+  - oauth2-proxy
   - traefik
 
 patches:
