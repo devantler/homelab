@@ -4,12 +4,12 @@ metadata:
     name: variables-sensitive
     namespace: flux-system
 stringData:
-    cloudflared_tunnel_api_token: ENC[AES256_GCM,data:qStMmAYA+iJhFmU15wwVg/QgdGzYqAK5IBN/EoCj3EiWBAuQDhxScQ==,iv:cQE6Zj7R5TkhoGeKxeLo3wHhxBJOw7ClVzmtSBNtt9c=,tag:YbMiFxEjmZ5Az74ibBMiaA==,type:str]
-    cloudflared_tunnel_token: ENC[AES256_GCM,data:S9uSFek/GMzN03EI2FD1peAPaPbHp2vL4I91PDng3ZaPOcKUoYaBte6eBZQAvRhABbB01Ps69M5AX+WRDNrfR+gvoCfqTfKLEWhH+GFmtLtQno2MEpzrEu6iFN36XcYOlyozKELzkTOQ3lYevg7KS0pdt6Qp6B54nhH45uulHJHi5Mq0QhHgrQbhYIiN7Xl/zEvQhh5gq/SACDC19GIOVnAN9KHNeV4hKV1U/OJfHfzHV+A9wiGfFQ==,iv:NKGb3ORbcBclHzRbXDf+HlO0qVs8/ECB4XovB+ycvMI=,tag:IdWvMcYnFOphqsQAZp+GfQ==,type:str]
-    cluster_domain: ENC[AES256_GCM,data:xNtVpwPkX91MBgvbTw==,iv:75g6/keJK8qsRk+aIhTN0hBq9CM1lNuJkS1VT0eo4BA=,tag:FMJpwpyYveUhRm0BGG5/2A==,type:str]
-    harbor_admin_password: ENC[AES256_GCM,data:0bQGtDXSjeN2g7NrMVHOAfoRYNM=,iv:FdYB72rYh/7ioBn//I/M9j+eGmkvoRzhLythBcvAoYA=,tag:Ev/wZWJVTfC0251wfz3ijw==,type:str]
-    oauth2_proxy_client_secret: ENC[AES256_GCM,data:KHyA5AAdhj5iTNSwkc8uVAPON/DmsC6tJYFcuucY377h0J0KqJWBig==,iv:Ohcjig9SYr9Smzs2axT4xwhwSqFbWb7os69INUe7+zo=,tag:BuUs1qILmd8GFKVqNKUytw==,type:str]
-    oauth2_proxy_cookie_secret: ENC[AES256_GCM,data:UsmV3VnQsXGsiWO/ZzO96xCL8e7kmyS2J5rBc4Np7cutY3NjmSMmVNif0GU=,iv:RZ4AKCoIH9TLHPu+xIEW5ab5xmEXuGR2QWodEV6Qicg=,tag:jWeBZi6khzz9P4KHennuog==,type:str]
+    cloudflared_tunnel_api_token: ENC[AES256_GCM,data:ss79qlkHcG1zDgKIWg/mqwjhTtDnzIbk9tFFzOn5cv/SjXGjaYEoCQ==,iv:cJr5WW89GO/5OlE8GPZQXyOR7iTbiAvoNQ41KsvZ55s=,tag:6xKRD8go3LrfvRVMoruTSg==,type:str]
+    cloudflared_tunnel_token: ENC[AES256_GCM,data:kv3Gl9DQ1aq9yUyymFYDatGRpn8lhcAIVeqiQS0Dp+vwrt1xNH/P8YDB9tkmzokjqiYW0YGGLwkn3YPeelT+C4F8wn4pPsrPFtU0mxezo5Ckk6RxT3UypkCfY4nMViwSeeH1H2nKZ5tNbmIuTNrABTjxgVosmAlAq6m+z/ecBrOt7sbrgC/d6Xw11pti/FskhJQMPFM5VYr4/9v7gESC/Z57wddSVXErOViXbTTxZjgOCHwvKiB8Eg==,iv:ewIoEGTZd7TebKp0kMB+Z4ums4XEAycYlHLnPb0RAp4=,tag:mLY/s8Pov+qWg3Gnn+ogzQ==,type:str]
+    cluster_domain: ENC[AES256_GCM,data:rY1HIsZHdRtg4B0ZcQ==,iv:o8GuMK7EoTWGgbrJXj+aOdiNHU+WTqGMrTnNPXYIiIs=,tag:0px0D1/phK5Se1lJ7AJ8Dg==,type:str]
+    harbor_admin_password: ENC[AES256_GCM,data:yNV2pi+NDtXSbIH7ycF3G5Hx9Qw=,iv:P6x45jf0e2ciFM6TMBtjU46P9PIzJUidl2chjYtAyik=,tag:uPvWwPLryeG4Gk7RSgfPtw==,type:str]
+    oauth2_proxy_client_secret: ENC[AES256_GCM,data:80R8TMnJz57uZLFomooOWiJjFhzSXt6omzs+rGU8PSFb+V+e3Jiskw==,iv:+IwwtkGUqpehBRsGUXqm7bVk+jcKhxgK2D6RWwx2R9k=,tag:Jrre9esVc8OZrFudbk9dnA==,type:str]
+    oauth2_proxy_cookie_secret: ENC[AES256_GCM,data:82qiuAbaOTl7iZj+bhw3F7gpyAmH3jjM2SnQi+2jcPWsiHxoLn5pMXHGiuA=,iv:RWT03xTuHtYdZjIwUkqRp98+CCun8834v8ewy4H/S/s=,tag:moZ8DaYdWA4xtaGcIQZMew==,type:str]
 sops:
     kms: []
     gcp_kms: []
@@ -19,14 +19,14 @@ sops:
         - recipient: age1jvewgaxxqxm8fzchyklzfhs05n07xe8rns6s9mcv9xu7y6lsvpfqmrctkg
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBmM01oQnMwbXF0NEJrU1hW
-            V0I4SXRTYnJFYVVRa0Z5eE9ITmt4MUJCaGlNCk5zRk84eXYyWVVwZDdNL0ZNWUpy
-            QkxnZDRJSzBGWVRtWlBPR3FscVhUclkKLS0tIFRqNWZXbTFlN0lIdDVLSEZ5RE53
-            MWM2MWkwek52dUdpRTdJRW0xWks3cDAKhAs/G9rKhjxP0fRVP881FcL1FJSM/+U4
-            O9dWjAa+uH5L3JA0C39MYZeclv7l2Yg1V0TAg3VK2AryVshUbqgFEw==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBEU1k2eDR6ZDIzdXAxM3lB
+            YUR2WlB4cDF0Nnh6dmhSOW5iZWpWVGFqTVdVCkpUbjhWVzJUdGtHaldac0lpRms0
+            aFlNNVNkRlQranJ5dnFaMlB4V0VNRVkKLS0tIFc0VjYzNDA3WGhtUnR4SjdnVkxT
+            ZEVDNEl0SjZkQ0l5aGtBbmVtdFFiT0UKNE0bbeHqmrCEr9otrrd3wbJiJqi1Ke7B
+            CoPwgW3adfvXrpFI5NYqxaFLV1jZZWS8s/22I5E1S48CM52cebEJQg==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2024-07-17T17:35:59Z"
-    mac: ENC[AES256_GCM,data:T49u9j1Hqs/F2EduE9fZfExlz+nVD75QdKlvj1f7SKLmHpb5tSCCKTECCrv/Pf12jDJmOAvhR7G5nE6SeWuuxPeX3z+N+6A3LjHyYWAEy/QH/tfJgodviKTeZ5zq2eBiX5C+0D5LB92wHAtB/IZISeV1Mt7C5cqYfDeDy4aizvU=,iv:DDcAHMLvyyadxdb1+MZny3xyHLtzzFwL8REZrlCRsE4=,tag:hc6HLi+KtIWS1MzkXj9EWg==,type:str]
+    lastmodified: "2024-07-17T21:27:16Z"
+    mac: ENC[AES256_GCM,data:9B1UP64tLinbVTIYncerzZaGGontuCy41s7VgKoNo3k80beutiZiehIqWkygO2VtPZWk5Veyv629+b/3L9Y08XRCFp5UdS/SeH0fciAxm+INn2nn3T3sB70/Pnv4JhM8mqpEyYtHddLqT4a+VhajH0T0jl+rj5HKJ0/j7glCZ50=,iv:U9rkbEzxu9HeTyqT+yevZLfznT4jNA63h/63uQdNGbs=,tag:sN6RKO3pAUP5QFXdQj0s/Q==,type:str]
     pgp: []
     encrypted_regex: ^(data|stringData)$
     version: 3.8.1
