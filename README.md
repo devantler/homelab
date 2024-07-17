@@ -34,20 +34,21 @@
 │       │   ├── cert-manager
 │       │   ├── cilium
 │       │   ├── cloudflared
+│       │   ├── gha-runner-scale-set-controller
 │       │   ├── goldilocks
 │       │   ├── harbor
 │       │   ├── metrics-server
 │       │   ├── oauth2-proxy
-│       │   ├── tekton
 │       │   └── traefik
 │       ├── repositories
 │       └── variables
 └── talos
+    ├── hcloud
     └── patches
         ├── cluster
         └── nodes
 
-40 directories
+41 directories
 ```
 <!-- readme-tree end -->
 
