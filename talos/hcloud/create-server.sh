@@ -27,7 +27,6 @@ export HCLOUD_TOKEN=$1
 hcloud context create talos
 
 hcloud server create --name "$2" \
-  --network "homelab" \
   --without-ipv6 \
   --image "$3" \
   --type "$4" --location "$5"

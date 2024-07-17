@@ -1,12 +1,12 @@
 creation_rules:
   - path_regex: k8s\/clusters\/homelab-prod\/.+\.sops\.yaml$
     encrypted_regex: ^(data|stringData)$
-    age: age1qwpktma4zpd8grfp9a462fu5qqqg9qcltn7g9wjw5jmnat7d8snq3wwsc3
+    age: age1jvewgaxxqxm8fzchyklzfhs05n07xe8rns6s9mcv9xu7y6lsvpfqmrctkg
   - path_regex: k8s\/clusters\/homelab-ksail\/.+\.sops\.yaml$
     encrypted_regex: ^(data|stringData)$
-    age: age1erkfmdwhussmxpu9eryqemy5px33a0ghahy8dgtplc0e4halfy3qegra5q
+    age: age1yvy77dtah0s6qwtsswzghq4q8fp6hl7hr4yr640zz8ymsuuhlpfqnzw90u
   - path_regex: .sops.yaml
     encrypted_regex: ^(data|stringData)$
     age: |-
-      age1qwpktma4zpd8grfp9a462fu5qqqg9qcltn7g9wjw5jmnat7d8snq3wwsc3,
-      age1erkfmdwhussmxpu9eryqemy5px33a0ghahy8dgtplc0e4halfy3qegra5q
+      age1jvewgaxxqxm8fzchyklzfhs05n07xe8rns6s9mcv9xu7y6lsvpfqmrctkg,
+      age1yvy77dtah0s6qwtsswzghq4q8fp6hl7hr4yr640zz8ymsuuhlpfqnzw90u
