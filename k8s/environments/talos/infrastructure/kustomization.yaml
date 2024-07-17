@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - ../../../manifests/infrastructure
   - kubelet-serving-cert-approver
-  - longhorn
+  # - longhorn
   - selfsigned-cluster-issuer
 
 patches:
