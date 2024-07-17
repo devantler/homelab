@@ -4,6 +4,5 @@ metadata:
   name: variables
   namespace: flux-system
 data:
-  cluster_issuer_name: selfsigned-cluster-issuer
   harbor_persistent_volume_access_mode: ReadWriteOnce
   oauth2_proxy_client_id: Ov23liTxrJtJ081Hiq35
