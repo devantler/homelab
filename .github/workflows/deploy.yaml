@@ -63,6 +63,8 @@ jobs:
             --prune=true
   push-to-oci-prod:
     runs-on: ubuntu-latest
+    needs:
+      - bootstrap-prod
     environment: prod
     steps:
       - name: 📑 Checkout
@@ -85,7 +87,6 @@ jobs:
   deploy-prod:
     runs-on: ubuntu-latest
     needs:
-      - bootstrap-prod
       - push-to-oci-prod
     environment: prod
     steps:
