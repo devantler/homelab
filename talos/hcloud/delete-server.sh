@@ -2,10 +2,7 @@
 token="$1"
 server_name="$2"
 
-if [ -z "$token" ]; then
-  echo "Usage: $0 <token> <server_name>"
-  exit 1
-elif [ -z "$server_name" ]; then
+if [ -z "$token" ] || [ -z "$server_name" ]; then
   echo "Usage: $0 <token> <server_name>"
   exit 1
 fi

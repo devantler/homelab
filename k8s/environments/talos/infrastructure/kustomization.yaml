@@ -4,7 +4,7 @@ resources:
   - ../../../manifests/infrastructure
   - cilium
   - kubelet-serving-cert-approver
-  - longhorn
+  # - longhorn
   - selfsigned-cluster-issuer
 
 patches:
