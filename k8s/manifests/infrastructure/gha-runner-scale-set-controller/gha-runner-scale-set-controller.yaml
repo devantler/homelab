@@ -1,17 +1,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: tekton
+  name: gha-runner-scale-set-controller
   namespace: flux-system
   labels:
     app.kubernetes.io/sops: enabled
     app.kubernetes.io/post-build-variables: enabled
 spec:
   interval: 1m
-  targetNamespace: tekton
   sourceRef:
     kind: OCIRepository
     name: oci-artifacts
-  path: tekton
+  path: gha-runner-scale-set-controller
   prune: true
   wait: true

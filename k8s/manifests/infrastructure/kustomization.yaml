@@ -4,11 +4,11 @@ resources:
   - cert-manager
   - cilium
   - cloudflared
+  - gha-runner-scale-set-controller
   - goldilocks
   - harbor
   - metrics-server
   - oauth2-proxy
-  - tekton
   - traefik
 
 patches:
