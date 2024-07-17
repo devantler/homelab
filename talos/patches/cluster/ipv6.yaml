@@ -1,6 +1,0 @@
-machine:
-  network:
-    interfaces:
-      - vlans:
-          - dhcpOptions:
-              ipv6: true
