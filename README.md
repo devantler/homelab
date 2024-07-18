@@ -22,9 +22,9 @@
 │   │   │   └── variables
 │   │   └── talos
 │   │       ├── infrastructure
+│   │       │   ├── cilium
 │   │       │   ├── kubelet-serving-cert-approver
-│   │       │   ├── longhorn
-│   │       │   └── selfsigned-cluster-issuer
+│   │       │   └── longhorn
 │   │       └── variables
 │   └── manifests
 │       ├── apps
@@ -32,13 +32,13 @@
 │       │   └── plantuml
 │       ├── infrastructure
 │       │   ├── cert-manager
-│       │   ├── cilium
 │       │   ├── cloudflared
 │       │   ├── gha-runner-scale-set-controller
 │       │   ├── goldilocks
 │       │   ├── harbor
 │       │   ├── metrics-server
 │       │   ├── oauth2-proxy
+│       │   ├── selfsigned-cluster-issuer
 │       │   └── traefik
 │       ├── repositories
 │       └── variables
