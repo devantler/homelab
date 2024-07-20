@@ -2,10 +2,20 @@ name: Test
 
 on:
   pull_request:
+    branches: [main]
     # Added 'edited' temporarily, as there currently is no trigger for when the base branch is updated.
     # https://github.com/orgs/community/discussions/64119
-    types: [opened, synchronize, reopened, ready_for_review, closed, edited]
-    branches: main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - closed
+      - edited
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,8 +23,8 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.pull_request.title, '[DRAFT]') }}
+    runs-on: homelab
+    if: github.event.pull_request.draft == false
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
