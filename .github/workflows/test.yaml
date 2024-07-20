@@ -28,11 +28,9 @@ jobs:
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: ⚙️ Install curl
-        run: sudo apt-get install -y curl
       - name: ⚙️ Install KSail
         run: |
-          curl -LJ https://getbin.io/devantler/ksail?os=darwin&arch=arm64
+          wget -qO- "https://getbin.io/devantler/ksail" | tar xvz
           ls -l
       - name: ⛴️ Provision cluster
         run: |
