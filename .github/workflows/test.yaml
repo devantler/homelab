@@ -35,7 +35,7 @@ jobs:
         run: sudo apt-get install -y wget
       - name: ⚙️ Install KSail
         run: |
-          sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail?os=linux"
+          sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail?os=linux&arch=arm64"
           sudo chmod +x /usr/local/bin/ksail
       - name: ⛴️ Provision cluster
         run: |
