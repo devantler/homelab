@@ -21,6 +21,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  KSAIL_CLUSTER_NAME: homelab-ksail
+
 jobs:
   test:
     runs-on: homelab
@@ -38,8 +41,8 @@ jobs:
           chmod +x $HOME/.local/bin/ksail
       - name: ⛴️ Provision cluster
         run: |
-          ksail sops ${{ vars.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
-          ksail up ${{ vars.KSAIL_CLUSTER_NAME }}
+          ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
+          ksail up ${{ env.KSAIL_CLUSTER_NAME }}
       - name: 🔥 Teardown cluster
         if: always()
-        run: ksail down ${{ vars.KSAIL_CLUSTER_NAME }}
+        run: ksail down ${{ env.KSAIL_CLUSTER_NAME }}
