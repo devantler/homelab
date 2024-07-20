@@ -35,10 +35,9 @@ jobs:
         run: sudo apt-get install -y wget
       - name: ⚙️ Install KSail
         run: |
-          ls -l $HOME/
-          ls -l $HOME/.local/bin
-          wget -q "https://getbin.io/devantler/ksail" -o $HOME/.local/bin/ksail
-          chmod +x $HOME/.local/bin/ksail
+          ls -l $HOME/bin
+          wget -q "https://getbin.io/devantler/ksail" -o $HOME/bin/ksail
+          chmod +x $HOME/bin/ksail
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
