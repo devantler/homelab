@@ -3,8 +3,7 @@ kind: Kustomization
 resources:
   - ../../../environments/talos/infrastructure
   - cilium
-  - gha-runner-scale-sets/homelab.yaml
-  - gha-runner-scale-sets/oci-artifacts.yaml
+  - gha-runner-scale-sets
   - longhorn
 
 patches:
