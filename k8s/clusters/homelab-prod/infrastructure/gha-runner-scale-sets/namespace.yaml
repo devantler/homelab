@@ -4,8 +4,9 @@ metadata:
   name: gha-runner-scale-set-homelab
   labels:
     goldilocks.fairwinds.com/enabled: "true"
-    goldilocks.fairwinds.com/vpa-update-mode: "auto"
     goldilocks.fairwinds.com/vpa-min-replicas: "1"
+    goldilocks.fairwinds.com/vpa-update-mode: "auto"
+    pod-security.kubernetes.io/enforce: privileged
 ---
 apiVersion: v1
 kind: Namespace
@@ -13,5 +14,6 @@ metadata:
   name: gha-runner-scale-set-oci-artifacts
   labels:
     goldilocks.fairwinds.com/enabled: "true"
-    goldilocks.fairwinds.com/vpa-update-mode: "auto"
     goldilocks.fairwinds.com/vpa-min-replicas: "1"
+    goldilocks.fairwinds.com/vpa-update-mode: "auto"
+    pod-security.kubernetes.io/enforce: privileged
