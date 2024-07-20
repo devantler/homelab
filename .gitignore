@@ -9,4 +9,4 @@
 *.tmp.*
 
 # hcloud
-talos/hcloud/media
+talos/hetzner/media

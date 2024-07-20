@@ -23,9 +23,23 @@ export HCLOUD_TOKEN=$1
 
 hcloud context create talos
 
+hcloud firewall create --name talos-firewall --rules-file - <<<'[
+    {
+        "description": "Allow KubeSpan Traffic",
+        "direction": "in",
+        "port": "51820",
+        "protocol": "udp",
+        "source_ips": [
+            "0.0.0.0/0",
+            "::/0"
+        ]
+    }
+]'
+
 hcloud server create --name "$2" \
   --type "$3" \
   --location "$4" \
   --placement-group "$5" \
   --image "$6" \
+  --firewall talos-firewall \
   --without-ipv6
