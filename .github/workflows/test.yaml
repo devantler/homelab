@@ -32,7 +32,7 @@ jobs:
         run: sudo apt-get install -y wget
       - name: ⚙️ Install KSail
         run: |
-          wget -qO- "https://getbin.io/devantler/ksail" | tar xvz
+          wget -qO- "https://getbin.io/devantler/ksail"
           ls -l
       - name: ⛴️ Provision cluster
         run: |
