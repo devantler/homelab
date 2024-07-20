@@ -43,7 +43,7 @@
 │       ├── repositories
 │       └── variables
 └── talos
-    ├── hcloud
+    ├── hetzner
     └── patches
         ├── cluster
         └── nodes
