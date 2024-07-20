@@ -59,7 +59,7 @@ jobs:
             --tag=latest
           flux create kustomization flux-system \
             --source=OCIRepository/flux-system \
-            --path=${{ vars.PROD_FLUX_KUSTOMIZATION_PATH }} \
+            --path=clusters/homelab-prod/flux-system \
             --prune=true
   push-to-oci-prod:
     runs-on: ubuntu-latest
