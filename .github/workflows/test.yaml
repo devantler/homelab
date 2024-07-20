@@ -32,8 +32,8 @@ jobs:
         run: sudo apt-get install -y curl
       - name: ⚙️ Install KSail
         run: |
-          curl -LJ https://getbin.io/devantler/ksail?os=darwin&arch=arm64 -o $HOME/local/bin/ksail
-          chmod +x $HOME/local/bin/ksail
+          curl -LJ https://getbin.io/devantler/ksail?os=darwin&arch=arm64
+          ls -l
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ vars.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
