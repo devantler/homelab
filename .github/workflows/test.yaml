@@ -36,7 +36,7 @@ jobs:
       - name: ⚙️ Install KSail
         run: |
           sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail?os=darwin"
-          chmod +x /usr/local/bin/ksail
+          sudo chmod +x /usr/local/bin/ksail
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
