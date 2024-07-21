@@ -2,3 +2,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: gha-runner-scale-set-controller
+  labels:
+    goldilocks.fairwinds.com/enabled: "true"
+    goldilocks.fairwinds.com/vpa-update-mode: "auto"
+    goldilocks.fairwinds.com/vpa-min-replicas: "1"
