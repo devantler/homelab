@@ -19,13 +19,13 @@ spec:
     - target:
         name: plantuml
         kind: HelmRelease
+      # https://github.com/stevehipwell/helm-charts/blob/main/charts/plantuml/values.yaml
       patch: |-
         apiVersion: helm.toolkit.fluxcd.io/v2
         kind: HelmRelease
         metadata:
           name: plantuml
         spec:
-          # https://github.com/stevehipwell/helm-charts/blob/main/charts/plantuml/values.yaml
           values:
             ingress:
               main:
