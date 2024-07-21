@@ -128,6 +128,10 @@ spec:
                         href: https://unifi.ui.com
                         description: Central hub for managing on-prem UniFi network infrastructure.
                 - Provisioning:
+                    - Hetzner Cloud:
+                        icon: hetzner
+                        href: https://console.hetzner.cloud/projects
+                        description: Cloud infrastructure provider.
                     - Omni:
                         icon: si-talos-#FF7300
                         href: https://omni.${cluster_domain}
