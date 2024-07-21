@@ -40,7 +40,6 @@
 │       │   ├── harbor
 │       │   ├── metrics-server
 │       │   ├── oauth2-proxy
-│       │   ├── selfsigned-cluster-issuer
 │       │   └── traefik
 │       ├── repositories
 │       └── variables
@@ -50,7 +49,7 @@
         ├── cluster
         └── nodes
 
-43 directories
+42 directories
 ```
 <!-- readme-tree end -->
 
