@@ -19,17 +19,17 @@ spec:
     - target:
         name: homepage
         kind: HelmRelease
+      # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
+      # Icons:
+      # https://github.com/walkxcode/dashboard-icons No prefix
+      # https://simpleicons.org/ Prefix with si-
+      # https://pictogrammers.com/library/mdi/ Prefix with mdi-
       patch: |-
         apiVersion: helm.toolkit.fluxcd.io/v2
         kind: HelmRelease
         metadata:
           name: homepage
         spec:
-          # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
-          # Icons:
-          # https://github.com/walkxcode/dashboard-icons No prefix
-          # https://simpleicons.org/ Prefix with si-
-          # https://pictogrammers.com/library/mdi/ Prefix with mdi-
           values:
             image:
               repository: ghcr.io/gethomepage/homepage
