@@ -61,7 +61,8 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 
 ## Nodes
 
-- 1x Mac Mini M2 Pro (Split into 2x UTM (QEMU) VMs)
+- 3x Hetzner CAX21 nodes (QEMU ARM64)
+- 1x UTM QEMU ARM64 VM (Running on Mac Mini M2 Pro)
 
 ## Hardware
 
