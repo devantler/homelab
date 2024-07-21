@@ -16,15 +16,17 @@
 │   │   │   └── variables
 │   │   └── homelab-prod
 │   │       ├── flux-system
+│   │       ├── infrastructure
+│   │       │   ├── cilium
+│   │       │   ├── gha-runner-scale-sets
+│   │       │   └── longhorn
 │   │       └── variables
 │   ├── environments
 │   │   ├── k3s
 │   │   │   └── variables
 │   │   └── talos
 │   │       ├── infrastructure
-│   │       │   ├── cilium
-│   │       │   ├── kubelet-serving-cert-approver
-│   │       │   └── longhorn
+│   │       │   └── kubelet-serving-cert-approver
 │   │       └── variables
 │   └── manifests
 │       ├── apps
@@ -48,7 +50,7 @@
         ├── cluster
         └── nodes
 
-41 directories
+43 directories
 ```
 <!-- readme-tree end -->
 
