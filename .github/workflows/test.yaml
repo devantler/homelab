@@ -2,38 +2,45 @@ name: Test
 
 on:
   pull_request:
+    branches: [main]
     # Added 'edited' temporarily, as there currently is no trigger for when the base branch is updated.
     # https://github.com/orgs/community/discussions/64119
-    types: [opened, synchronize, reopened, ready_for_review, closed, edited]
-    branches: main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - closed
+      - edited
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  KSAIL_CLUSTER_NAME: homelab-ksail
+
 jobs:
   test:
-    runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.pull_request.title, '[DRAFT]') }}
+    runs-on: homelab
+    if: github.event.pull_request.draft == false
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: ⚙️ Setup Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+      - name: ⚙️ Install wget
+        run: sudo apt-get install -y wget
       - name: ⚙️ Install KSail
-        run: brew install devantler/formulas/ksail
+        run: |
+          sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail?os=linux&arch=arm64"
+          sudo chmod +x /usr/local/bin/ksail
       - name: ⛴️ Provision cluster
         run: |
-          ksail sops ${{ vars.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
-          ksail up ${{ vars.KSAIL_CLUSTER_NAME }}
-      - name: 🐎 Print free CPU
-        if: always()
-        run: |
-          top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,' | awk -v cores=$(nproc --all) '{print "CPU Usage: " 100-($8/cores) "% (" cores " cores)"}'
-      - name: 🧠 Print free memory
-        if: always()
-        run: |
-          free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
+          ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
+          ksail up ${{ env.KSAIL_CLUSTER_NAME }}
       - name: 🔥 Teardown cluster
         if: always()
-        run: ksail down ${{ vars.KSAIL_CLUSTER_NAME }}
+        run: ksail down ${{ env.KSAIL_CLUSTER_NAME }}
