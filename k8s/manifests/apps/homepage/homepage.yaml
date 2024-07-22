@@ -168,6 +168,11 @@ spec:
                         description: Dashboard for Reverse Proxy.
                         app: traefik
                         namespace: traefik
+                - Analytics:
+                    - Google Analytics:
+                        icon: google-analytics
+                        href: https://analytics.google.com
+                        description: Web analytics service.
               bookmarks:
                 - News:
                     - GitHub Blog:
@@ -190,3 +195,6 @@ spec:
                     - Renovate:
                         - icon: si-renovatebot-#1A1F6C
                           href: https://developer.mend.io
+                    - Disqus:
+                        - icon: si-disqus-#2E9FFF
+                          href: https://disqus.com
