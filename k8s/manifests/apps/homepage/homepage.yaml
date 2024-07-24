@@ -173,6 +173,9 @@ spec:
                         icon: google-analytics
                         href: https://analytics.google.com
                         description: Web analytics service.
+                    - Disqus:
+                        - icon: si-disqus-#2E9FFF
+                          href: https://disqus.com
               bookmarks:
                 - News:
                     - GitHub Blog:
@@ -184,7 +187,6 @@ spec:
                     - OpenAI Blog:
                         - icon: openai
                           href: https://openai.com/blog
-                - Releases:
                     - VSCode Releases:
                         - icon: vscode
                           href: https://code.visualstudio.com/updates
@@ -195,6 +197,6 @@ spec:
                     - Renovate:
                         - icon: si-renovatebot-#1A1F6C
                           href: https://developer.mend.io
-                    - Disqus:
-                        - icon: si-disqus-#2E9FFF
-                          href: https://disqus.com
+                    - Codecov:
+                        - icon: si-codecov-#F01F7A
+                          href: https://codecov.io
