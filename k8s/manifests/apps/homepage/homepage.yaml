@@ -174,8 +174,9 @@ spec:
                         href: https://analytics.google.com
                         description: Web analytics service.
                     - Disqus:
-                        - icon: si-disqus-#2E9FFF
-                          href: https://disqus.com
+                        icon: si-disqus-#2E9FFF
+                        href: https://disqus.com
+                        description: Platform to track and moderate embedded comments on my sites.
               bookmarks:
                 - News:
                     - GitHub Blog:
