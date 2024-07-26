@@ -200,4 +200,4 @@ spec:
                           href: https://developer.mend.io
                     - Codecov:
                         - icon: si-codecov-#F01F7A
-                          href: https://codecov.io
+                          href: https://app.codecov.io
