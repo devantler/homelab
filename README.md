@@ -55,7 +55,7 @@
 
 </details>
 
-<img width="1837" alt="image" src="https://github.com/user-attachments/assets/f1010229-e704-403c-a779-55651d7a23f5">
+<img width="1800" alt="image" src="https://github.com/user-attachments/assets/a990a5ce-6cf7-4abb-ab6d-6361461e45b6">
 
 This repo contains the deployment artifacts for Devantler's Homelab. The Homelab is a Kubernetes cluster that is highly automated with the use of Flux GitOps, CI/CD with Automated Testing, and much more. Feel free to look around. You might find some inspiration 🙌🏻
 
