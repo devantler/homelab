@@ -12,6 +12,7 @@ on:
       - ready_for_review
       - closed
       - edited
+  merge_group:
   push:
     branches:
       - main
