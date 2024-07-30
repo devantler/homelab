@@ -4,6 +4,5 @@ metadata:
   name: cert-manager
   labels:
     goldilocks.fairwinds.com/enabled: "true"
-    goldilocks.fairwinds.com/vpa-update-mode: "auto"
-  annotations:
     goldilocks.fairwinds.com/vpa-min-replicas: "1"
+    goldilocks.fairwinds.com/vpa-update-mode: "auto"
