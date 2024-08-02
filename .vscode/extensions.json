@@ -1,10 +1,8 @@
 {
-  "recommendations": [
-    "foxundermoon.shell-format",
+"recommendations": [
     "inercia.vscode-k3d",
     "ms-azuretools.vscode-docker",
     "ms-kubernetes-tools.vscode-aks-tools",
-    "pucelle.run-on-save",
     "redhat.vscode-yaml",
     "signageos.signageos-vscode-sops",
     "timonwong.shellcheck",
