@@ -28,7 +28,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: environments/talos/variables
+  path: distributions/talos/variables
   prune: true
   wait: true
   decryption:
