@@ -21,7 +21,7 @@
 │   │       │   ├── gha-runner-scale-sets
 │   │       │   └── longhorn
 │   │       └── variables
-│   ├── environments
+│   ├── distributions
 │   │   ├── k3s
 │   │   │   └── variables
 │   │   └── talos
