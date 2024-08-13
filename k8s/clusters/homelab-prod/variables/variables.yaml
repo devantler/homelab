@@ -5,4 +5,3 @@ metadata:
   namespace: flux-system
 data:
   oauth2_proxy_client_id: Ov23liQ4UtmGpfwiYpSZ
-  local_ai_image_tag: master-aio-cpu
