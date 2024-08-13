@@ -5,4 +5,5 @@ metadata:
   namespace: flux-system
 data:
   harbor_persistent_volume_access_mode: ReadWriteOnce
+  local_ai_persistence_access_mode: ReadWriteOnce
   oauth2_proxy_client_id: Ov23liTxrJtJ081Hiq35
