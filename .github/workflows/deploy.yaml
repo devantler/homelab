@@ -16,6 +16,8 @@ jobs:
   bootstrap-prod:
     runs-on: ubuntu-latest
     environment: prod
+    env:
+      DEPLOYMENT_ENV: prod
     steps:
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
@@ -54,11 +56,11 @@ jobs:
       - name: 🔁 Create OCI Source and Kustomization
         run: |
           flux create source oci flux-system \
-            --url=oci://ghcr.io/${{ github.repository }}/manifests-prod \
+            --url=oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }} \
             --tag=latest
           flux create kustomization flux-system \
             --source=OCIRepository/flux-system \
-            --path=clusters/homelab-prod/flux-system \
+            --path=clusters/homelab-${{ env.DEPLOYMENT_ENV }}/flux-system \
             --prune=true
 
   push-to-oci-prod:
@@ -66,6 +68,8 @@ jobs:
     needs:
       - bootstrap-prod
     environment: prod
+    env:
+      DEPLOYMENT_ENV: prod
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
@@ -73,15 +77,15 @@ jobs:
         uses: fluxcd/flux2/action@main
       - name: 🗳️ Push to GHCR OCI
         run: |
-          flux push artifact oci://ghcr.io/${{ github.repository }}/manifests-prod:${{ github.sha }} \
+          flux push artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:${{ github.sha }} \
             --path=./k8s \
             --source="$(git config --get remote.origin.url)" \
             --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)" \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
-          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-prod:${{ github.sha }} \
+          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:${{ github.sha }} \
             --tag ${{ github.ref_name }} \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
-          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-prod:${{ github.sha }} \
+          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:${{ github.sha }} \
             --tag latest \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
 
@@ -90,6 +94,8 @@ jobs:
     needs:
       - push-to-oci-prod
     environment: prod
+    env:
+      DEPLOYMENT_ENV: prod
     steps:
       - name: ⚙️ Setup homebrew
         uses: Homebrew/actions/setup-homebrew@master
