@@ -95,7 +95,7 @@ spec:
                         href: https://${cluster_domain}
                         description: Personal website and blog.
                     - LocalAI:
-                        icon: si-ollama-##00CAFF
+                        icon: si-ollama-#00CAFF
                         href: https://local-ai.${cluster_domain}
                         description: Self-hosted OpenAI drop-in alternative.
                         app: local-ai
