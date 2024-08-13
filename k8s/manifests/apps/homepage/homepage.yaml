@@ -106,12 +106,12 @@ spec:
                         description: Drag and drop based UML diagramming tool.
                         app: drawio
                         namespace: drawio
-                    # - Llama GPT:
-                    #     icon: https://camo.githubusercontent.com/e1124b5366d660690886e9750960b4ac9949a690b1ad10426a876156e1ae739e/68747470733a2f2f692e696d6775722e636f6d2f4c4935396375692e706e67
-                    #     href: https://llama-gpt.${cluster_domain}
-                    #     description: AI-powered text generation.
-                    #     app: llama-gpt-ui
-                    #     namespace: llama-gpt
+                    - LocalAI:
+                        icon: si-ollama-##00CAFF
+                        href: https://local-ai.${cluster_domain}
+                        description: Self-hosted OpenAI drop-in alternative.
+                        app: local-ai
+                        namespace: local-ai
                 - Networking:
                     - Cloudflare:
                         icon: cloudflare
