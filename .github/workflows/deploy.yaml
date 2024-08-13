@@ -60,6 +60,7 @@ jobs:
             --source=OCIRepository/flux-system \
             --path=clusters/homelab-prod/flux-system \
             --prune=true
+
   push-to-oci-prod:
     runs-on: ubuntu-latest
     needs:
@@ -83,6 +84,7 @@ jobs:
           flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-prod:${{ github.sha }} \
             --tag latest \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+
   deploy-prod:
     runs-on: ubuntu-latest
     needs:
@@ -106,3 +108,31 @@ jobs:
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
         run: ksail check
+      - name: ↩️ Revert - Get latest package version
+        if: failure()
+        id: github_package_version
+        run: |
+          latest_version=$(curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/user/packages/container/${{ github.event.repository.name }}%2Fmanifests-${{ env.DEPLOYMENT_ENV }}/versions" | jq '.[0].id')
+          echo "ID=$latest_version" >> "$GITHUB_OUTPUT"
+      - name: ↩️ Revert - Delete latest package version
+        if: ${{ failure() && steps.github_package_version.outputs.ID != '' }}
+        uses: actions/delete-package-versions@v5
+        with:
+          package-type: container
+          package-name: ${{ github.event.repository.name }}/manifests-${{ env.DEPLOYMENT_ENV }}
+          package-version-ids: ${{ steps.github_package_version.outputs.ID }}
+      - name: ↩️ Revert - Retag latest
+        if: ${{ failure() && steps.github_package_version.outputs.ID != '' }}
+        run: |
+          latest_sha_tag=$(curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/user/packages/container/${{ github.event.repository.name }}%2Fmanifests-${{ env.DEPLOYMENT_ENV }}/versions" | jq '.[0].metadata.container.tags[0]' | tr -d '"')
+          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:$latest_sha_tag \
+            --tag latest \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
