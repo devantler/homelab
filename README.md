@@ -31,6 +31,7 @@
 │   └── manifests
 │       ├── apps
 │       │   ├── homepage
+│       │   ├── local-ai
 │       │   └── plantuml
 │       ├── infrastructure
 │       │   ├── cert-manager
@@ -38,6 +39,7 @@
 │       │   ├── gha-runner-scale-set-controller
 │       │   ├── goldilocks
 │       │   ├── harbor
+│       │   ├── k8sgpt-operator
 │       │   ├── metrics-server
 │       │   ├── oauth2-proxy
 │       │   └── traefik
@@ -49,7 +51,7 @@
         ├── cluster
         └── nodes
 
-42 directories
+44 directories
 ```
 <!-- readme-tree end -->
 
