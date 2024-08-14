@@ -32,6 +32,7 @@
 │       ├── apps
 │       │   ├── homepage
 │       │   ├── local-ai
+│       │   ├── ollama
 │       │   └── plantuml
 │       ├── infrastructure
 │       │   ├── cert-manager
@@ -51,7 +52,7 @@
         ├── cluster
         └── nodes
 
-44 directories
+45 directories
 ```
 <!-- readme-tree end -->
 
