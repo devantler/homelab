@@ -16,6 +16,7 @@ spec:
   prune: true
   wait: true
   patches:
+    # https://github.com/otwld/ollama-helm/blob/main/values.yaml
     - target:
         name: ollama
         kind: HelmRelease
