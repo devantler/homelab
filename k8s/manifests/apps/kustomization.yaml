@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - homepage
   - local-ai
+  - ollama
   - plantuml
 
 patches:
