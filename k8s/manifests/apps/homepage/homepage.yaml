@@ -16,11 +16,11 @@ spec:
   prune: true
   wait: true
   patches:
-      # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
-      # Icons:
-      # https://github.com/walkxcode/dashboard-icons No prefix
-      # https://simpleicons.org/ Prefix with si-
-      # https://pictogrammers.com/library/mdi/ Prefix with mdi-
+    # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
+    # Icons:
+    # https://github.com/walkxcode/dashboard-icons No prefix
+    # https://simpleicons.org/ Prefix with si-
+    # https://pictogrammers.com/library/mdi/ Prefix with mdi-
     - target:
         name: homepage
         kind: HelmRelease
@@ -89,23 +89,31 @@ spec:
                     labels: true
                     nodes: true
               services:
-                - Web Apps:
+                - Portfolio:
                     - GitHub Pages:
                         icon: github
                         href: https://${cluster_domain}
                         description: Personal website and blog.
-                    - LocalAI:
-                        icon: si-ollama-#00CAFF
-                        href: https://local-ai.${cluster_domain}
-                        description: Self-hosted OpenAI drop-in alternative.
-                        app: local-ai
-                        namespace: local-ai
+                - Diagramming:
                     - PlantUML:
                         icon: https://static-00.iconduck.com/assets.00/file-type-plantuml-icon-512x485-f776vhc4.png
                         href: https://plantuml.${cluster_domain}
                         description: Text-based UML diagramming tool.
                         app: plantuml
                         namespace: plantuml
+                - AI:
+                    - LocalAI:
+                        icon: si-ollama-#00CAFF
+                        href: https://local-ai.${cluster_domain}
+                        description: Self-hosted OpenAI drop-in alternative.
+                        app: local-ai
+                        namespace: local-ai
+                    - Ollama:
+                        icon: si-ollama-#000000
+                        href: https://ollama.${cluster_domain}
+                        description: Self-hosted large language models.
+                        app: ollama
+                        namespace: ollama
                 - Networking:
                     - Cloudflare:
                         icon: cloudflare
