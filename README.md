@@ -4,7 +4,6 @@
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
-
 ```
 .
 ├── .github
@@ -33,7 +32,6 @@
 │       ├── apps
 │       │   ├── homepage
 │       │   ├── local-ai
-│       │   ├── ollama
 │       │   └── plantuml
 │       ├── infrastructure
 │       │   ├── cert-manager
@@ -44,6 +42,7 @@
 │       │   ├── k8sgpt-operator
 │       │   ├── metrics-server
 │       │   ├── oauth2-proxy
+│       │   ├── ollama
 │       │   └── traefik
 │       ├── repositories
 │       └── variables
@@ -55,7 +54,6 @@
 
 45 directories
 ```
-
 <!-- readme-tree end -->
 
 </details>
