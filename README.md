@@ -130,5 +130,5 @@ The cluster configuration is storen in the `k8s/*` directories where the structu
 - Talos Omni - For provisioning the production cluster, and managing nodes, updates, and the Talos configuration.
 - Cloudflare - For etcd backups, DNS, and tunneling all traffic so my network stays private.
 - Flux GitOps - For managing the kubernetes applications and infrastructure declaratively.
-- SOPS and Age - For encrypting secrets at rest, allowing me to store them in this repository.
+- SOPS and Age - For encrypting secrets at rest, allowing me to store them in this repository with confidence.
 - KSail - For developing the cluster locally, and for running the cluster in CI to ensure all changes are properly tested before being applied to the production cluster.
