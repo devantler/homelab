@@ -4,6 +4,7 @@
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
+
 ```
 .
 ├── .github
@@ -54,6 +55,7 @@
 
 45 directories
 ```
+
 <!-- readme-tree end -->
 
 </details>
@@ -92,6 +94,22 @@ ksail up homelab-ksail
 > - To update the manifests to work with `KSail`, you need to replace all `.sops.yaml` files with new ones, that are encrypted with your own keys.
 >
 > For the production cluster, you would need to do the same, but in addition to storing the keys in `~/.ksail/age`, you would also need to store the keys in GitHub Secrets, such that the CI/CD pipeline can provision the keys to the cluster.
+
+## Stack
+
+- [Cert Manager](https://cert-manager.io/docs/) - For managing certificates in the cluster.
+- [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) - To tunnel all traffic through Cloudflare, and to keep my network private.
+- [GitHub Actions Runner Scale Sets](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller) - To run GitHub Actions in the cluster.
+- [Goldilocks](https://goldilocks.docs.fairwinds.com) - To recommend and update Vertical Pod Autoscaler requests and limits.
+- [Harbor](https://goharbor.io) - To store and manage container images.
+- [K8sGPT Operator](https://k8sgpt.ai) - To analyze and optimize the cluster for errors and improvements.
+- [Metrics Server](https://kubernetes-sigs.github.io/metrics-server/) - To collect and expose metrics from the cluster.
+- [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) - To proxy authentication requests to upstream OAuth2 providers.
+- [Ollama](https://ollama.com) - To run LLM's in the cluster, and to provide a REST API to access them remotely.
+- [Traefik](https://doc.traefik.io/traefik/) - To route traffic to the correct services in the cluster.
+- [Homepage](https://gethomepage.dev/) - To provide a dashboard for the cluster.
+- [Local AI](https://localai.io) - To test out AI models through a web interface, and to provide a REST API to access them remotely.
+- [PlantUML](https://plantuml.com) - To generate UML diagrams from text.
 
 ## Cluster Configuration
 
