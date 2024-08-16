@@ -30,4 +30,4 @@ spec:
             ingress:
               main:
                 annotations:
-                  traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
+                  traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-basic-auth@kubernetescrd
