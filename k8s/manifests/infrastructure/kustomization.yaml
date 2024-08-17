@@ -9,7 +9,7 @@ resources:
   - k8sgpt-operator
   - metrics-server
   - oauth2-proxy
-  - ollama
+  #- ollama
   - traefik
 
 patches:
