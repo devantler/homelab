@@ -44,6 +44,15 @@ jobs:
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
           ksail up ${{ env.KSAIL_CLUSTER_NAME }}
+      - name: ⚙️ Install K8sGPT
+        if: failure()
+        run: |
+          sudo wget -qO /usr/local/bin/k8sgpt "https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_arm64.apk"
+          apk add --allow-untrusted k8sgpt_arm64.apk
+          k8sgpt auth add --backend ollama --model llama3.1 --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
+      - name: 🪲 Analyze
+        if: failure()
+        run: k8sgpt analyze
       - name: 🔥 Teardown cluster
         if: always()
         run: ksail down ${{ env.KSAIL_CLUSTER_NAME }}

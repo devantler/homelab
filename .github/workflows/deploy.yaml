@@ -97,12 +97,12 @@ jobs:
     env:
       DEPLOYMENT_ENV: prod
     steps:
-      - name: ⚙️ Setup homebrew
-        uses: Homebrew/actions/setup-homebrew@master
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
       - name: ⚙️ Install KSail
-        run: brew install devantler/formulas/ksail
+        run: |
+          sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail?os=linux&arch=arm64"
+          sudo chmod +x /usr/local/bin/ksail
       - name: 🔨 Create kubeconfig
         run: |
           mkdir ~/.kube
@@ -142,3 +142,12 @@ jobs:
           flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:$latest_sha_tag \
             --tag latest \
             --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+      - name: ⚙️ Install K8sGPT
+        if: failure()
+        run: |
+          sudo wget -qO /usr/local/bin/k8sgpt "https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_arm64.apk"
+          apk add --allow-untrusted k8sgpt_arm64.apk
+          k8sgpt auth add --backend ollama --model llama3.1 --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
+      - name: 🪲 Analyze
+        if: failure()
+        run: k8sgpt analyze
