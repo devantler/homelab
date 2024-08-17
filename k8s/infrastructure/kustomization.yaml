@@ -10,6 +10,7 @@ resources:
   - oauth2-proxy
   - ollama
   - traefik
+  - trivy-operator
   # - harbor
 
 patches:
