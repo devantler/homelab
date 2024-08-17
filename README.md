@@ -42,7 +42,8 @@
 │   │   ├── metrics-server
 │   │   ├── oauth2-proxy
 │   │   ├── ollama
-│   │   └── traefik
+│   │   ├── traefik
+│   │   └── trivy-operator
 │   ├── repositories
 │   ├── tenants
 │   └── variables
@@ -52,7 +53,7 @@
         ├── cluster
         └── nodes
 
-45 directories
+46 directories
 ```
 <!-- readme-tree end -->
 
