@@ -118,11 +118,11 @@ The cluster configuration is storen in the `k8s/*` directories where the structu
 
 - `clusters/*`: Contains the the cluster specific configuration for each environment. For example entry-level Flux kustomizations, and the environment specific variables.
 - `distributions/*`: Contains the distribution specific configuration. For example distribution specific variables, and infrastructure components needed to support the distribution. Talos for example does not have a built-in kubelet-serving-cert-approver, so it is required to make metrics server access kubelet with a certificate.
-- `manifests/*`: Contains the actual manifests that are deployed to each cluster. The structure is as follows:
-  - `apps/*`: Contains the application specific manifests. For example the homepage, local-ai, ollama, and plantuml.
-  - `infrastructure/*`: Contains the infrastructure specific manifests. For example cert-manager, cloudflared, gha-runner-scale-set-controller, goldilocks, harbor, k8sgpt-operator, metrics-server, oauth2-proxy, and traefik.
-  - `repositories/*`: Contains the repositories that are used by the cluster. For example the `flux-system` repository.
-  - `variables/*`: Contains global variables, that are the same for all clusters.
+- `apps/*`: Contains the application specific manifests. For example the homepage, local-ai, ollama, and plantuml.
+- `infrastructure/*`: Contains the infrastructure specific manifests. For example cert-manager, cloudflared, gha-runner-scale-set-controller, goldilocks, harbor, k8sgpt-operator, metrics-server, oauth2-proxy, and traefik.
+- `repositories/*`: Contains the repositories that are used by the cluster. For example the `flux-system` repository.
+- `tenants`: Contains Flux kustomizations to bootstrap and onboard tenants. (currently not used)
+- `variables/*`: Contains global variables, that are the same for all clusters.
 
 ## Production Environment
 
