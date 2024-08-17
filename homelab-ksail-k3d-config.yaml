@@ -1,10 +1,10 @@
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
-  name: homelab-ksail
+  name: homelab-local
 volumes:
-  - volume: k3d-homelab-ksail-storage:/var/lib/rancher/k3s/storage
-network: k3d-homelab-ksail
+  - volume: k3d-homelab-local-storage:/var/lib/rancher/k3s/storage
+network: k3d-homelab-local
 options:
   k3s:
     extraArgs:

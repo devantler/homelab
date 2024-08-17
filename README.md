@@ -11,7 +11,7 @@
 ├── .vscode
 ├── k8s
 │   ├── clusters
-│   │   ├── homelab-ksail
+│   │   ├── homelab-local
 │   │   │   ├── flux-system
 │   │   │   └── variables
 │   │   └── homelab-prod
@@ -82,13 +82,13 @@ For production, you need the following tools:
 To run this cluster locally, simply run the following command:
 
 ```bash
-ksail up homelab-ksail
+ksail up homelab-local
 ```
 
 > [!NOTE]
 > To run this cluster on your metal, would require that you have access to my SOPS keys. This is ofcourse not possible, so you would need to create your own keys and replace the existing ones, if you want to run my cluster configuration on your own metal.
 >
-> - The keys that `KSail` uses are stored in `~/.ksail/age` where one Age key is store for each cluster, and named according to the cluster name. For example `~/.ksail/age/homelab-ksail`.
+> - The keys that `KSail` uses are stored in `~/.ksail/age` where one Age key is store for each cluster, and named according to the cluster name. For example `~/.ksail/age/homelab-local`.
 > - To update SOPS to work with `Ksail`, you need to update the `.sops.yaml` file in the root of the repository, and replace the `age` keys with your own keys.
 > - To update the manifests to work with `KSail`, you need to replace all `.sops.yaml` files with new ones, that are encrypted with your own keys.
 >

@@ -11,7 +11,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: clusters/homelab-ksail/variables
+  path: clusters/homelab-local/variables
   prune: true
   wait: true
 ---
