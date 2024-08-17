@@ -39,6 +39,7 @@
 │   │   ├── goldilocks
 │   │   ├── harbor
 │   │   ├── k8sgpt-operator
+│   │   ├── kyverno
 │   │   ├── metrics-server
 │   │   ├── oauth2-proxy
 │   │   ├── ollama
@@ -53,7 +54,7 @@
         ├── cluster
         └── nodes
 
-46 directories
+47 directories
 ```
 <!-- readme-tree end -->
 
