@@ -196,3 +196,6 @@ spec:
                     - Codecov:
                         - icon: si-codecov-#F01F7A
                           href: https://app.codecov.io
+                    - CRD Docs:
+                        - icon: si-kubernetes-#326CE5
+                          href: https://doc.crds.dev
