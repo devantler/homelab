@@ -105,9 +105,9 @@ ksail up homelab-local
 - [Metrics Server](https://kubernetes-sigs.github.io/metrics-server/) - To collect and expose metrics from the cluster.
 - [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) - To proxy authentication requests to upstream OAuth2 providers.
 - [Ollama](https://ollama.com) - To run LLM's in the cluster, and to provide a REST API to access them remotely.
+- [Open WebUI](https://openwebui.com) - A web interface to interact with Ollama and OpenAI's AI models.
 - [Traefik](https://doc.traefik.io/traefik/) - To route traffic to the correct services in the cluster.
 - [Homepage](https://gethomepage.dev/) - To provide a dashboard for the cluster.
-- [Local AI](https://localai.io) - To test out AI models through a web interface, and to provide a REST API to access them remotely.
 - [PlantUML](https://plantuml.com) - To generate UML diagrams from text.
 
 ## Cluster Configuration
