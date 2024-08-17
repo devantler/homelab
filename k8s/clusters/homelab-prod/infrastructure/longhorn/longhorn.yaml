@@ -32,3 +32,14 @@ spec:
                 traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
             persistence:
               defaultClassReplicaCount: 2
+    - target:
+        name: longhorn-engine-manager
+        type: Service
+      patch: |-
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: longhorn-engine-manager
+          labels:
+            longhorn.io/component: instance-manager
+            longhorn.io/instance-manager-type: engine
