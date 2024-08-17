@@ -33,5 +33,3 @@ spec:
             ollama:
               models:
                 - llama3.1
-            autoscaling:
-              enabled: true
