@@ -126,7 +126,7 @@ jobs:
           k8sgpt auth default -p ollama
       - name: 🪲 Analyze
         if: always()
-        run: k8sgpt analyze --explain
+        run: k8sgpt analyze --with-doc --explain
       - name: ↩️ Revert - Get latest package version
         if: failure()
         id: github_package_version
