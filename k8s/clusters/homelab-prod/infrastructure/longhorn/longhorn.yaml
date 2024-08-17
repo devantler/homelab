@@ -35,22 +35,26 @@ spec:
     - target:
         name: longhorn-engine-manager
         kind: Service
+        namespace: longhorn-system
       patch: |-
         apiVersion: v1
         kind: Service
         metadata:
           name: longhorn-engine-manager
+          namespace: longhorn-system
           labels:
             longhorn.io/component: instance-manager
             longhorn.io/instance-manager-type: engine
     - target:
         name: longhorn-replica-manager
         kind: Service
+        namespace: longhorn-system
       patch: |-
         apiVersion: v1
         kind: Service
         metadata:
           name: longhorn-replica-manager
+          namespace: longhorn-system
           labels:
             longhorn.io/component: instance-manager
             longhorn.io/instance-manager-type: replica
