@@ -15,18 +15,3 @@ spec:
   path: open-webui
   prune: true
   wait: true
-  patches:
-    - target:
-        name: open-webui
-        kind: HelmRelease
-      # https://github.com/open-webui/helm-charts/blob/main/charts/open-webui/values.yaml
-      patch: |-
-        apiVersion: helm.toolkit.fluxcd.io/v2
-        kind: HelmRelease
-        metadata:
-          name: open-webui
-        spec:
-          values:
-            ingress:
-              annotations:
-                traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
