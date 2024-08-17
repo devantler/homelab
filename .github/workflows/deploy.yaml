@@ -41,7 +41,9 @@ jobs:
             --set cgroup.autoMount.enabled=false \
             --set cgroup.hostRoot=/sys/fs/cgroup \
             --set hubble.relay.enabled=true \
-            --set hubble.ui.enabled=true
+            --set hubble.ui.enabled=true \
+            --set hubble.ui.ingress.className=traefik
+
       - name: ⚙️ Install Flux
         run: |
           flux check --pre

@@ -6,6 +6,7 @@ metadata:
 data:
   cluster_domain: devantler.k8s.local
   harbor_persistent_volume_access_mode: ReadWriteOnce
+  ingress_class_name: traefik
   local_ai_persistence_access_mode: ReadWriteOnce
   oauth2_proxy_client_id: Ov23liTxrJtJ081Hiq35
   traefik_forward_auth_address: https://oauth2-proxy.devantler.k8s.local/
