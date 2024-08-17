@@ -96,18 +96,18 @@ spec:
                         description: Personal website and blog.
                 - Diagramming:
                     - PlantUML:
-                        icon: https://static-00.iconduck.com/assets.00/file-type-plantuml-icon-512x485-f776vhc4.png
+                        icon: si-uml-#FABD14
                         href: https://plantuml.${cluster_domain}
                         description: Text-based UML diagramming tool.
                         app: plantuml
                         namespace: plantuml
                 - AI:
-                    - LocalAI:
-                        icon: si-ollama-#00CAFF
-                        href: https://local-ai.${cluster_domain}
+                    - Open WebUI:
+                        icon: si-openai-#412991
+                        href: https://open-webui.${cluster_domain}
                         description: Self-hosted OpenAI drop-in alternative.
-                        app: local-ai
-                        namespace: local-ai
+                        app: open-webui
+                        namespace: open-webui
                 - Networking:
                     - Cloudflare:
                         icon: cloudflare
@@ -138,12 +138,12 @@ spec:
                         description: Cloud-native storage.
                         app: longhorn
                         namespace: longhorn-system
-                    - Harbor:
-                        icon: harbor
-                        href: https://harbor.${cluster_domain}
-                        description: Cloud-native Container Registry.
-                        app: harbor
-                        namespace: harbor
+                    # - Harbor:
+                    #     icon: harbor
+                    #     href: https://harbor.${cluster_domain}
+                    #     description: Cloud-native Container Registry.
+                    #     app: harbor
+                    #     namespace: harbor
                 - Monitoring:
                     - Cilium Hubble:
                         icon: cilium
