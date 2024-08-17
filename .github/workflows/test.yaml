@@ -45,7 +45,7 @@ jobs:
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
           ksail up ${{ env.KSAIL_CLUSTER_NAME }}
       - name: ⚙️ Install K8sGPT
-        if: failure()
+        if: always()
         run: |
           sudo wget -qO /usr/local/bin/k8sgpt "https://getbin.io/k8sgpt-ai/k8sgpt?os=linux&arch=arm64"
           sudo chmod +x /usr/local/bin/k8sgpt
