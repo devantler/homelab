@@ -6,6 +6,7 @@ resources:
   - gha-runner-scale-set-controller
   - goldilocks
   - k8sgpt-operator
+  - kyverno
   - metrics-server
   - oauth2-proxy
   - ollama
