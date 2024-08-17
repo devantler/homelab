@@ -43,3 +43,14 @@ spec:
           labels:
             longhorn.io/component: instance-manager
             longhorn.io/instance-manager-type: engine
+    - target:
+        name: longhorn-replica-manager
+        type: Service
+      patch: |-
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: longhorn-replica-manager
+          labels:
+            longhorn.io/component: instance-manager
+            longhorn.io/instance-manager-type: replica
