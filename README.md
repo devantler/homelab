@@ -101,14 +101,15 @@ ksail up homelab-local
 - [GitHub Actions Runner Scale Sets](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller) - To run GitHub Actions in the cluster.
 - [Goldilocks](https://goldilocks.docs.fairwinds.com) - To recommend and update Vertical Pod Autoscaler requests and limits.
 - [Harbor](https://goharbor.io) - To store and manage container images.
+- [Homepage](https://gethomepage.dev/) - To provide a dashboard for the cluster.
 - [K8sGPT Operator](https://k8sgpt.ai) - To analyze and optimize the cluster for errors and improvements.
 - [Metrics Server](https://kubernetes-sigs.github.io/metrics-server/) - To collect and expose metrics from the cluster.
 - [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) - To proxy authentication requests to upstream OAuth2 providers.
 - [Ollama](https://ollama.com) - To run LLM's in the cluster, and to provide a REST API to access them remotely.
 - [Open WebUI](https://openwebui.com) - A web interface to interact with Ollama and OpenAI's AI models.
-- [Traefik](https://doc.traefik.io/traefik/) - To route traffic to the correct services in the cluster.
-- [Homepage](https://gethomepage.dev/) - To provide a dashboard for the cluster.
 - [PlantUML](https://plantuml.com) - To generate UML diagrams from text.
+- [Traefik](https://doc.traefik.io/traefik/) - To route traffic to the correct services in the cluster.
+- [Trivy Operator](https://aquasecurity.github.io/trivy-operator/latest/) - To continuously scan your Kubernetes cluster for security issues.
 
 ## Cluster Configuration
 
