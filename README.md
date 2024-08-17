@@ -10,6 +10,10 @@
 │   └── workflows
 ├── .vscode
 ├── k8s
+│   ├── apps
+│   │   ├── homepage
+│   │   ├── open-webui
+│   │   └── plantuml
 │   ├── clusters
 │   │   ├── homelab-local
 │   │   │   ├── flux-system
@@ -28,32 +32,27 @@
 │   │       ├── infrastructure
 │   │       │   └── kubelet-serving-cert-approver
 │   │       └── variables
-│   └── manifests
-│       ├── apps
-│       │   ├── homepage
-│       │   ├── local-ai
-│       │   ├── open-webui
-│       │   └── plantuml
-│       ├── infrastructure
-│       │   ├── cert-manager
-│       │   ├── cloudflared
-│       │   ├── gha-runner-scale-set-controller
-│       │   ├── goldilocks
-│       │   ├── harbor
-│       │   ├── k8sgpt-operator
-│       │   ├── metrics-server
-│       │   ├── oauth2-proxy
-│       │   ├── ollama
-│       │   └── traefik
-│       ├── repositories
-│       └── variables
+│   ├── infrastructure
+│   │   ├── cert-manager
+│   │   ├── cloudflared
+│   │   ├── gha-runner-scale-set-controller
+│   │   ├── goldilocks
+│   │   ├── harbor
+│   │   ├── k8sgpt-operator
+│   │   ├── metrics-server
+│   │   ├── oauth2-proxy
+│   │   ├── ollama
+│   │   └── traefik
+│   ├── repositories
+│   ├── tenants
+│   └── variables
 └── talos
     ├── hetzner
     └── patches
         ├── cluster
         └── nodes
 
-46 directories
+45 directories
 ```
 <!-- readme-tree end -->
 
