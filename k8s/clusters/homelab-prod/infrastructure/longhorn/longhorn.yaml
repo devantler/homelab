@@ -16,6 +16,7 @@ spec:
   prune: true
   wait: true
   patches:
+    # https://github.com/longhorn/charts/blob/v1.6.x/charts/longhorn/values.yaml
     - target:
         name: longhorn
         kind: HelmRelease
@@ -25,7 +26,6 @@ spec:
         metadata:
           name: longhorn
         spec:
-          # https://github.com/longhorn/charts/blob/v1.6.x/charts/longhorn/values.yaml
           values:
             ingress:
               annotations:
