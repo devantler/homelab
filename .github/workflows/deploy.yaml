@@ -145,9 +145,8 @@ jobs:
       - name: ⚙️ Install K8sGPT
         if: failure()
         run: |
-          sudo apt-get install -y apk
-          sudo wget -qO https://github.com/k8sgpt-ai/k8sgpt/releases/download/latest/k8sgpt_arm64.apk
-          apk add --allow-untrusted k8sgpt_arm64.apk
+          sudo wget -qO /usr/local/bin/k8sgpt "https://getbin.io/k8sgpt-ai/k8sgpt"
+          sudo chmod +x /usr/local/bin/k8sgpt
           k8sgpt auth add --backend ollama --model llama3.1 --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
       - name: 🪲 Analyze
         if: failure()
