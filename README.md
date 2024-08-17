@@ -32,6 +32,7 @@
 │       ├── apps
 │       │   ├── homepage
 │       │   ├── local-ai
+│       │   ├── open-webui
 │       │   └── plantuml
 │       ├── infrastructure
 │       │   ├── cert-manager
@@ -52,7 +53,7 @@
         ├── cluster
         └── nodes
 
-45 directories
+46 directories
 ```
 <!-- readme-tree end -->
 
