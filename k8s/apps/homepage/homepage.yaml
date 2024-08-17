@@ -106,7 +106,7 @@ spec:
                         icon: si-openai-#412991
                         href: https://open-webui.${cluster_domain}
                         description: Self-hosted OpenAI drop-in alternative.
-                        app: open-webui
+                        app: open-webui-pipelines
                         namespace: open-webui
                 - Networking:
                     - Cloudflare:
