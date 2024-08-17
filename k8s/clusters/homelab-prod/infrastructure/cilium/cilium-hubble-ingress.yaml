@@ -6,6 +6,7 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
 spec:
+  ingressClassName: ${ingress_class_name:=}
   rules:
   - host: hubble-ui.${cluster_domain}
     http:
