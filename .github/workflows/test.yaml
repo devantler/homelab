@@ -28,6 +28,8 @@ env:
 jobs:
   test:
     runs-on: homelab
+    env:
+      KSAIL_CLUSTER_NAME: homelab-local
     if: github.event.pull_request.draft == false
     steps:
       - name: 📑 Checkout
