@@ -30,7 +30,3 @@ spec:
             ingress:
               annotations:
                 traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
-            ollama:
-              ollama:
-                models:
-                  - llama3.1
