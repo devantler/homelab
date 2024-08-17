@@ -45,6 +45,6 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: manifests/variables
+  path: variables
   prune: true
   wait: true
