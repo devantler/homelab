@@ -6,8 +6,6 @@ metadata:
 data:
   cluster_domain: devantler.com
   ingress_class_name: traefik
-  local_ai_image_tag: v2.19.4-aio-cpu
-  local_ai_models_persistence_size: 50Gi
   oauth2_proxy_client_id: Ov23liQ4UtmGpfwiYpSZ
   ollama_autoscaling_enabled: "true"
   ollama_cpu_limit: "6"
