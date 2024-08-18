@@ -199,3 +199,14 @@ spec:
                     - CRD Docs:
                         - icon: si-kubernetes-#326CE5
                           href: https://doc.crds.dev
+    - target:
+        kind: Deployment
+        name: homepage
+      patch: |-
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: homepage
+          labels:
+            configmap.reloader.stakater.com/reload: homepage
+
