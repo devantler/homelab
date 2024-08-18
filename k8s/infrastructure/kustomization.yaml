@@ -23,6 +23,8 @@ resources:
   - traefik/traefik-basic-auth.yaml
   - traefik/traefik-forward-auth.yaml
   - traefik/traefik.yaml
+  - reloader/namespace.yaml
+  - reloader/reloader.yaml
   - trivy-operator/namespace.yaml
   - trivy-operator/trivy-operator.yaml
   # - harbor
