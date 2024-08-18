@@ -32,6 +32,3 @@ spec:
             ingress:
               annotations:
                 traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-basic-auth@kubernetescrd
-            ollama:
-              models:
-                - gemma2:2b

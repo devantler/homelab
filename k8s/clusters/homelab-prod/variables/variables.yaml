@@ -7,12 +7,10 @@ data:
   cluster_domain: devantler.com
   ingress_class_name: traefik
   oauth2_proxy_client_id: Ov23liQ4UtmGpfwiYpSZ
-  ollama_autoscaling_enabled: "true"
   ollama_cpu_limit: "6"
   ollama_cpu_request: "6"
   ollama_memory_limit: 8Gi
   ollama_memory_request: 8Gi
-  ollama_persistence_access_mode: ReadWriteMany
   ollama_persistence_enabled: "true"
   traefik_forward_auth_address: https://oauth2-proxy.devantler.com/
   traefik_forward_auth_ssl_host: devantler.com
