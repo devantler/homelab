@@ -49,7 +49,7 @@ jobs:
       - name: 🪲 Analyze
         if: always()
         run: |
-          k8sgpt auth add --backend ollama --model llama3.1 --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
+          k8sgpt auth add --backend ollama --model gemma2:2b --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
           k8sgpt auth default -p ollama
           # k8sgpt integration activate trivy --no-install --namespace trivy-operator
           k8sgpt integration activate kyverno --no-install --namespace kyverno
