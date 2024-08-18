@@ -18,13 +18,16 @@
 │   ├── clusters
 │   │   ├── homelab-local
 │   │   │   ├── flux-system
+│   │   │   ├── infrastructure
+│   │   │   │   └── ollama
 │   │   │   └── variables
 │   │   └── homelab-prod
 │   │       ├── flux-system
 │   │       ├── infrastructure
 │   │       │   ├── cilium
 │   │       │   ├── gha-runner-scale-sets
-│   │       │   └── longhorn
+│   │       │   ├── longhorn
+│   │       │   └── ollama
 │   │       └── variables
 │   ├── distributions
 │   │   ├── k3s
@@ -44,7 +47,6 @@
 │   │   ├── kyverno
 │   │   ├── metrics-server
 │   │   ├── oauth2-proxy
-│   │   ├── ollama
 │   │   ├── reloader
 │   │   ├── traefik
 │   │   └── trivy-operator
@@ -57,7 +59,7 @@
         ├── cluster
         └── nodes
 
-50 directories
+52 directories
 ```
 <!-- readme-tree end -->
 
