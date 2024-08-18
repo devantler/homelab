@@ -34,6 +34,7 @@
 │   │       │   └── kubelet-serving-cert-approver
 │   │       └── variables
 │   ├── infrastructure
+│   │   ├── capi-operator
 │   │   ├── cert-manager
 │   │   ├── cloudflared
 │   │   ├── gha-runner-scale-set-controller
@@ -56,7 +57,7 @@
         ├── cluster
         └── nodes
 
-49 directories
+50 directories
 ```
 <!-- readme-tree end -->
 
