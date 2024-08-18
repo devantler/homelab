@@ -126,10 +126,10 @@ jobs:
         run: |
           k8sgpt auth add --backend ollama --model llama3.1 --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
           k8sgpt auth default -p ollama
-          k8sgpt integration activate trivy --no-install --namespace trivy-operator
+          # k8sgpt integration activate trivy --no-install --namespace trivy-operator
           k8sgpt integration activate kyverno --no-install --namespace kyverno
           k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
-          k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
+          # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
           k8sgpt filters list
           output=$(k8sgpt analyze --with-doc)
           echo "$output"
