@@ -205,11 +205,13 @@ spec:
     - target:
         kind: Deployment
         name: homepage
+        namespace: homepage
       patch: |-
         apiVersion: apps/v1
         kind: Deployment
         metadata:
           name: homepage
+          namespace: homepage
           labels:
             configmap.reloader.stakater.com/reload: homepage
 
