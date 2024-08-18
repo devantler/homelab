@@ -32,4 +32,4 @@ spec:
                 traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-basic-auth@kubernetescrd
             ollama:
               models:
-                - mixtral
+                - gemma2:2b
