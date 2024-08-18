@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - ../../../distributions/talos/infrastructure
   - cilium
-  - gh-runner-scale-sets
+  - gha-runner-scale-sets
   - longhorn
   - ollama
 
