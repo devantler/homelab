@@ -33,3 +33,5 @@ spec:
             ollama:
               models:
                 - gemma2:2b
+            nodeSelector:
+              kubernetes.io/hostname: homelab-dk83-utm-apple-hypervisor-arm64-1
