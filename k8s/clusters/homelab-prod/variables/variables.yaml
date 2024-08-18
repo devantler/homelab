@@ -10,8 +10,8 @@ data:
   local_ai_models_persistence_size: 50Gi
   oauth2_proxy_client_id: Ov23liQ4UtmGpfwiYpSZ
   ollama_autoscaling_enabled: "true"
-  ollama_cpu_limit: "4"
-  ollama_cpu_request: "4"
+  ollama_cpu_limit: "6"
+  ollama_cpu_request: "6"
   ollama_memory_limit: 8Gi
   ollama_memory_request: 8Gi
   ollama_persistence_access_mode: ReadWriteMany
