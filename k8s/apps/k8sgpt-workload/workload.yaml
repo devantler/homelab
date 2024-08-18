@@ -1,0 +1,41 @@
+apiVersion: core.k8sgpt.ai/v1alpha1
+kind: K8sGPT
+metadata:
+  name: k8sgpt-workload
+  namespace: k8sgpt-operator
+spec:
+  ai:
+    enabled: false
+  noCache: false
+  repository: ghcr.io/k8sgpt-ai/k8sgpt
+  version: v0.3.40
+  integrations:
+    trivy:
+      enabled: true
+      namespace: trivy-operator
+    # kyverno:
+    #   enabled: true
+    #   namespace: kyverno
+  filters:
+    - ClusterPolicyReport
+    - ConfigAuditReport
+    - CronJob
+    - Deployment
+    - Gateway
+    - GatewayClass
+    - HorizontalPodAutoscaler
+    - HTTPRoute
+    - Ingress
+    - Log
+    - MutatingWebhookConfiguration
+    - NetworkPolicy
+    - Node
+    - PersistenVolumeClaim
+    - Pod
+    - PodDisruptionBudget
+    - PolicyReport
+    - ReplicaSet
+    - Service
+    - StatefulSet
+    - ValidatingWebhookConfiguration
+    - VulnerabilityReport
