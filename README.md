@@ -99,6 +99,7 @@ ksail up homelab-local
 
 ## Stack
 
+- [Cluster API Operator](https://cluster-api.sigs.k8s.io/) - To manage the lifecycle of tenant clusters.
 - [Cert Manager](https://cert-manager.io/docs/) - For managing certificates in the cluster.
 - [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) - To tunnel all traffic through Cloudflare, and to keep my network private.
 - [GitHub Actions Runner Scale Sets](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller) - To run GitHub Actions in the cluster.
