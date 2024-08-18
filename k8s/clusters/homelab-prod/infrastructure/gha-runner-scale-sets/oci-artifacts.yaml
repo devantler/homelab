@@ -37,8 +37,8 @@ spec:
             command: ["/home/runner/run.sh"]
             resources:
               requests:
-                cpu: 5
-                memory: 8Gi
+                cpu: 8
+                memory: 16Gi
               limits:
-                cpu: 5
-                memory: 8Gi
+                cpu: 8
+                memory: 16Gi
