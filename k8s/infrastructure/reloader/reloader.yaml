@@ -15,9 +15,4 @@ spec:
   path: reloader
   prune: true
   wait: true
-  patches:
-    - target:
-        kind: Deployment
-        name: reloader
-      patch: |-
-        
+
