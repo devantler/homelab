@@ -134,22 +134,23 @@ The cluster configuration is storen in the `k8s/*` directories where the structu
 
 ### Nodes
 
-- 3x Hetzner CAX21 nodes (QEMU ARM64) for the control plane
-- 1x UTM Apple Hypervisor ARM64 VM (Running on Mac Mini M2 Pro with access to 32GB RAM and 10 cores) as a worker node
+- 2x [Hetzner CAX21 nodes](https://www.hetzner.com/cloud/) (QEMU ARM64 4CPU 8Gb RAM 80Gb SSD) for the control plane and worker nodes
+- 1x [Hetzner CAX41 node](https://www.hetzner.com/cloud/) (QEMU ARM64 16CPU 32Gb RAM 320Gb SSD) for the control plane and worker node
+- 1x [UTM](https://mac.getutm.app) Apple Hypervisor ARM64 VM (Running on Mac Mini M2 Pro with access to 32GB RAM and 10 cores) as a worker node
   - The Apple Hypervisor performs better than QEMU, and is thus preferred for the worker nodes.
-- 1x UTM QEMU ARM64 VM (Running on Mac Mini M2 Pro with access to 2GB RAM and 2 cores) as a worker node
-  - The QEMU VM is used to attach external disks to the cluster. This is not well supported by the Apple Hypervisor.
+- 1x [UTM](https://mac.getutm.app) QEMU ARM64 VM (Running on Mac Mini M2 Pro with access to 2GB RAM and 2 cores) as a worker node
+  - The QEMU VM is used to attach external disks to the cluster. This is not supported by Apple Hypervisor.
 
 ### Hardware
 
-- Unifi Cloud Gateway - For networking and firewall.
-- External Disks - For distributed storage across the cluster.
+- [Unifi Cloud Gateway](https://eu.store.ui.com/eu/en/pro/products/ucg-ultra) - For networking and firewall.
+- [External Samsung T5/T7 SSD Disks](https://www.samsung.com/dk/memory-storage/portable-ssd/portable-ssd-t7-1tb-gray-mu-pc1t0t-ww/) - For distributed storage across the cluster.
 
 ### Software
 
-- Unifi - For configuring a DMZ zone for my own nodes to run in, along with other security features.
-- Talos Omni - For provisioning the production cluster, and managing nodes, updates, and the Talos configuration.
-- Cloudflare - For etcd backups, DNS, and tunneling all traffic so my network stays private.
-- Flux GitOps - For managing the kubernetes applications and infrastructure declaratively.
-- SOPS and Age - For encrypting secrets at rest, allowing me to store them in this repository with confidence.
-- KSail - For developing the cluster locally, and for running the cluster in CI to ensure all changes are properly tested before being applied to the production cluster.
+- [Unifi](https://ui.com/) - For configuring a DMZ zone for my own nodes to run in, along with other security features.
+- [Talos Omni](https://www.siderolabs.com/platform/saas-for-kubernetes/) - For provisioning the production cluster, and managing nodes, updates, and the Talos configuration.
+- [Cloudflare](https://www.cloudflare.com) - For etcd backups, DNS, and tunneling all traffic so my network stays private.
+- [Flux GitOps](https://fluxcd.io) - For managing the kubernetes applications and infrastructure declaratively.
+- [SOPS](https://getsops.io) and [Age](https://github.com/FiloSottile/age) - For encrypting secrets at rest, allowing me to store them in this repository with confidence.
+- [KSail](https://github.com/devantler/ksail) - For developing the cluster locally, and for running the cluster in CI to ensure all changes are properly tested before being applied to the production cluster.
