@@ -15,18 +15,3 @@ spec:
   path: ollama
   prune: true
   wait: true
-  patches:
-    # https://github.com/otwld/ollama-helm/blob/main/values.yaml
-    - target:
-        name: ollama
-        kind: HelmRelease
-      patch: |-
-        apiVersion: helm.toolkit.fluxcd.io/v2
-        kind: HelmRelease
-        metadata:
-          name: ollama
-        spec:
-          values:
-            ingress:
-              annotations:
-                traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-basic-auth@kubernetescrd

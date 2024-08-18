@@ -32,6 +32,3 @@ spec:
                 - gemma2:2b
             nodeSelector:
               kubernetes.io/hostname: homelab-dk83-utm-apple-hypervisor-arm64-1
-            ingress:
-              annotations:
-                traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-basic-auth@kubernetescrd
