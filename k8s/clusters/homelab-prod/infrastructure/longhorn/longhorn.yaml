@@ -31,6 +31,4 @@ spec:
               annotations:
                 traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
             defaultSettings:
-              allowNodeDrainWithLastHealthyReplica: true
-
-
+              kubernetesClusterAutoscalerEnabled: true
