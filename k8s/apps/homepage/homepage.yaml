@@ -10,7 +10,6 @@ spec:
   interval: 1m
   dependsOn:
     - name: reloader
-      namespace: flux-system
   targetNamespace: homepage
   sourceRef:
     kind: OCIRepository
