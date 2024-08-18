@@ -124,11 +124,11 @@ jobs:
       - name: 🪲 Analyze
         if: always()
         run: |
-          k8sgpt auth add --backend ollama --model gemma2:2b --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
+          k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama/api
           k8sgpt auth default -p ollama
           # k8sgpt integration activate trivy --no-install --namespace trivy-operator
           k8sgpt integration activate kyverno --no-install --namespace kyverno
-          k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
+          k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy,Log
           # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
           k8sgpt filters list
           output=$(k8sgpt analyze --with-doc)
