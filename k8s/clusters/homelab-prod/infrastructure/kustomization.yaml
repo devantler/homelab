@@ -2,15 +2,16 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../../distributions/talos/infrastructure
-  - cilium/cilium-hubble-ingress.yaml
-  - gha-runner-scale-sets/homelab.yaml
-  - gha-runner-scale-sets/namespace.yaml
-  - gha-runner-scale-sets/oci-artifacts.yaml
-  - longhorn/longhorn.yaml
-  - longhorn/namespace.yaml
+  - cilium
+  - gh-runner-scale-sets
+  - longhorn
+  - ollama
 
 patches:
-  - patch: |
+  - target:
+      kind: Kustomization
+      labelSelector: app.kubernetes.io/sops=enabled
+    patch: |
       apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
@@ -20,10 +21,10 @@ patches:
           provider: sops
           secretRef:
             name: sops-age
-    target:
+  - target:
       kind: Kustomization
-      labelSelector: app.kubernetes.io/sops=enabled
-  - patch: |
+      labelSelector: app.kubernetes.io/post-build-variables=enabled
+    patch: |
       apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
@@ -43,6 +44,3 @@ patches:
               name: global-variables
             - kind: Secret
               name: global-variables-sensitive
-    target:
-      kind: Kustomization
-      labelSelector: app.kubernetes.io/post-build-variables=enabled
