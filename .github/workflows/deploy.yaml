@@ -99,12 +99,17 @@ jobs:
     env:
       DEPLOYMENT_ENV: prod
     steps:
-      - name: ⚙️ Setup flux
+      - name: ⚙️ Install flux
         uses: fluxcd/flux2/action@main
       - name: ⚙️ Install KSail
         run: |
           sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
           sudo chmod +x /usr/local/bin/ksail
+      - name: ⚙️ Install K8sGPT
+        run: |
+          sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
+          sudo mv k8sgpt /usr/local/bin/k8sgpt
+          sudo chmod +x /usr/local/bin/k8sgpt
       - name: 🔨 Create kubeconfig
         run: |
           mkdir ~/.kube
@@ -116,21 +121,15 @@ jobs:
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
         run: ksail check
-      - name: ⚙️ Install K8sGPT
+      - name: 🪲 Analyze
         if: always()
         run: |
-          sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
-          sudo mv k8sgpt /usr/local/bin/k8sgpt
-          sudo chmod +x /usr/local/bin/k8sgpt
           k8sgpt auth add --backend ollama --model llama3.1 --baseurl https://${{ github.repository_owner }}:${{ secrets.OLLAMA_PASSWORD }}@ollama.devantler.com
           k8sgpt auth default -p ollama
           k8sgpt integration activate trivy --no-install --namespace trivy-operator
           k8sgpt integration activate kyverno --no-install --namespace kyverno
           k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
           k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
-      - name: 🪲 Analyze
-        if: always()
-        run: |
           k8sgpt filters list
           output=$(k8sgpt analyze --with-doc)
           echo "$output"
