@@ -2,9 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../../distributions/talos/infrastructure
-  - cilium
-  - gha-runner-scale-sets
-  - longhorn
+  - cilium/cilium-hubble-ingress.yaml
+  - gha-runner-scale-sets/homelab.yaml
+  - gha-runner-scale-sets/namespace.yaml
+  - gha-runner-scale-sets/oci-artifacts.yaml
+  - longhorn/longhorn.yaml
+  - longhorn/namespace.yaml
 
 patches:
   - patch: |
