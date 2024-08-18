@@ -127,7 +127,7 @@ jobs:
           k8sgpt integration activate trivy --no-install --namespace trivy-operator
           k8sgpt integration activate kyverno --no-install --namespace kyverno
           k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
-          k8sgpt filters remove VulnerabilityReport,ConfigAuditReport,ConfigAuditReport
+          k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
       - name: 🪲 Analyze
         if: always()
         run: |
