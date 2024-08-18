@@ -8,7 +8,7 @@ packer {
 }
 
 locals {
-  image = "media/talos-v1.7.5-arm64.raw.xz"
+  image = "media/talos-v1.7.6-arm64.raw.xz"
 }
 
 source "hcloud" "talos" {
@@ -18,7 +18,7 @@ source "hcloud" "talos" {
   server_type  = "cx11" # https://docs.hetzner.com/cloud/servers/overview
   ssh_username = "root"
 
-  snapshot_name = "Talos v1.7.5 (arm64)"
+  snapshot_name = "Talos v1.7.6 (arm64)"
 
   server_name = "homelab-talos-1"
 }
