@@ -13,9 +13,6 @@ on:
       - closed
       - edited
   merge_group:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency:
