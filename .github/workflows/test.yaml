@@ -23,19 +23,8 @@ env:
   KSAIL_CLUSTER_NAME: homelab-local
 
 jobs:
-  homelab-status:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Homelab is up
-        uses: LASER-Yi/workflow-status@v0.0.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: deploy.yaml
-          event: push
-          branch: main
   test:
     runs-on: homelab
-    needs: homelab-status
     env:
       KSAIL_CLUSTER_NAME: homelab-local
     if: github.event.pull_request.draft == false
