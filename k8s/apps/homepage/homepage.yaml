@@ -8,6 +8,8 @@ metadata:
     app.kubernetes.io/post-build-variables: enabled
 spec:
   interval: 1m
+  dependsOn:
+    - name: reloader
   targetNamespace: homepage
   sourceRef:
     kind: OCIRepository
