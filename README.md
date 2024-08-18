@@ -12,6 +12,7 @@
 ├── k8s
 │   ├── apps
 │   │   ├── homepage
+│   │   ├── k8sgpt-workload
 │   │   ├── open-webui
 │   │   └── plantuml
 │   ├── clusters
@@ -54,7 +55,7 @@
         ├── cluster
         └── nodes
 
-47 directories
+48 directories
 ```
 <!-- readme-tree end -->
 
