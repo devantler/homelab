@@ -60,7 +60,7 @@ jobs:
         if: always()
         run: |
           k8sgpt filters list
-          output=$(k8sgpt analyze --with-doc --explain --anonymize)
+          output=$(k8sgpt analyze --with-doc)
           echo "$output"
           if [[ "$output" != *"No problems detected"* ]]; then
             exit 1
