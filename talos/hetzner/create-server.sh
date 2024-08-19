@@ -25,6 +25,12 @@ export HCLOUD_TOKEN=$1
 
 hcloud context create talos
 
+hcloud network create --name talos-network --ip-range 10.0.0.0/16
+
+if [ "$(hcloud network describe talos-network | yq -e '.Subnets[]')" == "null" ]; then
+  hcloud network add-subnet talos-network --type server --network-zone eu-central
+fi
+
 hcloud firewall create --name talos-firewall --rules-file - <<<'[
     {
         "description": "Allow KubeSpan Traffic",
@@ -43,5 +49,6 @@ hcloud server create --name "$2" \
   --location "$4" \
   --placement-group "$5" \
   --image "$6" \
+  --network talos-network \
   --firewall talos-firewall \
   --ssh-key "$7"

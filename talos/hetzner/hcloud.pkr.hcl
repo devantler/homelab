@@ -15,7 +15,7 @@ source "hcloud" "talos" {
   rescue       = "linux64"
   image        = "debian-12" #
   location     = "fsn1" # https://docs.hetzner.com/cloud/general/locations
-  server_type  = "cx11" # https://docs.hetzner.com/cloud/servers/overview
+  server_type  = "cax11" # https://docs.hetzner.com/cloud/servers/overview
   ssh_username = "root"
 
   snapshot_name = "Talos v1.7.6 (arm64)"
