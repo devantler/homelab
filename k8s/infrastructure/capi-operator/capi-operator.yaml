@@ -10,7 +10,7 @@ spec:
   interval: 1m
   dependsOn:
     - name: cert-manager
-  targetNamespace: capi-operator-system
+  targetNamespace: capi-operator
   sourceRef:
     kind: OCIRepository
     name: oci-artifacts

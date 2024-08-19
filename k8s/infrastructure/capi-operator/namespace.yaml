@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: capi-operator-system
+  name: capi-operator
   labels:
     goldilocks.fairwinds.com/enabled: "true"
     goldilocks.fairwinds.com/vpa-min-replicas: "1"
