@@ -176,31 +176,43 @@ spec:
                         description: Platform to track and moderate embedded comments on my sites.
               bookmarks:
                 - News:
-                    - GitHub Blog:
-                        - icon: github
-                          href: https://github.blog
-                    - CNCF Blog:
+                    # - .NET:
+                    # - CSharp:
+                    - CNCF:
                         - icon: si-cncf-#231F20
                           href: https://www.cncf.io/blog
+                    # - Devops:
+                    # - Docker:
+                    # - Flux:
+                    - GitHub:
+                        - icon: github
+                          href: https://github.blog
+                    # - Go:
+                    # - Kubernetes:
+                    # - MacRumors:
+                    # - OpenAI:
+                    # - Sidero Labs:
+                    # - The Register:
+                    - Visual Studio Code:
+                        - icon: vscode
+                          href: https://code.visualstudio.com/updates
                     - OpenAI Blog:
                         - icon: openai
                           href: https://openai.com/blog
-                    - VSCode Releases:
-                        - icon: vscode
-                          href: https://code.visualstudio.com/updates
+                    # - XKCD
                 - Development:
-                    - GitHub:
-                        - icon: github
-                          href: https://github.com
-                    - Renovate:
-                        - icon: si-renovatebot-#1A1F6C
-                          href: https://developer.mend.io
+                    - Chainguard:
+                        - icon: si-chainguard-#4445E7
+                          href: https://chainguard.io
                     - Codecov:
                         - icon: si-codecov-#F01F7A
                           href: https://app.codecov.io
                     - CRD Docs:
                         - icon: si-kubernetes-#326CE5
                           href: https://doc.crds.dev
-                    - Chainguard:
-                        - icon: si-chainguard-#4445E7
-                          href: https://chainguard.io
+                    - GitHub:
+                        - icon: github
+                          href: https://github.com
+                    - Renovate:
+                        - icon: si-renovatebot-#1A1F6C
+                          href: https://developer.mend.io
