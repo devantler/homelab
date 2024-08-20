@@ -201,3 +201,6 @@ spec:
                     - CRD Docs:
                         - icon: si-kubernetes-#326CE5
                           href: https://doc.crds.dev
+                    - Chainguard:
+                        - icon: si-chainguard-#4445E7
+                          href: https://chainguard.io
