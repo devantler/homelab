@@ -166,14 +166,14 @@ spec:
                         app: traefik
                         namespace: traefik
                 - Analytics:
-                    - Google Analytics:
-                        icon: google-analytics
-                        href: https://analytics.google.com
-                        description: Web analytics service.
                     - Disqus:
                         icon: si-disqus-#2E9FFF
                         href: https://disqus.com
                         description: Platform to track and moderate embedded comments on my sites.
+                    - Google Analytics:
+                        icon: google-analytics
+                        href: https://analytics.google.com
+                        description: Web analytics service.
               bookmarks:
                 - News:
                     # - .NET:
