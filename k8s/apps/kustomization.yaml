@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - homepage
   - k8sgpt-workload
-  - open-webui
+  # - open-webui
   - plantuml
 
 patches:
