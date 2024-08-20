@@ -15,9 +15,6 @@
   "github-actions": {
     "enabled": false
   },
-  "minor": {
-    "automerge": true
-  },
   "patch": {
     "automerge": true
   }
