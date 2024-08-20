@@ -6,6 +6,7 @@ resources:
   - cloudflared
   - gha-runner-scale-set-controller
   - goldilocks
+  - harbor
   - k8sgpt-operator
   - kyverno
   - metrics-server
@@ -13,7 +14,6 @@ resources:
   - reloader
   - traefik
   - trivy-operator
-  # - harbor
 
 patches:
   - patch: |
