@@ -47,11 +47,20 @@ jobs:
     steps:
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
-      - name: 🔨 Configure K8s context
+      - name: 🛠️ Add kubeconfig to host
         run: |
           mkdir ~/.kube
           echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
+          export KUBECONFIG=~/.kube/config
+          export KUBE_CONFIG_PATH=~/.kube/config
+      - name: 🛠️ Set kubernetes context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+      - name: 🛠️ Set kubernetes context (env)
+        run: |
           export KUBECONFIG=~/.kube/config
           export KUBE_CONFIG_PATH=~/.kube/config
       # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
