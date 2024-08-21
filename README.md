@@ -11,30 +11,33 @@
 ├── .vscode
 ├── k8s
 │   ├── apps
+│   │   ├── fleetdm
 │   │   ├── homepage
-│   │   ├── k8sgpt-workload
 │   │   ├── open-webui
 │   │   └── plantuml
 │   ├── clusters
 │   │   ├── homelab-local
 │   │   │   ├── flux-system
-│   │   │   ├── infrastructure
-│   │   │   │   └── ollama
 │   │   │   └── variables
 │   │   └── homelab-prod
+│   │       ├── custom-resources
+│   │       │   └── gha-runner-scale-sets
 │   │       ├── flux-system
 │   │       ├── infrastructure
-│   │       │   ├── cilium
-│   │       │   ├── gha-runner-scale-sets
-│   │       │   ├── longhorn
-│   │       │   └── ollama
+│   │       │   └── cilium
 │   │       └── variables
+│   ├── custom-resources
+│   │   ├── middlewares
+│   │   │   ├── basic-auth
+│   │   │   └── forward-auth
+│   │   └── selfsigned-cluster-issuer
 │   ├── distributions
 │   │   ├── k3s
 │   │   │   └── variables
 │   │   └── talos
 │   │       ├── infrastructure
-│   │       │   └── kubelet-serving-cert-approver
+│   │       │   ├── kubelet-serving-cert-approver
+│   │       │   └── longhorn
 │   │       └── variables
 │   ├── infrastructure
 │   │   ├── capi-operator
@@ -43,14 +46,15 @@
 │   │   ├── gha-runner-scale-set-controller
 │   │   ├── goldilocks
 │   │   ├── harbor
+│   │   ├── helm-charts-oci-proxy
 │   │   ├── k8sgpt-operator
 │   │   ├── kyverno
 │   │   ├── metrics-server
 │   │   ├── oauth2-proxy
+│   │   ├── ollama
 │   │   ├── reloader
 │   │   ├── traefik
 │   │   └── trivy-operator
-│   ├── repositories
 │   ├── tenants
 │   └── variables
 └── talos
@@ -59,7 +63,7 @@
         ├── cluster
         └── nodes
 
-52 directories
+56 directories
 ```
 <!-- readme-tree end -->
 
