@@ -25,6 +25,11 @@ spec:
               - op: add
                 path: /metadata/annotations/configmap.reloader.stakater.com~1reload
                 value: homepage
+  # ICONS:
+  # https://github.com/walkxcode/dashboard-icons
+  # https://simpleicons.org
+  # https://pictogrammers.com/library/mdi/
+  # ---
   # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
   values:
     enableRbac: true
@@ -128,6 +133,12 @@ spec:
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
         - Provisioning:
+            - Fleet Device Management:
+                icon: coderwall
+                href: https://fleetdm.${cluster_domain}
+                description: Open-source device management platform.
+                app: fleetdm
+                namespace: fleetdm
             - Hetzner Cloud:
                 icon: hetzner
                 href: https://console.hetzner.cloud/projects
