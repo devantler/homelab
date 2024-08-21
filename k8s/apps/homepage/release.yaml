@@ -134,7 +134,7 @@ spec:
                 description: Central hub for managing on-prem UniFi network infrastructure.
         - Provisioning:
             - Fleet Device Management:
-                icon: coderwall
+                icon: si-coderwall-#40B5A4
                 href: https://fleetdm.${cluster_domain}
                 description: Open-source device management platform.
                 app: fleetdm
