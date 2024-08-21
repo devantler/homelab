@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
-      - name: ⚙️ Setup flux
+      - name: ⚙️ Install flux
         uses: fluxcd/flux2/action@main
       - name: 🗳️ Push to GHCR OCI
         run: |
@@ -47,17 +47,17 @@ jobs:
     steps:
       - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
-      - name: ⚙️ Set kubernetes context
+      - name: 🛠️ Set kubernetes context
         uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
-      - name: ⚙️ Set kubernetes context (env)
+      - name: 🛠️ Set kubernetes context (env)
         run: |
           export KUBECONFIG=~/.kube/config
           export KUBE_CONFIG_PATH=~/.kube/config
       # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
-      - name: ⚙️ Install Cilium
+      - name: 🚀 Deploy Cilium
         run: |
           helm repo add cilium https://helm.cilium.io/
           helm repo update
@@ -73,7 +73,7 @@ jobs:
             --set cgroup.hostRoot=/sys/fs/cgroup \
             --set hubble.relay.enabled=true \
             --set hubble.ui.enabled=true
-      - name: ⚙️ Install Flux
+      - name: 🚀 Deploy Flux
         run: |
           flux check --pre
           flux install
