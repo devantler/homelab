@@ -8,6 +8,7 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+    force: true
   chart:
     spec:
       chart: longhorn
