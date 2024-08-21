@@ -71,14 +71,14 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 
 ## Prerequisites
 
-For development, you need the following tools:
+For development:
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [KSail](https://github.com/devantler/ksail)
 
-For production, you need the following tools:
+For production:
 
-- Talos Cluster
+- A Talos Cluster
 
 > [!NOTE]
 > You can use other distributions as well, but the configuration is optimized for Talos, and thus it is not guaranteed to work with other distributions.
