@@ -4,4 +4,3 @@ metadata:
   name: ollama
   labels:
     goldilocks.fairwinds.com/enabled: "true"
-    goldilocks.fairwinds.com/vpa-min-replicas: "1"
