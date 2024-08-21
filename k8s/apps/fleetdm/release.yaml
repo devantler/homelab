@@ -36,6 +36,7 @@ spec:
     cache:
       address: fleetdm-redis-master.fleetdm:6379
       usePassword: true
+    # https://github.com/bitnami/charts/blob/main/bitnami/mysql/values.yaml
     mysql:
       enabled: true
       auth:
@@ -43,6 +44,7 @@ spec:
         database: fleet
         username: fleet
         existingSecret: mysql
+    # https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
     redis:
       enabled: true
       auth:
