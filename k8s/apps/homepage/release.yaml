@@ -23,7 +23,7 @@ spec:
               name: homepage
             patch: |
               - op: add
-                path: /metadata/annotations/configmap.reloader.stakater.com/reload
+                path: /metadata/annotations/configmap.reloader.stakater.com~1reload
                 value: homepage
   # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
   values:
