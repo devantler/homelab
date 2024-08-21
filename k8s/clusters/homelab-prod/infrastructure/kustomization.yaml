@@ -3,17 +3,18 @@ kind: Kustomization
 resources:
   - ../../../distributions/talos/infrastructure
   - cilium
-  - gha-runner-scale-sets
 
 patches:
   - target:
       name: ollama
+      namespace: ollama
       kind: HelmRelease
     patch: |-
       apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease
       metadata:
         name: ollama
+        namespace: ollama
       spec:
         values:
           ollama:

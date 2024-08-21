@@ -7,12 +7,14 @@ metadata:
     app.kubernetes.io/sops: enabled
     app.kubernetes.io/post-build-variables: enabled
 spec:
-  interval: 1m
+  interval: 60m
+  timeout: 3m
+  retryInterval: 2m
   dependsOn:
     - name: infrastructure
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: custom-resources
+  path: clusters/homelab-prod/custom-resources
   prune: true
   wait: true
