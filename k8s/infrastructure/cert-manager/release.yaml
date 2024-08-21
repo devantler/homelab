@@ -4,6 +4,7 @@ metadata:
   name: cert-manager
 spec:
   interval: 1m
+  timeout: 10m
   chart:
     spec:
       chart: cert-manager
