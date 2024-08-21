@@ -13,62 +13,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  bootstrap-prod:
-    runs-on: ubuntu-latest
-    environment: prod
-    env:
-      DEPLOYMENT_ENV: prod
-    steps:
-      - name: ⚙️ Setup flux
-        uses: fluxcd/flux2/action@main
-      - name: ⚙️ Set kubernetes context
-        uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
-      # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
-      - name: ⚙️ Install Cilium
-        run: |
-          helm repo add cilium https://helm.cilium.io/
-          helm repo update
-          helm upgrade --install \
-            cilium \
-            cilium/cilium \
-            --namespace kube-system \
-            --set ipam.mode=kubernetes \
-            --set kubeProxyReplacement=false \
-            --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
-            --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
-            --set cgroup.autoMount.enabled=false \
-            --set cgroup.hostRoot=/sys/fs/cgroup \
-            --set hubble.relay.enabled=true \
-            --set hubble.ui.enabled=true
-
-      - name: ⚙️ Install Flux
-        run: |
-          flux check --pre
-          flux install
-      - name: 🔐 Create secret for SOPS
-        uses: azure/k8s-create-secret@v5
-        with:
-          secret-type: generic
-          secret-name: sops-age
-          namespace: flux-system
-          string-data: '{ "sops.agekey": "${{ secrets.PROD_SOPS_AGE_KEY }}" }'
-      - name: 🔁 Create OCI Source and Kustomization
-        run: |
-          flux create source oci flux-system \
-            --url=oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }} \
-            --tag=latest
-          flux create kustomization flux-system \
-            --source=OCIRepository/flux-system \
-            --path=clusters/homelab-${{ env.DEPLOYMENT_ENV }}/flux-system \
-            --prune=true
-
   push-to-oci-prod:
     runs-on: ubuntu-latest
-    needs:
-      - bootstrap-prod
     environment: prod
     env:
       DEPLOYMENT_ENV: prod
@@ -99,8 +45,50 @@ jobs:
     env:
       DEPLOYMENT_ENV: prod
     steps:
-      - name: ⚙️ Install flux
+      - name: ⚙️ Setup flux
         uses: fluxcd/flux2/action@main
+      - name: ⚙️ Set kubernetes context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+      # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
+      - name: ⚙️ Install Cilium
+        run: |
+          helm repo add cilium https://helm.cilium.io/
+          helm repo update
+          helm upgrade --install \
+            cilium \
+            cilium/cilium \
+            --namespace kube-system \
+            --set ipam.mode=kubernetes \
+            --set kubeProxyReplacement=false \
+            --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+            --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+            --set cgroup.autoMount.enabled=false \
+            --set cgroup.hostRoot=/sys/fs/cgroup \
+            --set hubble.relay.enabled=true \
+            --set hubble.ui.enabled=true
+      - name: ⚙️ Install Flux
+        run: |
+          flux check --pre
+          flux install
+      - name: 🔐 Create secret for SOPS
+        uses: azure/k8s-create-secret@v5
+        with:
+          secret-type: generic
+          secret-name: sops-age
+          namespace: flux-system
+          string-data: '{ "sops.agekey": "${{ secrets.PROD_SOPS_AGE_KEY }}" }'
+      - name: 🔁 Create OCI Source and Kustomization
+        run: |
+          flux create source oci flux-system \
+            --url=oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }} \
+            --tag=latest
+          flux create kustomization flux-system \
+            --source=OCIRepository/flux-system \
+            --path=clusters/homelab-${{ env.DEPLOYMENT_ENV }}/flux-system \
+            --prune=true
       - name: ⚙️ Install KSail
         run: |
           sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
