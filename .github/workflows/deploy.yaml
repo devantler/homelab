@@ -41,118 +41,118 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - push-to-oci-prod
-      environment: prod
-      env:
-        DEPLOYMENT_ENV: prod
-        steps:
-          - name: ⚙️ Setup flux
-            uses: fluxcd/flux2/action@main
-          - name: ⚙️ Setup KSail
-            run: |
-              sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
-              sudo chmod +x /usr/local/bin/ksail
-          - name: ⚙️ Setup K8sGPT
-            run: |
-              sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
-              sudo mv k8sgpt /usr/local/bin/k8sgpt
-              sudo chmod +x /usr/local/bin/k8sgpt
-          - name: 🛠️ Add kubeconfig to host
-            run: |
-              mkdir ~/.kube
-              echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
-              chmod 600 ~/.kube/config
-              export KUBECONFIG=~/.kube/config
-              export KUBE_CONFIG_PATH=~/.kube/config
-          - name: 🛠️ Set kube context
-            uses: azure/k8s-set-context@v4
-            with:
-              method: kubeconfig
-              kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
-          - name: 🛠️ Set kubernetes context (env)
-            run: |
-              export KUBECONFIG=~/.kube/config
-              export KUBE_CONFIG_PATH=~/.kube/config
-          # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
-          - name: 🚀 Deploy Cilium
-            run: |
-              helm repo add cilium https://helm.cilium.io/
-              helm repo update
-              helm upgrade --install \
-                cilium \
-                cilium/cilium \
-                --namespace kube-system \
-                --set ipam.mode=kubernetes \
-                --set kubeProxyReplacement=false \
-                --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
-                --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
-                --set cgroup.autoMount.enabled=false \
-                --set cgroup.hostRoot=/sys/fs/cgroup \
-                --set hubble.relay.enabled=true \
-                --set hubble.ui.enabled=true
-          - name: 🚀 Deploy Flux
-            run: |
-              flux check --pre
-              flux install
-          - name: 🔐 Create secret for SOPS
-            uses: azure/k8s-create-secret@v5
-            with:
-              secret-type: generic
-              secret-name: sops-age
-              namespace: flux-system
-              string-data: '{ "sops.agekey": "${{ secrets.PROD_SOPS_AGE_KEY }}" }'
-          - name: 🔁 Create OCI Source and Kustomization
-            run: |
-              flux create source oci flux-system \
-                --url=oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }} \
-                --tag=latest
-              flux create kustomization flux-system \
-                --source=OCIRepository/flux-system \
-                --path=clusters/homelab-${{ env.DEPLOYMENT_ENV }}/flux-system \
-                --prune=true
-          - name: 🔁 Reconcile
-            run: flux reconcile source oci flux-system
-          - name: 👀 Check reconciliation
-            run: ksail check
-          - name: 🪲 Analyze
-            if: always()
-            run: |
-              k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama/api
-              k8sgpt auth default -p ollama
-              # k8sgpt integration activate trivy --no-install --namespace trivy-operator
-              # k8sgpt integration activate kyverno --no-install --namespace kyverno
-              # k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
-              # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
-              k8sgpt filters list
-              output=$(k8sgpt analyze --with-doc)
-              echo "$output"
-              # if [[ "$output" != *"No problems detected"* ]]; then
-              #   exit 1
-              # fi
-          - name: ↩️ Revert - Get latest package version
-            if: failure()
-            id: github_package_version
-            run: |
-              latest_version=$(curl -L \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                "https://api.github.com/user/packages/container/${{ github.event.repository.name }}%2Fmanifests-${{ env.DEPLOYMENT_ENV }}/versions" | jq '.[0].id')
-              echo "ID=$latest_version" >> "$GITHUB_OUTPUT"
-          - name: ↩️ Revert - Delete latest package version
-            if: ${{ failure() && steps.github_package_version.outputs.ID != '' }}
-            uses: actions/delete-package-versions@v5
-            with:
-              package-type: container
-              package-name: ${{ github.event.repository.name }}/manifests-${{ env.DEPLOYMENT_ENV }}
-              package-version-ids: ${{ steps.github_package_version.outputs.ID }}
-          - name: ↩️ Revert - Retag latest
-            if: ${{ failure() && steps.github_package_version.outputs.ID != '' }}
-            run: |
-              latest_sha_tag=$(curl -L \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                "https://api.github.com/user/packages/container/${{ github.event.repository.name }}%2Fmanifests-${{ env.DEPLOYMENT_ENV }}/versions" | jq '.[0].metadata.container.tags[0]' | tr -d '"')
-              flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:$latest_sha_tag \
-                --tag latest \
-                --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+    environment: prod
+    env:
+      DEPLOYMENT_ENV: prod
+    steps:
+      - name: ⚙️ Setup flux
+        uses: fluxcd/flux2/action@main
+      - name: ⚙️ Setup KSail
+        run: |
+          sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
+          sudo chmod +x /usr/local/bin/ksail
+      - name: ⚙️ Setup K8sGPT
+        run: |
+          sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
+          sudo mv k8sgpt /usr/local/bin/k8sgpt
+          sudo chmod +x /usr/local/bin/k8sgpt
+      - name: 🛠️ Add kubeconfig to host
+        run: |
+          mkdir ~/.kube
+          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+          export KUBECONFIG=~/.kube/config
+          export KUBE_CONFIG_PATH=~/.kube/config
+      - name: 🛠️ Set kube context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+      - name: 🛠️ Set kubernetes context (env)
+        run: |
+          export KUBECONFIG=~/.kube/config
+          export KUBE_CONFIG_PATH=~/.kube/config
+      # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
+      - name: 🚀 Deploy Cilium
+        run: |
+          helm repo add cilium https://helm.cilium.io/
+          helm repo update
+          helm upgrade --install \
+            cilium \
+            cilium/cilium \
+            --namespace kube-system \
+            --set ipam.mode=kubernetes \
+            --set kubeProxyReplacement=false \
+            --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+            --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+            --set cgroup.autoMount.enabled=false \
+            --set cgroup.hostRoot=/sys/fs/cgroup \
+            --set hubble.relay.enabled=true \
+            --set hubble.ui.enabled=true
+      - name: 🚀 Deploy Flux
+        run: |
+          flux check --pre
+          flux install
+      - name: 🔐 Create secret for SOPS
+        uses: azure/k8s-create-secret@v5
+        with:
+          secret-type: generic
+          secret-name: sops-age
+          namespace: flux-system
+          string-data: '{ "sops.agekey": "${{ secrets.PROD_SOPS_AGE_KEY }}" }'
+      - name: 🔁 Create OCI Source and Kustomization
+        run: |
+          flux create source oci flux-system \
+            --url=oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }} \
+            --tag=latest
+          flux create kustomization flux-system \
+            --source=OCIRepository/flux-system \
+            --path=clusters/homelab-${{ env.DEPLOYMENT_ENV }}/flux-system \
+            --prune=true
+      - name: 🔁 Reconcile
+        run: flux reconcile source oci flux-system
+      - name: 👀 Check reconciliation
+        run: ksail check
+      - name: 🪲 Analyze
+        if: always()
+        run: |
+          k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama/api
+          k8sgpt auth default -p ollama
+          # k8sgpt integration activate trivy --no-install --namespace trivy-operator
+          # k8sgpt integration activate kyverno --no-install --namespace kyverno
+          # k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
+          # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
+          k8sgpt filters list
+          output=$(k8sgpt analyze --with-doc)
+          echo "$output"
+          # if [[ "$output" != *"No problems detected"* ]]; then
+          #   exit 1
+          # fi
+      - name: ↩️ Revert - Get latest package version
+        if: failure()
+        id: github_package_version
+        run: |
+          latest_version=$(curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/user/packages/container/${{ github.event.repository.name }}%2Fmanifests-${{ env.DEPLOYMENT_ENV }}/versions" | jq '.[0].id')
+          echo "ID=$latest_version" >> "$GITHUB_OUTPUT"
+      - name: ↩️ Revert - Delete latest package version
+        if: ${{ failure() && steps.github_package_version.outputs.ID != '' }}
+        uses: actions/delete-package-versions@v5
+        with:
+          package-type: container
+          package-name: ${{ github.event.repository.name }}/manifests-${{ env.DEPLOYMENT_ENV }}
+          package-version-ids: ${{ steps.github_package_version.outputs.ID }}
+      - name: ↩️ Revert - Retag latest
+        if: ${{ failure() && steps.github_package_version.outputs.ID != '' }}
+        run: |
+          latest_sha_tag=$(curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/user/packages/container/${{ github.event.repository.name }}%2Fmanifests-${{ env.DEPLOYMENT_ENV }}/versions" | jq '.[0].metadata.container.tags[0]' | tr -d '"')
+          flux tag artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:$latest_sha_tag \
+            --tag latest \
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
