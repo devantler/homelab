@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: fleetdm
 resources:
   - mysql-secret.yaml
+  - namespace.yaml
   - redis-secret.yaml
   - release.yaml
   - repository.yaml
