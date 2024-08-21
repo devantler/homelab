@@ -4,3 +4,31 @@ resources:
   - ../../../infrastructure
   - kubelet-serving-cert-approver
   - longhorn
+
+patches:
+  - target:
+      name: harbor
+      namespace: harbor
+      kind: HelmRelease
+    patch: |-
+      apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      metadata:
+        name: harbor
+        namespace: harbor
+      dependsOn:
+        - name: longhorn
+          namespace: longhorn-system
+  - target:
+      name: ollama
+      namespace: ollama
+      kind: HelmRelease
+    patch: |-
+      apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      metadata:
+        name: ollama
+        namespace: ollama
+      dependsOn:
+        - name: longhorn
+          namespace: longhorn-system
