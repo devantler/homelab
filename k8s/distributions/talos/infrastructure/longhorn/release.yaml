@@ -6,10 +6,8 @@ spec:
   interval: 1m
   install:
     crds: CreateReplace
-    force: true
   upgrade:
     crds: CreateReplace
-    force: true
   chart:
     spec:
       chart: longhorn
