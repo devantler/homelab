@@ -16,9 +16,10 @@ patches:
       metadata:
         name: harbor
         namespace: harbor
-      dependsOn:
-        - name: longhorn
-          namespace: longhorn-system
+      spec:
+        dependsOn:
+          - name: longhorn
+            namespace: longhorn-system
   - target:
       name: ollama
       namespace: ollama
@@ -29,6 +30,7 @@ patches:
       metadata:
         name: ollama
         namespace: ollama
-      dependsOn:
-        - name: longhorn
-          namespace: longhorn-system
+      spec:
+        dependsOn:
+          - name: longhorn
+            namespace: longhorn-system
