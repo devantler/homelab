@@ -6,7 +6,9 @@ metadata:
   labels:
     app.kubernetes.io/sops: enabled
 spec:
-  interval: 5m
+  interval: 60m
+  timeout: 3m
+  retryInterval: 2m
   dependsOn: []
   sourceRef:
     kind: OCIRepository
@@ -23,7 +25,9 @@ metadata:
   labels:
     app.kubernetes.io/sops: enabled
 spec:
-  interval: 5m
+  interval: 60m
+  timeout: 3m
+  retryInterval: 2m
   dependsOn: []
   sourceRef:
     kind: OCIRepository
@@ -40,7 +44,9 @@ metadata:
   labels:
     app.kubernetes.io/sops: enabled
 spec:
-  interval: 5m
+  interval: 60m
+  timeout: 3m
+  retryInterval: 2m
   dependsOn: []
   sourceRef:
     kind: OCIRepository
