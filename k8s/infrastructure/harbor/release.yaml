@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: harbor
+spec:
+  interval: 1m
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  chart:
+    spec:
+      chart: harbor
+      version: 23.0.0
+      sourceRef:
+        kind: HelmRepository
+        name: harbor
+  # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
+  values:
+    externalURL: https://harbor.${cluster_domain}
+    adminPassword: ${harbor_admin_password:=Harbor12345}
+    ingress:
+      core:
+        hostname: harbor.${cluster_domain}
+    exposureType: ingress

@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-headers
+  namespace: traefik
+spec:
+  headers:
+    sslRedirect: true
+    stsSeconds: 315360000
+    browserXssFilter: true
+    contentTypeNosniff: true
+    forceSTSHeader: true
+    sslHost: ${traefik_forward_auth_ssl_host}
+    stsIncludeSubdomains: true
+    stsPreload: true
+    frameDeny: true

@@ -3,6 +3,8 @@ kind: Kustomization
 metadata:
   name: variables
   namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
 spec:
   interval: 30s
   dependsOn: []
@@ -12,16 +14,14 @@ spec:
   path: clusters/homelab-prod/variables
   prune: true
   wait: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: environment-variables
   namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
 spec:
   interval: 30s
   dependsOn: []
@@ -31,16 +31,14 @@ spec:
   path: distributions/talos/variables
   prune: true
   wait: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: global-variables
   namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
 spec:
   interval: 30s
   dependsOn: []
@@ -50,7 +48,3 @@ spec:
   path: variables
   prune: true
   wait: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age

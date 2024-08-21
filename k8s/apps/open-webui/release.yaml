@@ -1,0 +1,33 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: open-webui
+spec:
+  interval: 1m
+  dependsOn:
+    - name: ollama
+      namespace: ollama
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  chart:
+    spec:
+      chart: open-webui
+      version: 3.1.6
+      sourceRef:
+        kind: HelmRepository
+        name: open-webui
+  # https://github.com/open-webui/helm-charts/blob/main/charts/open-webui/values.yaml
+  values:
+    nameOverride: open-webui
+    ollama:
+      enabled: false
+    ollamaUrls:
+      - http://ollama.ollama:11434
+    extraEnvVars:
+      - name: OPENAI_API_KEY
+        value: ${open_webui_pipelines_api_key:=0p3n-w3bu!}
+    ingress:
+      enabled: ${ollama_open_web_ui_ingress_enabled:=true}
+      host: open-webui.${cluster_domain}

@@ -1,0 +1,7 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: fleetdm
+  namespace: fleetdm
+spec:
+  url: https://fleetdm.github.io/fleet/charts

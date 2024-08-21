@@ -3,23 +3,16 @@ kind: Kustomization
 metadata:
   name: infrastructure
   namespace: flux-system
+  labels:
+    app.kubernetes.io/sops: enabled
+    app.kubernetes.io/post-build-variables: enabled
 spec:
   interval: 1m
   dependsOn:
-    - name: repositories
+    - name: variables
   sourceRef:
     kind: OCIRepository
     name: flux-system
   path: clusters/homelab-prod/infrastructure
   prune: true
   wait: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: variables
-      - kind: Secret
-        name: variables-sensitive

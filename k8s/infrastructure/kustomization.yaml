@@ -6,14 +6,16 @@ resources:
   - cloudflared
   - gha-runner-scale-set-controller
   - goldilocks
-  # - harbor
+  - harbor
   - k8sgpt-operator
   - kyverno
   - metrics-server
   - oauth2-proxy
+  - ollama
   - reloader
   - traefik
   - trivy-operator
+  # - helm-charts-oci
 
 patches:
   - patch: |

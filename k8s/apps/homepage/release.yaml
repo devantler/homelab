@@ -1,0 +1,221 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: homepage
+spec:
+  interval: 1m
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  chart:
+    spec:
+      chart: homepage
+      version: 2.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: homepage
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: homepage
+            patch: |
+              - op: add
+                path: /metadata/annotations/configmap.reloader.stakater.com/reload
+                value: homepage
+  # https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
+  values:
+    enableRbac: true
+    serviceaccount:
+      create: true
+    ingress:
+      main:
+        enabled: true
+        hosts:
+          - host: homepage.${cluster_domain}
+            paths:
+              - path: /
+                pathType: Prefix
+        annotations:
+          traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
+    config:
+      kubernetes:
+        mode: cluster
+      settings:
+        title: Homelab
+        theme: dark
+        color: slate
+        background:
+          image: https://images.unsplash.com/photo-1512652683497-9d8ee4641be1?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
+          blur: sm
+          opacity: 70
+        providers:
+          longhorn:
+            url: http://longhorn-frontend.longhorn-system:80
+      widgets:
+        - logo: {}
+        - greeting:
+            text_size: xl
+            text: Welcome to Devantler's Homelab! 🚀
+        - search:
+            provider: google
+            target: _blank
+        - datetime:
+            text_size: xl
+            format:
+              dateStyle: long
+              timeStyle: short
+              hourCycle: h23
+        - openmeteo:
+            units: metric
+            cache: 5
+        - resources:
+            backend: kubernetes
+            expanded: true
+            cpu: true
+            memory: true
+        - kubernetes:
+            cluster:
+              show: true
+              cpu: true
+              memory: true
+              showLabel: true
+              label: "cluster"
+            nodes:
+              show: true
+              cpu: true
+              memory: true
+              showLabel: true
+        - longhorn:
+            expanded: true
+            total: true
+            labels: true
+            nodes: true
+      services:
+        - Portfolio:
+            - GitHub Pages:
+                icon: github
+                href: https://${cluster_domain}
+                description: Personal website and blog.
+        - Diagramming:
+            - PlantUML:
+                icon: si-uml-#FABD14
+                href: https://plantuml.${cluster_domain}
+                description: Text-based UML diagramming tool.
+                app: plantuml
+                namespace: plantuml
+        - AI:
+            - Open WebUI:
+                icon: si-openai-#412991
+                href: https://open-webui.${cluster_domain}
+                description: Self-hosted OpenAI drop-in alternative.
+                app: open-webui
+                namespace: open-webui
+        - Networking:
+            - Cloudflare:
+                icon: cloudflare
+                href: https://cloudflare.${cluster_domain}
+                description: Central hub for managing public networking, e.g. FQDN, DNS and remote tunneling.
+                widget:
+                  type: cloudflared
+                  accountid: 634e9016d402443e427865dc35457728
+                  tunnelid: 3284a342-3b0f-4530-a60e-07338e2bec17
+                  key: ${cloudflared_tunnel_api_token}
+            - UniFi:
+                icon: unifi
+                href: https://unifi.ui.com
+                description: Central hub for managing on-prem UniFi network infrastructure.
+        - Provisioning:
+            - Hetzner Cloud:
+                icon: hetzner
+                href: https://console.hetzner.cloud/projects
+                description: Cloud infrastructure provider.
+            - Omni:
+                icon: si-talos-#FF7300
+                href: https://omni.${cluster_domain}
+                description: Platform for provisioning and managing Talos Linux clusters.
+        - Storage:
+            - Harbor:
+                icon: harbor
+                href: https://harbor.${cluster_domain}
+                description: Cloud-native container registry.
+                app: harbor
+                namespace: harbor
+            - Longhorn:
+                icon: longhorn
+                href: https://longhorn.${cluster_domain}
+                description: Cloud-native storage.
+                app: longhorn
+                namespace: longhorn-system
+        - Monitoring:
+            - Cilium Hubble:
+                icon: cilium
+                href: https://hubble-ui.${cluster_domain}
+                description: Observability for Cilium, a high-performance Container Network Interface (CNI).
+                app: hubble-ui
+                namespace: kube-system
+            - Goldilocks:
+                icon: mdi-white-balance-sunny
+                href: https://goldilocks.${cluster_domain}
+                description: Dashboard for automated vertical pod autoscaling recommendations.
+                app: goldilocks
+                namespace: goldilocks
+            - Traefik:
+                icon: traefik
+                href: https://traefik.${cluster_domain}
+                description: Dashboard for Reverse Proxy.
+                app: traefik
+                namespace: traefik
+        - Analytics:
+            - Disqus:
+                icon: si-disqus-#2E9FFF
+                href: https://disqus.com
+                description: Platform to track and moderate embedded comments on my sites.
+            - Google Analytics:
+                icon: google-analytics
+                href: https://analytics.google.com
+                description: Web analytics service.
+      bookmarks:
+        - News:
+            # - .NET:
+            # - CSharp:
+            - CNCF:
+                - icon: si-cncf-#231F20
+                  href: https://www.cncf.io/blog
+            # - Devops:
+            # - Docker:
+            # - Flux:
+            - GitHub:
+                - icon: github
+                  href: https://github.blog
+            # - Go:
+            # - Kubernetes:
+            # - MacRumors:
+            # - OpenAI:
+            # - Sidero Labs:
+            # - The Register:
+            - Visual Studio Code:
+                - icon: vscode
+                  href: https://code.visualstudio.com/updates
+            - OpenAI Blog:
+                - icon: openai
+                  href: https://openai.com/blog
+            # - XKCD
+        - Development:
+            - Chainguard:
+                - icon: si-chainguard-#4445E7
+                  href: https://chainguard.io
+            - Codecov:
+                - icon: si-codecov-#F01F7A
+                  href: https://app.codecov.io
+            - CRD Docs:
+                - icon: si-kubernetes-#326CE5
+                  href: https://doc.crds.dev
+            - GitHub:
+                - icon: github
+                  href: https://github.com
+            - Renovate:
+                - icon: si-renovatebot-#1A1F6C
+                  href: https://developer.mend.io

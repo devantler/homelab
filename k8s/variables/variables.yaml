@@ -3,4 +3,5 @@ kind: ConfigMap
 metadata:
   name: global-variables
   namespace: flux-system
-data: {}
+data:
+  ingress_class_name: traefik

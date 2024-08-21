@@ -1,0 +1,30 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ollama
+spec:
+  interval: 1m
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  chart:
+    spec:
+      chart: ollama
+      version: 0.54.0
+      sourceRef:
+        kind: HelmRepository
+        name: ollama
+  # https://github.com/otwld/ollama-helm/blob/main/values.yaml
+  values:
+    persistentVolume:
+      enabled: true
+    updateStrategy:
+      type: Recreate
+    resources:
+      requests:
+        cpu: ${ollama_cpu_request:=}
+        memory: ${ollama_memory_request:=}
+      limits:
+        cpu: ${ollama_cpu_limit:=}
+        memory: ${ollama_memory_limit:=}
