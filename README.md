@@ -129,7 +129,7 @@ The cluster configuration is storen in the `k8s/*` directories where the structu
 - `apps/*`: Contains the application specific manifests. For example the homepage, local-ai, ollama, and plantuml.
 - `infrastructure/*`: Contains the infrastructure specific manifests. For example cert-manager, cloudflared, gha-runner-scale-set-controller, goldilocks, harbor, k8sgpt-operator, metrics-server, oauth2-proxy, and traefik.
 - `repositories/*`: Contains the repositories that are used by the cluster. For example the `flux-system` repository.
-- `tenants`: Contains Flux kustomizations to bootstrap and onboard tenants. (currently not used)
+- `tenants`: Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
 - `variables/*`: Contains global variables, that are the same for all clusters.
 
 ## Production Environment
