@@ -4,6 +4,7 @@ metadata:
   name: ollama
 spec:
   interval: 1m
+  timeout: 10m
   install:
     crds: CreateReplace
   upgrade:
