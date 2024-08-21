@@ -68,10 +68,6 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
-      - name: 🛠️ Set kubernetes context (env)
-        run: |
-          export KUBECONFIG=~/.kube/config
-          export KUBE_CONFIG_PATH=~/.kube/config
       # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
       - name: 🚀 Deploy Cilium
         run: |
