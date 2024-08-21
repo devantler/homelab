@@ -13,6 +13,6 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: custom-resources
+  path: clusters/homelab-prod/custom-resources
   prune: true
   wait: true

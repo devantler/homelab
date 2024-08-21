@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - ../../../distributions/talos/infrastructure
   - cilium
-  - gha-runner-scale-sets
 
 patches:
   - target:
