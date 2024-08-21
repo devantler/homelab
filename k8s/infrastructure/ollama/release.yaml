@@ -19,6 +19,7 @@ spec:
   values:
     persistentVolume:
       enabled: true
+      size: ${ollama_persistent_volume_size:=5Gi}
     updateStrategy:
       type: Recreate
     resources:
