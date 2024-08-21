@@ -52,6 +52,10 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+      - name: ⚙️ Set kubernetes context (env)
+        run: |
+          export KUBECONFIG=~/.kube/config
+          export KUBE_CONFIG_PATH=~/.kube/config
       # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
       - name: ⚙️ Install Cilium
         run: |
@@ -98,13 +102,6 @@ jobs:
           sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
           sudo mv k8sgpt /usr/local/bin/k8sgpt
           sudo chmod +x /usr/local/bin/k8sgpt
-      - name: 🔨 Create kubeconfig
-        run: |
-          mkdir ~/.kube
-          echo "${{ secrets.PROD_KUBE_CONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
-          export KUBECONFIG=~/.kube/config
-          export KUBE_CONFIG_PATH=~/.kube/config
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
