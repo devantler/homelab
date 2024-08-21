@@ -9,10 +9,10 @@ metadata:
 spec:
   interval: 30s
   dependsOn:
-    - name: repositories
+    - name: variables
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: clusters/homelab-local/infrastructure
+  path: infrastructure
   prune: true
   wait: true

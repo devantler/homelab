@@ -4,7 +4,7 @@ metadata:
   name: hubble-ui-ingress
   namespace: kube-system
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: traefik-traefik-forward-auth@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
 spec:
   ingressClassName: ${ingress_class_name:=}
   rules:

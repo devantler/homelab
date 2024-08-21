@@ -1,0 +1,22 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: capi-operator
+spec:
+  interval: 1m
+  dependsOn:
+    - name: cert-manager
+      namespace: cert-manager
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  chart:
+    spec:
+      chart: cluster-api-operator
+      version: v0.12.0
+      sourceRef:
+        kind: HelmRepository
+        name: capi-operator
+  # https://github.com/kubernetes-sigs/cluster-api-operator/blob/main/hack/charts/cluster-api-operator/values.yaml
+  values: {}

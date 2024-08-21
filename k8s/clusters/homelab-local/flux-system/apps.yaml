@@ -9,7 +9,7 @@ metadata:
 spec:
   interval: 30s
   dependsOn:
-    - name: infrastructure
+    - name: custom-resources
   sourceRef:
     kind: OCIRepository
     name: flux-system
