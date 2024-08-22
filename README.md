@@ -39,7 +39,6 @@
 │   │       │   └── longhorn
 │   │       └── variables
 │   ├── infrastructure
-│   │   ├── argo-cd
 │   │   ├── capi-operator
 │   │   ├── cert-manager
 │   │   ├── cloudflared
@@ -63,7 +62,7 @@
         ├── cluster
         └── nodes
 
-56 directories
+55 directories
 ```
 <!-- readme-tree end -->
 
