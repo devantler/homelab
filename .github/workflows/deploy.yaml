@@ -45,7 +45,7 @@ jobs:
     env:
       DEPLOYMENT_ENV: prod
     steps:
-      - name: ⚙️ Setup flux
+      - name: ⚙️ Setup Flux
         uses: fluxcd/flux2/action@main
       - name: ⚙️ Setup KSail
         run: |

@@ -15,4 +15,14 @@ spec:
         kind: HelmRepository
         name: argo-cd
   # https://github.com/argoproj/argo-helm/blob/main/charts/argo-cd/values.yaml
-  values: {}
+  values:
+    global:
+      domain: argo-cd.${cluster_domain}
+      image:
+        repository: ghcr.io/flux-subsystem-argo/fsa/argocd
+        tag: v2.10.2-fl.23-main-d2c9a8cb
+    configs:
+      secret:
+        # bcrypt hash of the password (default: argo-cd)
+        argocdServerAdminPassword: ${argocd_admin_password:=$2a$10$ZSsQ/WuKUcUg/1.vrNJQNegewPyJeg78U/ZHRBBZbHCAe.fhid01q%}
+
