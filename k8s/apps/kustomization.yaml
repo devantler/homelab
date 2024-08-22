@@ -7,5 +7,5 @@ resources:
   # - fleetdm # Does not support ARM64 yet https://hub.docker.com/r/fleetdm/fleet
 
 components:
-  - ../components/helm-release-crds
-  - ../components/helm-release-remediation
+  - ../components/helm-release-crds-label
+  - ../components/helm-release-remediation-label

@@ -7,5 +7,5 @@ resources:
   - variables.yaml
 
 components:
-  - ../../../components/flux-kustomization-post-build-variables
-  - ../../../components/flux-kustomization-sops
+  - ../../../components/flux-kustomization-post-build-variables-label
+  - ../../../components/flux-kustomization-sops-label
