@@ -160,5 +160,15 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 
 ### Cost
 
-<img width="300" alt="image" src="https://github.com/user-attachments/assets/95c86243-3373-46da-8584-5641df7dee3c">
+| Budget |	Total USD (Monthly) |
+|-------|------------|
+| Hetzner CAX21 |	7,49 € |
+| Hetzner CAX41	| 29,99 € |
+| Talos Omni |	10,00 US$ |
+| Cloudflare Domains |	0,87 US$$ |
+| TOTAL	| 52,51 US$ |
 
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=devantler/homelab&type=Date)](https://star-history.com/#devantler/homelab&Date)
