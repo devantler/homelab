@@ -6,6 +6,9 @@ on:
       - "main"
     tags:
       - "v*.*.*"
+    paths:
+      - "k8s/**"
+      - ".github/workflows/deploy.yaml"
   workflow_dispatch:
 
 concurrency:
