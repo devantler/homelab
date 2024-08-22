@@ -119,7 +119,6 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 - `clusters/*`: Contains the the cluster specific configuration for each environment.
 - `distributions/*`: Contains the distribution specific configuration.
 - `infrastructure/*`: Contains the infrastructure specific manifests.
-  - [Argo CD](k8s/infrastructure/argo-cd/README.md) - For deploying applications. (currently not in use, as I favor Flux)
   - [Cert Manager](k8s/infrastructure/cert-manager/README.md) - For managing certificates in the cluster.
   - [Cloudflared](k8s/infrastructure/cloudflared/README.md) - For tunneling traffic to the cluster.
   - [Cluster API Operator](k8s/infrastructure/capi-operator/README.md) - For managing the lifecycle of Kubernetes clusters.
