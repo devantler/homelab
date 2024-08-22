@@ -51,6 +51,8 @@ jobs:
         run: |
           sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
           sudo chmod +x /usr/local/bin/ksail
+      - name: ⚙️ Setup Testkube
+        uses: kubeshop/setup-testkube@v1
       - name: ⚙️ Setup K8sGPT
         run: |
           sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
@@ -109,6 +111,8 @@ jobs:
         run: flux reconcile source oci flux-system
       - name: 👀 Check reconciliation
         run: ksail check
+      - name: 🧪 Test
+        run: echo "No tests"
       - name: 🪲 Analyze
         if: always()
         run: |

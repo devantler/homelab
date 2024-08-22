@@ -34,3 +34,7 @@ patches:
         dependsOn:
           - name: longhorn
             namespace: longhorn-system
+
+components:
+  - ../../../components/helm-release-crds
+  - ../../../components/helm-release-remediation

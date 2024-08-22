@@ -17,33 +17,8 @@ resources:
   # - helm-charts-oci-proxy
   # - k8sgpt-operator
 
-patches:
-  - target:
-      kind: HelmRelease
-      labelSelector: app.kubernetes.io/remediation=enabled
-    patch: |
-      apiVersion: helm.toolkit.fluxcd.io/v2
-      kind: HelmRelease
-      metadata:
-        name: all
-      spec:
-        install:
-          remediation:
-            retries: 10
-        upgrade:
-          remediation:
-            retries: 10
+components:
+  - ../components/helm-release-crds
+  - ../components/helm-release-remediation
 
-  - target:
-      kind: HelmRelease
-      labelSelector: app.kubernetes.io/crds=enabled
-    patch: |
-      apiVersion: helm.toolkit.fluxcd.io/v2
-      kind: HelmRelease
-      metadata:
-        name: all
-      spec:
-        install:
-          crds: CreateReplace
-        upgrade:
-          crds: CreateReplace
+

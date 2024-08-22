@@ -3,16 +3,11 @@ kind: HelmRelease
 metadata:
   name: longhorn
   namespace: longhorn-system
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
-  install:
-    crds: CreateReplace
-    remediation:
-      retries: 10
-  upgrade:
-    crds: CreateReplace
-    remediation:
-      retries: 10
   chart:
     spec:
       chart: longhorn
