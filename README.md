@@ -4,7 +4,6 @@
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
-
 ```
 .
 ├── .github
@@ -21,11 +20,10 @@
 │   │   │   ├── flux-system
 │   │   │   └── variables
 │   │   └── homelab-prod
-│   │       ├── custom-resources
-│   │       │   └── gha-runner-scale-sets
 │   │       ├── flux-system
 │   │       ├── infrastructure
-│   │       │   └── cilium
+│   │       │   ├── cilium
+│   │       │   └── gha-runner-scale-sets
 │   │       └── variables
 │   ├── custom-resources
 │   │   ├── middlewares
@@ -65,9 +63,8 @@
         ├── cluster
         └── nodes
 
-57 directories
+56 directories
 ```
-
 <!-- readme-tree end -->
 
 </details>
