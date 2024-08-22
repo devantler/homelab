@@ -26,8 +26,7 @@ spec:
       secret:
         # bcrypt hash of the password (default: argo-cd)
         argocdServerAdminPassword: ${argocd_admin_password:=$2a$10$ZSsQ/WuKUcUg/1.vrNJQNegewPyJeg78U/ZHRBBZbHCAe.fhid01q%}
-
     server:
-       ingress:
+      ingress:
         enabled: true
         ingressClassName: ${ingress_class_name:=}
