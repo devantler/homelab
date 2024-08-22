@@ -4,6 +4,7 @@
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
+
 ```
 .
 ├── .github
@@ -66,6 +67,7 @@
 
 57 directories
 ```
+
 <!-- readme-tree end -->
 
 </details>
@@ -107,33 +109,35 @@ ksail up homelab-local
 
 ## Stack
 
-- [Cluster API Operator](https://cluster-api.sigs.k8s.io/) - To manage the lifecycle of tenant clusters.
-- [Cert Manager](https://cert-manager.io/docs/) - For managing certificates in the cluster.
-- [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) - To tunnel all traffic through Cloudflare, and to keep my network private.
-- [GitHub Actions Runner Scale Sets](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller) - To run GitHub Actions in the cluster.
-- [Goldilocks](https://goldilocks.docs.fairwinds.com) - To recommend and update Vertical Pod Autoscaler requests and limits.
-- [Harbor](https://goharbor.io) - To store and manage container images.
-- [Homepage](https://gethomepage.dev/) - To provide a dashboard for the cluster.
-- [K8sGPT Operator](https://k8sgpt.ai) - To analyze and optimize the cluster for errors and improvements.
-- [Metrics Server](https://kubernetes-sigs.github.io/metrics-server/) - To collect and expose metrics from the cluster.
-- [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) - To proxy authentication requests to upstream OAuth2 providers.
-- [Ollama](https://ollama.com) - To run LLM's in the cluster, and to provide a REST API to access them remotely.
-- [Open WebUI](https://openwebui.com) - A web interface to interact with Ollama and OpenAI's AI models.
-- [PlantUML](https://plantuml.com) - To generate UML diagrams from text.
-- [Traefik](https://doc.traefik.io/traefik/) - To route traffic to the correct services in the cluster.
-- [Trivy Operator](https://aquasecurity.github.io/trivy-operator/latest/) - To continuously scan your Kubernetes cluster for security issues.
-
-## Cluster Configuration
-
 The cluster uses Flux GitOps to reconcile the state of the cluster with single source of truth stored in this repository and published as an OCI image. For development, the cluster is spun up by `KSail` and for production, the cluster is provisioned by `Talos Omni`.
 
-The cluster configuration is storen in the `k8s/*` directories where the structure is as follows:
+The cluster configuration is stored in the `k8s/*` directories where the structure is as follows:
 
-- `clusters/*`: Contains the the cluster specific configuration for each environment. For example entry-level Flux kustomizations, and the environment specific variables.
-- `distributions/*`: Contains the distribution specific configuration. For example distribution specific variables, and infrastructure components needed to support the distribution. Talos for example does not have a built-in kubelet-serving-cert-approver, so it is required to make metrics server access kubelet with a certificate.
-- `apps/*`: Contains the application specific manifests. For example the homepage, local-ai, ollama, and plantuml.
-- `infrastructure/*`: Contains the infrastructure specific manifests. For example cert-manager, cloudflared, gha-runner-scale-set-controller, goldilocks, harbor, k8sgpt-operator, metrics-server, oauth2-proxy, and traefik.
-- `repositories/*`: Contains the repositories that are used by the cluster. For example the `flux-system` repository.
+- `apps/*`: Contains the application specific manifests.
+  - [FleetDM](k8s/apps/fleetdm/README.md) - To provide a device management for my devices. (currently not in use, as it does not support ARM64)
+  - [Homepage](k8s/apps/homepage/README.md) - To provide a dashborad for the cluster.
+  - [Open WebUI](k8s/apps/open-webui/README.md) - To provide a web interface and a REST API for interacting with LLM's.
+  - [PlantUML](k8s/infrastructure/plantuml/README.md) - To provide a web interface and a REST API for generating PlantUML diagrams.
+  - [Traefik](k8s/infrastructure/traefik/README.md) - To provide an ingress controller for the cluster.
+- `clusters/*`: Contains the the cluster specific configuration for each environment.
+- `distributions/*`: Contains the distribution specific configuration.
+- `infrastructure/*`: Contains the infrastructure specific manifests.
+  - [Argo CD](k8s/infrastructure/argo-cd/README.md) - For deploying applications. (currently not in use, as I favor Flux)
+  - [Cert Manager](k8s/infrastructure/cert-manager/README.md) - For managing certificates in the cluster.
+  - [Cloudflared](k8s/infrastructure/cloudflared/README.md) - For tunneling traffic to the cluster.
+  - [Cluster API Operator](k8s/infrastructure/capi-operator/README.md) - For managing the lifecycle of Kubernetes clusters.
+  - [GitHub Actions Runner Scale Set Controller](k8s/infrastructure/gha-runner-scale-set-controller/README.md) - To manage GitHub Actions Runner Scale Sets in the cluster.
+  - [GitHub Actions Runner Scale Sets](k8s/clusters/homelab-prod/infrastructure/gha-runner-scale-sets/README.md) - To run GitHub Actions in the cluster.
+  - [Goldilocks](k8s/infrastructure/goldilocks/README.md) - To provide and apply resource recommendations for pods.
+  - [Harbor](k8s/infrastructure/harbor/README.md) - To store and distribute container images.
+  - [K8sGPT Operator](k8s/infrastructure/k8sgpt-operator/README.md) - To analyze the cluster for improvements, vulnerabilities or bugs.
+  - [Kyverno](k8s/infrastructure/kyverno/README.md) - To enforce policies in the cluster.
+  - [Longhorn](k8s/distributions/talos/infrastructure/longhorn/README.md) - To provide distributed storage for the cluster.
+  - [Metrics Server](k8s/infrastructure/metrics-server/README.md) - To provide metrics for the cluster.
+  - [OAuth2 Proxy](k8s/infrastructure/oauth2-proxy/README.md) - To provide authentication for the cluster.
+  - [Ollama](k8s/infrastructure/ollama/README.md) - To run LLM's on the cluster.
+  - [Reloader](k8s/infrastructure/reloader/README.md) - To reload deployments when secrets or configmaps change.
+  - [Trivy Operator](k8s/infrastructure/trivy-operator/README.md) - To analyze the cluster for vulnerabilities.
 - `tenants`: Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
 - `variables/*`: Contains global variables, that are the same for all clusters.
 
