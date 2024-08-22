@@ -157,3 +157,8 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 - [SOPS](https://getsops.io) and [Age](https://github.com/FiloSottile/age) - For encrypting secrets at rest, allowing me to store them in this repository with confidence.
 - [KSail](https://github.com/devantler/ksail) - For developing the cluster locally, and for running the cluster in CI to ensure all changes are properly tested before being applied to the production cluster.
 - [K8sGPT](https://k8sgpt.ai) - To analyze the cluster for improvements, vulnerabilities or bugs. It integrates with Trivy and Kuverno to also provide security and policy suggestions.
+
+### Cost
+
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/95c86243-3373-46da-8584-5641df7dee3c">
+
