@@ -4,7 +4,7 @@ resources:
   - homepage
   - open-webui
   - plantuml
-  - fleetdm
+  # - fleetdm # Does not support ARM64 yet https://hub.docker.com/r/fleetdm/fleet
 
 patches:
   - patch: |
