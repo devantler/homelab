@@ -4,6 +4,7 @@
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
+
 ```
 .
 ├── .github
@@ -73,6 +74,7 @@
 
 64 directories
 ```
+
 <!-- readme-tree end -->
 
 </details>
@@ -118,15 +120,15 @@ The cluster uses Flux GitOps to reconcile the state of the cluster with single s
 
 The cluster configuration is stored in the `k8s/*` directories where the structure is as follows:
 
-- `apps/*`: Contains the application specific manifests.
+- [`apps/*`](k8s/apps/README.md): Contains the application specific manifests.
   - [FleetDM](k8s/apps/fleetdm/README.md) - To provide a device management for my devices. (currently not in use, as it does not support ARM64)
   - [Homepage](k8s/apps/homepage/README.md) - To provide a dashborad for the cluster.
   - [Open WebUI](k8s/apps/open-webui/README.md) - To provide a web interface and a REST API for interacting with LLM's.
   - [PlantUML](k8s/infrastructure/plantuml/README.md) - To provide a web interface and a REST API for generating PlantUML diagrams.
   - [Traefik](k8s/infrastructure/traefik/README.md) - To provide an ingress controller for the cluster.
-- `clusters/*`: Contains the the cluster specific configuration for each environment.
-- `distributions/*`: Contains the distribution specific configuration.
-- `infrastructure/*`: Contains the infrastructure specific manifests.
+- [`clusters/*`](k8s/clusters/README.md): Contains the the cluster specific configuration for each environment.
+- [`distributions/*`](k8s/distributions/README.md): Contains the distribution specific configuration.
+- [`infrastructure/*`](k8s/infrastructure/README.md): Contains the infrastructure specific manifests.
   - [Cert Manager](k8s/infrastructure/cert-manager/README.md) - For managing certificates in the cluster.
   - [Cloudflared](k8s/infrastructure/cloudflared/README.md) - For tunneling traffic to the cluster.
   - [Cluster API Operator](k8s/infrastructure/capi-operator/README.md) - For managing the lifecycle of Kubernetes clusters.
@@ -142,8 +144,8 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
   - [Ollama](k8s/infrastructure/ollama/README.md) - To run LLM's on the cluster.
   - [Reloader](k8s/infrastructure/reloader/README.md) - To reload deployments when secrets or configmaps change.
   - [Trivy Operator](k8s/infrastructure/trivy-operator/README.md) - To analyze the cluster for vulnerabilities.
-- `tenants`: Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
-- `variables/*`: Contains global variables, that are the same for all clusters.
+- [`tenants`](k8s/tenants/README.md): Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
+- [`variables/*`](k8s/variables/README.md): Contains global variables, that are the same for all clusters.
 
 ## Production Environment
 
@@ -169,14 +171,13 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 
 ### Cost
 
-| Budget |	Total USD (Monthly) |
-|-------|------------|
-| Hetzner CAX21 |	7,49 € |
-| Hetzner CAX41	| 29,99 € |
-| Talos Omni |	10,00 US$ |
-| Cloudflare Domains |	0,87 US$$ |
-| TOTAL	| 52,51 US$ |
-
+| Budget             | Total USD (Monthly) |
+| ------------------ | ------------------- |
+| Hetzner CAX21      | 7,49 €              |
+| Hetzner CAX41      | 29,99 €             |
+| Talos Omni         | 10,00 US$           |
+| Cloudflare Domains | 0,87 US$$           |
+| TOTAL              | 52,51 US$           |
 
 ## Star History
 
