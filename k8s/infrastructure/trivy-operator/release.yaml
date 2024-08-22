@@ -2,6 +2,9 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: trivy-operator
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
   chart:

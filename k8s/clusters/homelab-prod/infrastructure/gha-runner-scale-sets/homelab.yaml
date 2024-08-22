@@ -1,17 +1,16 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: gha-runner-scale-set-oci-artifacts
-  namespace: gha-runner-scale-set-oci-artifacts
+  name: gha-runner-scale-set-homelab
+  namespace: gha-runner-scale-set-homelab
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
   dependsOn:
     - name: gha-runner-scale-set-controller
       namespace: gha-runner-scale-set-controller
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   chart:
     spec:
       chart: gha-runner-scale-set
@@ -22,10 +21,10 @@ spec:
         namespace: gha-runner-scale-set-controller
   # https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml
   values:
-    githubConfigUrl: https://github.com/devantler/oci-artifacts
+    githubConfigUrl: https://github.com/devantler/homelab
     githubConfigSecret:
       github_token: ${gha_runner_scale_set_github_token}
-    runnerScaleSetName: oci-artifacts
+    runnerScaleSetName: homelab
     maxRunners: 1
     containerMode:
       type: "dind"

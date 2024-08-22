@@ -7,39 +7,32 @@ resources:
   # - fleetdm # Does not support ARM64 yet https://hub.docker.com/r/fleetdm/fleet
 
 patches:
-  - patch: |
-      apiVersion: kustomize.toolkit.fluxcd.io/v1
-      kind: Kustomization
+  - target:
+      kind: HelmRelease
+      labelSelector: app.kubernetes.io/remediation=enabled
+    patch: |
+      apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
       metadata:
         name: all
       spec:
-        decryption:
-          provider: sops
-          secretRef:
-            name: sops-age
-    target:
-      kind: Kustomization
-      labelSelector: app.kubernetes.io/sops=enabled
-  - patch: |
-      apiVersion: kustomize.toolkit.fluxcd.io/v1
-      kind: Kustomization
+        install:
+          remediation:
+            retries: 10
+        upgrade:
+          remediation:
+            retries: 10
+
+  - target:
+      kind: HelmRelease
+      labelSelector: app.kubernetes.io/crds=enabled
+    patch: |
+      apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
       metadata:
         name: all
       spec:
-        postBuild:
-          substituteFrom:
-            - kind: ConfigMap
-              name: variables
-            - kind: Secret
-              name: variables-sensitive
-            - kind: ConfigMap
-              name: environment-variables
-            - kind: Secret
-              name: environment-variables-sensitive
-            - kind: ConfigMap
-              name: global-variables
-            - kind: Secret
-              name: global-variables-sensitive
-    target:
-      kind: Kustomization
-      labelSelector: app.kubernetes.io/post-build-variables=enabled
+        install:
+          crds: CreateReplace
+        upgrade:
+          crds: CreateReplace

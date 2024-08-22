@@ -2,15 +2,14 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: open-webui
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
   dependsOn:
     - name: ollama
       namespace: ollama
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   chart:
     spec:
       chart: open-webui

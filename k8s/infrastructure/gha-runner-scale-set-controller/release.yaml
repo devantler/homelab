@@ -3,12 +3,11 @@ kind: HelmRelease
 metadata:
   name: gha-runner-scale-set-controller
   namespace: gha-runner-scale-set-controller
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   chart:
     spec:
       chart: gha-runner-scale-set-controller

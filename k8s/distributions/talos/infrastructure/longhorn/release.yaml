@@ -6,8 +6,12 @@ spec:
   interval: 1m
   install:
     crds: CreateReplace
+    remediation:
+      retries: 10
   upgrade:
     crds: CreateReplace
+    remediation:
+      retries: 10
   chart:
     spec:
       chart: longhorn

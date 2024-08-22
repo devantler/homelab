@@ -3,12 +3,11 @@ kind: HelmRelease
 metadata:
   name: fleetdm
   namespace: fleetdm
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   chart:
     spec:
       chart: fleet

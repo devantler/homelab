@@ -2,15 +2,14 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: capi-operator
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
   dependsOn:
     - name: cert-manager
       namespace: cert-manager
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
   chart:
     spec:
       chart: cluster-api-operator

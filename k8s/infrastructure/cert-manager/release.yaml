@@ -2,9 +2,10 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cert-manager
+  labels:
+    app.kubernetes.io/remediation: enabled
 spec:
   interval: 1m
-  timeout: 10m
   chart:
     spec:
       chart: cert-manager
