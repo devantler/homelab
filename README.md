@@ -17,14 +17,21 @@
 │   │   └── plantuml
 │   ├── clusters
 │   │   ├── homelab-local
+│   │   │   ├── components
 │   │   │   ├── flux-system
 │   │   │   └── variables
 │   │   └── homelab-prod
+│   │       ├── components
 │   │       ├── flux-system
 │   │       ├── infrastructure
 │   │       │   ├── cilium
 │   │       │   └── gha-runner-scale-sets
 │   │       └── variables
+│   ├── components
+│   │   ├── flux-kustomization-post-build-variables-label
+│   │   ├── flux-kustomization-sops-label
+│   │   ├── helm-release-crds-label
+│   │   └── helm-release-remediation-label
 │   ├── custom-resources
 │   │   ├── middlewares
 │   │   │   ├── basic-auth
@@ -32,8 +39,10 @@
 │   │   └── selfsigned-cluster-issuer
 │   ├── distributions
 │   │   ├── k3s
+│   │   │   ├── components
 │   │   │   └── variables
 │   │   └── talos
+│   │       ├── components
 │   │       ├── infrastructure
 │   │       │   ├── kubelet-serving-cert-approver
 │   │       │   └── longhorn
@@ -62,7 +71,7 @@
         ├── cluster
         └── nodes
 
-55 directories
+64 directories
 ```
 <!-- readme-tree end -->
 
