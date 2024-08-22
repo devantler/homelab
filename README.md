@@ -142,12 +142,8 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 
 ### Nodes
 
-- 2x [Hetzner CAX21 nodes](https://www.hetzner.com/cloud/) (QEMU ARM64 4CPU 8Gb RAM 80Gb SSD) for the control plane and worker nodes
-- 1x [Hetzner CAX41 node](https://www.hetzner.com/cloud/) (QEMU ARM64 16CPU 32Gb RAM 320Gb SSD) for the control plane and worker node
-- 1x [UTM](https://mac.getutm.app) Apple Hypervisor ARM64 VM (Running on Mac Mini M2 Pro with access to 32GB RAM and 10 cores) as a worker node
-  - The Apple Hypervisor performs better than QEMU, and is thus preferred for the worker nodes.
-- 1x [UTM](https://mac.getutm.app) QEMU ARM64 VM (Running on Mac Mini M2 Pro with access to 2GB RAM and 2 cores) as a worker node
-  - The QEMU VM is used to attach external disks to the cluster. This is not supported by Apple Hypervisor.
+- 3x [Hetzner CAX41 node](https://www.hetzner.com/cloud/) (QEMU ARM64 16CPU 32Gb RAM 320Gb SSD) for the control plane and worker node
+- 1x [UTM](https://mac.getutm.app) Apple Hypervisor ARM64 VM (Running on Mac Mini M2 Pro with access to 32GB RAM and 20 cores (overprovisioned 2/1) as a worker node
 
 ### Hardware
 
