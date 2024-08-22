@@ -19,9 +19,6 @@ spec:
   values:
     global:
       domain: argo-cd.${cluster_domain}
-      image:
-        repository: ghcr.io/flux-subsystem-argo/fsa/argocd
-        tag: v2.10.2-fl.23-main-d2c9a8cb
     configs:
       secret:
         # bcrypt hash of the password (default: argo-cd)
