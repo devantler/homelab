@@ -2,6 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: harbor
+  namespace: harbor
 spec:
   interval: 1m
   url: oci://registry-1.docker.io/bitnamicharts

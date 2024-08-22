@@ -1,7 +1,8 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: chartproxy
+  name: helm-charts-oci-proxy
+  namespace: helm-charts-oci-proxy
   labels:
     app.kubernetes.io/remediation: enabled
     app.kubernetes.io/crds: enabled

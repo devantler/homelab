@@ -2,6 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: argo-cd
+  namespace: argo-cd
   labels:
     app.kubernetes.io/remediation: enabled
     app.kubernetes.io/crds: enabled

@@ -2,6 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: plantuml
+  namespace: plantuml
 spec:
   interval: 1m
   url: oci://ghcr.io/stevehipwell/helm-charts

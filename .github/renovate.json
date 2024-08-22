@@ -7,6 +7,11 @@
       "^k8s/.+\\.ya?ml$"
     ]
   },
+  "argocd": {
+    "fileMatch": [
+      "^k8s/.+\\.yaml$"
+    ]
+  },
   "kubernetes": {
     "fileMatch": [
       "^k8s/.+\\.ya?ml$"

@@ -2,6 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: oauth2-proxy
+  namespace: oauth2-proxy
   labels:
     app.kubernetes.io/remediation: enabled
     app.kubernetes.io/crds: enabled

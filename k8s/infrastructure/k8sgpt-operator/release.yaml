@@ -2,6 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: k8sgpt-operator
+  namespace: k8sgpt-operator
   labels:
     app.kubernetes.io/remediation: enabled
     app.kubernetes.io/crds: enabled
