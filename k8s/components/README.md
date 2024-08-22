@@ -15,5 +15,6 @@ resources:
   - repository.yaml
 
 components:
-  - 
+  - ../components/auth-oidc
+  - ../components/ingress-traefik
 ```
