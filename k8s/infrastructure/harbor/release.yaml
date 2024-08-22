@@ -22,5 +22,6 @@ spec:
     adminPassword: ${harbor_admin_password:=Harbor12345}
     ingress:
       core:
+        ingressClassName: ${ingress_class_name:=}
         hostname: harbor.${cluster_domain}
     exposureType: ingress
