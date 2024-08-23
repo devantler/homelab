@@ -118,15 +118,16 @@ The cluster uses Flux GitOps to reconcile the state of the cluster with single s
 
 The cluster configuration is stored in the `k8s/*` directories where the structure is as follows:
 
-- [`apps/*`](k8s/apps/README.md): Contains the application specific manifests.
+- [`apps/`](k8s/apps/README.md): Contains the application specific manifests.
   - [FleetDM](k8s/apps/fleetdm/README.md) - To provide a device management for my devices. (currently not in use, as it does not support ARM64)
+  - [Headlamp](k8s/apps/headlamp/README.md) - To provide a lightweight and extensible Kubernetes UI.
   - [Homepage](k8s/apps/homepage/README.md) - To provide a dashborad for the cluster.
   - [Open WebUI](k8s/apps/open-webui/README.md) - To provide a web interface and a REST API for interacting with LLM's.
   - [PlantUML](k8s/infrastructure/plantuml/README.md) - To provide a web interface and a REST API for generating PlantUML diagrams.
   - [Traefik](k8s/infrastructure/traefik/README.md) - To provide an ingress controller for the cluster.
-- [`clusters/*`](k8s/clusters/README.md): Contains the the cluster specific configuration for each environment.
-- [`distributions/*`](k8s/distributions/README.md): Contains the distribution specific configuration.
-- [`infrastructure/*`](k8s/infrastructure/README.md): Contains the infrastructure specific manifests.
+- [`clusters/`](k8s/clusters/README.md): Contains the the cluster specific configuration for each environment.
+- [`distributions/`](k8s/distributions/README.md): Contains the distribution specific configuration.
+- [`infrastructure/`](k8s/infrastructure/README.md): Contains the infrastructure specific manifests.
   - [Cert Manager](k8s/infrastructure/cert-manager/README.md) - For managing certificates in the cluster.
   - [Cloudflared](k8s/infrastructure/cloudflared/README.md) - For tunneling traffic to the cluster.
   - [Cluster API Operator](k8s/infrastructure/capi-operator/README.md) - For managing the lifecycle of Kubernetes clusters.
@@ -143,7 +144,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
   - [Reloader](k8s/infrastructure/reloader/README.md) - To reload deployments when secrets or configmaps change.
   - [Trivy Operator](k8s/infrastructure/trivy-operator/README.md) - To analyze the cluster for vulnerabilities.
 - [`tenants`](k8s/tenants/README.md): Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
-- [`variables/*`](k8s/variables/README.md): Contains global variables, that are the same for all clusters.
+- [`variables/`](k8s/variables/README.md): Contains global variables, that are the same for all clusters.
 
 ## Production Environment
 
