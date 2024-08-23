@@ -30,4 +30,4 @@ spec:
         clientID: ${oauth2_proxy_client_id}
         clientSecret: ${oauth2_proxy_client_secret}
         issuerURL: https://oauth2-proxy.${cluster_domain}/oauth2/auth
-        scopes: "openid,profile,email"]
+        scopes: "openid,profile,email"
