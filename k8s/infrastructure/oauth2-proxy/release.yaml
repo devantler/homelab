@@ -37,3 +37,4 @@ spec:
         upstreams=["static://202"]
         skip_provider_button=true
         cookie_domains=[".${cluster_domain}"]
+        relative_redirect_url="/oauth2/callback"
