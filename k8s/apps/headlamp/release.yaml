@@ -25,9 +25,9 @@ spec:
           paths:
             - path: /
               type: ImplementationSpecific
-      config:
-        oidc:
-          clientID: ${oauth2_proxy_client_id}
-          clientSecret: ${oauth2_proxy_client_secret}
-          issuerURL: https://oauth2-proxy.${cluster_domain}/oauth2/auth
-          scopes: ["openid", "profile", "email"]
+    config:
+      oidc:
+        clientID: ${oauth2_proxy_client_id}
+        clientSecret: ${oauth2_proxy_client_secret}
+        issuerURL: https://oauth2-proxy.${cluster_domain}/oauth2/auth
+        scopes: ["openid", "profile", "email"]
