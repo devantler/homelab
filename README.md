@@ -12,6 +12,7 @@
 ├── k8s
 │   ├── apps
 │   │   ├── fleetdm
+│   │   ├── headlamp
 │   │   ├── homepage
 │   │   ├── open-webui
 │   │   └── plantuml
@@ -71,7 +72,7 @@
         ├── cluster
         └── nodes
 
-64 directories
+65 directories
 ```
 <!-- readme-tree end -->
 
