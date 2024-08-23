@@ -4,7 +4,6 @@
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
-
 ```
 .
 ├── .github
@@ -74,7 +73,6 @@
 
 64 directories
 ```
-
 <!-- readme-tree end -->
 
 </details>
@@ -170,11 +168,11 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 - [KSail](https://github.com/devantler/ksail) - For developing the cluster locally, and for running the cluster in CI to ensure all changes are properly tested before being applied to the production cluster.
 - [K8sGPT](https://k8sgpt.ai) - To analyze the cluster for improvements, vulnerabilities or bugs. It integrates with Trivy and Kuverno to also provide security and policy suggestions.
 
-### Cost
+### Monthly Cost
 
 | Item               | No. | Per unit | Total   |
 | ------------------ | --- | -------- | ------- |
-| Hetzner CAX41      | 3   | 29,99€   | 100,03$ |
+| Hetzner CAX41      | 3   | 29,99€   | $100,03 |
 | Talos Omni         | 1   | $10      | $10     |
 | Cloudflare Domains | 2   | $0,87    | $1,74   |
 |                    |     |          | $111,77 |
