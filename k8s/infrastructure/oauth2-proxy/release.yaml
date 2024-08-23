@@ -30,11 +30,12 @@ spec:
       cookieSecret: ${oauth2_proxy_cookie_secret}
       cookieName: oauth2_proxy_cookie
       configFile: |-
-        provider="github"
+        cookie_domains=[".${cluster_domain}"]
         email_domains=["*"]
         github_users=["devantler"]
+        provider="github"
+        redirect_url="https://oauth2-proxy.${cluster_domain}/oauth2/callback"
+        relative_redirect_url=true
         reverse_proxy=true
-        upstreams=["static://202"]
         skip_provider_button=true
-        cookie_domains=[".${cluster_domain}"]
-        relative_redirect_url="/oauth2/callback"
+        upstreams=["static://202"]
