@@ -34,7 +34,7 @@ spec:
         email_domains=["*"]
         github_users=["devantler"]
         provider="github"
-        redirect_url: https://oauth2-proxy.${cluster_domain}/oauth2/callback
+        redirect_url="https://oauth2-proxy.${cluster_domain}/oauth2/callback"
         reverse_proxy=true
         skip_provider_button=true
         upstreams=["static://202"]
