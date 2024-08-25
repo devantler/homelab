@@ -6,8 +6,8 @@ metadata:
 data:
   cluster_domain: devantler.com
   github_client_id: Ov23liZIEJ2YLmtdcZTG
-  ollama_cpu_limit: "4"
-  ollama_cpu_request: "4"
+  ollama_cpu_limit: "6"
+  ollama_cpu_request: "6"
   ollama_memory_limit: 16Gi
   ollama_memory_request: 16Gi
   traefik_forward_auth_address: https://oauth2-proxy.devantler.com/
