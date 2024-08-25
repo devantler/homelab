@@ -36,7 +36,7 @@ spec:
           id: github
           redirectURIs:
             - https://dex.${cluster_domain}/callback
-          secret: ${github_client_dex_secret}
+          secret: ${dex_github_client_secret}
       connectors:
         - name: GitHub
           type: github
