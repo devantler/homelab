@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 data:
   cluster_domain: devantler.com
-  github_client_id: Ov23liQ4UtmGpfwiYpSZ
+  github_client_id: Ov23liZIEJ2YLmtdcZTG
   ollama_cpu_limit: "4"
   ollama_cpu_request: "4"
   ollama_memory_limit: 16Gi
