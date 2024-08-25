@@ -40,4 +40,3 @@ spec:
         clientID: github
         clientSecret: ${dex_client_secret}
         issuerURL: https://dex.${cluster_domain}
-        scopes: email
