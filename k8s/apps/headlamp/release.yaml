@@ -40,4 +40,4 @@ spec:
         clientID: github
         clientSecret: ${github_client_secret}
         issuerURL: https://dex.${cluster_domain}
-        scopes: "openid,profile,email"
+        scopes: "email"
