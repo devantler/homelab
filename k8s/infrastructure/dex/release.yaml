@@ -35,7 +35,7 @@ spec:
         - name: GitHub
           id: github
           redirectURIs:
-            - https://headlamp.${cluster_domain}/oidc-callback
+            - https://dex.${cluster_domain}/callback
           secret: ${github_client_dex_secret}
       connectors:
         - name: GitHub
