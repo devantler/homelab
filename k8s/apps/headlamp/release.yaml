@@ -35,9 +35,9 @@ spec:
           paths:
             - path: /
               type: ImplementationSpecific
-    # config:
-    #   oidc:
-    #     clientID: ${github_oauth2_client_id}
-    #     clientSecret: ${github_oauth2_client_secret}
-    #     issuerURL: https://github.com/login/oauth/authorize
-    #     scopes: "openid,profile,email"
+    config:
+      oidc:
+        clientID: ${github_client_id}
+        clientSecret: ${github_client_secret}
+        issuerURL: https://dex.${cluster_domain}/dex
+        scopes: "openid,profile,email"

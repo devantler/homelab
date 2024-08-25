@@ -28,5 +28,15 @@ spec:
     config:
       issuer: https://dex.${cluster_domain}
       storage:
-        type: memory
+        type: kubernetes
+        config:
+          inCluster: true
       enablePasswordDB: true
+      connectors:
+        - type: github
+          id: github
+          name: GitHub
+          config:
+            clientID: ${github_client_id}
+            clientSecret: ${github_client_secret}
+            redirectURI: https://dex.${cluster_domain}/dex/callback
