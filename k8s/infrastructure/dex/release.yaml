@@ -31,11 +31,16 @@ spec:
         type: kubernetes
         config:
           inCluster: true
-      connectors:
-        - type: github
+      staticClients:
+        - name: GitHub
           id: github
-          secret: github-secret
-          name: GitHub
+          redirectURIs:
+            - https://headlamp.${cluster_domain}
+          secret: ${github_client_secret}
+      connectors:
+        - name: GitHub
+          type: github
+          id: github
           config:
             clientID: ${github_client_id}
             clientSecret: ${github_client_secret}
