@@ -29,7 +29,7 @@ spec:
   values:
     ingress:
       enabled: true
-      ingressClassName: ${ingress_class_name}
+      ingressClassName: ${ingress_class_name:=}
       hosts:
         - host: headlamp.${cluster_domain}
           paths:

@@ -20,7 +20,7 @@ spec:
     deploymentAnnotations:
       configmap.reloader.stakater.com/reload: oauth2-proxy
     ingress:
-      enabled: ${oauth2_proxy_ingress_enabled:=true}
+      enabled: true
       className: ${ingress_class_name:=}
       hosts:
         - oauth2-proxy.${cluster_domain}

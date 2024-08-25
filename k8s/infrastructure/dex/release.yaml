@@ -19,7 +19,7 @@ spec:
   values:
     ingress:
       enabled: true
-      className: ${ingress_class_name}
+      className: ${ingress_class_name:=}
       hosts:
         - host: dex.${cluster_domain}
           paths:
