@@ -6,7 +6,7 @@ resources:
   - cloudflared
   - gha-runner-scale-set-controller
   - goldilocks
-  - harbor
+  # - harbor
   - kyverno
   - metrics-server
   - oauth2-proxy
