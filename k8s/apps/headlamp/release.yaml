@@ -23,7 +23,7 @@ spec:
               name: headlamp
             patch: |
               - op: add
-                path: /metadata/annotations/configmap.reloader.stakater.com~1reload
+                path: /metadata/annotations/secret.reloader.stakater.com~1reload
                 value: oidc
   # https://github.com/headlamp-k8s/headlamp/blob/main/charts/headlamp/values.yaml
   values:
