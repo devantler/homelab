@@ -31,7 +31,6 @@ spec:
         type: kubernetes
         config:
           inCluster: true
-      enablePasswordDB: true
       connectors:
         - type: github
           id: github
@@ -39,4 +38,4 @@ spec:
           config:
             clientID: ${github_client_id}
             clientSecret: ${github_client_secret}
-            redirectURI: https://dex.${cluster_domain}/dex/callback
+            redirectURI: https://dex.${cluster_domain}/callback
