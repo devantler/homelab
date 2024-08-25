@@ -25,8 +25,8 @@ spec:
       hosts:
         - oauth2-proxy.${cluster_domain}
     config:
-      clientID: ${github_oauth2_client_id}
-      clientSecret: ${github_oauth2_client_secret}
+      clientID: ${github_client_id}
+      clientSecret: ${github_client_secret}
       cookieSecret: ${oauth2_proxy_cookie_secret}
       cookieName: oauth2_proxy_cookie
       configFile: |-
