@@ -37,7 +37,7 @@ spec:
               type: ImplementationSpecific
     config:
       oidc:
-        clientID: ${oauth2_proxy_client_id}
-        clientSecret: ${oauth2_proxy_client_secret}
+        clientID: ${github_oauth2_client_id}
+        clientSecret: ${github_oauth2_client_secret}
         issuerURL: https://github.com/login/oauth/authorize
         scopes: "openid,profile,email"
