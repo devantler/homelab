@@ -4,9 +4,9 @@ resources:
   - capi-operator
   - cert-manager
   - cloudflared
+  - dex
   - gha-runner-scale-set-controller
   - goldilocks
-  # - harbor
   - kyverno
   - metrics-server
   - oauth2-proxy
@@ -14,6 +14,7 @@ resources:
   - reloader
   - traefik
   - trivy-operator
+  # - harbor
   # - helm-charts-oci-proxy
   # - k8sgpt-operator
 
