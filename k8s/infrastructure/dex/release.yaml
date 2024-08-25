@@ -24,4 +24,4 @@ spec:
         - host: dex.${cluster_domain}
           paths:
             - path: /
-              type: ImplementationSpecific
+              pathType: ImplementationSpecific
