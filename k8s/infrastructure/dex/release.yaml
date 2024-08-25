@@ -36,8 +36,8 @@ spec:
           id: github
           name: GitHub
           config:
-            clientID: ${github_client_id}
-            clientSecret: ${github_client_secret}
+            clientID: "${github_client_id}"
+            clientSecret: "${github_client_secret}"
             loadAllGroups: true
             redirectURI: https://dex.${cluster_domain}/callback
             teamNameField: slug
