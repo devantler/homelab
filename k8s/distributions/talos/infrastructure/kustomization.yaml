@@ -20,6 +20,15 @@ patches:
         dependsOn:
           - name: longhorn
             namespace: longhorn-system
+        values:
+          persistence:
+            persistentVolumeClaim:
+              registry:
+                accessMode:
+                  - ReadWriteMany
+              jobservice:
+                accessMode:
+                  - ReadWriteMany
   - target:
       name: ollama
       namespace: ollama
