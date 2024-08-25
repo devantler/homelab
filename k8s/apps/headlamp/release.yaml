@@ -15,6 +15,16 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: headlamp
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: headlamp
+            patch: |
+              - op: add
+                path: /metadata/annotations/configmap.reloader.stakater.com~1reload
+                value: oidc
   # https://github.com/headlamp-k8s/headlamp/blob/main/charts/headlamp/values.yaml
   values:
     ingress:
