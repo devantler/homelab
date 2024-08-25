@@ -52,6 +52,7 @@
 │   │   ├── capi-operator
 │   │   ├── cert-manager
 │   │   ├── cloudflared
+│   │   ├── dex
 │   │   ├── gha-runner-scale-set-controller
 │   │   ├── goldilocks
 │   │   ├── harbor
@@ -72,7 +73,7 @@
         ├── cluster
         └── nodes
 
-65 directories
+66 directories
 ```
 <!-- readme-tree end -->
 
