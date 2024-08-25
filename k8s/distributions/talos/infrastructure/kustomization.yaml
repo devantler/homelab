@@ -25,10 +25,10 @@ patches:
           persistence:
             persistentVolumeClaim:
               registry:
-                accessMode:
+                accessModes:
                   - ReadWriteMany
               jobservice:
-                accessMode:
+                accessModes:
                   - ReadWriteMany
   - target:
       name: ollama
