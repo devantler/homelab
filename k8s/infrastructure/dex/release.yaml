@@ -25,3 +25,8 @@ spec:
           paths:
             - path: /
               pathType: ImplementationSpecific
+    config:
+      issuer: https://dex.${cluster_domain}
+      storage:
+        type: memory
+      enablePasswordDB: true
