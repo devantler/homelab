@@ -48,3 +48,5 @@ spec:
             loadAllGroups: false
             redirectURI: https://dex.${cluster_domain}/callback
             useLoginAsID: false
+            orgs:
+              - name: devantlerware
