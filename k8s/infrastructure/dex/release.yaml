@@ -47,6 +47,7 @@ spec:
             clientSecret: ${github_client_secret}
             loadAllGroups: false
             redirectURI: https://dex.${cluster_domain}/callback
+            teamNameField: slug
             useLoginAsID: false
             orgs:
               - name: devantlerware
