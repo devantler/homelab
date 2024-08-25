@@ -4,5 +4,4 @@ metadata:
   name: capi-operator
   namespace: capi-operator
 spec:
-  interval: 1m
   url: https://kubernetes-sigs.github.io/cluster-api-operator

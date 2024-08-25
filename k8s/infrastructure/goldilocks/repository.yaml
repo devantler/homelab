@@ -4,5 +4,4 @@ metadata:
   name: goldilocks
   namespace: goldilocks
 spec:
-  interval: 1m
   url: https://charts.fairwinds.com/stable

@@ -4,5 +4,4 @@ metadata:
   name: cloudflared
   namespace: cloudflared
 spec:
-  interval: 1m
   url: https://cloudflare.github.io/helm-charts

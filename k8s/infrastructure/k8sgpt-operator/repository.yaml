@@ -4,5 +4,4 @@ metadata:
   name: k8sgpt-operator
   namespace: k8sgpt-operator
 spec:
-  interval: 1m
   url: https://charts.k8sgpt.ai/

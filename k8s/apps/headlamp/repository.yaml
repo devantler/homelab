@@ -4,5 +4,4 @@ metadata:
   name: headlamp
   namespace: headlamp
 spec:
-  interval: 1m
   url: https://headlamp-k8s.github.io/headlamp/

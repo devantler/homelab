@@ -4,5 +4,4 @@ metadata:
   name: open-webui
   namespace: open-webui
 spec:
-  interval: 1m
   url: https://helm.openwebui.com/

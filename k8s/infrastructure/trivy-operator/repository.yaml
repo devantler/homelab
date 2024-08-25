@@ -4,5 +4,4 @@ metadata:
   name: trivy-operator
   namespace: trivy-operator
 spec:
-  interval: 1m
   url: https://aquasecurity.github.io/helm-charts/

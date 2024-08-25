@@ -4,6 +4,5 @@ metadata:
   name: plantuml
   namespace: plantuml
 spec:
-  interval: 1m
   url: oci://ghcr.io/stevehipwell/helm-charts
   type: oci

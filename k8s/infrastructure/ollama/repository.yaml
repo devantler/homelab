@@ -4,5 +4,4 @@ metadata:
   name: ollama
   namespace: ollama
 spec:
-  interval: 1m
   url: https://otwld.github.io/ollama-helm/

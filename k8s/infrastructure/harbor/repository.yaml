@@ -4,6 +4,5 @@ metadata:
   name: harbor
   namespace: harbor
 spec:
-  interval: 1m
   url: oci://registry-1.docker.io/bitnamicharts
   type: oci

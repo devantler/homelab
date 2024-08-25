@@ -4,6 +4,5 @@ metadata:
   name: helm-charts-oci-proxy
   namespace: helm-charts-oci-proxy
 spec:
-  interval: 1m
   type: oci
   url: oci://8gears.container-registry.com/library
