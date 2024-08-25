@@ -4,4 +4,6 @@ metadata:
   name: global-variables
   namespace: flux-system
 data:
+  dex_github_client_id: Ov23li24EGWcjX6GjvNU
   ingress_class_name: traefik
+  oauth2_proxy_github_client_id: Ov23liAdojqaJq0kW2Zb

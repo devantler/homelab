@@ -36,14 +36,14 @@ spec:
           id: github
           redirectURIs:
             - https://headlamp.${cluster_domain}/oidc-callback
-          secret: ${github_client_secret}
+          secret: ${github_client_dex_secret}
       connectors:
         - name: GitHub
           type: github
           id: github
           config:
-            clientID: ${github_client_id}
-            clientSecret: ${github_client_secret}
+            clientID: ${dex_github_client_id}
+            clientSecret: ${dex_github_client_secret}
             loadAllGroups: false
             redirectURI: https://dex.${cluster_domain}/callback
             useLoginAsID: false
