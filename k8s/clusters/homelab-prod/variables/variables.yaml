@@ -5,8 +5,8 @@ metadata:
   namespace: flux-system
 data:
   cluster_domain: devantler.com
-  ollama_cpu_limit: "10"
-  ollama_cpu_request: "10"
+  ollama_cpu_limit: "15"
+  ollama_cpu_request: "15"
   ollama_memory_limit: 16Gi
   ollama_memory_request: 16Gi
   traefik_forward_auth_address: https://oauth2-proxy.devantler.com/
