@@ -27,6 +27,12 @@ spec:
             - path: /
               pathType: ImplementationSpecific
       tls: {}
+      annotations:
+        gethomepage.dev/enabled: "true"
+        gethomepage.dev/name: Fleet Device Management
+        gethomepage.dev/description: Open-source device management platform.
+        gethomepage.dev/group: Provisioning
+        gethomepage.dev/icon: si-coderwall-#40B5A4
     fleet:
       tls:
         enabled: false

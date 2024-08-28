@@ -119,12 +119,6 @@ spec:
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
         - Provisioning:
-            - Fleet Device Management:
-                icon: si-coderwall-#40B5A4
-                href: https://fleetdm.${cluster_domain}
-                description: Open-source device management platform.
-                app: fleetdm
-                namespace: fleetdm
             - Hetzner Cloud:
                 icon: hetzner
                 href: https://console.hetzner.cloud/projects
