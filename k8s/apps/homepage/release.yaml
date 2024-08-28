@@ -111,13 +111,6 @@ spec:
                 description: Text-based UML diagramming tool.
                 app: plantuml
                 namespace: plantuml
-        - AI:
-            - Open WebUI:
-                icon: si-openai-#412991
-                href: https://open-webui.${cluster_domain}
-                description: Self-hosted OpenAI drop-in alternative.
-                app: open-webui
-                namespace: open-webui
         - Networking:
             - Cloudflare:
                 icon: cloudflare

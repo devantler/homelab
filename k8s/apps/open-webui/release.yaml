@@ -42,3 +42,9 @@ spec:
     ingress:
       enabled: ${ollama_open_web_ui_ingress_enabled:=true}
       host: open-webui.${cluster_domain}
+      annotations:
+        gethomepage.dev/enabled: "true"
+        gethomepage.dev/name: Open WebUI
+        gethomepage.dev/description: Self-hosted web UI as OpenAI drop-in alternative.
+        gethomepage.dev/group: AI
+        gethomepage.dev/icon: si-openai-#412991
