@@ -104,13 +104,6 @@ spec:
                 icon: github
                 href: https://${cluster_domain}
                 description: Personal website and blog.
-        - Diagramming:
-            - PlantUML:
-                icon: si-uml-#FABD14
-                href: https://plantuml.${cluster_domain}
-                description: Text-based UML diagramming tool.
-                app: plantuml
-                namespace: plantuml
         - Networking:
             - Cloudflare:
                 icon: cloudflare

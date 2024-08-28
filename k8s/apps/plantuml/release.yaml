@@ -23,3 +23,8 @@ spec:
         - plantuml.${cluster_domain}
       annotations:
         traefik.ingress.kubernetes.io/router.middlewares: traefik-basic-auth@kubernetescrd
+        gethomepage.dev/enabled: "true"
+        gethomepage.dev/name: PlantUML
+        gethomepage.dev/description: Text-based UML diagramming tool.
+        gethomepage.dev/group: Diagramming
+        gethomepage.dev/icon: si-uml-#FABD14
