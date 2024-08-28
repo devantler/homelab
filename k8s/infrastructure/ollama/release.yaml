@@ -5,8 +5,9 @@ metadata:
   namespace: ollama
   labels:
     app.kubernetes.io/crds: enabled
+    app.kubernetes.io/remediation: enabled
 spec:
-  interval: 3m
+  interval: 1m
   chart:
     spec:
       chart: ollama
@@ -18,6 +19,9 @@ spec:
   values:
     updateStrategy:
       type: Recreate
+    persistentVolume:
+      enabled: true
+      size: ${ollama_persistent_volume_size:=10Gi}
     resources:
       requests:
         cpu: ${ollama_cpu_request:=}
