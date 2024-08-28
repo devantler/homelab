@@ -22,7 +22,7 @@ spec:
       type: Recreate
     persistentVolume:
       enabled: true
-      size: ${ollama_persistent_volume_size:=10Gi}
+      size: ${ollama_persistent_volume_size:=5Gi}
     resources:
       requests:
         cpu: ${ollama_cpu_request:=}
