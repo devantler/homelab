@@ -1,11 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - headlamp
   - homepage
   - open-webui
   - plantuml
   # - fleetdm # Does not support ARM64 yet https://hub.docker.com/r/fleetdm/fleet
+  # - headlamp
 
 components:
   - ../components/helm-release-crds-label
