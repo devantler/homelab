@@ -36,7 +36,6 @@ spec:
             - path: /
               type: ImplementationSpecific
     config:
-      baseURL: https://headlamp.${cluster_domain}
       oidc:
         clientID: github
         clientSecret: ${dex_client_secret}
