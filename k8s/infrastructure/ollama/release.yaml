@@ -20,10 +20,10 @@ spec:
   values:
     updateStrategy:
       type: Recreate
+    persistentVolume:
+      enabled: true
+      size: ${ollama_persistent_volume_size:=5Gi}
     resources:
-      persistentVolume:
-        enabled: true
-        size: ${ollama_persistent_volume_size:=5Gi}
       requests:
         cpu: ${ollama_cpu_request:=}
         memory: ${ollama_memory_request:=}
