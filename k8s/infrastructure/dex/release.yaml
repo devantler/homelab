@@ -34,9 +34,9 @@ spec:
       staticClients:
         - name: GitHub
           id: github
+          secret: ${dex_client_secret}
           redirectURIs:
             - https://headlamp.${cluster_domain}/oidc-callback
-          secret: ${dex_client_secret}
       connectors:
         - name: GitHub
           type: github
