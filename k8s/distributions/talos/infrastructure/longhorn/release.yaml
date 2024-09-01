@@ -23,4 +23,8 @@ spec:
       ingressClassName: ${ingress_class_name:=}
       annotations:
         traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
-
+        gethomepage.dev/enabled: "true"
+        gethomepage.dev/name: Longhorn
+        gethomepage.dev/description: Cloud-native storage.
+        gethomepage.dev/group: Storage
+        gethomepage.dev/icon: longhorn

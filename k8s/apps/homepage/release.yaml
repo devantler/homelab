@@ -127,13 +127,6 @@ spec:
                 icon: si-talos-#FF7300
                 href: https://omni.${cluster_domain}
                 description: Platform for provisioning and managing Talos Linux clusters.
-        - Storage:
-            - Longhorn:
-                icon: longhorn
-                href: https://longhorn.${cluster_domain}
-                description: Cloud-native storage.
-                app: longhorn
-                namespace: longhorn-system
         - Monitoring:
             - Cilium Hubble:
                 icon: cilium
