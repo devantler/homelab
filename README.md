@@ -69,6 +69,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │   ├── ollama
 │   │   ├── reloader
 │   │   ├── testkube
+│   │   │   └── crds
 │   │   ├── traefik
 │   │   └── trivy-operator
 │   ├── tenants
@@ -79,7 +80,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-68 directories
+69 directories
 ```
 <!-- readme-tree end -->
 
