@@ -1,5 +1,9 @@
 # Welcome to Devantler's Homelab 🚀
 
+![image](https://github.com/user-attachments/assets/cc96e95c-4362-4432-9509-7f52c6c21636)
+
+This repo contains the deployment artifacts for Devantler's Homelab. The Homelab is a Kubernetes cluster that is highly automated with the use of Flux GitOps, CI/CD with Automated Testing, and much more. Feel free to look around. You might find some inspiration 🙌🏻
+
 <details>
   <summary>Show/hide folder structure</summary>
 
@@ -79,10 +83,6 @@
 <!-- readme-tree end -->
 
 </details>
-
-![image](https://github.com/user-attachments/assets/cc96e95c-4362-4432-9509-7f52c6c21636)
-
-This repo contains the deployment artifacts for Devantler's Homelab. The Homelab is a Kubernetes cluster that is highly automated with the use of Flux GitOps, CI/CD with Automated Testing, and much more. Feel free to look around. You might find some inspiration 🙌🏻
 
 ## Prerequisites
 
