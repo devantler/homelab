@@ -27,7 +27,6 @@ spec:
                 value: oidc
   # https://github.com/headlamp-k8s/headlamp/blob/main/charts/headlamp/values.yaml
   values:
-    replicaCount: 2
     config:
       oidc:
         clientID: github
