@@ -58,6 +58,7 @@
 │   │   ├── harbor
 │   │   ├── helm-charts-oci-proxy
 │   │   ├── k8sgpt-operator
+│   │   ├── kube-prometheus-stack
 │   │   ├── kyverno
 │   │   ├── metrics-server
 │   │   ├── oauth2-proxy
@@ -73,7 +74,7 @@
         ├── cluster
         └── nodes
 
-66 directories
+67 directories
 ```
 <!-- readme-tree end -->
 
