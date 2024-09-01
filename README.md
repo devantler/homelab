@@ -139,6 +139,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
   - [Goldilocks](k8s/infrastructure/goldilocks) - To provide and apply resource recommendations for pods.
   - [Harbor](k8s/infrastructure/harbor) - To store and distribute container images.
   - [K8sGPT Operator](k8s/infrastructure/k8sgpt-operator) - To analyze the cluster for improvements, vulnerabilities or bugs.
+  - [Kube Prometheus Stack](k8s/infrastructure/kube-prometheus-stack) - To provide monitoring for the cluster.
   - [Kyverno](k8s/infrastructure/kyverno) - To enforce policies in the cluster.
   - [Longhorn](k8s/distributions/talos/infrastructure/longhorn) - To provide distributed storage for the cluster.
   - [Metrics Server](k8s/infrastructure/metrics-server) - To provide metrics for the cluster.
