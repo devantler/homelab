@@ -41,6 +41,6 @@ spec:
         clientID: github
         clientSecret: ${dex_client_secret}
         issuerURL: https://dex.${cluster_domain}
-        scopes: profile,email
+        scopes: profile,email,groups
       clusterRoleBinding:
         create: false
