@@ -43,6 +43,8 @@ spec:
         externalSecret:
           enabled: true
           name: headlamp-oidc
+      clusterRoleBinding:
+        create: false
       env:
         - name: OIDC_CLIENT_ID
           valueFrom:
@@ -64,5 +66,3 @@ spec:
             secretKeyRef:
               name: headlamp-oidc
               key: scopes
-      clusterRoleBinding:
-        create: false

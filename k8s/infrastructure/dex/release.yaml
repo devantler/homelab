@@ -44,7 +44,6 @@ spec:
           config:
             clientID: ${github_client_id}
             clientSecret: ${github_client_secret}
-            loadAllGroups: true
             redirectURI: https://dex.${cluster_domain}/callback
             orgs:
               - name: devantlerware
