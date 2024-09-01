@@ -4,6 +4,7 @@ metadata:
   name: testkube
   namespace: testkube
   labels:
+    app.kubernetes.io/remediation: enabled
     app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
