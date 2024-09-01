@@ -28,3 +28,4 @@ spec:
         gethomepage.dev/description: Cloud-native storage.
         gethomepage.dev/group: Storage
         gethomepage.dev/icon: longhorn
+        gethomepage.dev/podSelector: ""
