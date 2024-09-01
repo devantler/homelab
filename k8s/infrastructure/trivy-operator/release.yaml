@@ -17,4 +17,29 @@ spec:
         name: trivy-operator
   # https://github.com/aquasecurity/trivy-operator/blob/main/deploy/helm/values.yaml
   values:
-    excludeNamespaces: kube-prometheus-stack
+    nodeCollector:
+      volumeMounts:
+        - name: var-lib-etcd
+          mountPath: /var/lib/etcd
+          readOnly: true
+        - name: var-lib-kubelet
+          mountPath: /var/lib/kubelet
+          readOnly: true
+        - name: var-lib-kube-scheduler
+          mountPath: /var/lib/kube-scheduler
+          readOnly: true
+        - name: var-lib-kube-controller-manager
+          mountPath: /var/lib/kube-controller-manager
+          readOnly: true
+        - name: etc-systemd
+          mountPath: /etc/systemd
+          readOnly: true
+        - name: lib-systemd
+          mountPath: /lib/systemd/
+          readOnly: false
+        - name: etc-kubernetes
+          mountPath: /etc/kubernetes
+          readOnly: true
+        - name: etc-cni-netd
+          mountPath: /etc/cni/net.d/
+          readOnly: true
