@@ -1,0 +1,19 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: kube-prometheus-stack
+  labels:
+    app.kubernetes.io/remediation: enabled
+    app.kubernetes.io/crds: enabled
+spec:
+  interval: 1m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: 62.3.1
+      sourceRef:
+        kind: HelmRepository
+        name: kube-prometheus-stack
+  # https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+  values: {}
