@@ -35,6 +35,7 @@ spec:
           gethomepage.dev/description: A dashboard for automated vertical pod autoscaling recommendations.
           gethomepage.dev/group: Monitoring
           gethomepage.dev/icon: mdi-white-balance-sunny
+          gethomepage.dev/podSelector: ""
     vpa:
       enabled: true
       updater:
