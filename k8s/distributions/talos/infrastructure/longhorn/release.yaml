@@ -29,3 +29,4 @@ spec:
         gethomepage.dev/group: Storage
         gethomepage.dev/icon: longhorn
         gethomepage.dev/app: longhorn-dashboard
+        gethomepage.dev/pod-selector: app.kubernetes.io/name=longhorn
