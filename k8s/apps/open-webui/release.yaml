@@ -23,7 +23,7 @@ spec:
         patches:
           - target:
               kind: Deployment
-              name: open-webui
+              name: open-webui-pipelines
             patch: |
               - op: add
                 path: /spec/template/metadata/labels
