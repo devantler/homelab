@@ -8,7 +8,6 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
-
 ```
 .
 ├── .github
@@ -81,7 +80,6 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 
 67 directories
 ```
-
 <!-- readme-tree end -->
 
 </details>
