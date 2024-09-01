@@ -119,7 +119,7 @@ jobs:
       - name: 🪲 Analyze
         if: always()
         run: |
-          k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama/api
+          k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama
           k8sgpt auth default -p ollama
           # k8sgpt integration activate trivy --no-install --namespace trivy-operator
           # k8sgpt integration activate kyverno --no-install --namespace kyverno

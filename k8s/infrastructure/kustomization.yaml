@@ -13,6 +13,7 @@ resources:
   - oauth2-proxy
   - ollama
   - reloader
+  - testkube
   - traefik
   - trivy-operator
   # - harbor
