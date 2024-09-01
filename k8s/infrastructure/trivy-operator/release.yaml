@@ -31,15 +31,16 @@ spec:
         - name: var-lib-kube-controller-manager
           mountPath: /var/lib/kube-controller-manager
           readOnly: true
-        - name: etc-systemd
-          mountPath: /etc/systemd
-          readOnly: false
-        - name: lib-systemd
-          mountPath: /lib/systemd/
-          readOnly: false
-        - name: etc-kubernetes
-          mountPath: /etc/kubernetes
-          readOnly: false
-        - name: etc-cni-netd
-          mountPath: /etc/cni/net.d/
-          readOnly: false
+      volumes:
+        - name: var-lib-etcd
+          hostPath:
+            path: /var/lib/etcd
+        - name: var-lib-kubelet
+          hostPath:
+            path: /var/lib/kubelet
+        - name: var-lib-kube-scheduler
+          hostPath:
+            path: /var/lib/kube-scheduler
+        - name: var-lib-kube-controller-manager
+          hostPath:
+            path: /var/lib/kube-controller-manager
