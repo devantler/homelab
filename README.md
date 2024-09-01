@@ -147,6 +147,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
   - [OAuth2 Proxy](k8s/infrastructure/oauth2-proxy) - To provide authentication for the cluster.
   - [Ollama](k8s/infrastructure/ollama) - To run LLM's on the cluster.
   - [Reloader](k8s/infrastructure/reloader) - To reload deployments when secrets or configmaps change.
+  - [Testkube](k8s/infrastructure/testkube) - To provide a testing framework for the cluster.
   - [Trivy Operator](k8s/infrastructure/trivy-operator) - To analyze the cluster for vulnerabilities.
 - [`tenants`](k8s/tenants): Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
 - [`variables/`](k8s/variables): Contains global variables, that are the same for all clusters.
