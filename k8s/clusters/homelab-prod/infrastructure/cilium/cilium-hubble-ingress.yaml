@@ -10,11 +10,7 @@ metadata:
     gethomepage.dev/description: Observability for Cilium, a high-performance Container Network Interface (CNI).
     gethomepage.dev/group: Monitoring
     gethomepage.dev/icon: cilium
-    gethomepage.dev/podSelector: >-
-      app.kubernetes.io/instance in (
-        hubble-relay,
-        hubble-ui
-      )
+    gethomepage.dev/podSelector: app.kubernetes.io/name=hubble-ui
 spec:
   ingressClassName: ${ingress_class_name:=}
   rules:
