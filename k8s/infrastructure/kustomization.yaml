@@ -11,7 +11,7 @@ resources:
   - kyverno
   - metrics-server
   - oauth2-proxy
-  - ollama
+  # - ollama
   - reloader
   - traefik
   - trivy-operator
@@ -22,5 +22,3 @@ resources:
 components:
   - ../components/helm-release-crds-label
   - ../components/helm-release-remediation-label
-
-
