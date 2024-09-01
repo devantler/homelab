@@ -18,17 +18,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: open-webui
-  postRenderers:
-    - kustomize:
-        patches:
-          - target:
-              kind: Deployment
-              name: open-webui-pipelines
-            patch: |
-              - op: add
-                path: /spec/template/metadata/labels
-                value:
-                  app.kubernetes.io/name: open-webui
   # https://github.com/open-webui/helm-charts/blob/main/charts/open-webui/values.yaml
   values:
     nameOverride: open-webui
@@ -48,3 +37,4 @@ spec:
         gethomepage.dev/description: Self-hosted web UI as OpenAI drop-in alternative.
         gethomepage.dev/group: AI
         gethomepage.dev/icon: si-openai-#412991
+        gethomepage.dev/podSelector: ""
