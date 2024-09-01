@@ -128,12 +128,6 @@ spec:
                 href: https://omni.${cluster_domain}
                 description: Platform for provisioning and managing Talos Linux clusters.
         - Storage:
-            - Harbor:
-                icon: harbor
-                href: https://harbor.${cluster_domain}
-                description: Cloud-native container registry.
-                app: harbor
-                namespace: harbor
             - Longhorn:
                 icon: longhorn
                 href: https://longhorn.${cluster_domain}

@@ -23,4 +23,10 @@ spec:
       core:
         ingressClassName: ${ingress_class_name:=}
         hostname: harbor.${cluster_domain}
+        annotations:
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/name: Harbor
+          gethomepage.dev/description: Cloud-native container registry.
+          gethomepage.dev/group: Management
+          gethomepage.dev/icon: harbor
     exposureType: ingress
