@@ -5,5 +5,5 @@ metadata:
   namespace: flux-system
 data:
   cluster_domain: devantler.k8s.local
-  traefik_forward_auth_address: https://oauth2-proxy.devantler.k8s.local/
+  traefik_forward_auth_address: https://dex.devantler.k8s.local
   traefik_forward_auth_ssl_host: devantler.k8s.local

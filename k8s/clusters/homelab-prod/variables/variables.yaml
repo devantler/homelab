@@ -9,5 +9,5 @@ data:
   ollama_cpu_request: "15"
   ollama_memory_limit: 16Gi
   ollama_memory_request: 16Gi
-  traefik_forward_auth_address: https://oauth2-proxy.devantler.com/
+  traefik_forward_auth_address: https://dex.devantler.com
   traefik_forward_auth_ssl_host: devantler.com
