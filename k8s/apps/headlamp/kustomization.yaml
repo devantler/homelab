@@ -3,6 +3,5 @@ kind: Kustomization
 resources:
   - cluster-role-binding.yaml
   - namespace.yaml
-  - oidc-secret.yaml
   - release.yaml
   - repository.yaml

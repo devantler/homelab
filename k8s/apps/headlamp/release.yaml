@@ -38,31 +38,9 @@ spec:
               type: ImplementationSpecific
     config:
       oidc:
-        secret:
-          create: false
-        externalSecret:
-          enabled: true
-          name: headlamp-oidc
+        clientID: github
+        clientSecret: ${dex_client_secret}
+        issuerURL: https://dex.${cluster_domain}
+        scopes: profile,email,groups
       clusterRoleBinding:
         create: false
-      env:
-        - name: OIDC_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: headlamp-oidc
-              key: clientID
-        - name: OIDC_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: headlamp-oidc
-              key: clientSecret
-        - name: OIDC_ISSUER_URL
-          valueFrom:
-            secretKeyRef:
-              name: headlamp-oidc
-              key: issuerURL
-        - name: OIDC_SCOPES
-          valueFrom:
-            secretKeyRef:
-              name: headlamp-oidc
-              key: scopes
