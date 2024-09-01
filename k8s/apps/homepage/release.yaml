@@ -134,12 +134,6 @@ spec:
                 description: Observability for Cilium, a high-performance Container Network Interface (CNI).
                 app: hubble-ui
                 namespace: kube-system
-            - Goldilocks:
-                icon: mdi-white-balance-sunny
-                href: https://goldilocks.${cluster_domain}
-                description: Dashboard for automated vertical pod autoscaling recommendations.
-                app: goldilocks
-                namespace: goldilocks
             - Traefik:
                 icon: traefik
                 href: https://traefik.${cluster_domain}
