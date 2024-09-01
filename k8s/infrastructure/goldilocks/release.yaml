@@ -35,7 +35,14 @@ spec:
           gethomepage.dev/description: A dashboard for automated vertical pod autoscaling recommendations.
           gethomepage.dev/group: Monitoring
           gethomepage.dev/icon: mdi-white-balance-sunny
-          gethomepage.dev/podSelector: app.kubernetes.io/name=goldilocks
+          gethomepage.dev/podSelector: >-
+            app.kubernetes.io/instance in (
+              goldilocks-controller,
+              goldilocks-dashboard,
+              goldilocks-vpa-admission-controller,
+              goldilocks-vpa-recommender,
+              goldilocks-vpa-updater
+            )
     vpa:
       enabled: true
       updater:
