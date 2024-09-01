@@ -28,14 +28,6 @@ spec:
   # https://github.com/headlamp-k8s/headlamp/blob/main/charts/headlamp/values.yaml
   values:
     replicaCount: 2
-    ingress:
-      enabled: true
-      ingressClassName: ${ingress_class_name:=}
-      hosts:
-        - host: headlamp.${cluster_domain}
-          paths:
-            - path: /
-              type: ImplementationSpecific
     config:
       oidc:
         clientID: github
@@ -44,3 +36,18 @@ spec:
         scopes: profile,email,groups
       clusterRoleBinding:
         create: false
+    ingress:
+      enabled: true
+      ingressClassName: ${ingress_class_name:=}
+      hosts:
+        - host: headlamp.${cluster_domain}
+          paths:
+            - path: /
+              type: ImplementationSpecific
+      annotations:
+        gethomepage.dev/enabled: "true"
+        gethomepage.dev/name: Headlamp
+        gethomepage.dev/description: A web UI for managing Kubernetes clusters.
+        gethomepage.dev/group: Management
+        gethomepage.dev/icon: mdi-post-lamp
+
