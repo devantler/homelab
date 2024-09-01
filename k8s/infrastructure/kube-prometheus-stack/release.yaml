@@ -5,7 +5,6 @@ metadata:
   namespace: kube-prometheus-stack
   labels:
     app.kubernetes.io/remediation: enabled
-    app.kubernetes.io/crds: enabled
 spec:
   interval: 1m
   chart:
