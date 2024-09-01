@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/crds: enabled
 spec:
-  interval: 3m
+  interval: 1m
   chart:
     spec:
       chart: testkube
