@@ -8,13 +8,6 @@ machine:
           - bind
           - rshared
           - rw
-      - destination: /etc
-        type: bind
-        source: /etc
-        options:
-          - bind
-          - rshared
-          - ro
 
   # Global disk configuration
   disks: []

@@ -8,6 +8,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
+
 ```
 .
 ├── .github
@@ -80,6 +81,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 
 67 directories
 ```
+
 <!-- readme-tree end -->
 
 </details>
@@ -175,12 +177,13 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 
 ### Monthly Cost
 
-| Item               | No. | Per unit | Total   |
-| ------------------ | --- | -------- | ------- |
-| Hetzner CAX41      | 3   | 29,99€   | $100,03 |
-| Talos Omni         | 1   | $10      | $10     |
-| Cloudflare Domains | 2   | $0,87    | $1,74   |
-|                    |     |          | $111,77 |
+| Item               | No. | Per unit | Total      |
+| ------------------ | --- | -------- | ---------- |
+| Hetzner CAX21      | 1   | 7,49€    | $8,28      |
+| Hetzner CAX41      | 2   | 29,99€   | $66,30     |
+| Talos Omni         | 1   | $10      | $10        |
+| Cloudflare Domains | 2   | $0,87    | $1,74      |
+|                    |     |          | **$86,32** |
 
 ## Star History
 
