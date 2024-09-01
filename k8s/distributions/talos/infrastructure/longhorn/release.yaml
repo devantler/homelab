@@ -28,4 +28,7 @@ spec:
         gethomepage.dev/description: Cloud-native storage.
         gethomepage.dev/group: Storage
         gethomepage.dev/icon: longhorn
-        gethomepage.dev/podSelector: ""
+        gethomepage.dev/podSelector: >-
+          app.kubernetes.io/instance in (
+            longhorn-ui
+          )
