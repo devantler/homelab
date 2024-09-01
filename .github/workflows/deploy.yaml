@@ -126,7 +126,7 @@ jobs:
           # k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
           # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
           k8sgpt filters list
-          output=$(k8sgpt analyze --with-doc)
+          output=$(k8sgpt analyze --with-doc --explain)
           echo "$output"
           # if [[ "$output" != *"No problems detected"* ]]; then
           #   exit 1
