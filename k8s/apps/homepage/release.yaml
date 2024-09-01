@@ -134,12 +134,6 @@ spec:
                 description: Observability for Cilium, a high-performance Container Network Interface (CNI).
                 app: hubble-ui
                 namespace: kube-system
-            - Traefik:
-                icon: traefik
-                href: https://traefik.${cluster_domain}
-                description: Dashboard for Reverse Proxy.
-                app: traefik
-                namespace: traefik
         - Analytics:
             - Disqus:
                 icon: si-disqus-#2E9FFF
