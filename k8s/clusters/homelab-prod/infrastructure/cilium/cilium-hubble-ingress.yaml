@@ -5,6 +5,11 @@ metadata:
   namespace: kube-system
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: Cilium Hubble
+    gethomepage.dev/description: Observability for Cilium, a high-performance Container Network Interface (CNI).
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: cilium
 spec:
   ingressClassName: ${ingress_class_name:=}
   rules:

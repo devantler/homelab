@@ -127,13 +127,6 @@ spec:
                 icon: si-talos-#FF7300
                 href: https://omni.${cluster_domain}
                 description: Platform for provisioning and managing Talos Linux clusters.
-        - Monitoring:
-            - Cilium Hubble:
-                icon: cilium
-                href: https://hubble-ui.${cluster_domain}
-                description: Observability for Cilium, a high-performance Container Network Interface (CNI).
-                app: hubble-ui
-                namespace: kube-system
         - Analytics:
             - Disqus:
                 icon: si-disqus-#2E9FFF
