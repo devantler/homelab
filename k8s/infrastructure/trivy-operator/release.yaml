@@ -33,10 +33,10 @@ spec:
           readOnly: true
         - name: etc-systemd
           mountPath: /etc/systemd
-          readOnly: true
+          readOnly: false
         - name: lib-systemd
           mountPath: /lib/systemd/
-          readOnly: false
+          readOnly: true
         - name: etc-kubernetes
           mountPath: /etc/kubernetes
           readOnly: true
