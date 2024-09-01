@@ -37,7 +37,3 @@ spec:
         gethomepage.dev/description: Self-hosted web UI as OpenAI drop-in alternative.
         gethomepage.dev/group: AI
         gethomepage.dev/icon: si-openai-#412991
-        gethomepage.dev/podSelector: >-
-          app.kubernetes.io/instance in (
-            open-webui-pipelines
-          )
