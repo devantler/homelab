@@ -157,7 +157,8 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 
 ### Nodes
 
-- 3x [Hetzner CAX41 node](https://www.hetzner.com/cloud/) (QEMU ARM64 16CPU 32Gb RAM 320Gb SSD) for the control plane and worker node
+- 1x [Hetzner CAX21 node](https://www.hetzner.com/cloud/) (QEMU ARM64 4CPU 8Gb RAM 160Gb SSD) for both control plane and worker node
+- 2x [Hetzner CAX41 node](https://www.hetzner.com/cloud/) (QEMU ARM64 16CPU 32Gb RAM 320Gb SSD) for both control plane and worker nodes
 - 1x [UTM](https://mac.getutm.app) Apple Hypervisor ARM64 VM (Running on Mac Mini M2 Pro with access to 32GB RAM and 20 cores (overprovisioned 2/1) as a worker node
 
 ### Hardware
