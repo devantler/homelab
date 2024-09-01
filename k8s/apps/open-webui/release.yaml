@@ -38,4 +38,4 @@ spec:
         gethomepage.dev/group: AI
         gethomepage.dev/icon: si-openai-#412991
         gethomepage.dev/app: open-webui-pipelines
-        gethomepage.dev/pod-selector: app.kubernetes.io/name=open-webui
+        gethomepage.dev/pod-selector: app.kubernetes.io/instance=open-webui
