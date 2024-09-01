@@ -36,6 +36,7 @@ spec:
           gethomepage.dev/group: Monitoring
           gethomepage.dev/icon: mdi-white-balance-sunny
           gethomepage.dev/app: goldilocks-dashboard
+          gethomepage.dev/pod-selector: app.kubernetes.io/name=goldilocks
     vpa:
       enabled: true
       updater:
