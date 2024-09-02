@@ -92,8 +92,8 @@ spec:
         - longhorn:
             expanded: false
             total: true
-            labels: true
-            nodes: true
+            labels: false
+            nodes: false
       services:
         - Portfolio:
             - GitHub Pages:
