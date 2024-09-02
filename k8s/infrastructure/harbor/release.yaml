@@ -29,4 +29,6 @@ spec:
           gethomepage.dev/description: Cloud-native container registry.
           gethomepage.dev/group: Storage
           gethomepage.dev/icon: harbor
+          gethomepage.dev/app: harbor-portal
+          gethomepage.dev/pod-selector: app.kubernetes.io/name=harbor
     exposureType: ingress
