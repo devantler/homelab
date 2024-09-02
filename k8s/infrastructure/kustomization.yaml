@@ -7,6 +7,7 @@ resources:
   - dex
   - gha-runner-scale-set-controller
   - goldilocks
+  - harbor
   - kube-prometheus-stack
   - kyverno
   - metrics-server
@@ -16,7 +17,6 @@ resources:
   - testkube
   - traefik
   - trivy-operator
-  # - harbor
   # - helm-charts-oci-proxy
   # - k8sgpt-operator
 
