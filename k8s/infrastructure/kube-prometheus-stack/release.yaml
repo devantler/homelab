@@ -23,7 +23,6 @@ spec:
         server:
           domain: grafana.${cluster_domain}
           root_url: https://grafana.${cluster_domain}
-        protocol: http
         auth.generic_oauth:
           enabled: true
           name: GitHub
