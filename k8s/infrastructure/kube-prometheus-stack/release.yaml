@@ -17,6 +17,8 @@ spec:
   # https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
   values:
     grafana:
+      env:
+        DEX_CLIENT_SECRET: ${dex_client_secret}
       grafana.ini:
         auth.generic_oauth:
           enabled: true
@@ -25,7 +27,7 @@ spec:
           token_url: https://dex.${cluster_domain}/token
           api_url: https://dex.${cluster_domain}
           client_id: github
-          client_secret: ${dex_client_secret}
+          client_secret: $${DEX_CLIENT_SECRET}
           allow_sign_up: false
           auto_login: true
           scopes: openid profile email groups
