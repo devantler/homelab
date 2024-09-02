@@ -46,3 +46,5 @@ spec:
           gethomepage.dev/description: Open-source analytics and monitoring visualization tool.
           gethomepage.dev/group: Monitoring
           gethomepage.dev/icon: grafana
+          gethomepage.dev/app: kube-prometheus-stack-grafana
+          gethomepage.dev/pod-selector: app.kubernetes.io/name=grafana
