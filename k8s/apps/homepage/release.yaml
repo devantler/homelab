@@ -46,6 +46,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
     config:
+      favicon: https://devantler.com/assets/images/author.png
       kubernetes:
         mode: cluster
       settings:
