@@ -31,4 +31,5 @@ spec:
           gethomepage.dev/icon: harbor
           gethomepage.dev/app: harbor-portal
           gethomepage.dev/pod-selector: app.kubernetes.io/name=harbor
+          gethomepage.dev/href: https://harbor.${cluster_domain}
     exposureType: ingress
