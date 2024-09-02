@@ -32,7 +32,7 @@ spec:
           traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
           gethomepage.dev/enabled: "true"
           gethomepage.dev/name: Goldilocks
-          gethomepage.dev/description: A dashboard for automated vertical pod autoscaling recommendations.
+          gethomepage.dev/description: Dashboard for automated vertical pod autoscaling recommendations.
           gethomepage.dev/group: Management
           gethomepage.dev/icon: mdi-white-balance-sunny
           gethomepage.dev/app: goldilocks-dashboard

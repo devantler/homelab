@@ -46,6 +46,6 @@ spec:
         annotations:
           gethomepage.dev/enabled: "true"
           gethomepage.dev/name: Traefik
-          gethomepage.dev/description: A dashboard for monitoring the traefik reverse proxy.
+          gethomepage.dev/description: Dashboard for monitoring the traefik reverse proxy.
           gethomepage.dev/group: Monitoring
           gethomepage.dev/icon: traefik
