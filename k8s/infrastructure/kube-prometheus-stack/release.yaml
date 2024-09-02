@@ -50,6 +50,7 @@ spec:
           gethomepage.dev/pod-selector: app.kubernetes.io/name=grafana
     prometheus:
       ingress:
+        enabled: true
         hosts:
           - prometheus.${cluster_domain}
         annotations:
