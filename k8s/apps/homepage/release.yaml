@@ -61,7 +61,8 @@ spec:
           longhorn:
             url: http://longhorn-frontend.longhorn-system:80
       widgets:
-        - logo: {}
+        - logo:
+            icon: https://devantler.com/assets/images/author.png
         - greeting:
             text_size: xl
             text: Welcome to Devantler's Homelab! 🚀
