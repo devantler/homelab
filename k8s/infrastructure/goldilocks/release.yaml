@@ -34,7 +34,7 @@ spec:
           gethomepage.dev/name: Goldilocks
           gethomepage.dev/description: Dashboard for automated vertical pod autoscaling recommendations.
           gethomepage.dev/group: Management
-          gethomepage.dev/icon: mdi-white-balance-sunny
+          gethomepage.dev/icon: mdi-white-balance-sunny-#FFA500
           gethomepage.dev/app: goldilocks-dashboard
           gethomepage.dev/pod-selector: app.kubernetes.io/name=goldilocks
     vpa:

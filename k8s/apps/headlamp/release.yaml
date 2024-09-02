@@ -48,5 +48,5 @@ spec:
         gethomepage.dev/name: Headlamp
         gethomepage.dev/description: A web UI for managing Kubernetes clusters.
         gethomepage.dev/group: Management
-        gethomepage.dev/icon: mdi-post-lamp
+        gethomepage.dev/icon: mdi-post-lamp-#FFFF00
 
