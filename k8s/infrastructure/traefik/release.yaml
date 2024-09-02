@@ -38,6 +38,7 @@ spec:
         loadBalancerIP: ${traefik_ingress_load_balancer_ip}
     ingressRoute:
       dashboard:
+        enabled: true
         matchRule: Host(`traefik.${cluster_domain}`)
         entryPoints:
           - websecure
