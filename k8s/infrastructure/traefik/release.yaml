@@ -44,7 +44,6 @@ spec:
           - websecure
         middlewares:
           - name: traefik-forward-auth
-            namespace: traefik
         annotations:
           gethomepage.dev/enabled: "true"
           gethomepage.dev/name: Traefik
