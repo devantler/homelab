@@ -31,7 +31,7 @@ spec:
           api_url: https://dex.${cluster_domain}
           client_id: github
           client_secret: $${DEX_CLIENT_SECRET}
-          allow_sign_up: false
+          allow_sign_up: true
           auto_login: true
           scopes: openid profile email groups
           use_pkce: true
