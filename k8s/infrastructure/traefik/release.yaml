@@ -38,7 +38,8 @@ spec:
     ingressRoute:
       dashboard:
         enabled: true
-        matchRule: Host(`traefik.${cluster_domain}`)
+        # stripPrefix: /dashboard || pathprefix /api
+        matchRule: Host(`traefik.${cluster_domain}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
         entryPoints:
           - websecure
         middlewares:
