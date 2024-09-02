@@ -87,8 +87,12 @@ spec:
               show: true
               cpu: true
               memory: true
-              showLabel: true
-              label: "cluster"
+              showLabel: false
+            nodes:
+              show: false
+              cpu: false
+              memory: false
+              showLabel: false
         - longhorn:
             expanded: false
             total: true
