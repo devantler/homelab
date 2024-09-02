@@ -1,0 +1,4 @@
+machine:
+  install:
+    extraKernelArgs:
+      - security=apparmor
