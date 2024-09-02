@@ -36,15 +36,16 @@ spec:
       spec:
         loadBalancerIP: ${traefik_ingress_load_balancer_ip}
     ingressRoute:
-      enabled: true
-      matchRule: Host(`traefik.${cluster_domain}`)
-      entryPoints:
-        - websecure
-      middlewares:
-        - name: traefik-forward-auth
-      annotations:
-        gethomepage.dev/enabled: "true"
-        gethomepage.dev/name: Traefik
-        gethomepage.dev/description: A dashboard for monitoring the traefik reverse proxy.
-        gethomepage.dev/group: Monitoring
-        gethomepage.dev/icon: traefik
+      dashboard:
+        enabled: true
+        matchRule: Host(`traefik.${cluster_domain}`)
+        entryPoints:
+          - websecure
+        middlewares:
+          - name: traefik-forward-auth
+        annotations:
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/name: Traefik
+          gethomepage.dev/description: A dashboard for monitoring the traefik reverse proxy.
+          gethomepage.dev/group: Monitoring
+          gethomepage.dev/icon: traefik
