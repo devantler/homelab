@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@v4
       - name: ⚙️ Install flux
         uses: fluxcd/flux2/action@main
+        # TODO: Make `Push to GHCR OCI` into a GitHub Action
       - name: 🗳️ Push to GHCR OCI
         run: |
           flux push artifact oci://ghcr.io/${{ github.repository }}/manifests-${{ env.DEPLOYMENT_ENV }}:${{ github.sha }} \
@@ -50,17 +51,20 @@ jobs:
     steps:
       - name: ⚙️ Setup Flux
         uses: fluxcd/flux2/action@main
+        # TODO: Make `Setup KSail` into a GitHub Action
       - name: ⚙️ Setup KSail
         run: |
           sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
           sudo chmod +x /usr/local/bin/ksail
       - name: ⚙️ Setup Testkube
         uses: kubeshop/setup-testkube@v1
+        # TODO: Make `Setup K8sGPT` into a GitHub Action
       - name: ⚙️ Setup K8sGPT
         run: |
           sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
           sudo mv k8sgpt /usr/local/bin/k8sgpt
           sudo chmod +x /usr/local/bin/k8sgpt
+        # TODO: Remove this step, and ensure any dependent step relies on KUBECONFIG env instead
       - name: 🛠️ Add kubeconfig to host
         run: |
           mkdir ~/.kube
@@ -73,6 +77,7 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+      # TODO: Install Cilium with Flux
       # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
       - name: 🚀 Deploy Cilium
         run: |
@@ -131,6 +136,7 @@ jobs:
           # if [[ "$output" != *"No problems detected"* ]]; then
           #   exit 1
           # fi
+        # TODO: Make revert into a GitHub Action
       - name: ↩️ Revert - Get latest package version
         if: failure()
         id: github_package_version
