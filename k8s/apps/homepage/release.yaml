@@ -79,7 +79,7 @@ spec:
             cache: 5
         - resources:
             backend: kubernetes
-            expanded: true
+            expanded: false
             cpu: true
             memory: true
         - kubernetes:
@@ -89,13 +89,8 @@ spec:
               memory: true
               showLabel: true
               label: "cluster"
-            nodes:
-              show: true
-              cpu: true
-              memory: true
-              showLabel: true
         - longhorn:
-            expanded: true
+            expanded: false
             total: true
             labels: true
             nodes: true
