@@ -26,15 +26,16 @@ spec:
             disable_gravatar: true
           dashboards:
             min_refresh_interval: 60s
-          auth.google:
-            enabled = true
-            client_id = github
-            client_secret = ${dex_client_secret}
-            scopes = profile email groups
-            auth_url = https://dex.${cluster_domain}/auth
-            token_url = https://dex.${cluster_domain}/token
-            allowed_domains = ${cluster_domain}
-            allow_sign_up = false
+          auth.github:
+              enabled: true
+              allow_sign_up: false
+              scopes: user:email,read:org
+              auth_url: https://github.com/login/oauth/authorize
+              token_url: https://github.com/login/oauth/access_token
+              api_url: https://api.github.com/user
+              allowed_organizations: devantlerware
+              client_id: ${github_client_id}
+              client_secret: ${github_client_secret}
       ingress:
         enabled: true
         hosts:
