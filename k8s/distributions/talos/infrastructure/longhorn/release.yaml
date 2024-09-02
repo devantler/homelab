@@ -17,6 +17,8 @@ spec:
         name: longhorn
   # https://github.com/longhorn/charts/blob/v1.7.x/charts/longhorn/values.yaml
   values:
+    persistence:
+      defaultDataLocality: best-effort
     ingress:
       enabled: true
       host: longhorn.${cluster_domain}
