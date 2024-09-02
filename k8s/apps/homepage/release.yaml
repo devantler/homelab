@@ -104,7 +104,7 @@ spec:
                 icon: github
                 href: https://${cluster_domain}
                 description: Personal website and blog.
-        - Networking:
+        - Network:
             - Cloudflare:
                 icon: cloudflare
                 href: https://cloudflare.${cluster_domain}
