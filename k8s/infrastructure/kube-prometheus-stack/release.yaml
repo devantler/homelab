@@ -20,8 +20,9 @@ spec:
       env:
         DEX_CLIENT_SECRET: ${dex_client_secret}
       grafana.ini:
-        domain: grafana.${cluster_domain}
-        root_url: https://grafana.${cluster_domain}
+        server:
+          domain: grafana.${cluster_domain}
+          root_url: https://grafana.${cluster_domain}
         protocol: http
         auth.generic_oauth:
           enabled: true
