@@ -15,4 +15,33 @@ spec:
         kind: HelmRepository
         name: kube-prometheus-stack
   # https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
-  values: {}
+  values:
+    grafana:
+      grafana.ini:
+          check_for_updates: false
+          reporting_enabled: false
+          server:
+            enable_gzip: true
+          security:
+            disable_gravatar: true
+          dashboards:
+            min_refresh_interval: 60s
+          auth.google:
+            enabled = true
+            client_id = github
+            client_secret = ${dex_client_secret}
+            scopes = profile email groups
+            auth_url = https://dex.${cluster_domain}/auth
+            token_url = https://dex.${cluster_domain}/token
+            allowed_domains = ${cluster_domain}
+            allow_sign_up = false
+      ingress:
+        enabled: true
+        hosts:
+          - grafana.${cluster_domain}
+        annotations:
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/name: Grafana
+          gethomepage.dev/description: Open-source analytics and monitoring visualization tool.
+          gethomepage.dev/group: Monitoring
+          gethomepage.dev/icon: grafana
