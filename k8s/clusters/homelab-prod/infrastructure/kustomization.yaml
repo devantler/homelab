@@ -21,6 +21,6 @@ patches:
           ollama:
             models:
               - gemma2:2b
-              - phi3.5:3b
+              - phi3.5:3.8b
           nodeSelector:
             kubernetes.io/hostname: homelab-dk83-utm-apple-hypervisor-arm64-1
