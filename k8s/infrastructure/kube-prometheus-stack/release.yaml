@@ -48,3 +48,16 @@ spec:
           gethomepage.dev/icon: grafana
           gethomepage.dev/app: kube-prometheus-stack-grafana
           gethomepage.dev/pod-selector: app.kubernetes.io/name=grafana
+    prometheus:
+      ingress:
+        hosts:
+          - prometheus.${cluster_domain}
+        annotations:
+          traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
+          gethomepage.dev/enabled: "true"
+          gethomepage.dev/name: Prometheus
+          gethomepage.dev/description: Open-source monitoring system and time series database.
+          gethomepage.dev/group: Monitoring
+          gethomepage.dev/icon: prometheus
+          gethomepage.dev/app: kube-prometheus-stack-prometheus
+          gethomepage.dev/pod-selector: app.kubernetes.io/name=prometheus
