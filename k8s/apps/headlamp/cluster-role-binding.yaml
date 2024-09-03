@@ -3,6 +3,11 @@ kind: ClusterRoleBinding
 metadata:
   name: headlamp-admin
   namespace: headlamp
+  annotations:
+    meta.helm.sh/release-name: headlamp
+    meta.helm.sh/release-namespace: headlamp
+  labels:
+    app.kubernetes.io/managed-by: Helm
 subjects:
   - kind: User
     name: ${email}
