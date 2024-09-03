@@ -12,9 +12,6 @@ on:
       - ready_for_review
       - closed
       - edited
-    paths:
-      - "k8s/**"
-      - ".github/workflows/test.yaml"
   merge_group:
   workflow_dispatch:
 
@@ -26,11 +23,26 @@ env:
   KSAIL_CLUSTER_NAME: homelab-local
 
 jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.filter.outputs.should_skip }}
+    steps:
+      - uses: actions/checkout@v4 # better this action use git diff, so you need checkout the code first
+        with:
+          filter: blob:none # reduce clone size
+          fetch-depth: 0 # need full history, the default is 1, which is not enough. if you limit the pull request' commit length, you can set it to your limit.
+      - uses: leavesster/pull-request-path-filter@v0.2 # v0.2 is the latest version
+        id: "filter"
+        with:
+          paths: | # notice the `|`, it's required. the left is same as github action's path and paths-ignore
+            - "src/**"
   test:
     runs-on: homelab
     env:
       KSAIL_CLUSTER_NAME: homelab-local
-    if: github.event.pull_request.draft == false
+    needs: path-filter
+    if: ${{ github.event.pull_request.draft == false || needs.path-filter.outputs.should_skip != 'true' }}
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
