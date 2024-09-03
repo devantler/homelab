@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - homelab.yaml
   - namespace.yaml
-  - oci-artifacts.yaml
