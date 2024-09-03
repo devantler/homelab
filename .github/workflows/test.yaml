@@ -12,6 +12,9 @@ on:
       - ready_for_review
       - closed
       - edited
+    paths:
+      - "k8s/**"
+      - ".github/workflows/test.yaml"
   merge_group:
   workflow_dispatch:
 
