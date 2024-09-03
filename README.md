@@ -160,7 +160,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 
 - 1x [Hetzner CAX21 node](https://www.hetzner.com/cloud/) (QEMU ARM64 4CPU 8Gb RAM 160Gb SSD) for both control plane and worker node
 - 2x [Hetzner CAX41 node](https://www.hetzner.com/cloud/) (QEMU ARM64 16CPU 32Gb RAM 320Gb SSD) for both control plane and worker nodes
-- 1x [UTM](https://mac.getutm.app) Apple Hypervisor ARM64 VM (Running on Mac Mini M2 Pro with access to 32GB RAM and 20 cores (overprovisioned 2/1) as a worker node
+- 1x Apple Hypervisor ARM64 VM (Running on Mac Mini M2 Pro with access to 32GB RAM and 20 cores (overprovisioned 2/1) as a worker node
 
 ### Hardware
 
@@ -170,6 +170,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 ### Software
 
 - [Unifi](https://ui.com/) - For configuring a DMZ zone for my own nodes to run in, along with other security features.
+- [UTM](https://mac.getutm.app) - For running Kubernetes on Mac Mini via Apple Hypervisor. 
 - [Talos Omni](https://www.siderolabs.com/platform/saas-for-kubernetes/) - For provisioning the production cluster, and managing nodes, updates, and the Talos configuration.
 - [Cloudflare](https://www.cloudflare.com) - For etcd backups, DNS, and tunneling all traffic so my network stays private.
 - [Flux GitOps](https://fluxcd.io) - For managing the kubernetes applications and infrastructure declaratively.
