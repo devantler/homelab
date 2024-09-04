@@ -4,4 +4,6 @@ metadata:
   name: gha-runner-scale-set-homelab
   labels:
     goldilocks.fairwinds.com/enabled: "true"
+    goldilocks.fairwinds.com/vpa-update-mode: "auto"
+    goldilocks.fairwinds.com/vpa-min-replicas: "1"
     pod-security.kubernetes.io/enforce: privileged
