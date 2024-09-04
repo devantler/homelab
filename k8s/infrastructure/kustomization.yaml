@@ -12,7 +12,7 @@ resources:
   - kyverno
   - metrics-server
   - oauth2-proxy
-  # - ollama
+  - ollama
   - reloader
   - testkube
   - traefik
