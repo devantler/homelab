@@ -22,10 +22,3 @@ spec:
     persistentVolume:
       enabled: true
       size: ${ollama_persistent_volume_size:=3Gi}
-    resources:
-      requests:
-        cpu: ${ollama_cpu_request:=}
-        memory: ${ollama_memory_request:=}
-      limits:
-        cpu: ${ollama_cpu_limit:=}
-        memory: ${ollama_memory_limit:=}
