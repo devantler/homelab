@@ -186,7 +186,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 | Hetzner CAX41      | 1   | 29,99€   | $33,23     |
 | Talos Omni         | 1   | $10      | $10        |
 | Cloudflare Domains | 2   | $0,87    | $1,74      |
-|                    |     |          | **$103,1** |
+|                    |     |          | **$69,87** |
 
 ## Star History
 
