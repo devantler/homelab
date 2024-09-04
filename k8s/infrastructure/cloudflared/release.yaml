@@ -19,5 +19,3 @@ spec:
   values:
     cloudflare:
       tunnel_token: ${cloudflared_tunnel_token}
-    image:
-      tag: 2024.8.3
