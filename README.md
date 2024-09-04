@@ -8,6 +8,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
+
 ```
 .
 ├── .github
@@ -82,6 +83,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 
 69 directories
 ```
+
 <!-- readme-tree end -->
 
 </details>
@@ -170,7 +172,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 ### Software
 
 - [Unifi](https://ui.com/) - For configuring a DMZ zone for my own nodes to run in, along with other security features.
-- [UTM](https://mac.getutm.app) - For running Kubernetes on Mac Mini via Apple Hypervisor. 
+- [UTM](https://mac.getutm.app) - For running Kubernetes on Mac Mini via Apple Hypervisor.
 - [Talos Omni](https://www.siderolabs.com/platform/saas-for-kubernetes/) - For provisioning the production cluster, and managing nodes, updates, and the Talos configuration.
 - [Cloudflare](https://www.cloudflare.com) - For etcd backups, DNS, and tunneling all traffic so my network stays private.
 - [Flux GitOps](https://fluxcd.io) - For managing the kubernetes applications and infrastructure declaratively.
@@ -182,11 +184,11 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
 
 | Item               | No. | Per unit | Total      |
 | ------------------ | --- | -------- | ---------- |
-| Hetzner CAX21      | 1   | 7,49€    | $8,28      |
-| Hetzner CAX41      | 2   | 29,99€   | $66,30     |
+| Hetzner CAX21      | 3   | 7,49€    | $24,9      |
+| Hetzner CAX41      | 1   | 29,99€   | $33,23     |
 | Talos Omni         | 1   | $10      | $10        |
 | Cloudflare Domains | 2   | $0,87    | $1,74      |
-|                    |     |          | **$86,32** |
+|                    |     |          | **$69,87** |
 
 ## Star History
 
