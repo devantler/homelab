@@ -5,8 +5,8 @@ metadata:
   namespace: flux-system
 data:
   cluster_domain: devantler.com
-  ollama_cpu_limit: "8"
-  ollama_cpu_request: "8"
+  ollama_cpu_limit: "7"
+  ollama_cpu_request: "7"
   ollama_memory_limit: 16Gi
   ollama_memory_request: 16Gi
   ollama_persistent_volume_size: 20Gi
