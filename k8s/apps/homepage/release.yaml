@@ -165,6 +165,9 @@ spec:
             - GitHub:
                 - icon: github
                   href: https://github.com
+            - NuGet:
+                - icon: nuget
+                  href: https://www.nuget.org
             - Renovate:
                 - icon: si-renovatebot-#1A1F6C
                   href: https://developer.mend.io
