@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - crds
   - namespace.yaml
-  - release.yaml
-  - repository.yaml
+  - helm-release.yaml
+  - helm-repository.yaml

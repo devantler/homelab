@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - cluster-role-binding.yaml
   - namespace.yaml
-  - release.yaml
-  - repository.yaml
+  - helm-release.yaml
+  - helm-repository.yaml
