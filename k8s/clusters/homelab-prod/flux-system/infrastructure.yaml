@@ -12,6 +12,8 @@ spec:
   retryInterval: 2m
   dependsOn:
     - name: variables
+    - name: environment-variables
+    - name: global-variables
   sourceRef:
     kind: OCIRepository
     name: flux-system
