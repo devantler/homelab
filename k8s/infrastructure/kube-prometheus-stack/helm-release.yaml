@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/remediation: enabled
 spec:
-  interval: 1m
+  interval: 10m
   chart:
     spec:
       chart: kube-prometheus-stack
