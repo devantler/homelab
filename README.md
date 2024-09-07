@@ -22,11 +22,9 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │   └── plantuml
 │   ├── clusters
 │   │   ├── homelab-local
-│   │   │   ├── components
 │   │   │   ├── flux-system
 │   │   │   └── variables
 │   │   └── homelab-prod
-│   │       ├── components
 │   │       ├── flux-system
 │   │       ├── infrastructure
 │   │       │   ├── cilium
@@ -44,10 +42,8 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │   └── selfsigned-cluster-issuer
 │   ├── distributions
 │   │   ├── k3s
-│   │   │   ├── components
 │   │   │   └── variables
 │   │   └── talos
-│   │       ├── components
 │   │       ├── infrastructure
 │   │       │   ├── kubelet-serving-cert-approver
 │   │       │   └── longhorn
@@ -80,7 +76,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-69 directories
+65 directories
 ```
 <!-- readme-tree end -->
 
