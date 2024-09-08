@@ -24,3 +24,7 @@ patches:
               - phi3.5:3.8b
           nodeSelector:
             kubernetes.io/hostname: homelab-dk83-utm-apple-hypervisor-arm64-1
+
+components:
+  - ../../../components/helm-release-crds-label
+  - ../../../components/helm-release-remediation-label
