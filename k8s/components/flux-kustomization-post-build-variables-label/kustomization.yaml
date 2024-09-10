@@ -13,14 +13,14 @@ patches:
         postBuild:
           substituteFrom:
             - kind: ConfigMap
-              name: variables
+              name: variables-cluster
             - kind: Secret
-              name: variables-sensitive
+              name: variables-cluster-sensitive
             - kind: ConfigMap
-              name: environment-variables
+              name: variables-distribution
             - kind: Secret
-              name: environment-variables-sensitive
+              name: variables-distribution-sensitive
             - kind: ConfigMap
-              name: global-variables
+              name: variables-global
             - kind: Secret
-              name: global-variables-sensitive
+              name: variables-global-sensitive

@@ -11,9 +11,9 @@ spec:
   timeout: 3m
   retryInterval: 2m
   dependsOn:
-    - name: variables
-    - name: environment-variables
-    - name: global-variables
+    - name: variables-cluster
+    - name: variables-distribution
+    - name: variables-global
   sourceRef:
     kind: OCIRepository
     name: flux-system

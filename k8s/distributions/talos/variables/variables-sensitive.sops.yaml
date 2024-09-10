@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-    name: environment-variables-sensitive
+    name: variables-distribution-sensitive
     namespace: flux-system
 stringData: {}
 sops:
@@ -15,23 +15,23 @@ sops:
         - recipient: age1jvewgaxxqxm8fzchyklzfhs05n07xe8rns6s9mcv9xu7y6lsvpfqmrctkg
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBETnUyNVZ4Q1llTHlzUjls
-            d3VjRkg0L0MwdVJmelhEMkNMWmhoNlhtN2hnCjlWT2x3SVR4V2dsV1l1Q3lQYzVa
-            Q1JkZG5VazhOU2R1M0FxTFI1VkFRQUkKLS0tIGk3UTNpWkxhUTV5MlZGK2wzeWFw
-            cHIwbkNtUnY4T2JLTTFiNlNWQkEwODAKcMXwV8eT+lB88XTh9aJNAZ+VHyd4sb8i
-            3rkRJJjiyIdDuQoJtYxhQUu/Qm70sSJyEdgLhrA4Dd/Tujx79fMSog==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBKaHBCVHpwMVFsNmxVQytj
+            bXZtZUtuTzU4ZTVvQVVMM3BrN1Ria3pzY0ZvCnExcGEwUVZqdGpGNnh3cHlQRlpJ
+            YXQyQlNNM1lXZmMxY2ZuelRiTWF4RjQKLS0tIEJTdWwvSTA1Z0RHZ1FDeWh0MWIv
+            WU1SMllCcUMxcnBGZktQWnBhaUFWMHMKhW2xpAjpsRYrGiv/JLmuNZaaAmRSf+UJ
+            iywqEFB+kLymB6BQIzV3ijERGGJswk4xj5Y17zOMVjw90WIyp1jBjw==
             -----END AGE ENCRYPTED FILE-----
         - recipient: age1yvy77dtah0s6qwtsswzghq4q8fp6hl7hr4yr640zz8ymsuuhlpfqnzw90u
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBlUHgra3FUR203OGI5dEFB
-            QlpCSEJDMzdtc2pNZjlGcVZMR2Z5WEhwNWhZCnU1Sk5MOGxuNFF1OW4wa095S0hw
-            NzRzdzZwbTQvNFJXejlJTk4vaHlaTzgKLS0tIFQwUTdxNGlESHcrNFFQSkZaZEhB
-            MTEvcGJVSmhPUkowaXh3RmFnQUE3MDAKwYwozTyUON5P9/X90rJhZfK7krwdFZKe
-            2+ZA8lZKbXxTA4CWpRpUeV9kvLa1d32E8wnUv3Y6ybcmddPf0gHwfQ==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBZbFdaOVRYaXMyS0M0ckZz
+            ZkZ4WW85anlHZlRQK2wrc1QxcnVXaFZtYWxJCk9peFZjNzVUS2RKUGZHSS9ka3FX
+            QzhrYkZJN3lDQ3cvdkVYb1J1VGpOUFUKLS0tIGZkdWIvYjU2SWFEK0s2UU1aWm9U
+            YStpbGFpQ1kvVGFjYkk2ckl2WWoyT1kKPtsg7orwK+2eUKxEE0KkzMGI9ROCP+lY
+            cjVkToNPuCS+uVDleAg8nWzbA6/Fbyxp+QMU/tWcKhuXkQJZEkLF9g==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2024-07-17T17:36:32Z"
-    mac: ENC[AES256_GCM,data:VPHls8BWAuXJZ11/scj7AnV13tBHZMTeLIeWa75g8KsoWbCm3HKMg25Y/r6XrdqB1vySSaLbjqZg7oVdOKppHSDmT6DGdKBfnF45NZJzSnmcCIWBdEH+UgRkFx4EChmxgkRwMobrVDOo8e71lnDmuTaL/9PwhTNJ+nc+LxxHuOM=,iv:RE7PfHQNBMWJuv7Oe3LFZvJ/ZAss9V03pfQU/DXkZkY=,tag:yPcSX/G6KqDbr4ozd75t7w==,type:str]
+    lastmodified: "2024-09-10T13:46:40Z"
+    mac: ENC[AES256_GCM,data:mDbEw0YPJp1aGYeH/8io8j2GPGIsFTduE9eS8Y4q+xHo4mVjf5xhX4MXfl7QJAmJ6y+HfL/vEq3kNlBH5cYeZEOK383dqSAU8S4X499QcVIKL1Ql/UEDD+Hiopd+V0Ewl+ahbDJu4N4UzsPCavItWiW1kNPqoFIfTnURgEm6Es4=,iv:CAYDwD9OlQwHVhAHhqCa52Sfz1//+55qd5FAoS2oAQ0=,tag:S0vmtKx8XVr7scVMTQgVoQ==,type:str]
     pgp: []
     encrypted_regex: ^(data|stringData)$
     version: 3.8.1

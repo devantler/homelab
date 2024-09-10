@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: variables
+  name: variables-cluster
   namespace: flux-system
   labels:
     kustomize.toolkit.fluxcd.io/sops: enabled
@@ -19,7 +19,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: environment-variables
+  name: variables-distribution
   namespace: flux-system
   labels:
     kustomize.toolkit.fluxcd.io/sops: enabled
@@ -38,7 +38,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: global-variables
+  name: variables-global
   namespace: flux-system
   labels:
     kustomize.toolkit.fluxcd.io/sops: enabled
