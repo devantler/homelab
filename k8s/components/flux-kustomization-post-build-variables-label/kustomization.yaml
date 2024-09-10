@@ -3,7 +3,7 @@ kind: Component
 patches:
   - target:
       kind: Kustomization
-      labelSelector: app.kubernetes.io/post-build-variables=enabled
+      labelSelector: kustomize.toolkit.fluxcd.io/post-build-variables=enabled
     patch: |
       apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization

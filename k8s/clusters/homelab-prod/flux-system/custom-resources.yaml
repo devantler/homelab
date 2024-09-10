@@ -4,8 +4,8 @@ metadata:
   name: custom-resources
   namespace: flux-system
   labels:
-    app.kubernetes.io/sops: enabled
-    app.kubernetes.io/post-build-variables: enabled
+    kustomize.toolkit.fluxcd.io/sops: enabled
+    kustomize.toolkit.fluxcd.io: enabled
 spec:
   interval: 60m
   timeout: 3m

@@ -4,12 +4,11 @@ metadata:
   name: variables
   namespace: flux-system
   labels:
-    app.kubernetes.io/sops: enabled
+    kustomize.toolkit.fluxcd.io/sops: enabled
 spec:
   interval: 60m
   timeout: 3m
   retryInterval: 2m
-  dependsOn: []
   sourceRef:
     kind: OCIRepository
     name: flux-system
@@ -23,7 +22,7 @@ metadata:
   name: environment-variables
   namespace: flux-system
   labels:
-    app.kubernetes.io/sops: enabled
+    kustomize.toolkit.fluxcd.io/sops: enabled
 spec:
   interval: 60m
   timeout: 3m
@@ -42,7 +41,7 @@ metadata:
   name: global-variables
   namespace: flux-system
   labels:
-    app.kubernetes.io/sops: enabled
+    kustomize.toolkit.fluxcd.io/sops: enabled
 spec:
   interval: 60m
   timeout: 3m

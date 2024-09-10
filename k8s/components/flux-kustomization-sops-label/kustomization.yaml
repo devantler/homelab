@@ -3,7 +3,7 @@ kind: Component
 patches:
   - target:
       kind: Kustomization
-      labelSelector: app.kubernetes.io/sops=enabled
+      labelSelector: kustomize.toolkit.fluxcd.io/sops=enabled
     patch: |
       apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization

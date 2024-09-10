@@ -3,7 +3,7 @@ kind: Component
 patches:
   - target:
       kind: HelmRelease
-      labelSelector: app.kubernetes.io/remediation=enabled
+      labelSelector: helm.toolkit.fluxcd.io/remediation=enabled
     patch: |
       apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease

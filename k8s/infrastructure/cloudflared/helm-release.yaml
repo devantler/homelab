@@ -4,8 +4,8 @@ metadata:
   name: cloudflared
   namespace: cloudflared
   labels:
-    app.kubernetes.io/remediation: enabled
-    app.kubernetes.io/crds: enabled
+    helm.toolkit.fluxcd.io/remediation: enabled
+    helm.toolkit.fluxcd.io/crds: enabled
 spec:
   interval: 10m
   chart:
