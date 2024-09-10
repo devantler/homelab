@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
   labels:
     kustomize.toolkit.fluxcd.io/sops: enabled
-    kustomize.toolkit.fluxcd.io: enabled
+    kustomize.toolkit.fluxcd.io/post-build-variables: enabled
 spec:
   interval: 60m
   timeout: 3m
