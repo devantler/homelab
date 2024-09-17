@@ -169,7 +169,7 @@ spec:
                 - icon: github
                   href: https://github.com
             - NuGet:
-                - icon: nuget
+                - icon: si-nuget-#004880
                   href: https://www.nuget.org
             - Renovate:
                 - icon: si-renovatebot-#1A1F6C
