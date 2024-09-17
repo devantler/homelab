@@ -158,7 +158,7 @@ spec:
                   href: https://artifacthub.io
             - Chainguard:
                 - icon: si-chainguard-#4445E7
-                  href: https://chainguard.io
+                  href: https://chainguard.dev
             - Codecov:
                 - icon: si-codecov-#F01F7A
                   href: https://app.codecov.io
