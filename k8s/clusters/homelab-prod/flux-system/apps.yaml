@@ -15,6 +15,6 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: apps
+  path: clusters/homelab-prod/apps
   prune: true
   wait: true
