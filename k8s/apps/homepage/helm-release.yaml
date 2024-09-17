@@ -127,38 +127,13 @@ spec:
                 href: https://analytics.google.com
                 description: Web analytics service.
       bookmarks:
-        - News:
-            # - .NET:
-            # - CSharp:
-            - CNCF:
-                - icon: si-cncf-#231F20
-                  href: https://www.cncf.io/blog
-            # - Devops:
-            # - Docker:
-            # - Flux:
-            - GitHub:
-                - icon: github
-                  href: https://github.blog
-            # - Go:
-            # - Kubernetes:
-            # - MacRumors:
-            # - OpenAI:
-            # - Sidero Labs:
-            # - The Register:
-            - Visual Studio Code:
-                - icon: vscode
-                  href: https://code.visualstudio.com/updates
-            - OpenAI Blog:
-                - icon: openai
-                  href: https://openai.com/blog
-            # - XKCD
         - Development:
             - ArtifactHUB:
                 - icon: si-artifacthub-#417598
                   href: https://artifacthub.io
             - Chainguard:
                 - icon: si-chainguard-#4445E7
-                  href: https://chainguard.io
+                  href: https://chainguard.dev
             - Codecov:
                 - icon: si-codecov-#F01F7A
                   href: https://app.codecov.io
@@ -169,7 +144,7 @@ spec:
                 - icon: github
                   href: https://github.com
             - NuGet:
-                - icon: nuget
+                - icon: si-nuget-#004880
                   href: https://www.nuget.org
             - Renovate:
                 - icon: si-renovatebot-#1A1F6C
