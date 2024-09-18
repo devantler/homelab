@@ -130,36 +130,41 @@ The cluster uses Flux GitOps to reconcile the state of the cluster with single s
 
 The cluster configuration is stored in the `k8s/*` directories where the structure is as follows:
 
-- [`apps/`](k8s/apps): Contains the application specific manifests.
-  - [FleetDM](k8s/apps/fleetdm) - To provide a device management for my devices. (currently not in use, as it does not support ARM64)
-  - [Headlamp](k8s/apps/headlamp) - To provide a lightweight and extensible Kubernetes UI.
-  - [Homepage](k8s/apps/homepage) - To provide a dashborad for the cluster.
-  - [Open WebUI](k8s/apps/open-webui) - To provide a web interface and a REST API for interacting with LLM's.
-  - [PlantUML](k8s/infrastructure/plantuml) - To provide a web interface and a REST API for generating PlantUML diagrams.
-  - [Traefik](k8s/infrastructure/traefik) - To provide an ingress controller for the cluster.
 - [`clusters/`](k8s/clusters): Contains the the cluster specific configuration for each environment.
+- [`components/`](k8s/components): Contains the reusable components that are used across the cluster.
 - [`distributions/`](k8s/distributions): Contains the distribution specific configuration.
-- [`infrastructure/`](k8s/infrastructure): Contains the infrastructure specific manifests.
-  - [Cert Manager](k8s/infrastructure/cert-manager) - For managing certificates in the cluster.
-  - [Cloudflared](k8s/infrastructure/cloudflared) - For tunneling traffic to the cluster.
-  - [Dex](k8s/infrastructure/dex) - For providing OIDC authentication for the cluster.
-  - [Cluster API Operator](k8s/infrastructure/capi-operator) - For managing the lifecycle of Kubernetes clusters.
-  - [GitHub Actions Runner Scale Set Controller](k8s/infrastructure/gha-runner-scale-set-controller) - To manage GitHub Actions Runner Scale Sets in the cluster.
-  - [GitHub Actions Runner Scale Sets](k8s/clusters/homelab-prod/infrastructure/gha-runner-scale-sets) - To run GitHub Actions in the cluster.
-  - [Goldilocks](k8s/infrastructure/goldilocks) - To provide and apply resource recommendations for pods.
-  - [Harbor](k8s/infrastructure/harbor) - To store and distribute container images.
-  - [K8sGPT Operator](k8s/infrastructure/k8sgpt-operator) - To analyze the cluster for improvements, vulnerabilities or bugs.
-  - [Kube Prometheus Stack](k8s/infrastructure/kube-prometheus-stack) - To provide monitoring for the cluster. (Prometheus, Grafana, Alertmanager, etc.)
-  - [Kyverno](k8s/infrastructure/kyverno) - To enforce policies in the cluster.
-  - [Longhorn](k8s/distributions/talos/infrastructure/longhorn) - To provide distributed storage for the cluster.
-  - [Metrics Server](k8s/infrastructure/metrics-server) - To provide metrics for the cluster.
-  - [OAuth2 Proxy](k8s/infrastructure/oauth2-proxy) - To provide authentication for the cluster.
-  - [Ollama](k8s/infrastructure/ollama) - To run LLM's on the cluster.
-  - [Reloader](k8s/infrastructure/reloader) - To reload deployments when secrets or configmaps change.
-  - [Testkube](k8s/infrastructure/testkube) - To provide a testing framework for the cluster.
-  - [Trivy Operator](k8s/infrastructure/trivy-operator) - To analyze the cluster for vulnerabilities.
-- [`tenants`](k8s/tenants): Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
-- [`variables/`](k8s/variables): Contains global variables, that are the same for all clusters.
+- [`shared/`](k8s/shared): Contains the shared configuration for all clusters.
+  - [`apps/`](k8s/shared/apps): Contains the application specific manifests.
+    - [FleetDM](k8s/shared/apps/fleetdm) - To provide a device management for my devices. (currently not in use, as it does not support ARM64)
+    - [Headlamp](k8s/shared/apps/headlamp) - To provide a lightweight and extensible Kubernetes UI.
+    - [Homepage](k8s/shared/apps/homepage) - To provide a dashborad for the cluster.
+    - [Open WebUI](k8s/shared/apps/open-webui) - To provide a web interface and a REST API for interacting with LLM's.
+    - [PlantUML](k8s/shared/infrastructure/plantuml) - To provide a web interface and a REST API for generating PlantUML diagrams.
+    - [Traefik](k8s/shared/infrastructure/traefik) - To provide an ingress controller for the cluster.
+  - [`custom-resources/`](k8s/shared/custom-resources): Contains the custom resources that are used across the cluster.
+    - [Middlewares](k8s/shared/custom-resources/middlewares) - Contains the middlewares that are used by Traefik.
+    - [Selfsigned Cluster Issuer](k8s/shared/custom-resources/selfsigned-cluster-issuer) - Contains the selfsigned cluster issuer that is used by Traefik.
+  - [`infrastructure/`](k8s/shared/infrastructure): Contains the infrastructure specific manifests.
+    - [Cert Manager](k8s/shared/infrastructure/cert-manager) - For managing certificates in the cluster.
+    - [Cloudflared](k8s/shared/infrastructure/cloudflared) - For tunneling traffic to the cluster.
+    - [Dex](k8s/shared/infrastructure/dex) - For providing OIDC authentication for the cluster.
+    - [Cluster API Operator](k8s/shared/infrastructure/capi-operator) - For managing the lifecycle of Kubernetes clusters.
+    - [GitHub Actions Runner Scale Set Controller](k8s/shared/infrastructure/gha-runner-scale-set-controller) - To manage GitHub Actions Runner Scale Sets in the cluster.
+    - [GitHub Actions Runner Scale Sets](k8s/clusters/homelab-prod/infrastructure/gha-runner-scale-sets) - To run GitHub Actions in the cluster.
+    - [Goldilocks](k8s/shared/infrastructure/goldilocks) - To provide and apply resource recommendations for pods.
+    - [Harbor](k8s/shared/infrastructure/harbor) - To store and distribute container images.
+    - [K8sGPT Operator](k8s/shared/infrastructure/k8sgpt-operator) - To analyze the cluster for improvements, vulnerabilities or bugs.
+    - [Kube Prometheus Stack](k8s/shared/infrastructure/kube-prometheus-stack) - To provide monitoring for the cluster. (Prometheus, Grafana, Alertmanager, etc.)
+    - [Kyverno](k8s/shared/infrastructure/kyverno) - To enforce policies in the cluster.
+    - [Longhorn](k8s/distributions/talos/infrastructure/longhorn) - To provide distributed storage for the cluster.
+    - [Metrics Server](k8s/shared/infrastructure/metrics-server) - To provide metrics for the cluster.
+    - [OAuth2 Proxy](k8s/shared/infrastructure/oauth2-proxy) - To provide authentication for the cluster.
+    - [Ollama](k8s/shared/infrastructure/ollama) - To run LLM's on the cluster.
+    - [Reloader](k8s/shared/infrastructure/reloader) - To reload deployments when secrets or configmaps change.
+    - [Testkube](k8s/shared/infrastructure/testkube) - To provide a testing framework for the cluster.
+    - [Trivy Operator](k8s/shared/infrastructure/trivy-operator) - To analyze the cluster for vulnerabilities.
+  - [`tenants`](k8s/shared/tenants): Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
+  - [`variables/`](k8s/shared/variables): Contains global variables, that are the same for all clusters.
 
 ## Production Environment
 

@@ -21,6 +21,6 @@ patches:
             - kind: Secret
               name: variables-distribution-sensitive
             - kind: ConfigMap
-              name: variables-global
+              name: variables-shared
             - kind: Secret
-              name: variables-global-sensitive
+              name: variables-shared-sensitive

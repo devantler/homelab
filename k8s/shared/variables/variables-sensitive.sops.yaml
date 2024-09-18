@@ -1,0 +1,40 @@
+# You need to encrypt this file with SOPS manually.
+# ksail sops --encrypt variables-sensitive.sops.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+    name: variables-shared-sensitive
+    namespace: flux-system
+stringData:
+    dex_client_secret: ENC[AES256_GCM,data:K5ERGGfmdNFMogEViW1GFX6NvkA=,iv:r+k/Sevrm0GD7/Z0ddHTHXjI+2oKvu7YeqFzLSg4x4I=,tag:7jJxSEXfzS5dN6M0zV/q7g==,type:str]
+    email: ENC[AES256_GCM,data:ZSnnDwGZk67psC+PSFP/GRg=,iv:hPAFGMv6gnM/h/YybV2XhhiX2ZVK/6Yh49B7EQH++DQ=,tag:BODRcxKbtgZxV+XMkTA9uQ==,type:str]
+    github_client_secret: ENC[AES256_GCM,data:NRxeoR/SkLIsuJsmOe5N4XW9oVMgr2rPmUjdhOI9AEkMnNvB9pBxNg==,iv:GUM/w7muSgqzSIczj7S8ub1qDgbnk/3uqvQaSx85Sc0=,tag:JyUlrF4uirkg6U1cCTOJ4g==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1jvewgaxxqxm8fzchyklzfhs05n07xe8rns6s9mcv9xu7y6lsvpfqmrctkg
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvU0poczB0RzhzNldJT1Y4
+            YjNNVTV2Um15KytuSlAzRTdjUHQ4c2FJMzI0CklJcS9NUWtDWVkrWmFsQUFLaUp6
+            SjVldXBPVGJjWHdSc3krZ3RveHc4M00KLS0tIFlMa05OUjhrblhVbVg5MTdBbzBY
+            RjNzUkxJL3VBMDYzYzZCVG81RDFhVE0Kn+3lW68UUFCiEWLioUKtEOZ5E2/pue1D
+            tRidTC9V3FVVxSKYUgBq+zMpdHCaKanSrCadL/yvmWcyD/5oUMoKYw==
+            -----END AGE ENCRYPTED FILE-----
+        - recipient: age1yvy77dtah0s6qwtsswzghq4q8fp6hl7hr4yr640zz8ymsuuhlpfqnzw90u
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBySlkvd1VpSkFSZWYwK1lH
+            QXdFNXBSaUQwdTd3ek5QV2JERWd6UHViSUZNCkx3VmQvYytUMVgyTnNFdnV3YmVv
+            c05RNmtSUGVWWXNqSUxtbktBb2p0VTAKLS0tIEpwbDRmNlQ5WDk0S0ZRd05QblNI
+            WmVKemVUMUFWMGZtbExnYW0zV2trMW8KlDHUpsDVk7hW4h8ylFrMrRuCIvk5LUWL
+            YsOlkYlGtB5fDXaWJ7Fm3vOA7X8F3RpgmmHXgv1lrEXbnfXpmgTGXA==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2024-09-18T16:12:01Z"
+    mac: ENC[AES256_GCM,data:ptw21CdTOAR7+CknDHHw/Rf4YjFQ5g4SUKEbplwvj9QUo7AMKjqyzgvMjNoyP9PFr17NxGr41s66/4DaXKaHbIV99QLB7pgOtagYACa33r6VuIYO9c3DK3DIL48pt8iPNuDFcvJRP1aVVXr2vZVixmP7xZhNYrR0ZhbC3quqU20=,iv:VQIsXn9gPCtP4KF7Q/3zorBz/m6RIGZQKvLbZ4FmMSg=,tag:1pbzKbcycxSoLBNLM3QLfg==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData)$
+    version: 3.8.1

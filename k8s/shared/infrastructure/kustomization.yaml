@@ -21,7 +21,7 @@ resources:
   # - k8sgpt-operator
 
 components:
-  - ../components/helm-release-crds-label
-  - ../components/helm-release-remediation-label
+  - ../../components/helm-release-crds-label
+  - ../../components/helm-release-remediation-label
 
 

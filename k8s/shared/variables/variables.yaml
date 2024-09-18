@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: variables-global
+  name: variables-shared
   namespace: flux-system
 data:
   ingress_class_name: traefik
