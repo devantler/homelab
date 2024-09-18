@@ -14,12 +14,6 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   └── workflows
 ├── .vscode
 ├── k8s
-│   ├── apps
-│   │   ├── fleetdm
-│   │   ├── headlamp
-│   │   ├── homepage
-│   │   ├── open-webui
-│   │   └── plantuml
 │   ├── clusters
 │   │   ├── homelab-local
 │   │   │   ├── apps
@@ -41,11 +35,6 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │   ├── helm-release-crds-label
 │   │   ├── helm-release-remediation-label
 │   │   └── network-policy-default-deny
-│   ├── custom-resources
-│   │   ├── middlewares
-│   │   │   ├── basic-auth
-│   │   │   └── forward-auth
-│   │   └── selfsigned-cluster-issuer
 │   ├── distributions
 │   │   ├── k3d
 │   │   │   ├── apps
@@ -59,35 +48,47 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │       │   ├── kubelet-serving-cert-approver
 │   │       │   └── longhorn
 │   │       └── variables
-│   ├── infrastructure
-│   │   ├── capi-operator
-│   │   ├── cert-manager
-│   │   ├── cloudflared
-│   │   ├── dex
-│   │   ├── gha-runner-scale-set-controller
-│   │   ├── goldilocks
-│   │   ├── harbor
-│   │   ├── helm-charts-oci-proxy
-│   │   ├── k8sgpt-operator
-│   │   ├── kube-prometheus-stack
-│   │   ├── kyverno
-│   │   ├── metrics-server
-│   │   ├── oauth2-proxy
-│   │   ├── ollama
-│   │   ├── reloader
-│   │   ├── testkube
-│   │   │   └── crds
-│   │   ├── traefik
-│   │   └── trivy-operator
-│   ├── tenants
-│   └── variables
+│   └── shared
+│       ├── apps
+│       │   ├── fleetdm
+│       │   ├── headlamp
+│       │   ├── homepage
+│       │   ├── open-webui
+│       │   └── plantuml
+│       ├── custom-resources
+│       │   ├── middlewares
+│       │   │   ├── basic-auth
+│       │   │   └── forward-auth
+│       │   └── selfsigned-cluster-issuer
+│       ├── infrastructure
+│       │   ├── capi-operator
+│       │   ├── cert-manager
+│       │   ├── cloudflared
+│       │   ├── dex
+│       │   ├── gha-runner-scale-set-controller
+│       │   ├── goldilocks
+│       │   ├── harbor
+│       │   ├── helm-charts-oci-proxy
+│       │   ├── k8sgpt-operator
+│       │   ├── kube-prometheus-stack
+│       │   ├── kyverno
+│       │   ├── metrics-server
+│       │   ├── oauth2-proxy
+│       │   ├── ollama
+│       │   ├── reloader
+│       │   ├── testkube
+│       │   │   └── crds
+│       │   ├── traefik
+│       │   └── trivy-operator
+│       ├── tenants
+│       └── variables
 └── talos
     ├── hetzner
     └── patches
         ├── cluster
         └── nodes
 
-76 directories
+77 directories
 ```
 <!-- readme-tree end -->
 
