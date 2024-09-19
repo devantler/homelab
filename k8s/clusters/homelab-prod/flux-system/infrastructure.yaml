@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: variables-cluster
     - name: variables-distribution
-    - name: variables-global
+    - name: variables-shared
   sourceRef:
     kind: OCIRepository
     name: flux-system
