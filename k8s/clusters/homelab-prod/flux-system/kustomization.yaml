@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - apps.yaml
   - custom-resources.yaml
-  - infrastructure.yaml
+  #- infrastructure.yaml
   - variables.yaml
 
 components:
