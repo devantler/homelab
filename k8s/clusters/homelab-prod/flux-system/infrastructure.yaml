@@ -20,3 +20,4 @@ spec:
   path: clusters/homelab-prod/infrastructure
   prune: true
   wait: true
+  force: true

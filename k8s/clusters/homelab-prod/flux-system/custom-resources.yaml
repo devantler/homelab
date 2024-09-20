@@ -18,3 +18,4 @@ spec:
   path: clusters/homelab-prod/custom-resources
   prune: true
   wait: true
+  force: true
