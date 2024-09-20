@@ -18,4 +18,3 @@ spec:
   path: clusters/homelab-prod/apps
   prune: true
   wait: true
-  force: true
