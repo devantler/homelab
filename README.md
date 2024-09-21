@@ -8,6 +8,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
+
 ```
 .
 ├── .github
@@ -90,6 +91,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 
 77 directories
 ```
+
 <!-- readme-tree end -->
 
 </details>
@@ -173,10 +175,11 @@ To support hooking into the kustomize flow for adding or modifying resources for
 
 ![Structure](docs/images/structure.drawio.png)
 
-This means that for every root level kustomization that is applied  to the cluster, there should be a corresponding folder in either `clusters`, `distributions`, or `shared` that contains the resources that should be applied to the cluster at that scope.
+This means that for every root level kustomization that is applied to the cluster, there should be a corresponding folder in either `clusters`, `distributions`, or `shared` that contains the resources that should be applied to the cluster at that scope. For example, for a root level kustomization in `k8s/clusters/<cluster-name>/flux-system/infrastructure.yaml`, there should be a corresponding folder in:
 
-> [!NOTE]
-> A root level kustomization is for example `k8s/clusters/<cluster-name>/flux-system/infrastructure.yaml` `k8s/clusters/<cluster-name>/flux-system&apps.yaml`.
+- `k8s/clusters/<cluster-name>/infrastructure/`
+- `k8s/distributions/<distribution-name>/infrastructure/`
+- `k8s/shared/infrastructure/`
 
 ## Production Environment
 
