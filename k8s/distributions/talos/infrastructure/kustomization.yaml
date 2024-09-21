@@ -29,20 +29,6 @@ patches:
               jobservice:
                 accessModes:
                   - ReadWriteMany
-  - target:
-      name: ollama
-      namespace: ollama
-      kind: HelmRelease
-    patch: |-
-      apiVersion: helm.toolkit.fluxcd.io/v2
-      kind: HelmRelease
-      metadata:
-        name: ollama
-        namespace: ollama
-      spec:
-        dependsOn:
-          - name: longhorn
-            namespace: longhorn-system
 
 components:
   - ../../../components/helm-release-crds-label
