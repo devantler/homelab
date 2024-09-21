@@ -11,9 +11,7 @@ spec:
   timeout: 3m
   retryInterval: 2m
   dependsOn:
-    - name: variables-cluster
-    - name: variables-distribution
-    - name: variables-shared
+    - name: core
   sourceRef:
     kind: OCIRepository
     name: flux-system

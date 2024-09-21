@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - ../../../shared/infrastructure
   - kubelet-serving-cert-approver
-  - longhorn
 
 patches:
   # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml

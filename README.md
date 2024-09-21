@@ -159,7 +159,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
     - [K8sGPT Operator](k8s/shared/infrastructure/k8sgpt-operator) - To analyze the cluster for improvements, vulnerabilities or bugs.
     - [Kube Prometheus Stack](k8s/shared/infrastructure/kube-prometheus-stack) - To provide monitoring for the cluster. (Prometheus, Grafana, Alertmanager, etc.)
     - [Kyverno](k8s/shared/infrastructure/kyverno) - To enforce policies in the cluster.
-    - [Longhorn](k8s/distributions/talos/infrastructure/longhorn) - To provide distributed storage for the cluster.
+    - [Longhorn](k8s/distributions/talos/core/longhorn) - To provide distributed storage for the cluster.
     - [Metrics Server](k8s/shared/infrastructure/metrics-server) - To provide metrics for the cluster.
     - [OAuth2 Proxy](k8s/shared/infrastructure/oauth2-proxy) - To provide authentication for the cluster.
     - [Ollama](k8s/shared/infrastructure/ollama) - To run LLM's on the cluster.
