@@ -4,7 +4,7 @@ resources:
   #- apps.yaml
   - core.yaml
   #- custom-resources.yaml
-  #- infrastructure.yaml
+  - infrastructure.yaml
   - variables.yaml
 
 components:
