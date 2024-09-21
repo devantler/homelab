@@ -8,12 +8,13 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
-
 ```
 .
 ├── .github
 │   └── workflows
 ├── .vscode
+├── docs
+│   └── images
 ├── k8s
 │   ├── clusters
 │   │   ├── homelab-local
@@ -37,7 +38,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │   ├── helm-release-remediation-label
 │   │   └── network-policy-default-deny
 │   ├── distributions
-│   │   ├── k3d
+│   │   ├── k3s
 │   │   │   ├── apps
 │   │   │   ├── custom-resources
 │   │   │   ├── infrastructure
@@ -89,9 +90,8 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-77 directories
+79 directories
 ```
-
 <!-- readme-tree end -->
 
 </details>
