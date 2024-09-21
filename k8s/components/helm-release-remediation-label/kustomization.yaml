@@ -12,7 +12,7 @@ patches:
       spec:
         install:
           remediation:
-            retries: 10
+            retries: 3
         upgrade:
           remediation:
-            retries: 10
+            retries: 3
