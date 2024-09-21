@@ -7,7 +7,7 @@ resources:
   - dex
   - gha-runner-scale-set-controller
   - goldilocks
-  - harbor
+  #- harbor
   - kube-prometheus-stack
   - kyverno
   - metrics-server
