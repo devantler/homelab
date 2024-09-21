@@ -79,22 +79,22 @@ jobs:
           kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
       # TODO: Install Cilium with Flux
       # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
-      - name: 🚀 Deploy Cilium
-        run: |
-          helm repo add cilium https://helm.cilium.io/
-          helm repo update
-          helm upgrade --install \
-            cilium \
-            cilium/cilium \
-            --namespace kube-system \
-            --set ipam.mode=kubernetes \
-            --set kubeProxyReplacement=false \
-            --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
-            --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
-            --set cgroup.autoMount.enabled=false \
-            --set cgroup.hostRoot=/sys/fs/cgroup \
-            --set hubble.relay.enabled=true \
-            --set hubble.ui.enabled=true
+      # - name: 🚀 Deploy Cilium
+      #   run: |
+      #     helm repo add cilium https://helm.cilium.io/
+      #     helm repo update
+      #     helm upgrade --install \
+      #       cilium \
+      #       cilium/cilium \
+      #       --namespace kube-system \
+      #       --set ipam.mode=kubernetes \
+      #       --set kubeProxyReplacement=false \
+      #       --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+      #       --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+      #       --set cgroup.autoMount.enabled=false \
+      #       --set cgroup.hostRoot=/sys/fs/cgroup \
+      #       --set hubble.relay.enabled=true \
+      #       --set hubble.ui.enabled=true
       - name: 🚀 Deploy Flux
         run: |
           flux check --pre
