@@ -8,7 +8,7 @@ metadata:
     kustomize.toolkit.fluxcd.io/post-build-variables: enabled
 spec:
   interval: 60m
-  timeout: 3m
+  timeout: 10m
   retryInterval: 2m
   dependsOn:
     - name: custom-resources
