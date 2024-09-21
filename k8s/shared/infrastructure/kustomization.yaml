@@ -14,7 +14,7 @@ resources:
   - oauth2-proxy
   - ollama
   - reloader
-  - testkube
+  #- testkube
   - traefik
   - trivy-operator
   # - helm-charts-oci-proxy
