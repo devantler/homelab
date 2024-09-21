@@ -19,16 +19,17 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   ├── clusters
 │   │   ├── homelab-local
 │   │   │   ├── apps
+│   │   │   ├── core
 │   │   │   ├── custom-resources
 │   │   │   ├── flux-system
 │   │   │   ├── infrastructure
 │   │   │   └── variables
 │   │   └── homelab-prod
 │   │       ├── apps
+│   │       ├── core
 │   │       ├── custom-resources
 │   │       ├── flux-system
 │   │       ├── infrastructure
-│   │       │   ├── cilium
 │   │       │   └── gha-runner-scale-sets
 │   │       └── variables
 │   ├── components
@@ -40,15 +41,18 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   ├── distributions
 │   │   ├── k3s
 │   │   │   ├── apps
+│   │   │   ├── core
 │   │   │   ├── custom-resources
 │   │   │   ├── infrastructure
 │   │   │   └── variables
 │   │   └── talos
 │   │       ├── apps
+│   │       ├── core
+│   │       │   ├── cilium
+│   │       │   └── longhorn
 │   │       ├── custom-resources
 │   │       ├── infrastructure
-│   │       │   ├── kubelet-serving-cert-approver
-│   │       │   └── longhorn
+│   │       │   └── kubelet-serving-cert-approver
 │   │       └── variables
 │   └── shared
 │       ├── apps
@@ -57,6 +61,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │       │   ├── homepage
 │       │   ├── open-webui
 │       │   └── plantuml
+│       ├── core
 │       ├── custom-resources
 │       │   ├── middlewares
 │       │   │   ├── basic-auth
@@ -90,7 +95,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-79 directories
+84 directories
 ```
 <!-- readme-tree end -->
 
