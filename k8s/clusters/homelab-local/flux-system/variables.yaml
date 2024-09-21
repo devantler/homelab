@@ -32,7 +32,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: distributions/k3d/variables
+  path: distributions/k3s/variables
   prune: true
   wait: true
 ---
