@@ -1,6 +1,6 @@
 cluster:
-    apiServer:
-        extraArgs:
-          oidc-issuer-url: https://dex.devantler.com
-          oidc-client-id: github
-          oidc-username-claim: email
+  apiServer:
+    extraArgs:
+      oidc-issuer-url: https://dex.devantler.com
+      oidc-client-id: github
+      oidc-username-claim: email
