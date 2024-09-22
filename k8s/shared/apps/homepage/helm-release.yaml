@@ -91,7 +91,7 @@ spec:
       services:
         - Portfolio:
             - GitHub Pages:
-                icon: github
+                icon: github-light
                 href: https://${cluster_domain}
                 description: Personal website and blog.
         - Network:
