@@ -141,7 +141,7 @@ spec:
                 - icon: si-kubernetes-#326CE5
                   href: https://doc.crds.dev
             - GitHub:
-                - icon: github
+                - icon: github-light
                   href: https://github.com
             - NuGet:
                 - icon: si-nuget-#004880
