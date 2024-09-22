@@ -144,8 +144,8 @@ spec:
                 - icon: github-light
                   href: https://github.com
             - NuGet:
-                - icon: si-nuget-#004880
+                - icon: si-nuget-#1088d6
                   href: https://www.nuget.org
             - Renovate:
-                - icon: si-renovatebot-#1A1F6C
+                - icon: si-renovatebot-#007fa0
                   href: https://developer.mend.io
