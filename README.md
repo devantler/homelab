@@ -174,11 +174,11 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
   - [`tenants`](k8s/shared/tenants): Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
   - [`variables/`](k8s/shared/variables): Contains global variables, that are the same for all clusters.
 
-## Kustomize Flow
+## Kustomize and Flux Kustomization Flow
 
 To support hooking into the kustomize flow for adding or modifying resources for a specific cluster, a specific distribution, or shared across all clusters, the following structure is used:
 
-![Structure](docs/images/structure.drawio.png)
+![Structure](docs/images/gitops-structure.drawio.png)
 
 This means that for every root level kustomization that is applied to the cluster, there should be a corresponding folder in either `clusters`, `distributions`, or `shared` that contains the resources that should be applied to the cluster at that scope. For example, for a root level kustomization in `k8s/clusters/<cluster-name>/flux-system/infrastructure.yaml`, there should be a corresponding folder in:
 
