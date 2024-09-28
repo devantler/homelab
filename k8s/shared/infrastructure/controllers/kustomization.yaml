@@ -8,7 +8,7 @@ resources:
   - kyverno
   - metrics-server
   - reloader
-  #- testkube
+  - testkube
   - traefik
   - trivy-operator
   # - k8sgpt-operator
