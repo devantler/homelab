@@ -18,5 +18,5 @@ spec:
     kind: OCIRepository
     name: flux-system
   path: clusters/homelab-local/core
-  prune: true
+  prune: false
   wait: true
