@@ -1,24 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - capi-operator
-  - cert-manager
   - cloudflared
   - dex
-  - gha-runner-scale-set-controller
-  - goldilocks
   #- harbor
   - kube-prometheus-stack
-  - kyverno
-  - metrics-server
   - oauth2-proxy
   #- ollama
-  - reloader
-  #- testkube
-  - traefik
-  - trivy-operator
-  # - helm-charts-oci-proxy
-  # - k8sgpt-operator
 
 components:
   - ../../components/helm-release-crds-label

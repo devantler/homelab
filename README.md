@@ -148,7 +148,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
     - [Homepage](k8s/shared/apps/homepage) - To provide a dashborad for the cluster.
     - [Open WebUI](k8s/shared/apps/open-webui) - To provide a web interface and a REST API for interacting with LLM's.
     - [PlantUML](k8s/shared/infrastructure/plantuml) - To provide a web interface and a REST API for generating PlantUML diagrams.
-    - [Traefik](k8s/shared/infrastructure/traefik) - To provide an ingress controller for the cluster.
+    - [Traefik](k8s/shared/infrastructure/controllers/traefik) - To provide an ingress controller for the cluster.
   - [`custom-resources/`](k8s/shared/custom-resources): Contains the custom resources that are used across the cluster.
     - [Middlewares](k8s/shared/custom-resources/middlewares) - Contains the middlewares that are used by Traefik.
     - [Selfsigned Cluster Issuer](k8s/shared/custom-resources/selfsigned-cluster-issuer) - Contains the selfsigned cluster issuer that is used by Traefik.
@@ -159,18 +159,18 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
     - [Cluster API Operator](k8s/shared/infrastructure/capi-operator) - For managing the lifecycle of Kubernetes clusters.
     - [GitHub Actions Runner Scale Set Controller](k8s/shared/infrastructure/gha-runner-scale-set-controller) - To manage GitHub Actions Runner Scale Sets in the cluster.
     - [GitHub Actions Runner Scale Sets](k8s/clusters/homelab-prod/infrastructure/gha-runner-scale-sets) - To run GitHub Actions in the cluster.
-    - [Goldilocks](k8s/shared/infrastructure/goldilocks) - To provide and apply resource recommendations for pods.
+    - [Goldilocks](k8s/shared/infrastructure/controllers/goldilocks) - To provide and apply resource recommendations for pods.
     - [Harbor](k8s/shared/infrastructure/harbor) - To store and distribute container images.
-    - [K8sGPT Operator](k8s/shared/infrastructure/k8sgpt-operator) - To analyze the cluster for improvements, vulnerabilities or bugs.
+    - [K8sGPT Operator](k8s/shared/infrastructure/controllers/k8sgpt-operator) - To analyze the cluster for improvements, vulnerabilities or bugs.
     - [Kube Prometheus Stack](k8s/shared/infrastructure/kube-prometheus-stack) - To provide monitoring for the cluster. (Prometheus, Grafana, Alertmanager, etc.)
-    - [Kyverno](k8s/shared/infrastructure/kyverno) - To enforce policies in the cluster.
+    - [Kyverno](k8s/shared/infrastructure/controllers/kyverno) - To enforce policies in the cluster.
     - [Longhorn](k8s/distributions/talos/core/longhorn) - To provide distributed storage for the cluster.
-    - [Metrics Server](k8s/shared/infrastructure/metrics-server) - To provide metrics for the cluster.
+    - [Metrics Server](k8s/shared/infrastructure/controllers/metrics-server) - To provide metrics for the cluster.
     - [OAuth2 Proxy](k8s/shared/infrastructure/oauth2-proxy) - To provide authentication for the cluster.
     - [Ollama](k8s/shared/infrastructure/ollama) - To run LLM's on the cluster.
-    - [Reloader](k8s/shared/infrastructure/reloader) - To reload deployments when secrets or configmaps change.
-    - [Testkube](k8s/shared/infrastructure/testkube) - To provide a testing framework for the cluster.
-    - [Trivy Operator](k8s/shared/infrastructure/trivy-operator) - To analyze the cluster for vulnerabilities.
+    - [Reloader](k8s/shared/infrastructure/controllers/reloader) - To reload deployments when secrets or configmaps change.
+    - [Testkube](k8s/shared/infrastructure/controllers/testkube) - To provide a testing framework for the cluster.
+    - [Trivy Operator](k8s/shared/infrastructure/controllers/trivy-operator) - To analyze the cluster for vulnerabilities.
   - [`tenants`](k8s/shared/tenants): Contains Flux kustomizations to bootstrap and onboard tenants. (currently not in use)
   - [`variables/`](k8s/shared/variables): Contains global variables, that are the same for all clusters.
 
