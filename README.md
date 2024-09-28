@@ -150,8 +150,8 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
     - [PlantUML](k8s/shared/infrastructure/plantuml) - To provide a web interface and a REST API for generating PlantUML diagrams.
     - [Traefik](k8s/shared/infrastructure/controllers/traefik) - To provide an ingress controller for the cluster.
   - [`custom-resources/`](k8s/shared/custom-resources): Contains the custom resources that are used across the cluster.
-    - [Middlewares](k8s/shared/custom-resources/middlewares) - Contains the middlewares that are used by Traefik.
-    - [Selfsigned Cluster Issuer](k8s/shared/custom-resources/selfsigned-cluster-issuer) - Contains the selfsigned cluster issuer that is used by Traefik.
+    - [Middlewares](k8s/shared/infrastructure/middlewares) - Contains the middlewares that are used by Traefik.
+    - [Selfsigned Cluster Issuer](k8s/shared/infrastructure/selfsigned-cluster-issuer) - Contains the selfsigned cluster issuer that is used by Traefik.
   - [`infrastructure/`](k8s/shared/infrastructure): Contains the infrastructure specific manifests.
     - [Cert Manager](k8s/shared/infrastructure/cert-manager) - For managing certificates in the cluster.
     - [Cloudflared](k8s/shared/infrastructure/cloudflared) - For tunneling traffic to the cluster.

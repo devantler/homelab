@@ -11,7 +11,7 @@ spec:
   timeout: 3m
   retryInterval: 2m
   dependsOn:
-    - name: custom-resources
+    - name: infrastructure
   sourceRef:
     kind: OCIRepository
     name: flux-system

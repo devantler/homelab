@@ -3,11 +3,13 @@ kind: Kustomization
 resources:
   - cloudflared
   - dex
-  #- harbor
   - kube-prometheus-stack
+  - middlewares/basic-auth
+  - middlewares/forward-auth
   - oauth2-proxy
+  - selfsigned-cluster-issuer
+  #- harbor
   #- ollama
-
 components:
   - ../../components/helm-release-crds-label
   - ../../components/helm-release-remediation-label
