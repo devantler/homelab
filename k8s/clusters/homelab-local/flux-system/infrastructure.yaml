@@ -17,7 +17,7 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: clusters/homelab-local/core
+  path: clusters/homelab-local/infrastructure/controllers
   prune: false
   wait: true
 ---
