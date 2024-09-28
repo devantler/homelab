@@ -18,7 +18,7 @@ spec:
     kind: OCIRepository
     name: flux-system
   path: clusters/homelab-local/infrastructure/controllers
-  prune: false
+  prune: true
   wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
