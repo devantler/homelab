@@ -1,22 +1,26 @@
-# apiVersion: kustomize.toolkit.fluxcd.io/v1
-# kind: Kustomization
-# metadata:
-#   name: infrastructure-controllers
-#   namespace: flux-system
-#   labels:
-#     kustomize.toolkit.fluxcd.io/sops: enabled
-#     kustomize.toolkit.fluxcd.io/post-build-variables: enabled
-# spec:
-#   interval: 60m
-#   timeout: 3m
-#   retryInterval: 2m
-#   sourceRef:
-#     kind: OCIRepository
-#     name: flux-system
-#   path: clusters/homelab-prod/infrastructure/controllers
-#   prune: true
-#   wait: true
-# ---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: core
+  namespace: flux-system
+  labels:
+    kustomize.toolkit.fluxcd.io/sops: enabled
+    kustomize.toolkit.fluxcd.io/post-build-variables: enabled
+spec:
+  interval: 60m
+  timeout: 10m
+  retryInterval: 2m
+  dependsOn:
+    - name: variables-cluster
+    - name: variables-distribution
+    - name: variables-shared
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: clusters/homelab-prod/core
+  prune: false
+  wait: true
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
