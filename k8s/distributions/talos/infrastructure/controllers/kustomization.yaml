@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../../../../shared/infrastructure/controllers
   - cilium
+  - kubelet-serving-cert-approver
   - longhorn
 
 components:
