@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/crds: enabled
     app.kubernetes.io/remediation: enabled
 spec:
-  interval: 10m
-  timeout: 10m
+  interval: 15m
+  timeout: 15m
   chart:
     spec:
       chart: ollama
