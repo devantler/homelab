@@ -6,6 +6,6 @@ metadata:
     goldilocks.fairwinds.com/enabled: "true"
     goldilocks.fairwinds.com/vpa-update-mode: "auto"
     goldilocks.fairwinds.com/vpa-min-replicas: "1"
-    pod-security.kubernetes.io/enforce: baseline
-    pod-security.kubernetes.io/audit: restricted
-    pod-security.kubernetes.io/warn: restricted
+    # pod-security.kubernetes.io/enforce: baseline
+    # pod-security.kubernetes.io/audit: restricted
+    # pod-security.kubernetes.io/warn: restricted
