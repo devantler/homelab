@@ -18,8 +18,6 @@ spec:
         name: ollama
   # https://github.com/otwld/ollama-helm/blob/main/values.yaml
   values:
-    updateStrategy:
-      type: Recreate
     persistentVolume:
       enabled: true
       size: ${ollama_persistent_volume_size:=3Gi}
