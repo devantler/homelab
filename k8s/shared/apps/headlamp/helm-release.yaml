@@ -32,7 +32,7 @@ spec:
         clientID: github
         clientSecret: ${dex_client_secret}
         issuerURL: https://dex.${cluster_domain}
-        scopes: profile,email,groups
+        scopes: profile email groups
     ingress:
       enabled: true
       ingressClassName: ${ingress_class_name:=}
