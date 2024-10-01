@@ -49,5 +49,9 @@ spec:
             clientSecret: ${github_client_secret}
             teamNameField: slug
             redirectURI: https://dex.${cluster_domain}/callback
+            scopes:
+              - profile
+              - email
+              - groups
             orgs:
               - name: devantlerware
