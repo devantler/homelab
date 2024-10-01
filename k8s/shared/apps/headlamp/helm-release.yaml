@@ -32,7 +32,7 @@ spec:
         clientID: github
         clientSecret: ${dex_client_secret}
         issuerURL: https://dex.${cluster_domain}
-        scopes: profile email groups
+        scopes: "profile,email,groups"
     ingress:
       enabled: true
       ingressClassName: ${ingress_class_name:=}
@@ -47,4 +47,3 @@ spec:
         gethomepage.dev/description: A web UI for managing Kubernetes clusters.
         gethomepage.dev/group: Management
         gethomepage.dev/icon: https://pbs.twimg.com/profile_images/1537480067227566080/waXG0X7n_400x400.jpg
-
