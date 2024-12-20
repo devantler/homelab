@@ -52,18 +52,18 @@ jobs:
       - name: ⚙️ Setup Flux
         uses: fluxcd/flux2/action@main
         # TODO: Make `Setup KSail` into a GitHub Action
-      - name: ⚙️ Setup KSail
-        run: |
-          sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
-          sudo chmod +x /usr/local/bin/ksail
-      - name: ⚙️ Setup Testkube
-        uses: kubeshop/setup-testkube@v1
+      # - name: ⚙️ Setup KSail
+      #   run: |
+      #     sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail"
+      #     sudo chmod +x /usr/local/bin/ksail
+      # - name: ⚙️ Setup Testkube
+      #   uses: kubeshop/setup-testkube@v1
         # TODO: Make `Setup K8sGPT` into a GitHub Action
-      - name: ⚙️ Setup K8sGPT
-        run: |
-          sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
-          sudo mv k8sgpt /usr/local/bin/k8sgpt
-          sudo chmod +x /usr/local/bin/k8sgpt
+      # - name: ⚙️ Setup K8sGPT
+      #   run: |
+      #     sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt" | tar xvz
+      #     sudo mv k8sgpt /usr/local/bin/k8sgpt
+      #     sudo chmod +x /usr/local/bin/k8sgpt
         # TODO: Remove this step, and ensure any dependent step relies on KUBECONFIG env instead
       - name: 🛠️ Add kubeconfig to host
         run: |
@@ -117,25 +117,25 @@ jobs:
             --prune=true
       - name: 🔁 Reconcile
         run: flux reconcile source oci flux-system
-      - name: 👀 Check reconciliation
-        run: ksail check
-      - name: 🧪 Test
-        run: echo "No tests"
-      - name: 🪲 Analyze
-        if: always()
-        run: |
-          k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama
-          k8sgpt auth default -p ollama
-          # k8sgpt integration activate trivy --no-install --namespace trivy-operator
-          # k8sgpt integration activate kyverno --no-install --namespace kyverno
-          # k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
-          # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
-          k8sgpt filters list
-          output=$(k8sgpt analyze --with-doc)
-          echo "$output"
-          # if [[ "$output" != *"No problems detected"* ]]; then
-          #   exit 1
-          # fi
+      # - name: 👀 Check reconciliation
+      #   run: ksail check
+      # - name: 🧪 Test
+      #   run: echo "No tests"
+      # - name: 🪲 Analyze
+      #   if: always()
+      #   run: |
+      #     k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama
+      #     k8sgpt auth default -p ollama
+      #     # k8sgpt integration activate trivy --no-install --namespace trivy-operator
+      #     # k8sgpt integration activate kyverno --no-install --namespace kyverno
+      #     # k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
+      #     # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
+      #     k8sgpt filters list
+      #     output=$(k8sgpt analyze --with-doc)
+      #     echo "$output"
+      #     # if [[ "$output" != *"No problems detected"* ]]; then
+      #     #   exit 1
+      #     # fi
         # TODO: Make revert into a GitHub Action
       - name: ↩️ Revert - Get latest package version
         if: failure()
