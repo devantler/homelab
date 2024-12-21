@@ -17,8 +17,10 @@ spec:
         name: goldilocks
   # https://github.com/FairwindsOps/charts/blob/master/stable/goldilocks/values.yaml
   values:
-    image:
-      tag: v4.13.0
+    vpa:
+      enabled: true
+      updater:
+        enabled: true
     dashboard:
       ingress:
         enabled: true
@@ -37,19 +39,3 @@ spec:
           gethomepage.dev/icon: mdi-white-balance-sunny-#FFA500
           gethomepage.dev/app: goldilocks-dashboard
           gethomepage.dev/pod-selector: app.kubernetes.io/name=goldilocks
-    vpa:
-      enabled: true
-      updater:
-        enabled: true
-      recommender:
-        podSecurityContext:
-          runAsNonRoot: true
-          runAsUser: 65534
-          seccompProfile:
-            type: RuntimeDefault
-        securityContext:
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
