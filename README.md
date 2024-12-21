@@ -3,7 +3,6 @@
 > ![NOTE]
 > I am relocating my physical servers, and these are required for my CI pipeline to test new PRs. As such the PRs are failing untill this relocation is done, but the project is very much still alive.
 
-
 <img width="1840" alt="Screenshot 2024-09-03 at 00 51 44" src="https://github.com/user-attachments/assets/eb6729f7-edff-4346-9be9-0c77d9740633">
 
 This repo contains the deployment artifacts for Devantler's Homelab. The Homelab is a Kubernetes cluster that is highly automated with the use of Flux GitOps, CI/CD with Automated Testing, and much more. Feel free to look around. You might find some inspiration 🙌🏻
@@ -79,7 +78,6 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │       │   ├── dex
 │       │   ├── harbor
 │       │   ├── helm-charts-oci-proxy
-│       │   ├── kube-prometheus-stack
 │       │   ├── middlewares
 │       │   │   ├── basic-auth
 │       │   │   └── forward-auth
@@ -161,7 +159,6 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
     - [Goldilocks](k8s/shared/infrastructure/controllers/goldilocks) - To provide and apply resource recommendations for pods.
     - [Harbor](k8s/shared/infrastructure/harbor) - To store and distribute container images.
     - [K8sGPT Operator](k8s/shared/infrastructure/controllers/k8sgpt-operator) - To analyze the cluster for improvements, vulnerabilities or bugs.
-    - [Kube Prometheus Stack](k8s/shared/infrastructure/kube-prometheus-stack) - To provide monitoring for the cluster. (Prometheus, Grafana, Alertmanager, etc.)
     - [Kyverno](k8s/shared/infrastructure/controllers/kyverno) - To enforce policies in the cluster.
     - [Longhorn](k8s/distributions/talos/core/longhorn) - To provide distributed storage for the cluster.
     - [Metrics Server](k8s/shared/infrastructure/controllers/metrics-server) - To provide metrics for the cluster.
