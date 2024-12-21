@@ -5,7 +5,6 @@ resources:
   - dex
   - goldilocks
   - harbor
-  - kube-prometheus-stack
   - middlewares/basic-auth
   - middlewares/forward-auth
   - oauth2-proxy
