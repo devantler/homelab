@@ -4,7 +4,6 @@ resources:
   - capi-operator
   - cert-manager
   - gha-runner-scale-set-controller
-  - goldilocks
   - kyverno
   - metrics-server
   - reloader

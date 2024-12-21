@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - cloudflared
   - dex
+  - goldilocks
   - harbor
   - kube-prometheus-stack
   - middlewares/basic-auth
