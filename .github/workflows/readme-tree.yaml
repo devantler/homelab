@@ -20,7 +20,7 @@ jobs:
       - name: Generate README Tree
         run: |
           tree -d -L 3 -I 'images|media' > tree.txt
-          sed -i '' '/<!-- readme-tree start -->/,/<!-- readme-tree end -->/c\
+          sed -i '/<!-- readme-tree start -->/,/<!-- readme-tree end -->/c\
           <!-- readme-tree start -->\
           ```text\
           '"$(cat tree.txt | sed 's/$/\\/')"'
