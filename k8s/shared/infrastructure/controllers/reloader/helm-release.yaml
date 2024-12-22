@@ -4,8 +4,9 @@ metadata:
   name: reloader
   namespace: reloader
   labels:
-    helm.toolkit.fluxcd.io/remediation: enabled
     helm.toolkit.fluxcd.io/crds: enabled
+    helm.toolkit.fluxcd.io/helm-test: enabled
+    helm.toolkit.fluxcd.io/remediation: enabled
 spec:
   interval: 10m
   chart:
