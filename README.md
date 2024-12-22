@@ -35,6 +35,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │   ├── flux-kustomization-post-build-variables-label
 │   │   ├── flux-kustomization-sops-label
 │   │   ├── helm-release-crds-label
+│   │   ├── helm-release-helm-test-label
 │   │   ├── helm-release-remediation-label
 │   │   └── network-policy-default-deny
 │   ├── distributions
@@ -89,7 +90,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-78 directories
+79 directories
 ```
 <!-- readme-tree end -->
 
