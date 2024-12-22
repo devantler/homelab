@@ -28,8 +28,3 @@ patches:
               jobservice:
                 accessModes:
                   - ReadWriteMany
-
-components:
-  - ../../../components/helm-release-crds-label
-  - ../../../components/helm-release-helm-test-label
-  - ../../../components/helm-release-remediation-label
