@@ -53,7 +53,7 @@ jobs:
         run: |
           curl -L -o ksail https://github.com/devantler/ksail/releases/download/${{ env.KSAIL_VERSION }}/ksail-linux-arm64
           chmod +x ksail
-          mv ksail /usr/local/bin/ksail
+          sudo mv ksail /usr/local/bin/ksail
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
