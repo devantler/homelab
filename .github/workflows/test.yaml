@@ -56,7 +56,8 @@ jobs:
           cache: enable
           extension-matching: disable
           rename-to: ksail
-          chmod: +x
+      - name: ⚙️ Make KSail executable
+        run: chmod +x ksail
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
