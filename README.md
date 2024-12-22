@@ -15,6 +15,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 ├── .vscode
 ├── docs
 │   └── images
+├── hetzner
 ├── k8s
 │   ├── clusters
 │   │   ├── homelab-local
@@ -84,7 +85,6 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │       ├── tenants
 │       └── variables
 └── talos
-    ├── hetzner
     └── patches
         ├── cluster
         └── nodes
