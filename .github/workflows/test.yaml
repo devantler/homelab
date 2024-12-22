@@ -44,7 +44,7 @@ jobs:
     env:
       KSAIL_CLUSTER_NAME: homelab-local
     needs: path-filter
-    if: ${{ github.event.pull_request.draft == false || needs.path-filter.outputs.should_skip != 'true' }}
+    if: ${{ github.event.pull_request.draft == false && needs.path-filter.outputs.should_skip != 'true' }}
     steps:
       - name: 📑 Checkout
         uses: actions/checkout@v4
