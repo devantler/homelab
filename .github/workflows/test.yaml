@@ -49,33 +49,14 @@ jobs:
       - name: ⚙️ Install wget
         run: sudo apt-get install -y wget
       - name: ⚙️ Install KSail
-        run: |
-          sudo wget -qO /usr/local/bin/ksail "https://getbin.io/devantler/ksail?os=linux&arch=arm64"
-          sudo chmod +x /usr/local/bin/ksail
-      - name: ⚙️ Install K8sGPT
-        run: |
-          sudo wget -qO- "https://getbin.io/k8sgpt-ai/k8sgpt?os=linux&arch=arm64" | tar xvz
-          sudo mv k8sgpt /usr/local/bin/k8sgpt
-          sudo chmod +x /usr/local/bin/k8sgpt
+        uses: jaxxstorm/action-install-gh-release@v1.10.0
+        with:
+          repo: devantler/ksail
+          tag: v1.4.47
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
           ksail up ${{ env.KSAIL_CLUSTER_NAME }}
-      - name: 🪲 Analyze
-        if: always()
-        run: |
-          k8sgpt auth add --backend ollama --model "gemma2:2b" --password "${{ secrets.OPEN_WEBUI_API_TOKEN }}" --baseurl https://open-webui.devantler.com/ollama/api
-          k8sgpt auth default -p ollama
-          # k8sgpt integration activate trivy --no-install --namespace trivy-operator
-          # k8sgpt integration activate kyverno --no-install --namespace kyverno
-          # k8sgpt filters add GatewayClass,Gateway,HTTPRoute,HorizontalPodAutoScaler,PodDisruptionBudget,NetworkPolicy
-          # k8sgpt filters remove VulnerabilityReport,ConfigAuditReport
-          k8sgpt filters list
-          output=$(k8sgpt analyze --with-doc)
-          echo "$output"
-          # if [[ "$output" != *"No problems detected"* ]]; then
-          #   exit 1
-          # fi
       - name: 🔥 Teardown cluster
         if: always()
         run: ksail down ${{ env.KSAIL_CLUSTER_NAME }}
