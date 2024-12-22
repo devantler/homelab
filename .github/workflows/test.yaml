@@ -36,7 +36,9 @@ jobs:
         id: "filter"
         with:
           paths: | # notice the `|`, it's required. the left is same as github action's path and paths-ignore
-            - "src/**"
+            - "k8s/**"
+            - ".sops.yaml"
+            - ".github/workflows/test.yaml"
   test:
     runs-on: homelab
     env:
