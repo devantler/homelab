@@ -49,15 +49,10 @@ jobs:
       - name: 📑 Checkout
         uses: actions/checkout@v4
       - name: ⚙️ Install KSail
-        uses: jaxxstorm/action-install-gh-release@v1.14.0
-        with:
-          repo: devantler/ksail
-          tag: v1.5.0
-          cache: enable
-          extension-matching: disable
-          rename-to: ksail
-      - name: ⚙️ Make KSail executable
-        run: chmod +x ksail
+        run: |
+          curl -L -o ksail https://github.com/devantler/ksail/releases/download/v1.5.0/ksail-linux-arm64
+          chmod +x ksail-linux-arm64
+          mv ksail-linux-arm64 /usr/local/bin/ksail
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
