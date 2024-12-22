@@ -15,10 +15,19 @@ jobs:
     name: readme-tree
     steps:
       - uses: actions/checkout@v4
-      - name: Create README Tree
-        uses: RavelloH/readme-tree@v1.1.0
-        with:
-          showdirectoryname: "yes"
+      - name: Install tree
+        run: sudo apt-get install -y tree
+      - name: Generate README Tree
+        run: |
+          tree -d -L 3 -I 'images|media' > tree.txt
+          sed -i '' '/<!-- readme-tree start -->/,/<!-- readme-tree end -->/c\
+          <!-- readme-tree start -->\
+          ```text\
+          '"$(cat tree.txt | sed 's/$/\\/')"'
+          ```\
+          <!-- readme-tree end -->\
+          ' README.md
+          rm tree.txt
       - name: Generate GitHub App Token
         uses: tibdex/github-app-token@v2
         id: generate-token
