@@ -1,2 +1,2 @@
-.chainsaw-test
-.kyverno-test
+*.chainsaw-test
+*.kyverno-test
