@@ -135,7 +135,7 @@ spec:
             - GitHub Pages:
                 - icon: github-light
                   href: https://${cluster_domain}
-        - Development:
+        - Dev:
             - GitHub:
                 - icon: github-light
                   href: https://github.com
@@ -148,7 +148,7 @@ spec:
             - Renovate:
                 - icon: si-renovatebot-#007fa0
                   href: https://developer.mend.io
-        - Operations:
+        - Ops:
             - ArtifactHUB:
                 - icon: si-artifacthub-#417598
                   href: https://artifacthub.io
