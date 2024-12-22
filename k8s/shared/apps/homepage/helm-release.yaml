@@ -111,6 +111,11 @@ spec:
                 icon: unifi
                 href: https://unifi.ui.com
                 description: Central hub for managing on-prem UniFi network infrastructure.
+        - Monitoring:
+            - Grafana:
+                icon: grafana
+                href: https://devantler.grafana.net
+                description: Central hub for monitoring my infrastructure.
         - Provisioning:
             - Hetzner Cloud:
                 icon: hetzner
