@@ -1,4 +1,4 @@
-name: Sync Kyverno Policies
+name: Sync Cluster Policies
 
 on:
   schedule:
@@ -8,20 +8,20 @@ on:
     branches:
       - main
     paths:
-      - 'k8s/shared/infrastructure/kyverno-policies/samples/**'
+      - 'k8s/shared/infrastructure/cluster-policies/samples/**'
 
 jobs:
   sync-policies:
     runs-on: ubuntu-latest
     env:
-      KYVERNO_POLICIES_DIR: k8s/shared/infrastructure/kyverno-policies/samples/
-      KYVERNO_POLICIES_TEMP_DIR: /tmp/kyverno-policies
+      KYVERNO_POLICIES_DIR: k8s/shared/infrastructure/cluster-policies/samples/
+      KYVERNO_POLICIES_TEMP_DIR: /tmp/cluster-policies
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download latest Kyverno policies
+      - name: Download latest Cluster Policies
         run: |
           git clone --filter=blob:none --sparse https://github.com/kyverno/policies ${{ env.KYVERNO_POLICIES_TEMP_DIR }}
           cd ${{ env.KYVERNO_POLICIES_TEMP_DIR }}
@@ -31,9 +31,9 @@ jobs:
         run: |
           while IFS= read -r pattern; do
           find ${{ env.KYVERNO_POLICIES_TEMP_DIR }} -path "${{ env.KYVERNO_POLICIES_TEMP_DIR }}/$pattern" -exec rm -rf {} +
-            done < .github/kyverno-policies-ignore.txt
+            done < .github/cluster-policies-ignore.txt
 
-      - name: Copy Kyverno policies to the target directory
+      - name: Copy Cluster Policies to the target directory
         run: |
           mkdir -p ${{ env.KYVERNO_POLICIES_DIR }}
           rm -rf ${{ env.KYVERNO_POLICIES_DIR }}/*
@@ -43,7 +43,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: sync Kyverno policies"
-          title: "chore: sync Kyverno policies"
-          body: "Sync Kyverno policies from <https://github.com/kyverno/policies>"
+          commit-message: "chore: sync cluster policies"
+          title: "chore: sync cluster policies"
+          body: "Sync Cluster Policies from <https://github.com/kyverno/policies>"
           signoff: true
