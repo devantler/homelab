@@ -51,6 +51,9 @@ jobs:
         with:
           repo: devantler/ksail
           tag: v1.4.47
+          cache: enable
+          extension-matching: disable
+          chmod: +x
       - name: ⛴️ Provision cluster
         run: |
           ksail sops ${{ env.KSAIL_CLUSTER_NAME }} --import "${{ secrets.KSAIL_SOPS_KEY }}"
