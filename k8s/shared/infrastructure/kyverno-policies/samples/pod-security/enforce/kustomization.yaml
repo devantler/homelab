@@ -1,0 +1,10 @@
+resources:
+- ../restricted
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/validationFailureAction
+        value: Enforce
+    target:
+      kind: ClusterPolicy
