@@ -31,7 +31,7 @@ jobs:
         run: |
           while IFS= read -r pattern; do
           find ${{ env.KYVERNO_POLICIES_TEMP_DIR }} -path "${{ env.KYVERNO_POLICIES_TEMP_DIR }}/$pattern" -exec rm -rf {} +
-            done < .github/kyverno-policies-ignore-list.txt
+            done < .github/kyverno-policies-ignore.txt
 
       - name: Copy Kyverno policies to the target directory
         run: |
