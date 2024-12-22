@@ -92,11 +92,6 @@ spec:
             labels: false
             nodes: false
       services:
-        - Portfolio:
-            - GitHub Pages:
-                icon: github-light
-                href: https://${cluster_domain}
-                description: Personal website and blog.
         - Network:
             - Cloudflare:
                 icon: cloudflare
@@ -116,11 +111,12 @@ spec:
                 icon: grafana
                 href: https://devantler.grafana.net
                 description: Central hub for monitoring my infrastructure.
-        - Provisioning:
+        - Virtualization Platforms:
             - Hetzner Cloud:
                 icon: hetzner
                 href: https://console.hetzner.cloud/projects
                 description: Cloud infrastructure provider.
+        - Cluster Provisioning:
             - Omni:
                 icon: si-talos-#FF7300
                 href: https://omni.${cluster_domain}
@@ -135,28 +131,30 @@ spec:
                 href: https://analytics.google.com
                 description: Web analytics service.
       bookmarks:
+        - Personal:
+            - GitHub Pages:
+                - icon: github-light
+                  href: https://${cluster_domain}
         - Development:
-            - ArtifactHUB:
-                - icon: si-artifacthub-#417598
-                  href: https://artifacthub.io
-            - Chainguard:
-                - icon: si-chainguard-#4445E7
-                  href: https://chainguard.dev
-            - Codecov:
-                - icon: si-codecov-#F01F7A
-                  href: https://app.codecov.io
-            - CRD Docs:
-                - icon: si-kubernetes-#326CE5
-                  href: https://doc.crds.dev
-            - Network Policy Editor:
-                - icon: si-kubernetes-#326CE5
-                  href: https://editor.networkpolicy.io
             - GitHub:
                 - icon: github-light
                   href: https://github.com
             - NuGet:
                 - icon: si-nuget-#1088d6
                   href: https://www.nuget.org
+            - Codecov:
+                - icon: si-codecov-#F01F7A
+                  href: https://app.codecov.io
             - Renovate:
                 - icon: si-renovatebot-#007fa0
                   href: https://developer.mend.io
+        - Operations:
+            - ArtifactHUB:
+                - icon: si-artifacthub-#417598
+                  href: https://artifacthub.io
+            - CRD Docs:
+                - icon: si-kubernetes-#326CE5
+                  href: https://doc.crds.dev
+            - Network Policy Editor:
+                - icon: si-kubernetes-#326CE5
+                  href: https://editor.networkpolicy.io
