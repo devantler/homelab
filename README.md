@@ -8,29 +8,14 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
   <summary>Show/hide folder structure</summary>
 
 <!-- readme-tree start -->
-```
+```text
 .
-├── .github
-│   └── workflows
-├── .vscode
 ├── docs
-│   └── images
 ├── hetzner
 ├── k8s
 │   ├── clusters
 │   │   ├── homelab-local
-│   │   │   ├── apps
-│   │   │   ├── flux-system
-│   │   │   ├── infrastructure
-│   │   │   │   └── controllers
-│   │   │   └── variables
 │   │   └── homelab-prod
-│   │       ├── apps
-│   │       ├── flux-system
-│   │       ├── infrastructure
-│   │       │   ├── controllers
-│   │       │   └── gha-runner-scale-sets
-│   │       └── variables
 │   ├── components
 │   │   ├── flux-kustomization-post-build-variables-label
 │   │   ├── flux-kustomization-sops-label
@@ -40,49 +25,10 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │   │   └── network-policy-default-deny
 │   ├── distributions
 │   │   ├── k3s
-│   │   │   ├── apps
-│   │   │   ├── infrastructure
-│   │   │   │   └── controllers
-│   │   │   └── variables
 │   │   └── talos
-│   │       ├── apps
-│   │       ├── infrastructure
-│   │       │   └── controllers
-│   │       │       ├── cilium
-│   │       │       ├── kubelet-serving-cert-approver
-│   │       │       └── longhorn
-│   │       └── variables
 │   └── shared
 │       ├── apps
-│       │   ├── fleetdm
-│       │   ├── headlamp
-│       │   ├── homepage
-│       │   ├── open-webui
-│       │   └── plantuml
 │       ├── infrastructure
-│       │   ├── cloudflared
-│       │   ├── controllers
-│       │   │   ├── capi-operator
-│       │   │   ├── cert-manager
-│       │   │   ├── gha-runner-scale-set-controller
-│       │   │   ├── k8sgpt-operator
-│       │   │   ├── kyverno
-│       │   │   ├── metrics-server
-│       │   │   ├── reloader
-│       │   │   ├── testkube
-│       │   │   │   └── crds
-│       │   │   ├── traefik
-│       │   │   └── trivy-operator
-│       │   ├── dex
-│       │   ├── goldilocks
-│       │   ├── harbor
-│       │   ├── helm-charts-oci-proxy
-│       │   ├── middlewares
-│       │   │   ├── basic-auth
-│       │   │   └── forward-auth
-│       │   ├── oauth2-proxy
-│       │   ├── ollama
-│       │   └── selfsigned-cluster-issuer
 │       ├── tenants
 │       └── variables
 └── talos
@@ -90,7 +36,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-79 directories
+25 directories
 ```
 <!-- readme-tree end -->
 
