@@ -25,8 +25,7 @@ jobs:
           ```text\
           '"$(cat tree.txt | sed 's/$/\\/')"'
           ```\
-          <!-- readme-tree end -->\
-          ' README.md
+          <!-- readme-tree end -->' README.md
           rm tree.txt
       - name: Generate GitHub App Token
         uses: tibdex/github-app-token@v2
