@@ -1,3 +1,4 @@
 *.chainsaw-test
 *.kyverno-test
 *artifacthub-pkg.y*ml
+*README.md
