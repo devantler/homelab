@@ -66,7 +66,6 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │       │   │   ├── capi-operator
 │       │   │   ├── cert-manager
 │       │   │   ├── gha-runner-scale-set-controller
-│       │   │   ├── goldilocks
 │       │   │   ├── k8sgpt-operator
 │       │   │   ├── kyverno
 │       │   │   ├── metrics-server
@@ -76,6 +75,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
 │       │   │   ├── traefik
 │       │   │   └── trivy-operator
 │       │   ├── dex
+│       │   ├── goldilocks
 │       │   ├── harbor
 │       │   ├── helm-charts-oci-proxy
 │       │   ├── middlewares
@@ -92,7 +92,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-79 directories
+78 directories
 ```
 <!-- readme-tree end -->
 
