@@ -96,7 +96,7 @@ The cluster configuration is stored in the `k8s/*` directories where the structu
   - [`infrastructure/`](k8s/shared/infrastructure): Contains the infrastructure specific manifests.
     - [Cert Manager](k8s/shared/infrastructure/cert-manager) - For managing certificates in the cluster.
     - [Cloudflared](k8s/shared/infrastructure/cloudflared) - For tunneling traffic to the cluster.
-    - [Dex](k8s/shared/infrastructure/dex) - For providing OIDC authentication for the cluster.
+    - [Dex](k8s/shared/infrastructure/controllers/dex) - For providing OIDC authentication for the cluster.
     - [Cluster API Operator](k8s/shared/infrastructure/capi-operator) - For managing the lifecycle of Kubernetes clusters.
     - [GitHub Actions Runner Scale Set Controller](k8s/shared/infrastructure/gha-runner-scale-set-controller) - To manage GitHub Actions Runner Scale Sets in the cluster.
     - [GitHub Actions Runner Scale Sets](k8s/clusters/homelab-prod/infrastructure/gha-runner-scale-sets) - To run GitHub Actions in the cluster.

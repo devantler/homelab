@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - capi-operator
   - cert-manager
+  - dex
   - gha-runner-scale-set-controller
   - kyverno
   - metrics-server
