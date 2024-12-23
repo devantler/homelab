@@ -12,7 +12,7 @@ spec:
   chart:
     spec:
       chart: k8sgpt-operator
-      version: 0.2.0
+      version: 0.2.5
       sourceRef:
         kind: HelmRepository
         name: k8sgpt-operator
