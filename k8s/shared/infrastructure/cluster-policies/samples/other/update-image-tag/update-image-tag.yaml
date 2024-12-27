@@ -39,4 +39,4 @@ spec:
             spec:
               containers:
               - (name): vault-agent
-                image: vault:1.5.4
+                image: vault:1.13.3
