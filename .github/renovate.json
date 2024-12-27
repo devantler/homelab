@@ -20,6 +20,22 @@
   "github-actions": {
     "enabled": false
   },
+  "packageRules": [
+    {
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "matchPackageNames": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    }
+  ],
+  "minor": {
+    "automerge": true
+  },
   "patch": {
     "automerge": true
   }
