@@ -31,14 +31,14 @@ spec:
             spec:
               containers:
               - name: vault-agent
-                image: vault:1.5.4
+                image: vault:1.13.3
                 imagePullPolicy: IfNotPresent
                 volumeMounts:
                 - mountPath: /vault/secrets
                   name: vault-secret
               initContainers:
               - name: vault-agent-init
-                image: vault:1.5.4
+                image: vault:1.13.3
                 imagePullPolicy: IfNotPresent
                 volumeMounts:
                 - mountPath: /vault/secrets
