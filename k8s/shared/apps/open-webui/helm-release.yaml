@@ -15,7 +15,7 @@ spec:
   chart:
     spec:
       chart: open-webui
-      version: 3.8.0
+      version: 4.1.0
       sourceRef:
         kind: HelmRepository
         name: open-webui
