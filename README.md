@@ -39,7 +39,7 @@ This repo contains the deployment artifacts for Devantler's Homelab. The Homelab
         ├── cluster
         └── nodes
 
-25 directories
+26 directories
 ```
 <!-- readme-tree end -->
 
