@@ -12,7 +12,7 @@ spec:
   chart:
     spec:
       chart: fleet
-      version: v6.3.0
+      version: v6.3.5
       sourceRef:
         kind: HelmRepository
         name: fleetdm
