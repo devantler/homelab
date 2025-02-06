@@ -12,7 +12,7 @@ spec:
   chart:
     spec:
       chart: harbor
-      version: 24.1.4
+      version: 24.3.0
       sourceRef:
         kind: HelmRepository
         name: harbor
