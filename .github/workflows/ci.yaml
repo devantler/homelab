@@ -785,11 +785,13 @@ jobs:
           bash scripts/tests/test-setup-talosctl.sh
 
       - name: 🔐 Validate supply-chain tool integrity
+        if: needs.changes.outputs.k8s == 'true'
         run: |
           shellcheck .github/scripts/setup-supply-chain-tools.sh scripts/tests/test-setup-supply-chain-tools.sh
           bash scripts/tests/test-setup-supply-chain-tools.sh
 
       - name: 🔐 Exercise verified supply-chain tools
+        if: needs.changes.outputs.k8s == 'true'
         run: |
           .github/scripts/setup-supply-chain-tools.sh
           /usr/local/bin/syft scan dir:. --output cyclonedx-json=tool-integrity.cdx.json
