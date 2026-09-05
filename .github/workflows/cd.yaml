@@ -129,6 +129,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: 🔐 Enforce approved publication signers
+        env:
+          APPROVED_REVISIONS_ENFORCE: '1'
+        run: ./scripts/guard-publish-workflow-approved-revisions.sh
+
       - name: ⚙️ Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
@@ -159,7 +164,7 @@ jobs:
         shell: bash
         env:
           # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
-          KSAIL_VERSION: "7.180.15"
+          KSAIL_VERSION: "7.181.0"
           GITHUB_TOKEN: ${{ github.token }}
         run: .github/scripts/setup-ksail.sh
 

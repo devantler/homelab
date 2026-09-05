@@ -1,0 +1,22 @@
+---
+# The reports controller scans the managed team resources for this validate-only
+# policy. The background controller handles generate and mutateExisting rules,
+# so it does not need this read access.
+# The controllers layer applies the grant before the policy layer reconciles.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno:read-github-teams
+  labels:
+    rbac.kyverno.io/aggregate-to-reports-controller: "true"
+rules:
+  - apiGroups:
+      - team.github.m.upbound.io
+    resources:
+      - teams
+      - teammemberships
+      - teamrepositories
+    verbs:
+      - get
+      - list
+      - watch

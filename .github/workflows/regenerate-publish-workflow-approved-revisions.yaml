@@ -1,39 +1,10 @@
 name: Regenerate Approved Publish Revisions
 
-# Keep scripts/publish-workflow-approved-revisions.tsv current without a hand-run
-# (#3552, third child of #3308).
-#
-# WHY A SCHEDULE. Every consumer's `uses:` pin on a shared devantler-tech/actions
-# publish workflow moves with each actions bump — several times a month, by
-# dependency automation. The approved set the per-consumer cosign matchers are
-# narrowed from (#3550, #3551) is stale the moment such a bump merges: the next
-# artifact is signed by a revision the platform no longer accepts and that
-# consumer's OCIRepository stops reconciling while every check in CI stays
-# green. Regenerating by hand turns every dependency bump into a two-repository
-# ordered rollout, which is the DevEx tax the hardening rule forbids. So the
-# generator runs here daily and on demand, and a moved set becomes a draft pull
-# request on the ordinary review path.
-#
-# FAIL RED, NEVER A PR THAT DROPPED A CONSUMER. The generator refuses to write
-# when any consumer cannot be resolved on either half (cluster or pin), so a
-# failed resolution is a red run with nothing to commit. The approved-revisions
-# guard then re-reads the moved set against the live matchers BEFORE the pull
-# request step, so a narrowed matcher the new set no longer names is also a red
-# run rather than a pull request whose own CI fails later. Neither step carries
-# `continue-on-error`, and the pull-request step is not `if: always()` — the
-# contract test (scripts/tests/test-regenerate-publish-workflow-approved-
-# revisions.sh) pins both.
-#
-# ONE OPEN PULL REQUEST AT A TIME. The pull request is opened from a FIXED
-# branch, so a later run with a further-moved set updates the same pull request
-# instead of opening a second one; `queue: single` keeps two runs from racing
-# each other for it.
-#
-# WHAT THIS DOES NOT DO. It regenerates the DATA file only. Rewriting the four
-# per-consumer matchers to the generated pair is the narrowing switch
-# (APPROVED_REVISIONS_ENFORCE), which #3308's remaining child flips only after
-# this workflow has run green at least once — feature-flag-first: generated
-# file first, switch second.
+# Regenerate the approved set and its four consumer matchers together. Every
+# consumer must resolve before generation succeeds; the writer validates all
+# inputs and stages the complete update before changing any manifest. The guard
+# then enforces each exact signer/current-pin pair before the draft PR is opened.
+# A fixed branch and serialized runs keep one regeneration PR open at a time.
 #
 # WHY `environment: prod`. The applied half of every row is a cluster
 # observation (the OCIRepository's `status.artifact.revision`), and KUBE_CONFIG
@@ -174,35 +145,50 @@ jobs:
           PUBLISH_KUBE_CONTEXT: admin@prod
         run: ./scripts/generate-publish-workflow-approved-revisions.sh
 
-      # The generator writes ONE file. Anything else in the tree is not this
-      # workflow's to commit — it would ride into the pull request under a title
-      # that does not describe it — so refuse rather than narrow the commit.
+      - name: 🔐 Update the consumer matchers
+        shell: bash
+        run: ./scripts/write-publish-workflow-matchers.sh
+
+      # The set and its four consumer manifests are the complete write boundary.
+      # Refuse unrelated changes before the PR action can stage anything.
       - name: 🔍 Detect a moved set
         id: moved
         shell: bash
         run: |
           set -euo pipefail
-          other="$(git status --porcelain | grep -v ' scripts/publish-workflow-approved-revisions.tsv$' || true)"
+          paths=(
+            scripts/publish-workflow-approved-revisions.tsv
+            k8s/bases/apps/github-config/oci-repository.yaml
+            k8s/bases/apps/ascoachingogvaner/oci-repository.yaml
+            k8s/providers/hetzner/apps/aws/oci-repository.yaml
+            k8s/bases/apps/wedding-app/oci-repository.yaml
+          )
+          other=''
+          while IFS= read -r change; do
+            allowed=false
+            for path in "${paths[@]}"; do
+              if [ "${change:3}" = "$path" ]; then allowed=true; break; fi
+            done
+            if [ "$allowed" = false ]; then other+="${change}"$'\n'; fi
+          done < <(git status --porcelain --untracked-files=all)
           if [ -n "${other}" ]; then
-            printf 'refusing: the generator left changes outside its data file:\n%s\n' "${other}" >&2
+            printf 'refusing: regeneration left changes outside the approved set and matchers:\n%s\n' "${other}" >&2
             exit 1
           fi
-          if git diff --quiet -- scripts/publish-workflow-approved-revisions.tsv; then
+          if git diff HEAD --quiet -- "${paths[@]}"; then
             echo "moved=false" >> "${GITHUB_OUTPUT}"
-            echo 'approved set unchanged; nothing to open'
+            echo 'approved set and matchers unchanged; nothing to open'
           else
             echo "moved=true" >> "${GITHUB_OUTPUT}"
-            git --no-pager diff -- scripts/publish-workflow-approved-revisions.tsv
+            git --no-pager diff HEAD -- "${paths[@]}"
           fi
 
-      # Re-read the MOVED set against the live matchers before anything is
-      # pushed. With the switch off this passes while every per-consumer matcher
-      # still carries the pattern form; once a matcher is narrowed, a set that no
-      # longer names its pair is refused HERE — a red run that names the matcher,
-      # never a pull request whose own CI discovers it later.
+      # Validate the updated matchers against the same generated set before pushing.
       - name: 🔐 Guard the moved set against the live matchers
         if: steps.moved.outputs.moved == 'true'
         shell: bash
+        env:
+          APPROVED_REVISIONS_ENFORCE: '1'
         run: ./scripts/guard-publish-workflow-approved-revisions.sh
 
       - name: 📦 Open or update the regeneration pull request
@@ -219,22 +205,24 @@ jobs:
       # red guard means this step never runs, which the contract test pins.
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          # Exactly the generator's output. `add-paths` is the second fence behind
+          # Exactly the set and matcher outputs. `add-paths` is the second fence behind
           # the refusal above: even a change that slipped past it cannot be committed.
-          add-paths: scripts/publish-workflow-approved-revisions.tsv
+          add-paths: |
+            scripts/publish-workflow-approved-revisions.tsv
+            k8s/bases/apps/github-config/oci-repository.yaml
+            k8s/bases/apps/ascoachingogvaner/oci-repository.yaml
+            k8s/providers/hetzner/apps/aws/oci-repository.yaml
+            k8s/bases/apps/wedding-app/oci-repository.yaml
           commit-message: "chore(security): regenerate the approved publish-workflow revisions"
           title: "chore(security): regenerate the approved publish-workflow revisions"
           body: |
             > 🤖 Generated by the Agentic Engineer
 
-            The per-consumer approved-revision set moved: a consumer's default-branch pin
-            on a shared publish workflow, or the artifact revision Flux has applied,
-            differs from what `scripts/publish-workflow-approved-revisions.tsv` recorded.
-            Regenerated by `scripts/generate-publish-workflow-approved-revisions.sh`
-            against the prod cluster; every consumer resolved on both halves, or this
-            run would have failed instead of opening this.
+            Refresh the approved publish revisions and their consumer matchers from
+            the deployed artifacts and current publish-workflow pins. Every consumer
+            resolved on both halves, and each matcher accepts exactly its approved pair.
 
-            Part of #3308 (the regeneration path of #3552).
+            Part of #3308.
           # PINNED base. A manual dispatch checks out the ref it was dispatched
           # from, and without this the pull request would target THAT ref rather
           # than the default branch — so a regeneration run from a topic branch

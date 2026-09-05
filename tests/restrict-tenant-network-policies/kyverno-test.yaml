@@ -154,3 +154,51 @@ results:
       - tenant-ns/allow-web-egress-selected-service
     kind: CiliumNetworkPolicy
     result: pass
+  # ── Selector KEYS that name an identity, a namespace or a cluster ──────────
+  # Every one of these is non-empty and uses only whitelisted operators, so the
+  # presence and operator checks read it as constrained. Cilium exposes reserved
+  # identities, the pod namespace and the cluster name as selectable labels, so
+  # each reaches a destination the entity whitelist or the namespace scoping
+  # refuses. All were measured ADMITTED before the key check landed.
+  - policy: restrict-tenant-network-policies
+    rule: cnp-egress-destinations-must-be-constrained
+    resources:
+      - tenant-ns/attack-selector-reserved-world-egress
+      - tenant-ns/attack-selector-bare-world-egress
+      - tenant-ns/attack-selector-any-host-egress
+      - tenant-ns/attack-selector-reserved-expression-egress
+      - tenant-ns/attack-selector-cross-namespace-egress
+      - tenant-ns/attack-selector-cross-namespace-expression-egress
+      - tenant-ns/attack-selector-namespace-labels-egress
+      - tenant-ns/attack-selector-cluster-name-egress
+      - tenant-ns/attack-selector-reserved-beside-constrained-egress
+    kind: CiliumNetworkPolicy
+    result: fail
+  - policy: restrict-tenant-network-policies
+    rule: cnp-ingress-sources-must-be-constrained
+    resources:
+      - tenant-ns/attack-selector-reserved-host-ingress
+      - tenant-ns/attack-selector-cross-namespace-ingress
+      - tenant-ns/attack-selector-bare-namespace-ingress
+    kind: CiliumNetworkPolicy
+    result: fail
+  # CONTROL: the ingress-side `reserved:ingress` carve-out, and source-prefixed
+  # ordinary keys (including a k8s label named like a reserved identity), stay
+  # admitted by BOTH rules — a key check that refused these would refuse the
+  # spelling its own message recommends.
+  - policy: restrict-tenant-network-policies
+    rule: cnp-ingress-sources-must-be-constrained
+    resources:
+      - tenant-ns/allow-web-ingress-from-ingress-selector
+      - tenant-ns/allow-web-egress-k8s-prefixed-labels
+      - tenant-ns/allow-web-egress-to-kube-apiserver-selector
+    kind: CiliumNetworkPolicy
+    result: pass
+  - policy: restrict-tenant-network-policies
+    rule: cnp-egress-destinations-must-be-constrained
+    resources:
+      - tenant-ns/allow-web-ingress-from-ingress-selector
+      - tenant-ns/allow-web-egress-k8s-prefixed-labels
+      - tenant-ns/allow-web-egress-to-kube-apiserver-selector
+    kind: CiliumNetworkPolicy
+    result: pass

@@ -22,6 +22,25 @@
 #     `matchLabels`, or a `matchExpressions` entry whose operator is `In` — so
 #     `Exists`, `DoesNotExist` and `NotIn` are refused by default rather than
 #     enumerated.
+#   * A source/destination EndpointSelector whose KEYS name something the
+#     namespace boundary exists to hold out. A selector can be non-empty and
+#     use only whitelisted operators and still reach the same broad target an
+#     entity or a CIDR is refused for, because Cilium exposes three things as
+#     ordinary selectable labels: reserved identities (`reserved:world`,
+#     `reserved:host`, …), the pod namespace (`k8s:io.kubernetes.pod.namespace`
+#     and the `io.cilium.k8s.namespace.labels.` prefix — a selector is scoped
+#     to the policy's own namespace only while it carries no namespace key, so
+#     naming one overrides that scoping), and the cluster name
+#     (`io.cilium.k8s.policy.cluster`, the selector spelling of `cluster-mesh`).
+#     A key with no source prefix defaults to `any:`, which matches a label
+#     from EVERY source — reserved included — so the bare names (`world`,
+#     `host`, …) and the explicit `any:` spelling are refused alongside the
+#     `reserved:` one. A tenant label that happens to share a reserved name is
+#     written `k8s:cluster`: the prefix pins the source, so it can only ever
+#     match a pod label. Both `matchLabels` keys and `matchExpressions` keys are
+#     read, so the `In` form cannot smuggle a key the map form refuses. The
+#     carve-outs mirror the entity whitelist exactly: `reserved:kube-apiserver`
+#     on both sides, and `reserved:ingress` on the INGRESS side only.
 #   * Any entity but `kube-apiserver` — plus, on the INGRESS side only, `ingress`,
 #     the narrow identity Cilium gives traffic that has already passed the shared
 #     Gateway, which tenant-authored HTTPRoute workloads legitimately name.
@@ -99,8 +118,9 @@ metadata:
       Blocks tenant-applied CiliumNetworkPolicy resources in ksail tenant
       namespaces from dissolving the generated default-deny floor: every
       ingress source and egress destination selector must carry a real
-      constraint, only `kube-apiserver` (and `ingress` on the ingress side) may be
-      named as an entity, CIDR
+      constraint and may not name a reserved identity, another namespace or
+      another cluster by label key, only `kube-apiserver` (and `ingress` on the
+      ingress side) may be named as an entity, CIDR
       prefixes shorter than /16 are refused, and the generated `default-deny` and
       `allow-dns` names are reserved. Ordinary additive allow-lists are
       unaffected, as are policies applied by flux-system's kustomize-controller
@@ -137,8 +157,15 @@ spec:
         message: >-
           Every ingress source in a tenant CiliumNetworkPolicy must be
           constrained. A fromEndpoints selector with no matchLabels and no
-          matchExpressions allows all sources; only `kube-apiserver` and the
-          post-Gateway `ingress` identity may be named; and a CIDR prefix shorter than /16 reaches outside this
+          matchExpressions allows all sources; a selector key naming a reserved
+          identity (`reserved:host`, or its bare/`any:` spelling), another
+          namespace (`k8s:io.kubernetes.pod.namespace`,
+          `io.cilium.k8s.namespace.labels.*`) or another cluster
+          (`io.cilium.k8s.policy.cluster`) reaches the same broad source — pin a
+          tenant label with the `k8s:` prefix instead, and name the post-Gateway
+          identity as `reserved:ingress` or `fromEntities: [ingress]`; only
+          `kube-apiserver` and the post-Gateway `ingress` identity may be named
+          as an entity; and a CIDR prefix shorter than /16 reaches outside this
           namespace. A rule with only toPorts and no source at all allows every
           source on that port. Cilium unions allow rules, so one unconstrained
           source removes this namespace's isolation regardless of the generated
@@ -155,6 +182,27 @@ spec:
               - key: "{{ length(request.object.spec.ingress[].fromEndpoints[] || `[]`) }}"
                 operator: NotEquals
                 value: "{{ length(request.object.spec.ingress[].fromEndpoints[] || `[]` | [?matchLabels || length(matchExpressions[?operator == 'In'] || `[]`) > `0`]) }}"
+              # WHITELIST OF KEYS: a selector that passed the presence check
+              # above is still unconstrained when what it NAMES is a reserved
+              # identity, another namespace or another cluster — Cilium exposes
+              # all three as ordinary labels (see the header). Read every key a
+              # selector carries, matchLabels AND matchExpressions, and count
+              # the selectors naming one; that count must be zero. Keys are
+              # matched in all three source spellings — `reserved:`/`k8s:`, the
+              # explicit `any:`, and no prefix at all (which Cilium defaults to
+              # `any:`) — so the map form and the `In` form fail the same way.
+              # Carved out, mirroring the entity whitelist: `reserved:kube-apiserver`
+              # and, on this side only, `reserved:ingress` (each with its
+              # bare/`any:` spelling) — the selector forms of the two entities
+              # the next condition permits.
+              # `[.]` rather than `\.` in the pattern: this scalar is
+              # double-quoted YAML, where a backslash escape would not survive.
+              # `(matchLabels && keys(matchLabels)) || `[]`` rather than
+              # `keys(matchLabels || `{}`)`: keys() of a missing map errors,
+              # and a Kyverno condition that errors never denies.
+              - key: "{{ length(request.object.spec.ingress[].fromEndpoints[] || `[]` | [?length([(matchLabels && keys(matchLabels)) || `[]`, matchExpressions[].key || `[]`][] | [?regex_match('^(reserved:|(any:)?(unknown|host|world|world-ipv4|world-ipv6|unmanaged|health|init|remote-node|kube-apiserver|ingress|cluster|cluster-mesh|all|none)$|(k8s:|any:)?io[.]kubernetes[.]pod[.]namespace$|(k8s:|any:)?io[.]cilium[.]k8s[.](namespace[.]labels[.]|policy[.]cluster$))', @) && @ != 'reserved:kube-apiserver' && @ != 'kube-apiserver' && @ != 'any:kube-apiserver' && @ != 'reserved:ingress' && @ != 'ingress' && @ != 'any:ingress']) > `0`]) }}"
+                operator: GreaterThan
+                value: 0
               # A rule carrying ONLY toPorts and no layer-3 stanza is a fifth
               # spelling of allow-all: Cilium's own layer-4 examples pair a port
               # with a source, and a port-only ingress rule permits every source
@@ -215,8 +263,14 @@ spec:
         message: >-
           Every egress destination in a tenant CiliumNetworkPolicy must be
           constrained. A toEndpoints selector with no matchLabels and no
-          matchExpressions allows all destinations; `kube-apiserver` is the only
-          entity a tenant may name; and a CIDR prefix shorter than /16 reaches outside this
+          matchExpressions allows all destinations; a selector key naming a
+          reserved identity (`reserved:world`, or its bare/`any:` spelling),
+          another namespace (`k8s:io.kubernetes.pod.namespace`,
+          `io.cilium.k8s.namespace.labels.*`) or another cluster
+          (`io.cilium.k8s.policy.cluster`) reaches the same broad destination —
+          pin a tenant label with the `k8s:` prefix instead; `kube-apiserver` is
+          the only entity a tenant may name; and a CIDR prefix shorter than /16
+          reaches outside this
           namespace, as do a rule with only toPorts, a toFQDNs pattern of `*`,
           and a toServices entry that names no service.
           Name the destinations this workload actually needs.
@@ -226,6 +280,13 @@ spec:
               - key: "{{ length(request.object.spec.egress[].toEndpoints[] || `[]`) }}"
                 operator: NotEquals
                 value: "{{ length(request.object.spec.egress[].toEndpoints[] || `[]` | [?matchLabels || length(matchExpressions[?operator == 'In'] || `[]`) > `0`]) }}"
+              # Selector KEY whitelist — same shape and reasoning as the ingress
+              # rule. The only carve-out here is `reserved:kube-apiserver` (with
+              # its bare/`any:` spelling), mirroring the egress entity whitelist;
+              # `reserved:ingress` is a SOURCE identity and has no egress case.
+              - key: "{{ length(request.object.spec.egress[].toEndpoints[] || `[]` | [?length([(matchLabels && keys(matchLabels)) || `[]`, matchExpressions[].key || `[]`][] | [?regex_match('^(reserved:|(any:)?(unknown|host|world|world-ipv4|world-ipv6|unmanaged|health|init|remote-node|kube-apiserver|ingress|cluster|cluster-mesh|all|none)$|(k8s:|any:)?io[.]kubernetes[.]pod[.]namespace$|(k8s:|any:)?io[.]cilium[.]k8s[.](namespace[.]labels[.]|policy[.]cluster$))', @) && @ != 'reserved:kube-apiserver' && @ != 'kube-apiserver' && @ != 'any:kube-apiserver']) > `0`]) }}"
+                operator: GreaterThan
+                value: 0
               # Port-only egress rules permit every destination on that port —
               # see the ingress note above.
               - key: "{{ length(request.object.spec.egress[] || `[]`) }}"

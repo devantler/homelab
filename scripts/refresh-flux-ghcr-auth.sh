@@ -4676,6 +4676,8 @@ pause_flux_policy_parent() {
       "${IMAGE_VERIFICATION_FLUX_PARENT_KUSTOMIZATION}" \
       -o json >"${flux_policy_parent_state_file}" ||
       ! flux_policy_parent_is_owned; then
+      emit_safe_operation_output "flux-policy-parent-patch" \
+        "${flux_policy_parent_result_file}"
       echo "::error::Could not atomically pause or adopt the parent Flux policy handoff."
       return 1
     fi

@@ -24,19 +24,9 @@ spec:
   verify:
     provider: cosign
     matchOIDCIdentity:
-      # Keyless-signed by the shared publish-manifests workflow that .github's
-      # cd.yaml calls. Signing runs INSIDE that workflow, so the cosign OIDC
-      # subject is that workflow's path, NOT .github's own cd.yaml — same
-      # convention as the publish-app.yaml-signed app artifacts.
-      #
-      # The ref part accepts only a 40-hex commit SHA, so an artifact signed
-      # from any other ref — a floating @main, or a release tag — does not
-      # verify. Every caller of the shared publish workflows pins them by
-      # commit across its whole history, which is what makes the commit form
-      # sufficient on its own (#3022).
-      # cosign's keyless attestation verification rejects MULTIPLE identity
-      # entries outright ("unsupported: multiple identities are not supported at
-      # this time"), so any future alternation must stay inside one subject
-      # regex.
+      # Generated from scripts/publish-workflow-approved-revisions.tsv by
+      # scripts/write-publish-workflow-matchers.sh. Accept the deployed artifact
+      # signer and this consumer's current publish-workflow pin in one identity.
+      # Regeneration updates the pair and the approved set in the same PR.
       - issuer: '^https://token\.actions\.githubusercontent\.com$'
-        subject: '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-manifests\.yaml@[0-9a-f]{40}$'
+        subject: '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-manifests\.yaml@(b3783a5148b844b3f1f4011cdc84871ad66348c1|3ee6cb9bbd616c2a38779be41a5e41f3e77282d0)$'

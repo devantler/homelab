@@ -28,6 +28,11 @@ readonly workflow="${root_dir}/.github/workflows/regenerate-publish-workflow-app
 readonly generator='scripts/generate-publish-workflow-approved-revisions.sh'
 readonly guard='scripts/guard-publish-workflow-approved-revisions.sh'
 readonly data_file='scripts/publish-workflow-approved-revisions.tsv'
+readonly generated_paths='scripts/publish-workflow-approved-revisions.tsv
+k8s/bases/apps/github-config/oci-repository.yaml
+k8s/bases/apps/ascoachingogvaner/oci-repository.yaml
+k8s/providers/hetzner/apps/aws/oci-repository.yaml
+k8s/bases/apps/wedding-app/oci-repository.yaml'
 readonly endpoint_script='scripts/use-prod-stable-api-endpoint.sh'
 
 work_dir="$(mktemp -d)"
@@ -138,7 +143,7 @@ check() {
     *'${{'*) printf 'VIOLATION A7: the checkout ref is interpolated ("%s")\n' "${coref}"; return 1 ;;
   esac
 
-  # A8 — one open pull request at a time: a FIXED branch, a draft, signed, only the data file.
+  # A8 — one open pull request: a fixed branch, a draft, signed, exactly the set and matchers.
   [ -n "${pr_idx}" ] || { printf 'VIOLATION A8: no create-pull-request step\n'; return 1; }
   local branch
   branch="$(q "$f" ".jobs.regenerate.steps[${pr_idx}].with.branch")"
@@ -150,8 +155,8 @@ check() {
     { printf 'VIOLATION A8: the pull request is not opened as a draft\n'; return 1; }
   [ "$(q "$f" ".jobs.regenerate.steps[${pr_idx}].with.sign-commits")" = 'true' ] ||
     { printf 'VIOLATION A8: the pull-request commit is not API-signed\n'; return 1; }
-  [ "$(q "$f" ".jobs.regenerate.steps[${pr_idx}].with.add-paths")" = "${data_file}" ] ||
-    { printf 'VIOLATION A8: add-paths is not exactly %s\n' "${data_file}"; return 1; }
+  [ "$(q "$f" ".jobs.regenerate.steps[${pr_idx}].with.add-paths")" = "${generated_paths}" ] ||
+    { printf 'VIOLATION A8: add-paths must contain exactly the set and four consumer manifests\n'; return 1; }
   case "$(q "$f" ".jobs.regenerate.steps[${pr_idx}].with.token")" in
     *'steps.app-token.outputs.token'*) ;;
     *) printf 'VIOLATION A8: the pull request is not opened with the App token\n'; return 1 ;;
@@ -272,10 +277,32 @@ check() {
     *) printf 'VIOLATION A14: the pull-request step is conditional ("%s"), so a set that returns to baseline leaves a stale pull request open\n' "$(q "$f" ".jobs.regenerate.steps[${pr_idx}].if")"; return 1 ;;
   esac
 
+  # A15 — update the matchers before change detection and enforced validation.
+  local writer_idx moved_idx
+  writer_idx="$(yq -r '.jobs.regenerate.steps | to_entries | map(select(.value.run // "" | contains("write-publish-workflow-matchers.sh"))) | .[0].key // ""' "$f")"
+  moved_idx="$(yq -r '.jobs.regenerate.steps | to_entries | map(select(.value.id == "moved")) | .[0].key // ""' "$f")"
+  if ! { [ -n "${writer_idx}" ] && [ -n "${moved_idx}" ] &&
+    [ "${gen_idx}" -lt "${writer_idx}" ] && [ "${writer_idx}" -lt "${moved_idx}" ] &&
+    [ "${moved_idx}" -lt "${guard_idx}" ]; }; then
+    printf 'VIOLATION A15: require generator < writer < change detection < guard\n'; return 1
+  fi
+  [ "$(q "$f" ".jobs.regenerate.steps[${writer_idx}].if")" = '' ] ||
+    { printf 'VIOLATION A15: the matcher writer must run unconditionally after generation\n'; return 1; }
+  [ "$(q "$f" ".jobs.regenerate.steps[${guard_idx}].env.APPROVED_REVISIONS_ENFORCE")" = '1' ] ||
+    { printf 'VIOLATION A15: the regeneration guard must enforce exact approved revisions\n'; return 1; }
+
   printf 'ok\n'
 }
 
 # ── Control: the committed workflow passes ────────────────────────────────────────────────
+# Bind the workflow's explicit path fence to the consumer manifests the writer discovers.
+# A relocated consumer must update the automation boundary in the same change.
+discovered_paths="$(bash -c 'source "$1"; printf "%s" "$observed" | cut -f2' _ \
+  "${root_dir}/scripts/publish-workflow-approved-revisions.lib.sh")"
+actual_paths="$(printf '%s\n%s\n' "${data_file}" "${discovered_paths}" | sort)"
+[ "$(printf '%s\n' "${generated_paths}" | sort)" = "$actual_paths" ] ||
+  fail 'the regeneration path fence does not match the discovered consumer manifests'
+
 out="$(check "${workflow}")" || fail "the committed workflow violates its own contract: ${out}"
 [ "${out}" = 'ok' ] || fail "unexpected check output on the committed workflow: ${out}"
 
@@ -340,4 +367,52 @@ ablate A10 'a consumer added to the WRITE token' '(.jobs.regenerate.steps[] | se
 ablate A10 'a consumer dropped from the READ token' '(.jobs.regenerate.steps[] | select(.id == "consumer-token") | .with.repositories) = ".github\naws\nwedding-app\n"'
 ablate A14 'pull-request step re-gated on moved' '(.jobs.regenerate.steps[] | select(.uses // "" | contains("create-pull-request")) | .if) = "steps.moved.outputs.moved == '"'"'true'"'"'"'
 
-printf 'test-regenerate-publish-workflow-approved-revisions: 1 control + 39 ablations passed\n'
+ablate A15 'writer removed' 'del(.jobs.regenerate.steps[] | select(.run // "" | contains("write-publish-workflow-matchers.sh")))'
+ablate A15 'writer moved after guard' '.jobs.regenerate.steps = ([.jobs.regenerate.steps[] | select((.run // "" | contains("write-publish-workflow-matchers.sh")) | not)] + [.jobs.regenerate.steps[] | select(.run // "" | contains("write-publish-workflow-matchers.sh"))])'
+ablate A15 'writer gated off' '(.jobs.regenerate.steps[] | select(.run // "" | contains("write-publish-workflow-matchers.sh")) | .if) = "false"'
+ablate A15 'guard enforcement off' '(.jobs.regenerate.steps[] | select(.run // "" | contains("guard-publish-workflow-approved-revisions.sh")) | .env.APPROVED_REVISIONS_ENFORCE) = "0"'
+ablate A8 'consumer matcher omitted' '(.jobs.regenerate.steps[] | select(.uses // "" | contains("create-pull-request")) | .with.add-paths) = "scripts/publish-workflow-approved-revisions.tsv"'
+ablate A9 'writer failure ignored' '(.jobs.regenerate.steps[] | select(.run // "" | contains("write-publish-workflow-matchers.sh")) | .continue-on-error) = true'
+
+# Execute the actual change-detection step in a disposable checkout. This proves
+# that the PR boundary handles each matcher, staged changes, and unrelated paths.
+detection="${work_dir}/detect.sh"
+yq -r '.jobs.regenerate.steps[] | select(.id == "moved") | .run' "${workflow}" > "${detection}"
+checkout="${work_dir}/checkout"
+mkdir -p "${checkout}"
+(
+  cd "${checkout}"
+  git init -q
+  while IFS= read -r path; do
+    mkdir -p "$(dirname "$path")"
+    printf 'original\n' > "$path"
+    git add -- "$path"
+  done <<< "${generated_paths}"
+  git -c user.name=Test -c user.email=test@example.invalid -c commit.gpgsign=false commit -qm fixture
+  export GITHUB_OUTPUT="${work_dir}/outputs"
+  bash "${detection}" > "${work_dir}/detection.log"
+  grep -qx 'moved=false' "$GITHUB_OUTPUT" || fail 'unchanged checkout must report false'
+  while IFS= read -r path; do
+    : > "$GITHUB_OUTPUT"
+    printf 'updated\n' >> "$path"
+    bash "${detection}" > "${work_dir}/detection.log"
+    grep -qx 'moved=true' "$GITHUB_OUTPUT" || fail "allowed update was not detected: $path"
+    git add -- "$path"
+    : > "$GITHUB_OUTPUT"
+    bash "${detection}" > "${work_dir}/detection.log"
+    grep -qx 'moved=true' "$GITHUB_OUTPUT" || fail "staged update was not detected: $path"
+    git restore --staged --worktree -- "$path"
+  done <<< "${generated_paths}"
+  mkdir -p k8s/bases/apps/other
+  printf 'unrelated\n' > k8s/bases/apps/other/oci-repository.yaml
+  if bash "${detection}" > "${work_dir}/detection.log" 2>&1; then
+    fail 'unrelated untracked manifest was allowed'
+  fi
+  grep -Fq 'outside the approved set and matchers' "${work_dir}/detection.log" || fail 'unrelated-file refusal was not the expected cause'
+  git add -- k8s/bases/apps/other/oci-repository.yaml
+  if bash "${detection}" > "${work_dir}/detection.log" 2>&1; then
+    fail 'unrelated staged manifest was allowed'
+  fi
+)
+
+printf 'test-regenerate-publish-workflow-approved-revisions: 1 control + 45 ablations + change-detection cases passed\n'

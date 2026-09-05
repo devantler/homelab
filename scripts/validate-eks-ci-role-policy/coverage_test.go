@@ -46,16 +46,21 @@ type workflow struct {
 // duplicate this file's parsing logic and trip the repository's duplication
 // gate for no benefit.
 type job struct {
-	Steps []step `yaml:"steps"`
+	Steps           []step `yaml:"steps"`
+	Needs           any    `yaml:"needs"`
+	If              string `yaml:"if"`
+	ContinueOnError any    `yaml:"continue-on-error"`
 }
 
 type step struct {
-	Run            string         `yaml:"run"`
-	Uses           string         `yaml:"uses"`
-	If             string         `yaml:"if"`
-	Shell          string         `yaml:"shell"`
-	TimeoutMinutes templatableInt `yaml:"timeout-minutes"`
-	With           stepInputs     `yaml:"with"`
+	Run             string            `yaml:"run"`
+	Uses            string            `yaml:"uses"`
+	If              string            `yaml:"if"`
+	Shell           string            `yaml:"shell"`
+	TimeoutMinutes  templatableInt    `yaml:"timeout-minutes"`
+	With            stepInputs        `yaml:"with"`
+	Env             map[string]string `yaml:"env"`
+	ContinueOnError any               `yaml:"continue-on-error"`
 }
 
 // templatableInt decodes an Actions integer field that MAY be written as an

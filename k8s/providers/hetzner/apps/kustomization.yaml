@@ -40,6 +40,9 @@ components:
   # bases/components/helmrelease-drift-detection.
   - ../../../bases/components/helmrelease-drift-detection
   - ../../../bases/components/helmrelease-flux-defaults
+  # Default-off stateful pilot. Activate and verify in a separate PR using
+  # the component README; rollback removes this one reference, retaining data.
+  # - actual-budget/components/user-namespaces
 # Strategic-merge patch files self-identify (apiVersion/kind/name/namespace), so
 # they need only a path — no redundant `target:` selector. JSON6902 patches have
 # no embedded identity and keep an explicit target.
@@ -66,7 +69,7 @@ patches:
       name: umami-db
       namespace: umami
     path: umami/patches/grant-pg-monitor.yaml
-  # User namespaces (hostUsers: false) — prod-only and default-off. These
+  # User namespaces (hostUsers: false) — enabled for the proven prod apps. These
   # namespace-label patches opt proven-stateless workloads into the
   # add-security-context Kyverno rule. Local/CI and stateful workloads stay
   # out; in mixed namespaces (umami, backstage) the rule itself excludes the
