@@ -1245,6 +1245,70 @@ spec:
     - fromCIDRSet:
         - cidrGroupRef: platform-ingress-sources
 ---
+---
+# ── DENY cases: a CIDRSet entry carrying BOTH a literal cidr AND a group ─────
+# Cilium applies every populated source in a CIDRSet entry, so a harmless
+# public `cidr` beside a `cidrGroupRef` — or beside an empty
+# `cidrGroupSelector`, which names every group — still grants the group's
+# ranges. A whitelist that only counts entries WITH a cidr admits these: the
+# entry contributes one item to both sides of the count. Each was measured
+# ADMITTED before the group fields were refused outright (Codex P2, #3616).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-cidrset-group-ref-beside-cidr-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toCIDRSet:
+        - cidr: 203.0.113.0/24
+          cidrGroupRef: platform-egress-targets
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-cidrset-group-selector-beside-cidr-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toCIDRSet:
+        - cidr: 203.0.113.0/24
+          cidrGroupSelector: {}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-cidrset-group-ref-beside-cidr-ingress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  ingress:
+    - fromCIDRSet:
+        - cidr: 203.0.113.0/24
+          cidrGroupRef: platform-ingress-sources
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-cidrset-group-selector-beside-cidr-ingress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  ingress:
+    - fromCIDRSet:
+        - cidr: 203.0.113.0/24
+          cidrGroupSelector: {}
+---
 # ── ADMIT cases: public CIDRs, including the deny-list's exact neighbours ────
 # OK: a public IPv6 destination.
 apiVersion: cilium.io/v2

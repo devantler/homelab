@@ -225,6 +225,8 @@ results:
       - tenant-ns/attack-cidr-reserved-beside-legitimate-egress
       - tenant-ns/attack-cidrset-group-ref-egress
       - tenant-ns/attack-cidrset-group-selector-egress
+      - tenant-ns/attack-cidrset-group-ref-beside-cidr-egress
+      - tenant-ns/attack-cidrset-group-selector-beside-cidr-egress
     kind: CiliumNetworkPolicy
     result: fail
   - policy: restrict-tenant-network-policies
@@ -233,6 +235,8 @@ results:
       - tenant-ns/attack-cidr-node-private-network-ingress
       - tenant-ns/attack-cidr-link-local-v6-ingress
       - tenant-ns/attack-cidrset-group-ref-ingress
+      - tenant-ns/attack-cidrset-group-ref-beside-cidr-ingress
+      - tenant-ns/attack-cidrset-group-selector-beside-cidr-ingress
     kind: CiliumNetworkPolicy
     result: fail
   # CONTROL: public CIDRs stay admitted by BOTH rules — including the /16s
