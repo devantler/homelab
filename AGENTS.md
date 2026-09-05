@@ -237,6 +237,17 @@ revision on each existing node only after an exact image pull succeeds.
 
 **Required GitHub Variables:** none.
 
+### Production supply-chain tools
+
+The shared publication action installs Cosign and Syft through
+`.github/scripts/setup-supply-chain-tools.sh`. Both Linux x86_64 release assets must match their
+repository-local SHA-256 pins before either tool is installed or executed. Keep each version and
+digest together in the same PR, taking the digest from that release's published checksum manifest;
+a version-only Renovate update fails verification. Do not replace this path with installer actions.
+Run `bash scripts/tests/test-setup-supply-chain-tools.sh` and `go test ./scripts/validate-dr-signing`
+when changing the installer or publication action. CI also runs the verified tools and generates a
+CycloneDX SBOM without production credentials.
+
 ## Working with Secrets
 
 This platform uses SOPS with Age encryption for all secrets. **Never decrypt a secret into a

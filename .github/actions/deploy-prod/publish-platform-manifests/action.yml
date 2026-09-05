@@ -41,6 +41,11 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: 🔐 Install verified supply-chain tools
+      id: setup_supply_chain_tools
+      shell: bash
+      run: .github/scripts/setup-supply-chain-tools.sh
+
     - name: 🏷️ Create unique staging reference
       id: staging_reference
       shell: bash
@@ -76,14 +81,6 @@ runs:
           > ~/.docker/config.json
         chmod 600 ~/.docker/config.json
 
-    - name: ⚙️ Install cosign
-      env:
-        # renovate: datasource=github-releases depName=sigstore/cosign extractVersion=^v(?<version>.+)$
-        COSIGN_VERSION: "3.1.3"
-      uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-      with:
-        cosign-release: "v${{ env.COSIGN_VERSION }}"
-
     - name: 🔎 Resolve the staged manifest digest
       id: resolve_staging
       shell: bash
@@ -110,16 +107,12 @@ runs:
 
     - name: 📋 Generate SBOM (CycloneDX)
       id: generate_sbom
+      shell: bash
       env:
-        # renovate: datasource=github-releases depName=anchore/syft extractVersion=^v(?<version>.+)$
-        SYFT_VERSION: "1.51.1"
-      uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
-      with:
-        image: ghcr.io/devantler-tech/platform/manifests@${{ steps.resolve_staging.outputs.digest }}
-        format: cyclonedx-json
-        output-file: sbom.cdx.json
-        syft-version: "v${{ env.SYFT_VERSION }}"
-        upload-artifact: false
+        STAGING_DIGEST: ${{ steps.resolve_staging.outputs.digest }}
+      run: |
+        set -euo pipefail
+        syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json
 
     - name: 🪪 Attest SBOM
       id: attest_sbom

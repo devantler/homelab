@@ -1110,7 +1110,7 @@ func TestPublicationActionRejectsEachAblation(t *testing.T) {
 		},
 		{
 			name:    "without the environment bridge an expression reaches shell code",
-			old:     "STAGING_OCI_REF: ${{ steps.staging_reference.outputs.oci_ref }}\n",
+			old:     "        STAGING_OCI_REF: ${{ steps.staging_reference.outputs.oci_ref }}\n",
 			wantErr: "environment bridge",
 		},
 		{
@@ -1124,6 +1124,24 @@ func TestPublicationActionRejectsEachAblation(t *testing.T) {
 			old:     `ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}`,
 			new:     `ghcr.io/devantler-tech/platform/manifests:latest`,
 			wantErr: "resolved staging digest",
+		},
+		{
+			name:    "without SBOM generation the attestation has no inventory",
+			old:     "syft scan ",
+			new:     "echo skip-sbom ",
+			wantErr: "missing SBOM generation",
+		},
+		{
+			name:    "SBOM generation must inspect the same immutable digest",
+			old:     `registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}`,
+			new:     `registry:ghcr.io/devantler-tech/platform/manifests:latest`,
+			wantErr: "resolved staging digest",
+		},
+		{
+			name:    "the SBOM output must match the attestation input",
+			old:     "--output cyclonedx-json=sbom.cdx.json",
+			new:     "--output spdx-json=other.json",
+			wantErr: "CycloneDX SBOM",
 		},
 		{
 			name:    "without an SBOM attestation latest lacks required evidence",
@@ -1166,6 +1184,20 @@ func TestPublicationActionRejectsEachAblation(t *testing.T) {
 	}
 }
 
+func TestPublicationActionRequiresVerifiedToolInstaller(t *testing.T) {
+	t.Parallel()
+
+	publisher := repoFile(t, ".github/actions/deploy-prod/publish-platform-manifests/action.yml")
+	// The absent installer is also the baseline defect: the publisher delegates
+	// downloads to actions that do not enforce a repository-local binary digest.
+	withoutInstaller := strings.ReplaceAll(publisher,
+		"run: .github/scripts/setup-supply-chain-tools.sh", "run: echo no-verified-tools")
+	err := validatePublicationAction(withoutInstaller)
+	if err == nil || !strings.Contains(err.Error(), "verified supply-chain tools") {
+		t.Fatalf("publisher without verified supply-chain tools was accepted: %v", err)
+	}
+}
+
 // TestPublicationActionRejectsSuppressedPublicationSteps pins the half of the
 // contract that ordering cannot see.
 //
@@ -1178,6 +1210,7 @@ func TestPublicationActionRejectsEachAblation(t *testing.T) {
 // `promote_latest` moves the mutable tag onto bytes carrying no usable
 // evidence. Position proves a step is reached; it says nothing about whether
 // its failure stops the run.
+
 func TestPublicationActionRejectsSuppressedPublicationSteps(t *testing.T) {
 	t.Parallel()
 
@@ -1243,11 +1276,22 @@ func TestPublicationActionRejectsPromotionBeforeEvidence(t *testing.T) {
 	t.Parallel()
 
 	publisher := repoFile(t, ".github/actions/deploy-prod/publish-platform-manifests/action.yml")
-	const provenance = "      uses: actions/attest-build-provenance@"
-	const promotion = "        docker buildx imagetools create --prefer-index=false"
-	publisher = strings.ReplaceAll(publisher, provenance, "      uses: actions/temporary-placeholder@")
-	publisher = strings.ReplaceAll(publisher, promotion, "        uses: actions/attest-build-provenance@")
-	publisher = strings.ReplaceAll(publisher, "      uses: actions/temporary-placeholder@", "      run: docker buildx imagetools create --prefer-index=false")
+	// Move the whole promotion step in front of the provenance step, so the
+	// parsed chain — not a line of text — carries the ordering defect.
+	const provenance = "    - name: 🪪 Attest build provenance"
+	const promotion = "    - name: 🚀 Promote the evidenced digest to latest"
+	before, promoteStep, found := strings.Cut(publisher, promotion)
+	if !found || strings.Contains(promoteStep, "\n    - ") {
+		t.Fatalf("the promotion step must be the last step for this reordering to hold")
+	}
+	head, tail, found := strings.Cut(before, provenance)
+	if !found {
+		t.Fatalf("the provenance step is missing from the shipped publisher")
+	}
+	publisher = head + promotion + strings.TrimRight(promoteStep, "\n") + "\n\n" + provenance + tail
+	if _, err := decodeWorkflow(publisher); err != nil {
+		t.Fatalf("reordered publisher must stay valid YAML: %v", err)
+	}
 
 	err := validatePublicationAction(publisher)
 	if err == nil || !strings.Contains(err.Error(), "before promotion") {
@@ -1703,6 +1747,134 @@ func TestMergeQueueContractGateIsEnforced(t *testing.T) {
 			}
 			if !strings.Contains(err.Error(), arm.reason) {
 				t.Fatalf("refused for the wrong reason: want %q in %q", arm.reason, err.Error())
+			}
+		})
+	}
+}
+
+// TestPublicationActionIgnoresNonExecutableText pins the half of the contract
+// text scanning could not see: a required command that appears only in a YAML
+// comment or a step name is documentation, and the runner executes none of it.
+// Each case keeps the literal in the file and removes it from the one surface
+// that runs, so a matcher reading raw lines still finds it and passes.
+func TestPublicationActionIgnoresNonExecutableText(t *testing.T) {
+	t.Parallel()
+
+	publisher := repoFile(t, ".github/actions/deploy-prod/publish-platform-manifests/action.yml")
+	cases := []struct {
+		name    string
+		old     string
+		new     string
+		wantErr string
+	}{
+		{
+			name:    "the installer named only in a comment installs nothing",
+			old:     "run: .github/scripts/setup-supply-chain-tools.sh",
+			new:     "run: echo no-verified-tools # run: .github/scripts/setup-supply-chain-tools.sh",
+			wantErr: "verified supply-chain tools",
+		},
+		{
+			name:    "the installer named only by a step name installs nothing",
+			old:     "run: .github/scripts/setup-supply-chain-tools.sh",
+			new:     "run: echo no-verified-tools\n      # .github/scripts/setup-supply-chain-tools.sh",
+			wantErr: "verified supply-chain tools",
+		},
+		{
+			name: "an SBOM command quoted in a step name scans nothing",
+			old: "- name: 📋 Generate SBOM (CycloneDX)\n" +
+				"      id: generate_sbom\n" +
+				"      shell: bash\n" +
+				"      env:\n" +
+				"        STAGING_DIGEST: ${{ steps.resolve_staging.outputs.digest }}\n" +
+				"      run: |\n" +
+				"        set -euo pipefail\n" +
+				`        syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
+			new: `- name: 'syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json'` + "\n" +
+				"      id: generate_sbom\n" +
+				"      shell: bash\n" +
+				"      env:\n" +
+				"        STAGING_DIGEST: ${{ steps.resolve_staging.outputs.digest }}\n" +
+				"      run: |\n" +
+				"        set -euo pipefail\n" +
+				"        echo skip-sbom",
+			wantErr: "missing SBOM generation",
+		},
+		{
+			name: "a signing command quoted in a comment signs nothing",
+			old:  `        cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			new: "        echo skip-signing\n" +
+				`        # cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			wantErr: "without signing",
+		},
+		{
+			name:    "a signing command in an inline comment signs nothing",
+			old:     `        cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			new:     `        : # cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			wantErr: "sign the resolved staging digest",
+		},
+		{
+			name:    "an echoed signing command signs nothing",
+			old:     `        cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			new:     `        echo 'cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"'`,
+			wantErr: "sign the resolved staging digest",
+		},
+		{
+			name:    "an SBOM command in an inline comment scans nothing",
+			old:     `        syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
+			new:     `        : # syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
+			wantErr: "generate the CycloneDX SBOM",
+		},
+		{
+			name:    "an echoed SBOM command scans nothing",
+			old:     `        syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
+			new:     `        echo 'syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json'`,
+			wantErr: "generate the CycloneDX SBOM",
+		},
+		{
+			name:    "the installer printed by a heredoc installs nothing",
+			old:     "run: .github/scripts/setup-supply-chain-tools.sh",
+			new:     "run: |\n        cat <<'EOF'\n        .github/scripts/setup-supply-chain-tools.sh\n        EOF",
+			wantErr: "verified supply-chain tools",
+		},
+		{
+			name:    "a signing command printed by a heredoc signs nothing",
+			old:     `        cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			new:     "        cat <<'EOF'\n" + `        cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"` + "\n        EOF",
+			wantErr: "sign the resolved staging digest",
+		},
+		{
+			name:    "an SBOM command printed by a heredoc scans nothing",
+			old:     `        syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
+			new:     "        cat <<'EOF'\n" + `        syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json` + "\n        EOF",
+			wantErr: "generate the CycloneDX SBOM",
+		},
+		{
+			name:    "an early exit prevents signing",
+			old:     `        cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			new:     "        exit 0\n" + `        cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+			wantErr: "sign the resolved staging digest",
+		},
+		{
+			name:    "the staging-reference bridge on another step is not the push step's bridge",
+			old:     "        STAGING_OCI_REF: ${{ steps.staging_reference.outputs.oci_ref }}\n      run: ./scripts/run-ksail-prod-with-pull-auth.sh workload push",
+			new:     "        STAGING_OCI_REF_UNUSED: ${{ steps.staging_reference.outputs.oci_ref }}\n      run: ./scripts/run-ksail-prod-with-pull-auth.sh workload push",
+			wantErr: "environment bridge",
+		},
+	}
+
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			ablated := strings.Replace(publisher, testCase.old, testCase.new, 1)
+			if ablated == publisher {
+				t.Fatalf("ablation changed nothing — the control does not target a real line")
+			}
+			if _, err := decodeWorkflow(ablated); err != nil {
+				t.Fatalf("ablation must stay valid YAML so the parser, not a syntax error, decides: %v", err)
+			}
+			err := validatePublicationAction(ablated)
+			if err == nil || !strings.Contains(err.Error(), testCase.wantErr) {
+				t.Fatalf("wrong result: got %v, want error mentioning %q", err, testCase.wantErr)
 			}
 		})
 	}
