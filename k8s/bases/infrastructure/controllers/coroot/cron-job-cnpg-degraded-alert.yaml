@@ -148,6 +148,18 @@ spec:
                     echo "ERROR: webhook URL contains control characters" >&2
                     exit 1
                   fi
+                  # The payload carries the webhook token in its path, and the
+                  # network policy allows TCP/443 by port, not by scheme — an
+                  # `http://…:443` value would send it in the clear. Only an
+                  # https:// destination is delivered to; the placeholder below
+                  # is https too, so local/CI stays inert by the same rule.
+                  case "$WEBHOOK_URL" in
+                    https://*) ;;
+                    *)
+                      echo "ERROR: webhook URL must use https://" >&2
+                      exit 1
+                      ;;
+                  esac
 
                   # A non-2xx or unparseable response must NOT be reported as
                   # "no degraded clusters" — that is the silent-zero failure
