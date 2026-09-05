@@ -357,9 +357,9 @@ type publicationStep struct {
 	with map[string]any
 }
 
-// executableRunLines yields the lines of a run block the shell would execute:
-// a line whose first non-blank character is `#` is a shell comment and is
-// skipped, so quoting a required command in one does not satisfy the contract.
+// executableRunLines removes full-line shell comments from a run block.
+// It does not parse shell syntax; callers that require a command to execute
+// must validate the entire block with runsExactly instead of matching a line.
 func executableRunLines(run string) []string {
 	lines := make([]string, 0)
 	for _, line := range strings.Split(run, "\n") {
@@ -383,15 +383,22 @@ func (s publicationStep) runsLineContaining(want string) bool {
 	return false
 }
 
-// runsExactly reports whether one line of the step's run block is exactly
-// `want` once trimmed — the whole command, not a fragment of a longer one.
+// runsExactly accepts only the required command, optional strict shell setup,
+// and blank/comment lines. Rejecting every other line prevents heredocs,
+// functions, and early exits from leaving a matching command unexecuted.
 func (s publicationStep) runsExactly(want string) bool {
+	found := false
 	for _, line := range executableRunLines(s.run) {
-		if strings.TrimSpace(line) == want {
-			return true
+		switch strings.TrimSpace(line) {
+		case "", "set -euo pipefail":
+			continue
+		case want:
+			found = true
+		default:
+			return false
 		}
 	}
-	return false
+	return found
 }
 
 // usesActionWithPrefix reports whether the step invokes an action whose
@@ -406,10 +413,10 @@ func (s publicationStep) usesActionWithPrefix(want string) bool {
 //
 // 🔴 THE CONTRACT IS CHECKED AGAINST PARSED STEPS, NEVER AGAINST THE FILE'S
 // TEXT. The scanning version matched raw lines, so `# run: syft scan …` in a
-// comment, a step *named* after the installer command, or a heredoc quoting the
-// cosign line each satisfied the check while the runner executed nothing of the
-// sort. Reading `run`/`uses`/`env`/`with` is the same discipline the deploy
-// action already gets from decodeWorkflow, applied to the publisher itself.
+// comment or a step *named* after the installer command satisfied the check
+// while the runner executed nothing of the sort. Reading `run`/`uses`/`env`/`with`
+// separates those surfaces; runsExactly also constrains critical tool commands
+// so quoted shell payloads cannot stand in for their execution.
 func parsePublicationSteps(action string) ([]publicationStep, error) {
 	document, err := decodeWorkflow(action)
 	if err != nil {
@@ -523,7 +530,7 @@ func validatePublicationAction(action string) error {
 	if !ok {
 		return errors.New("publication action would promote the artifact without signing it")
 	}
-	if !steps[signIdx].runsLineContaining(
+	if !steps[signIdx].runsExactly(
 		`cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
 	) {
 		return errors.New(
@@ -536,7 +543,7 @@ func validatePublicationAction(action string) error {
 	if !ok {
 		return errors.New("publication action is missing SBOM generation")
 	}
-	if !steps[sbomIdx].runsLineContaining(
+	if !steps[sbomIdx].runsExactly(
 		`syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
 	) {
 		return errors.New("publication action must generate the CycloneDX SBOM from the resolved staging digest")
