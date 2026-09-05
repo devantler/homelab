@@ -2919,9 +2919,9 @@ func cloneStringAnyMap(source map[string]any) map[string]any {
 	return clone
 }
 
-// authorizationSurfaceDocument removes only an immutable Helm dependency pin
-// from the approval projection. HelmRelease identity, chart/source identity,
-// values, post-renderers, substitutions, and reconciliation policy stay exact.
+// authorizationSurfaceDocument normalizes immutable Helm dependency pins and
+// strict signer subsets handled by the required approved-revisions guard.
+// Identity, source, values, post-renderers, substitutions and policy stay exact.
 // The required manifest job separately Helm-renders and security-scans the
 // selected chart version, so a routine Renovate pin does not require a manual
 // refresh of an otherwise unchanged authorization fingerprint.
@@ -2929,6 +2929,9 @@ func authorizationSurfaceDocument(
 	identity resourceIdentity,
 	document map[string]any,
 ) map[string]any {
+	if identity.kind == "OCIRepository" {
+		return publishMatcherSurfaceDocument(identity, document)
+	}
 	if !strings.HasPrefix(identity.apiVersion, "helm.toolkit.fluxcd.io/") || identity.kind != "HelmRelease" {
 		return document
 	}

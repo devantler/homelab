@@ -18,7 +18,7 @@ spec:
   chart:
     spec:
       chart: ksail-operator
-      version: 7.180.15
+      version: 7.181.0
       sourceRef:
         kind: HelmRepository
         name: ksail-operator

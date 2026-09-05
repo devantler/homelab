@@ -1,0 +1,36 @@
+# Enable only for the separately reviewed stateful pilot (platform#1807).
+# Append a renderer so the existing strategy, probes and OIDC patches survive.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+patches:
+  - target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: actual-budget
+      namespace: actual-budget
+    patch: |
+      - op: add
+        path: /spec/postRenderers/-
+        value:
+          kustomize:
+            patches:
+              - target:
+                  group: apps
+                  version: v1
+                  kind: Deployment
+                  name: actual-budget-actualbudget
+                  # The chart omits metadata.namespace; Helm scopes its release.
+                patch: |
+                  - op: add
+                    path: /spec/template/spec/hostUsers
+                    value: false
+  # Pair the authored pod setting with the existing admission enforce rule.
+  - target:
+      version: v1
+      kind: Namespace
+      name: actual-budget
+    patch: |
+      - op: add
+        path: /metadata/labels/pod-security.devantler.tech~1user-namespaces
+        value: enabled

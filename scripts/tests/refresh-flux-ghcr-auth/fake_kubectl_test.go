@@ -504,6 +504,10 @@ func fakeKubectlPatchFluxPolicyParent(args []string, namespace, patchFile string
 	}
 	ownerPath := "/metadata/annotations/platform.devantler.tech~1ghcr-policy-parent-owner"
 	if hasPatchOperation(patch, "add", "/spec/suspend", true) {
+		if rejection := os.Getenv("FAKE_FLUX_POLICY_PARENT_PATCH_REJECTION"); rejection != "" {
+			appendEnvFile("OPERATION_LOG", "flux-policy-parent-patch-rejected\n")
+			return commandFailure(56, "%s", rejection)
+		}
 		owner := patchValueString(patch, "add", ownerPath)
 		if !hasPatchOperation(patch, "test", "/metadata/resourceVersion", currentResourceVersion) ||
 			owner == "" ||

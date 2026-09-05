@@ -109,6 +109,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: 🔐 Enforce approved publication signers
+        env:
+          APPROVED_REVISIONS_ENFORCE: '1'
+        run: ./scripts/guard-publish-workflow-approved-revisions.sh
+
       - name: 🛡️ Protect the nested RGD deployment gate
         run: |
           shellcheck scripts/tests/test-rgd-template-static-scan-wiring.sh
@@ -168,7 +173,7 @@ jobs:
         # deploy-prod action; renovate keeps the pin current in all places.
         env:
           # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
-          KSAIL_VERSION: "7.180.15"
+          KSAIL_VERSION: "7.181.0"
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           .github/scripts/setup-ksail.sh

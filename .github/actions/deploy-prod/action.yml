@@ -45,6 +45,14 @@ inputs:
 runs:
   using: composite
   steps:
+    # The action and policy come from the same checkout. Recovery therefore
+    # restores the policy of main even during the first narrowing rollout.
+    - name: 🔐 Enforce approved publication signers
+      shell: bash
+      env:
+        APPROVED_REVISIONS_ENFORCE: '1'
+      run: ./scripts/guard-publish-workflow-approved-revisions.sh
+
     - name: ⚙️ Setup KSail
       # Install the KSail CLI from the release tarball and verify the
       # downloaded asset against GitHub's published release checksum before
@@ -54,7 +62,7 @@ runs:
       shell: bash
       env:
         # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
-        KSAIL_VERSION: "7.180.15"
+        KSAIL_VERSION: "7.181.0"
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         .github/scripts/setup-ksail.sh

@@ -443,15 +443,16 @@ grep -Fq 'scripts/guard-publish-workflow-approved-revisions.sh' "$ci" ||
   fail 'ci.yaml does not run guard-publish-workflow-approved-revisions.sh'
 grep -Fq 'scripts/tests/test-publish-workflow-approved-revisions-guard.sh' "$ci" ||
   fail 'ci.yaml does not run test-publish-workflow-approved-revisions-guard.sh'
-# The switch must stay OFF in CI until the narrowing lands in the same change (#3308).
-if grep -Eq 'APPROVED_REVISIONS_ENFORCE(:[[:space:]]*|=)["'"'"']?1' "$ci"; then
-  fail 'ci.yaml turns APPROVED_REVISIONS_ENFORCE on; the switch flips only with the matcher narrowing'
+# CI must apply enforcement to the step that executes the guard, not an unrelated job.
+enforce="$(yq -r '.jobs[].steps[] | select(.run // "" | contains("./scripts/guard-publish-workflow-approved-revisions.sh")) | .env.APPROVED_REVISIONS_ENFORCE' "$ci")"
+if [ -z "$enforce" ] || printf '%s\n' "$enforce" | grep -qv '^1$'; then
+  fail 'ci.yaml must enforce the approved set in every guard step'
 fi
-[ "$failures" -eq 0 ] && pass 'wiring: ci.yaml runs the guard and its test with the switch off'
+[ "$failures" -eq 0 ] && pass 'wiring: ci.yaml enforces the approved set'
 
-# ── the real tree, switch off: the committed set and the live matchers agree ────────────────
-if out="$(bash "$GUARD" 2>&1)"; then
-  pass 'real tree: the committed approved set agrees with the live per-consumer matchers (switch off)'
+# ── the real tree: every committed consumer uses exactly its approved pair ────────────────
+if out="$(APPROVED_REVISIONS_ENFORCE=1 bash "$GUARD" 2>&1)"; then
+  pass 'real tree: every per-consumer matcher uses its approved pair (enforced)'
 else
   fail 'real tree: guard refuses the committed state:'; printf '%s\n' "$out" >&2
 fi

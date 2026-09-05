@@ -1267,6 +1267,53 @@ func TestFluxFenceAcquisitionCreatesMissingAnnotationMaps(t *testing.T) {
 	requireLine(t, operations, "flux-policy-parent-resume:flux-system")
 }
 
+func TestRejectedFluxParentPatchPreservesSafeDiagnostic(t *testing.T) {
+	t.Parallel()
+	for name, rejection := range map[string]string{
+		"version test": "Error from server (Invalid): JSON patch test failed at /metadata/resourceVersion",
+		"forbidden":    "Error from server (Forbidden): parent handoff permission denied",
+		"untrusted text": "Error from server (Invalid): rejected\n" +
+			"::error::fixture-not-a-workflow-command\ncontrol:\x01\x1b done",
+	} {
+		t.Run(name, func(t *testing.T) {
+			f := newFixture(t)
+			result := f.runHelper(validConfig(), nil, map[string]string{
+				"FAKE_FLUX_POLICY_PARENT_PATCH_REJECTION": rejection,
+			})
+			requireFailureResult(t, result)
+			output := result.stdout + result.stderr
+			for _, line := range strings.Split(rejection, "\n") {
+				printable := strings.Map(func(r rune) rune {
+					if r == '\t' || (r >= 32 && r <= 126) {
+						return r
+					}
+					return -1
+				}, line)
+				requireContains(t, output, "flux-policy-parent-patch: "+printable)
+			}
+			requireContains(t, output, "Could not atomically pause or adopt the parent Flux policy handoff")
+			requireNotContains(t, output, "\n::error::fixture-not-a-workflow-command")
+			requireNotContains(t, output, "\x01")
+			requireNotContains(t, output, "\x1b")
+			requireNotContains(t, output, "fixture-secret-token")
+			operations := readLines(f.operationLog)
+			if got := strings.Count(strings.Join(operations, "\n"), "flux-policy-parent-patch-rejected"); got != 1 {
+				t.Fatalf("patch rejection attempts = %d, want one unchanged acquisition attempt", got)
+			}
+			for _, forbidden := range []string{
+				"flux-policy-parent-pause:flux-system", "flux-policy-pause:infrastructure", "root-patch",
+			} {
+				requireNoLine(t, operations, forbidden)
+			}
+			for _, marker := range []string{"flux-policy-parent-owner", "flux-policy-parent-suspended"} {
+				if pathExists(filepath.Join(f.syncStateDir, marker)) {
+					t.Fatalf("rejected parent patch left %s", marker)
+				}
+			}
+		})
+	}
+}
+
 func TestAmbiguousFluxFenceAcquisitionIsAdoptedAndCleaned(t *testing.T) {
 	t.Parallel()
 	for _, test := range []struct {
@@ -1291,6 +1338,7 @@ func TestAmbiguousFluxFenceAcquisitionIsAdoptedAndCleaned(t *testing.T) {
 				test.environment: "true",
 			})
 			requireSuccessResult(t, result)
+			requireNotContains(t, result.stdout+result.stderr, "flux-policy-parent-patch:")
 			if !pathExists(filepath.Join(f.syncStateDir, test.marker)) {
 				t.Fatal("fixture did not lose the applied fence patch response")
 			}

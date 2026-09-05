@@ -6,6 +6,14 @@ app with an optional self-hosted sync server.
 - [Documentation](https://actualbudget.org/docs/)
 - [Helm Chart](https://github.com/community-charts/helm-charts/tree/main/charts/actualbudget)
 
+## User namespaces
+
+Production has a default-off [stateful user-namespace pilot](../../../providers/hetzner/apps/actual-budget/components/user-namespaces/README.md).
+Its component pairs the pod setting with the existing admission policy and
+preserves the database volume, both containers' identities and mounts, and the
+single-writer deployment strategy. The guide covers offline validation,
+activation evidence, and rollback. Local app opt-in keeps the shared defaults.
+
 ## Bank sync (Enable Banking)
 
 Bank-sync credentials (Application ID + PEM secret key) live only in the
