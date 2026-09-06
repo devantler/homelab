@@ -1,0 +1,55 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: audit-privileged-rbac
+  annotations:
+    policies.kyverno.io/title: Audit Privileged RBAC
+    policies.kyverno.io/category: Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/scored: "false"
+    policies.kyverno.io/subject: Role, ClusterRole
+    policies.kyverno.io/description: >-
+      Reports wildcard administration and effective bind, escalate, and
+      impersonate grants, including grants expressed through wildcard verbs.
+spec:
+  # Existing controllers require some of these grants. Audit reports resources
+  # eligible under the existing Kyverno filters without blocking reconciliation
+  # or silently exempting chart names.
+  # Enforce requires separately reviewed, measured exceptions (platform#3486).
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: privileged-rules
+      match:
+        any:
+          - resources:
+              kinds:
+                - rbac.authorization.k8s.io/v1/Role
+                - rbac.authorization.k8s.io/v1/ClusterRole
+      validate:
+        cel:
+          expressions:
+            - expression: >-
+                !has(object.rules) || object.rules == null || object.rules.all(rule,
+                  !(has(rule.apiGroups) && has(rule.resources) && (
+                    ('*' in rule.apiGroups && '*' in rule.resources && '*' in rule.verbs) ||
+                    (('*' in rule.apiGroups || 'rbac.authorization.k8s.io' in rule.apiGroups) &&
+                     ((('*' in rule.verbs || 'bind' in rule.verbs) &&
+                       ('*' in rule.resources || 'roles' in rule.resources || 'clusterroles' in rule.resources)) ||
+                      (('*' in rule.verbs || 'escalate' in rule.verbs) &&
+                       ('*' in rule.resources || 'roles' in rule.resources ||
+                        (object.kind == 'ClusterRole' && 'clusterroles' in rule.resources))))) ||
+                    (('*' in rule.apiGroups || '' in rule.apiGroups) &&
+                     ('*' in rule.resources || 'serviceaccounts' in rule.resources ||
+                      (object.kind == 'ClusterRole' && ('users' in rule.resources || 'groups' in rule.resources))) &&
+                     ('*' in rule.verbs || 'impersonate' in rule.verbs)) ||
+                    (object.kind == 'ClusterRole' &&
+                     ('*' in rule.apiGroups || 'authentication.k8s.io' in rule.apiGroups) &&
+                     rule.resources.exists(resource, resource == '*' || resource == 'uids' ||
+                       resource.startsWith('userextras/') || resource.startsWith('*/')) &&
+                     ('*' in rule.verbs || 'impersonate' in rule.verbs))
+                  )))
+              message: >-
+                Wildcard administration, RBAC bind/escalate, and identity
+                impersonation grants require review.

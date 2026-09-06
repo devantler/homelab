@@ -15,3 +15,4 @@ resources:
   - role-binding.yaml
   - cluster-role-reports-controller-read-keda.yaml
   - cluster-role-read-github-teams.yaml
+  - cluster-role-read-rbac.yaml

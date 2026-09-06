@@ -9,6 +9,7 @@ resources:
   - best-practices/add-resource-defaults.yaml
   - best-practices/add-security-context.yaml
   - best-practices/auto-vpa.yaml
+  - best-practices/audit-privileged-rbac.yaml
   - best-practices/disable-default-sa-automount.yaml
   - best-practices/disallow-latest-tag.yaml
   - best-practices/propagate-reloader-to-flagger-primary.yaml
