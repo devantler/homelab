@@ -14,6 +14,21 @@ import (
 	"testing"
 )
 
+// TestMissingResultCannotPass models a runner losing the experiment's output stream.
+func TestMissingResultCannotPass(t *testing.T) {
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := reader.Close(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = writer.Close() })
+	if got := (proof{output: writer}).result(0, "own_full_pull_and_cross_package_denial_verified"); got != 2 {
+		t.Fatalf("missing result returned %d, want UNKNOWN", got)
+	}
+}
+
 // The registry serves the SAME immutable manifests to each identity. Only its
 // authorization decision varies, so absence and availability cannot stand in
 // for a working repository boundary.
@@ -31,6 +46,7 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 		{"metadata permission denied", "metadata-403", 2},
 		{"extra repository in installation token", "wide-token", 2},
 		{"truncated repository listing", "partial-token", 2},
+		{"single foreign repository in installation token", "wrong-repository-token", 2},
 		{"missing independent credential", "no-baseline", 2},
 		{"same credential is not an independent control", "same-token", 2},
 		{"invalid scoped token", "invalid-token", 2},
@@ -65,11 +81,11 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 				switch {
 				case r.URL.Path == "/installation/repositories":
 					if crossed && tc.fault == "empty-scope-postcheck" {
-						fmt.Fprint(w, `{}`)
+						_, _ = fmt.Fprint(w, `{}`)
 						return
 					}
 					if crossed && tc.fault == "partial-scope-postcheck" {
-						fmt.Fprint(w, `{"total_count":1}`)
+						_, _ = fmt.Fprint(w, `{"total_count":1}`)
 						return
 					}
 					if r.Header.Get("Authorization") != "Bearer scoped-secret" {
@@ -80,10 +96,17 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 						return
 					}
 					count := 1
+					listing := `{"full_name":"devantler-tech/wedding-app"}`
 					if tc.fault == "wide-token" || tc.fault == "partial-token" {
 						count = 2
 					}
-					fmt.Fprintf(w, `{"total_count":%d,"repositories":[{"full_name":"devantler-tech/wedding-app"}]}`, count)
+					if tc.fault == "wide-token" {
+						listing += `,{"full_name":"devantler-tech/ascoachingogvaner"}`
+					}
+					if tc.fault == "wrong-repository-token" {
+						listing = `{"full_name":"devantler-tech/ascoachingogvaner"}`
+					}
+					_, _ = fmt.Fprintf(w, `{"total_count":%d,"repositories":[%s]}`, count, listing)
 				case strings.HasPrefix(r.URL.Path, "/orgs/devantler-tech/packages/container/"):
 					if r.Header.Get("Authorization") != "Bearer baseline-secret" {
 						t.Error("package association not checked independently")
@@ -101,11 +124,11 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 					if tc.fault == "wrong-link" {
 						linked = "some-other-repository"
 					}
-					fmt.Fprintf(w, `{"name":%q,"package_type":"container","visibility":"private","owner":{"login":"devantler-tech"},"repository":{"full_name":%q}}`, name, "devantler-tech/"+linked)
+					_, _ = fmt.Fprintf(w, `{"name":%q,"package_type":"container","visibility":"private","owner":{"login":"devantler-tech"},"repository":{"full_name":%q}}`, name, "devantler-tech/"+linked)
 				case r.URL.Path == "/token":
 					_, secret, _ := r.BasicAuth()
 					if tc.fault == "bad-token" {
-						fmt.Fprint(w, `{broken`)
+						_, _ = fmt.Fprint(w, `{broken`)
 						return
 					}
 					if secret == "" {
@@ -117,13 +140,13 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 					own := strings.Contains(r.URL.Path, "/wedding-app/")
 					if credential == "anonymous" && tc.fault != "public" {
 						w.WriteHeader(401)
-						fmt.Fprint(w, `{"errors":[{"code":"UNAUTHORIZED"}]}`)
+						_, _ = fmt.Fprint(w, `{"errors":[{"code":"UNAUTHORIZED"}]}`)
 						return
 					}
 					if credential == "scoped-secret" {
 						if own && (tc.fault == "own-denied" || (crossed && tc.fault == "expired-after-cross")) {
 							w.WriteHeader(403)
-							fmt.Fprint(w, `{"errors":[{"code":"DENIED"}]}`)
+							_, _ = fmt.Fprint(w, `{"errors":[{"code":"DENIED"}]}`)
 							return
 						}
 						if !own {
@@ -141,11 +164,11 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 								return
 							case "cross-unclassified-403":
 								w.WriteHeader(403)
-								fmt.Fprint(w, "proxy unavailable")
+								_, _ = fmt.Fprint(w, "proxy unavailable")
 								return
 							default:
 								w.WriteHeader(403)
-								fmt.Fprint(w, `{"errors":[{"code":"DENIED"}]}`)
+								_, _ = fmt.Fprint(w, `{"errors":[{"code":"DENIED"}]}`)
 								return
 							}
 						}
@@ -156,10 +179,10 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 					}
 					w.Header().Set("Docker-Content-Digest", digest)
 					if tc.fault == "bad-manifest" {
-						fmt.Fprint(w, `{broken`)
+						_, _ = fmt.Fprint(w, `{broken`)
 						return
 					}
-					fmt.Fprint(w, manifest)
+					_, _ = fmt.Fprint(w, manifest)
 				default:
 					t.Errorf("unexpected request %s", r.URL.Path)
 					w.WriteHeader(404)
@@ -190,6 +213,9 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 			if got != tc.want {
 				t.Errorf("exit=%d want=%d, output=%s", got, tc.want, output.String())
 			}
+			if tc.fault == "wrong-repository-token" && (len(pulls) != 0 || !strings.Contains(output.String(), "reason=token_repository_scope_unverified\n")) {
+				t.Errorf("foreign repository scope was not rejected before any pull: pulls=%d output=%s", len(pulls), output.String())
+			}
 			if strings.Contains(output.String(), "secret") {
 				t.Errorf("credential or raw error leaked: %s", output.String())
 			}
@@ -203,6 +229,7 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 	}
 }
 
+// TestInlineBaselineCredentialValidation rejects implicit or incomplete registry identities.
 func TestInlineBaselineCredentialValidation(t *testing.T) {
 	for _, tc := range []struct {
 		name, data string
@@ -233,6 +260,7 @@ func TestInlineBaselineCredentialValidation(t *testing.T) {
 	}
 }
 
+// TestFullPullUsesFreshPrivateConfigAndNoAmbientCredentials exercises the subprocess boundary and cleanup.
 func TestFullPullUsesFreshPrivateConfigAndNoAmbientCredentials(t *testing.T) {
 	for _, exit := range []int{0, 1} {
 		t.Run(fmt.Sprint(exit), func(t *testing.T) {

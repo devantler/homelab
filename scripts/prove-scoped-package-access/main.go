@@ -26,6 +26,7 @@ type proof struct {
 	pull                func(context.Context, credential, string) error
 }
 
+// restrictedClient bounds each request and prevents credentials following redirects.
 func restrictedClient() *http.Client {
 	return &http.Client{Timeout: 30 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error {
 		return http.ErrUseLastResponse
@@ -47,7 +48,8 @@ func (p proof) request(ctx context.Context, endpoint, authorization string) (int
 	if err != nil {
 		return 0, nil, errors.New("request unavailable")
 	}
-	defer response.Body.Close()
+	// A read-only response has no pending write to commit on close.
+	defer func() { _ = response.Body.Close() }()
 	data, err := io.ReadAll(io.LimitReader(response.Body, (4<<20)+1))
 	if err != nil || len(data) > 4<<20 {
 		return 0, nil, errors.New("response unavailable or oversized")
@@ -55,15 +57,18 @@ func (p proof) request(ctx context.Context, endpoint, authorization string) (int
 	return response.StatusCode, data, nil
 }
 
+// metadata accepts only a complete successful API response that decodes into target.
 func (p proof) metadata(ctx context.Context, endpoint, token string, target any) bool {
 	status, data, err := p.request(ctx, p.apiURL+endpoint, "Bearer "+token)
 	return err == nil && status == http.StatusOK && json.Unmarshal(data, target) == nil
 }
 
+// denied classifies the authorization statuses returned by manifest after validation.
 func denied(status int) bool {
 	return status == http.StatusUnauthorized || status == http.StatusForbidden
 }
 
+// authorizationDenial distinguishes registry authorization failures from proxy errors.
 func authorizationDenial(status int, data []byte) bool {
 	if !denied(status) {
 		return false
@@ -142,12 +147,16 @@ func (p proof) manifest(ctx context.Context, auth credential, repository, ref st
 	return status, digest
 }
 
+// result emits only the fixed verdict and reason; missing output cannot count as success.
 func (p proof) result(code int, reason string) int {
 	verdict := []string{"PASS", "FAIL", "UNKNOWN"}[code]
-	fmt.Fprintf(p.output, "scoped_package_proof=%s reason=%s\n", verdict, reason)
+	if _, err := fmt.Fprintf(p.output, "scoped_package_proof=%s reason=%s\n", verdict, reason); err != nil {
+		return 2
+	}
 	return code
 }
 
+// run compares immutable private packages with independent baseline and anonymous controls.
 func (p proof) run(ctx context.Context) int {
 	if p.baseline.username == "" || p.baseline.password == "" || p.scoped.password == "" || p.baseline.password == p.scoped.password {
 		return p.result(2, "independent_credentials_required")
@@ -235,13 +244,14 @@ func (p proof) run(ctx context.Context) int {
 	return p.result(0, "own_full_pull_and_cross_package_denial_verified")
 }
 
+// readBaseline requires an explicit inline GHCR identity without ambient credential helpers.
 func readBaseline(directory string) (credential, error) {
 	if directory == "" {
 		return credential{}, errors.New("explicit Docker config required")
 	}
 	data, err := os.ReadFile(filepath.Join(directory, "config.json"))
 	if err != nil {
-		return credential{}, errors.New("Docker config unavailable")
+		return credential{}, errors.New("docker config unavailable")
 	}
 	var config struct {
 		CredsStore  string                                               `json:"credsStore"`
@@ -269,19 +279,24 @@ func readBaseline(directory string) (credential, error) {
 		}
 		return credential{user, password}, nil
 	}
-	return credential{}, errors.New("GHCR credential missing")
+	return credential{}, errors.New("ghcr credential missing")
 }
 
-func pullImage(ctx context.Context, auth credential, image string) error {
+// pullImage downloads all image blobs using a fresh private credential and destination directory.
+func pullImage(ctx context.Context, auth credential, image string) (result error) {
 	directory, err := os.MkdirTemp("", "scoped-package-pull-")
 	if err != nil {
 		return errors.New("private config unavailable")
 	}
-	defer os.RemoveAll(directory)
-	data, _ := json.Marshal(map[string]any{"auths": map[string]any{"ghcr.io": map[string]string{
+	defer func() {
+		if os.RemoveAll(directory) != nil {
+			result = errors.New("private config cleanup unavailable")
+		}
+	}()
+	data, err := json.Marshal(map[string]map[string]map[string]string{"auths": {"ghcr.io": {
 		"auth": base64.StdEncoding.EncodeToString([]byte(auth.username + ":" + auth.password)),
 	}}})
-	if os.WriteFile(filepath.Join(directory, "config.json"), data, 0600) != nil {
+	if err != nil || os.WriteFile(filepath.Join(directory, "config.json"), data, 0600) != nil {
 		return errors.New("private config unavailable")
 	}
 	// A fresh destination and no cache are essential: a Docker daemon could reuse
@@ -296,6 +311,7 @@ func pullImage(ctx context.Context, auth credential, image string) error {
 	return nil
 }
 
+// main fixes the credential-bearing endpoints and imposes an overall experiment deadline.
 func main() {
 	baseline, err := readBaseline(os.Getenv("DOCKER_CONFIG"))
 	if err != nil {
