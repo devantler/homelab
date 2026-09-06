@@ -36,14 +36,16 @@ Unavailable registry reads append three diagnostic fields to the UNKNOWN result:
 
 - `registry_phase`: `token_exchange` or `manifest`.
 - `http_status`: the observed numeric status, or `0` when no HTTP response arrived.
-- `failure_class`: a fixed category such as `http_status`, `unclassified_denial`,
+- `failure_class`: a fixed category such as `http_status`, `authorization_denial`, `unclassified_denial`,
   `invalid_json`, `missing_token`, `invalid_manifest`, `digest_mismatch`,
   `timeout`, `transport`, `response_read`, or `response_size`. An invalid local
   request uses `invalid_request`; an unrecognized internal error uses
   `request_unavailable`.
 
 The status is retained when a response body cannot be read or exceeds the 4 MiB
-limit. These fields classify the failed operation; they do not establish package
+limit; a deadline while reading the body is still a `timeout`. Recognized denials
+retain their diagnostic when a baseline or postcheck makes the result UNKNOWN.
+These fields classify the failed operation; they do not establish package
 authorization. No response text, headers, endpoints, package identities, digests,
 or underlying error messages are printed. Metadata and full-download failures
 retain their fixed reason codes.

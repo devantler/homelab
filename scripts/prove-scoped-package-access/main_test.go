@@ -53,6 +53,10 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 		{"same credential is not an independent control", "same-token", 2},
 		{"invalid scoped token", "invalid-token", 2},
 		{"baseline cannot pull", "baseline-pull", 2},
+		{"baseline token authorization denied", "baseline-token-denied", 2},
+		{"baseline token denied after cross check", "baseline-token-denied-after-cross", 2},
+		{"baseline manifest authorization denied", "baseline-manifest-denied", 2},
+		{"baseline manifest denied after cross check", "baseline-manifest-denied-after-cross", 2},
 		{"own full pull fails after manifest access", "own-pull", 2},
 		{"cross 404 does not prove denial", "cross-404", 2},
 		{"cross 429 does not prove denial", "cross-429", 2},
@@ -134,6 +138,11 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 					_, _ = fmt.Fprintf(w, `{"name":%q,"package_type":"container","visibility":"private","owner":{"login":"devantler-tech"},"repository":{"full_name":%q}}`, name, "devantler-tech/"+linked)
 				case r.URL.Path == "/token":
 					_, secret, _ := r.BasicAuth()
+					if secret == "baseline-secret" && (tc.fault == "baseline-token-denied" || (crossed && tc.fault == "baseline-token-denied-after-cross")) {
+						w.WriteHeader(401)
+						_, _ = fmt.Fprint(w, `{"errors":[{"code":"UNAUTHORIZED","message":"baseline-secret ::error::untrusted"}]}`)
+						return
+					}
 					if secret == "scoped-secret" {
 						switch tc.fault {
 						case "own-token-unclassified":
@@ -162,6 +171,11 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 				case strings.Contains(r.URL.Path, "/manifests/"):
 					credential := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 					own := strings.Contains(r.URL.Path, "/wedding-app/")
+					if credential == "baseline-secret" && (tc.fault == "baseline-manifest-denied" || (crossed && tc.fault == "baseline-manifest-denied-after-cross")) {
+						w.WriteHeader(403)
+						_, _ = fmt.Fprint(w, `{"errors":[{"code":"DENIED","message":"baseline-secret ::error::untrusted"}]}`)
+						return
+					}
 					if credential == "anonymous" && tc.fault != "public" {
 						w.WriteHeader(401)
 						_, _ = fmt.Fprint(w, `{"errors":[{"code":"UNAUTHORIZED"}]}`)
@@ -246,15 +260,20 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 			}
 			// Losing the failed stage/status must fail these cases; raw response text cannot substitute for the classification.
 			wantDiagnostic := map[string]string{
-				"own-token-unclassified": "registry_phase=token_exchange http_status=403 failure_class=unclassified_denial",
-				"own-token-throttled":    "registry_phase=token_exchange http_status=429 failure_class=http_status",
-				"own-token-malformed":    "registry_phase=token_exchange http_status=200 failure_class=invalid_json",
-				"own-token-empty":        "registry_phase=token_exchange http_status=200 failure_class=missing_token",
-				"own-manifest-malformed": "registry_phase=manifest http_status=200 failure_class=invalid_json",
-				"cross-unclassified-403": "registry_phase=manifest http_status=403 failure_class=unclassified_denial",
-				"cross-429":              "registry_phase=manifest http_status=429 failure_class=http_status",
-				"cross-500":              "registry_phase=manifest http_status=500 failure_class=http_status",
-				"cross-404":              "registry_phase=manifest http_status=404 failure_class=http_status",
+				"baseline-token-denied":                "registry_phase=token_exchange http_status=401 failure_class=authorization_denial",
+				"baseline-token-denied-after-cross":    "registry_phase=token_exchange http_status=401 failure_class=authorization_denial",
+				"baseline-manifest-denied":             "registry_phase=manifest http_status=403 failure_class=authorization_denial",
+				"baseline-manifest-denied-after-cross": "registry_phase=manifest http_status=403 failure_class=authorization_denial",
+				"expired-after-cross":                  "registry_phase=manifest http_status=403 failure_class=authorization_denial",
+				"own-token-unclassified":               "registry_phase=token_exchange http_status=403 failure_class=unclassified_denial",
+				"own-token-throttled":                  "registry_phase=token_exchange http_status=429 failure_class=http_status",
+				"own-token-malformed":                  "registry_phase=token_exchange http_status=200 failure_class=invalid_json",
+				"own-token-empty":                      "registry_phase=token_exchange http_status=200 failure_class=missing_token",
+				"own-manifest-malformed":               "registry_phase=manifest http_status=200 failure_class=invalid_json",
+				"cross-unclassified-403":               "registry_phase=manifest http_status=403 failure_class=unclassified_denial",
+				"cross-429":                            "registry_phase=manifest http_status=429 failure_class=http_status",
+				"cross-500":                            "registry_phase=manifest http_status=500 failure_class=http_status",
+				"cross-404":                            "registry_phase=manifest http_status=404 failure_class=http_status",
 			}[tc.fault]
 			if wantDiagnostic != "" && !strings.Contains(output.String(), wantDiagnostic+"\n") {
 				t.Errorf("missing safe failure diagnosis %q in %q", wantDiagnostic, output.String())
@@ -364,9 +383,12 @@ type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
-type failingResponseBody struct{}
+type failingResponseBody struct{ err error }
 
-func (failingResponseBody) Read([]byte) (int, error) {
+func (b failingResponseBody) Read([]byte) (int, error) {
+	if b.err != nil {
+		return 0, b.err
+	}
 	return 0, errors.New("scoped-secret ::error::raw read failure")
 }
 func (failingResponseBody) Close() error { return nil }
@@ -383,6 +405,7 @@ func TestRegistryRequestFailuresKeepTheirPhaseAndSafeClass(t *testing.T) {
 			{"transport", 0, "transport"},
 			{"timeout", 0, "timeout"},
 			{"read", 200, "response_read"},
+			{"read-timeout", 200, "timeout"},
 			{"oversized", 200, "response_size"},
 		} {
 			t.Run(phase+"/"+tc.name, func(t *testing.T) {
@@ -398,6 +421,8 @@ func TestRegistryRequestFailuresKeepTheirPhaseAndSafeClass(t *testing.T) {
 						return nil, fmt.Errorf("scoped-secret: %w", context.DeadlineExceeded)
 					case "read":
 						return &http.Response{StatusCode: 200, Body: failingResponseBody{}, Header: make(http.Header)}, nil
+					case "read-timeout":
+						return &http.Response{StatusCode: 200, Body: failingResponseBody{err: fmt.Errorf("scoped-secret: %w", context.DeadlineExceeded)}, Header: make(http.Header)}, nil
 					default:
 						return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(strings.Repeat("x", (4<<20)+1))), Header: make(http.Header)}, nil
 					}

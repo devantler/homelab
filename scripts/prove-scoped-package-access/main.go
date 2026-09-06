@@ -72,6 +72,9 @@ func (p proof) request(ctx context.Context, endpoint, authorization string) (int
 	defer func() { _ = response.Body.Close() }()
 	data, err := io.ReadAll(io.LimitReader(response.Body, (4<<20)+1))
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return response.StatusCode, nil, requestFailure("timeout")
+		}
 		return response.StatusCode, nil, requestFailure("response_read")
 	}
 	if len(data) > 4<<20 {
@@ -140,7 +143,8 @@ func (p proof) manifest(ctx context.Context, auth credential, repository, ref st
 		return registryRead{diagnostic: diagnostic}
 	}
 	if authorizationDenial(status, data) {
-		return registryRead{status: status}
+		diagnostic.class = "authorization_denial"
+		return registryRead{status: status, diagnostic: diagnostic}
 	}
 	if status != http.StatusOK {
 		diagnostic.class = "http_status"
@@ -171,7 +175,8 @@ func (p proof) manifest(ctx context.Context, auth credential, repository, ref st
 		return registryRead{diagnostic: diagnostic}
 	}
 	if authorizationDenial(status, data) {
-		return registryRead{status: status}
+		diagnostic.class = "authorization_denial"
+		return registryRead{status: status, diagnostic: diagnostic}
 	}
 	if status != http.StatusOK {
 		diagnostic.class = "http_status"
