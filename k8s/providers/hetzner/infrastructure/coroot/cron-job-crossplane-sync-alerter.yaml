@@ -74,6 +74,8 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
+            # The non-root sensor writes only paginated discovery responses.
+            fsGroup: 65532
             seccompProfile:
               type: RuntimeDefault
             # fsGroupChangePolicy and seLinuxOptions are the two non-privilege C-0211
@@ -104,13 +106,17 @@ spec:
                 requests:
                   cpu: 10m
                   memory: 32Mi
+                  ephemeral-storage: 16Mi
                 limits:
                   cpu: 100m
                   memory: 64Mi
+                  ephemeral-storage: 32Mi
               volumeMounts:
                 - name: exporter-config
                   mountPath: /etc/crossplane-sync-exporter
                   readOnly: true
+                - name: scratch
+                  mountPath: /tmp
               command:
                 - /bin/sh
                 - -c
@@ -120,6 +126,8 @@ spec:
                   AM="http://alertmanager.kubescape.svc.cluster.local:9093"
                   KUBE_API="https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT_HTTPS}"
                   SA_DIR="/var/run/secrets/kubernetes.io/serviceaccount"
+                  CRD_PAGE="/tmp/crossplane-crds.json"
+                  trap 'rm -f "$CRD_PAGE"' 0
                   curl_retry() {
                     curl -sS --retry 5 --retry-delay 2 --retry-all-errors \
                       --retry-connrefused --max-time 30 --retry-max-time 30 "$@"
@@ -149,6 +157,7 @@ spec:
                   # deployed, remote_write broken) and 0 means the scrape fails.
                   # Both are sensor failures, and both must alert -- otherwise the
                   # quiet that follows reads exactly like a healthy fleet.
+                  echo "querying exporter health"
                   UP=$(q 'up{job="crossplane-sync-exporter"}')
                   if [ "$(printf '%s' "$UP" | jq -r '.status')" != "success" ]; then
                     echo "ERROR: Prometheus query failed"; exit 1
@@ -164,6 +173,7 @@ spec:
                   # watched managed resources are syncing": the exact silence the
                   # alert exists to break, now with a green sensor in front of it.
                   # So zero condition series is a sensor failure in its own right.
+                  echo "querying exporter metric coverage"
                   COV=$(q 'count(crossplane_managed_resource_condition{condition="Synced"})')
                   if [ "$(printf '%s' "$COV" | jq -r '.status')" != "success" ]; then
                     echo "ERROR: Prometheus query for exporter coverage failed"; exit 1
@@ -177,32 +187,46 @@ spec:
                   # A newly installed provider or kind must not silently inherit
                   # broad RBAC. Compare CRD discovery with the exact inventory;
                   # a gap alerts until its GVK and read permission are reviewed.
-                  # Kubernetes pagination bounds each response so complete CRD
-                  # schemas are never buffered for the whole cluster at once.
+                  # Download each bounded page to disk, then retain only the
+                  # discovery fields. Full CRD schemas can be megabytes; moving
+                  # them through shell variables and repeated jq invocations
+                  # consumes the sensor's CPU budget before it can send alerts.
                   CRD_API="$KUBE_API/apis/apiextensions.k8s.io/v1/customresourcedefinitions"
                   cursor=""
                   missing=""
+                  page_count=0
+                  echo "checking managed-kind discovery coverage"
                   while :; do
                     if [ -n "$cursor" ]; then
-                      CRDS=$(curl_retry --fail --get \
+                      curl_retry --fail --get \
+                        --output "$CRD_PAGE" --max-filesize 16777216 \
                         --cacert "$SA_DIR/ca.crt" \
                         -H "Authorization: Bearer $(cat "$SA_DIR/token")" \
                         --data-urlencode "limit=25" \
                         --data-urlencode "continue=$cursor" \
-                        "$CRD_API") || {
+                        "$CRD_API" || {
                           echo "ERROR: Kubernetes CRD discovery failed"
                           exit 1
                         }
                     else
-                      CRDS=$(curl_retry --fail --get \
+                      curl_retry --fail --get \
+                        --output "$CRD_PAGE" --max-filesize 16777216 \
                         --cacert "$SA_DIR/ca.crt" \
                         -H "Authorization: Bearer $(cat "$SA_DIR/token")" \
                         --data-urlencode "limit=25" \
-                        "$CRD_API") || {
+                        "$CRD_API" || {
                           echo "ERROR: Kubernetes CRD discovery failed"
                           exit 1
                         }
                     fi
+                    # Check curl separately: POSIX sh has no pipefail, so a
+                    # curl | jq pipeline could accept a failed partial transfer.
+                    CRDS=$(jq -c '{kind, metadata: {continue: .metadata.continue},
+                      items: [.items[] | {spec: {group: .spec.group, names: .spec.names,
+                        versions: [.spec.versions[] | {name, served}]}}]}' "$CRD_PAGE") || {
+                        echo "ERROR: could not decode Kubernetes CRD discovery"
+                        exit 1
+                      }
                     if [ "$(printf '%s' "$CRDS" | jq -r '.kind // ""')" != "CustomResourceDefinitionList" ]; then
                       echo "ERROR: Kubernetes CRD discovery returned an unexpected response"
                       exit 1
@@ -214,6 +238,8 @@ spec:
                       exit 1
                     fi
                     missing=$(printf '%s\n%s\n' "$missing" "$page_missing")
+                    page_count=$((page_count + 1))
+                    echo "checked discovery page $page_count"
                     cursor=$(printf '%s' "$CRDS" | jq -r '.metadata.continue // ""')
                     [ -n "$cursor" ] || break
                   done
@@ -330,6 +356,7 @@ spec:
                   # reconciliation. Keep paused series in COV above so they still
                   # prove the exporter is alive, but exclude them from every
                   # selector participating in this joined history predicate.
+                  echo "querying stuck managed resources"
                   STUCK=$(q 'crossplane_managed_resource_condition{condition="Synced",reason!="ReconcilePaused"} == 0 and on (customresource_group, customresource_version, customresource_kind, name, namespace) (max by (customresource_group, customresource_version, customresource_kind, name, namespace) (max_over_time(crossplane_managed_resource_condition{condition="Synced",reason!="ReconcilePaused"}[15m])) == 0) and on (customresource_group, customresource_version, customresource_kind, name, namespace) (count by (customresource_group, customresource_version, customresource_kind, name, namespace) (count_over_time(crossplane_managed_resource_condition{condition="Synced",reason!="ReconcilePaused"}[3m] offset 15m)) > 0) and on (customresource_group, customresource_version, customresource_kind, name, namespace) (sum by (customresource_group, customresource_version, customresource_kind, name, namespace) (count_over_time(crossplane_managed_resource_condition{condition="Synced",reason!="ReconcilePaused"}[15m])) >= 12)')
                   if [ "$(printf '%s' "$STUCK" | jq -r '.status')" != "success" ]; then
                     echo "ERROR: Prometheus query for stuck resources failed"; exit 1
@@ -404,3 +431,6 @@ spec:
             - name: exporter-config
               configMap:
                 name: crossplane-sync-exporter
+            - name: scratch
+              emptyDir:
+                sizeLimit: 32Mi
