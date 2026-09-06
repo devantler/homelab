@@ -1762,7 +1762,15 @@ const (
 // restores byte-equivalent parsed objects; no RBAC grant or workload field
 // changes. A negative control removing one identity reports exactly one removal.
 // Previous aggregate: d76e357336f1c4817766463bf7990648b5c8b019939aaf680606929d51bd46b4.
-const expectedRenderedSurfaceSHA = "ea907ed3b00ccb2086e2445e8d7ef9e1050cf0c77f4779c1f7d1b03cb8950191"
+// Refreshed for #3239's source-owned Longhorn UI canary. Pinned kubectl v1.36.2
+// rendered all five roots on main 45841c15 and this tree: 555 identities each,
+// zero additions or removals, and all 83 RBAC/ServiceAccount documents unchanged.
+// Only longhorn-system/longhorn changes, adding fsGroupChangePolicy and empty
+// seLinuxOptions to the existing UI patch. The real chart regression proves the
+// entire rendered release differs only by those two fields on longhorn-ui;
+// manager, CSI, storage objects, identity, capabilities and seccomp are unchanged.
+// Previous aggregate: ea907ed3b00ccb2086e2445e8d7ef9e1050cf0c77f4779c1f7d1b03cb8950191.
+const expectedRenderedSurfaceSHA = "a7bffd8423a99b738dd231a04b96a8e7d12b89eb2d308b26613d3004341a1c33"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
