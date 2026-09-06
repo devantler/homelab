@@ -75,12 +75,12 @@
     },
     {
       "customType": "regex",
-      "description": "Track the kubelet-serving-cert-approver version pinned in the prod controller's kustomize remote resource URL. The project ships NO Helm chart (only raw deploy/*-install.yaml manifests), so it is installed as a kustomize remote resource pinned to a release tag rather than the moving `main` branch — but the version then lives inside a raw.githubusercontent.com URL that no built-in manager (flux/kubernetes/docker) sees. This regex manager resolves it from the authoritative alex1989hu/kubelet-serving-cert-approver GitHub releases; the `v` literal sits outside the capture group and extractVersionTemplate strips the leading `v` from the `vX.Y.Z` release tags, so the resolved version matches the captured X.Y.Z while the URL keeps its `v` prefix. On a bump, re-check the standalone PDB selector still matches the upstream labels (see the kustomization comment).",
+      "description": "Track the kubelet-serving-cert-approver release in the vendored-resource updater. A version-only bump fails CI's image-version binding until the immutable source commit, SHA-256 and complete vendored resources are refreshed together. Re-check the standalone PDB selector and resource-scoped Checkov dispositions on every bump.",
       "managerFilePatterns": [
-        "/^k8s/providers/hetzner/infrastructure/controllers/kubelet-serving-cert-approver/kustomization\\.ya?ml$/"
+        "/^scripts/update-vendored-operators\\.sh$/"
       ],
       "matchStrings": [
-        "kubelet-serving-cert-approver/v(?<currentValue>[0-9.]+)/deploy/"
+        "readonly cert_approver_version='(?<currentValue>[0-9.]+)'"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "alex1989hu/kubelet-serving-cert-approver",
@@ -244,11 +244,14 @@
       "addLabels": ["vendored-manifest"]
     },
     {
-      "description": "kubelet-serving-cert-approver ships only raw Kubernetes install manifests, so the custom-managed kustomize remote resource can change privileged controller/RBAC YAML in the prod infrastructure-controllers layer. Keep Renovate visibility, but require maintainer review for every release bump so the upstream manifest and local PDB selector are re-checked before deployment. automerge:false placed last so it overrides the major/minor/patch automerge defaults above.",
+      "description": "kubelet-serving-cert-approver is vendored as a complete upstream manifest. Keep Renovate visibility through the updater version, but require a reviewed whole-bundle refresh with matching source commit, digest, image and PDB selector. automerge:false placed last so it overrides the major/minor/patch automerge defaults above.",
       "matchPackageNames": ["alex1989hu/kubelet-serving-cert-approver"],
       "automerge": false,
       "addLabels": ["security/review-required"]
     }
   ],
-  "ignorePaths": ["k8s/bases/infrastructure/cluster-policies/samples"]
+  "ignorePaths": [
+    "k8s/bases/infrastructure/cluster-policies/samples",
+    "k8s/providers/hetzner/infrastructure/controllers/kubelet-serving-cert-approver/deployment.yaml"
+  ]
 }

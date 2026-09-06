@@ -72,6 +72,12 @@ type checkovSummary struct {
 // line numbers. A vendor refresh must therefore re-review any target change,
 // including a known check moving to a different container or field.
 var bundleTargets = map[string][]targetSpec{
+	"origin-ca-issuer": {}, // CRDs only: no workload/RBAC dispositions apply.
+	"kubelet-serving-cert-approver": {
+		{kind: "ClusterRole", name: "certificates:kubelet-serving-cert-approver", checks: []string{"CKV_K8S_156"}, reason: "Certificate approval is the purpose of this pinned upstream controller; signer permission is restricted to kubernetes.io/kubelet-serving.", resourceFingerprint: "3e3382b9d85d7f16926202613a3e6247e375a30f08eab5de4e3fa94ba235d8ce"},
+		{kind: "RoleBinding", name: "events:kubelet-serving-cert-approver", checks: []string{"CKV_K8S_21"}, reason: "Pinned upstream binding permits only event creation and patching in default; the controller workload runs in its dedicated namespace.", resourceFingerprint: "f76f09dcd9d0f3f71e2e8325d8f2fc9cb742898d637e0c539a9c284bb7d4bb5a"},
+		{kind: "Deployment", name: "kubelet-serving-cert-approver", checks: []string{"CKV_K8S_38", "CKV_K8S_43"}, reason: "Pinned upstream certificate approver requires its service-account token; preserve the release image while the full manifest is SHA-256 verified through the vendor updater.", resourceFingerprint: "e7cadbfb581bff5eedf687034a489860521ff33fb6cd647157d4fd2160353231", imageRepository: "ghcr.io/alex1989hu/kubelet-serving-cert-approver"},
+	},
 	"cdi": {
 		{kind: "ClusterRole", name: "cdi-operator-cluster", checks: []string{"CKV_K8S_155"}, reason: clusterRoleReason, resourceFingerprint: "df06bcec640e27ea586a8d12bffa509558eb8a244978a0de46c35743ec85341e"},
 		{kind: "Deployment", name: "cdi-operator", checks: deploymentChecks(), reason: deploymentReason, resourceFingerprint: "f81c6d025990a3a550fbe12e38033c8c0c4e3d4397dc14c357c7c6dc601abe07", imageRepository: "quay.io/kubevirt/cdi-operator"},
@@ -124,7 +130,7 @@ func expectedEvaluatedKeys(check string) ([]string, bool) {
 		return []string{"spec/template/spec/containers/[0]/securityContext/readOnlyRootFilesystem"}, true
 	case "CKV_K8S_43":
 		return []string{"spec/template/spec/containers/[0]/image"}, true
-	case "CKV_K8S_38", "CKV_K8S_40", "CKV_K8S_155":
+	case "CKV_K8S_21", "CKV_K8S_38", "CKV_K8S_40", "CKV_K8S_155", "CKV_K8S_156":
 		return []string{}, true
 	default:
 		return nil, false
@@ -132,7 +138,9 @@ func expectedEvaluatedKeys(check string) ([]string, bool) {
 }
 
 func main() {
-	bundle := flag.String("bundle", "", "bundle to annotate: cdi or kubevirt")
+	bundle := flag.String("bundle", "", "declared vendored bundle")
+	splitResources := flag.String("split-resources", "", "split cert-approver resources into this directory without changing bytes")
+	resourcesDir := flag.String("resources-dir", "", "read split cert-approver resources for --validate-annotated")
 	validateFindings := flag.Bool(
 		"validate-findings",
 		false,
@@ -191,6 +199,12 @@ func main() {
 	if modeCount > 1 {
 		fail("validation modes are mutually exclusive")
 	}
+	if *splitResources != "" && (modeCount != 0 || *bundle != "kubelet-serving-cert-approver") {
+		fail("--split-resources requires the cert-approver bundle and no validation mode")
+	}
+	if *resourcesDir != "" && (!*validateAnnotated || *bundle != "kubelet-serving-cert-approver") {
+		fail("--resources-dir requires the cert-approver bundle and --validate-annotated")
+	}
 	if *validateReport && *framework != "kubernetes" && *framework != "secrets" {
 		fail("--validate-report requires --framework kubernetes or --framework secrets")
 	}
@@ -208,8 +222,17 @@ func main() {
 	}
 
 	input, err := io.ReadAll(os.Stdin)
+	if *resourcesDir != "" {
+		input, err = joinCertApproverResources(*resourcesDir)
+	}
 	if err != nil {
 		fail("read bundle: %v", err)
+	}
+	if *splitResources != "" {
+		if err := splitCertApproverResources(input, *splitResources); err != nil {
+			fail("split bundle: %v", err)
+		}
+		return
 	}
 	if *validateFindings {
 		if err := validateCheckovFindings(input, targets); err != nil {
@@ -435,12 +458,18 @@ func validateSecretsCanary(report checkovReport, failedCount int) error {
 }
 
 func validateVendorSource(input []byte, bundle string) error {
+	if bundle == "origin-ca-issuer" {
+		if err := validateOriginCRD(input); err != nil {
+			return err
+		}
+	}
 	if inlineCheckovSkip.Match(input) {
 		return errors.New("source contains inline Checkov suppression")
 	}
 	protectedNamespace := map[string]string{
-		"cdi":      "cdi",
-		"kubevirt": "kubevirt",
+		"cdi":                           "cdi",
+		"kubevirt":                      "kubevirt",
+		"kubelet-serving-cert-approver": "kubelet-serving-cert-approver",
 	}[bundle]
 	decoder := yaml.NewDecoder(strings.NewReader(string(input)))
 	for documentIndex := 1; ; documentIndex++ {

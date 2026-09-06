@@ -6,6 +6,3 @@
 # fails on a row whose URL is no longer referenced, so this list cannot rot.
 #
 # Columns, tab-separated:  <url>  <tracking-issue>  <reason>
-https://raw.githubusercontent.com/cloudflare/origin-ca-issuer/trunk/deploy/crds/cert-manager.k8s.cloudflare.com_clusteroriginissuers.yaml	#3196	Cloudflare origin-ca-issuer CRD fetched from the moving `trunk` branch; vendoring is child (2) of #3196 and is the most urgent of the three.
-https://raw.githubusercontent.com/cloudflare/origin-ca-issuer/trunk/deploy/crds/cert-manager.k8s.cloudflare.com_originissuers.yaml	#3196	Second Cloudflare origin-ca-issuer CRD from the same moving `trunk` branch; vendored together with the row above.
-https://raw.githubusercontent.com/alex1989hu/kubelet-serving-cert-approver/v0.12.0/deploy/ha-install.yaml	#3196	Pinned to tag v0.12.0 (no digest) and Renovate-managed; contributes ServiceAccount/ClusterRole/(Cluster)RoleBinding documents to the prod authorization surface. Vendoring is child (3) of #3196.
