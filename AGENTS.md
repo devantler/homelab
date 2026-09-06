@@ -108,9 +108,10 @@ The scan is a **hard gate**: it fails the PR if the combined compliance score dr
 
 ### Updating Vendored Operator Bundles
 
-The CDI and KubeVirt operator files are pinned upstream release bundles. Refresh them only through
-[`scripts/update-vendored-operators.sh`](scripts/update-vendored-operators.sh): edit its two version
-and SHA-256 constants and run it from any directory in this repository. The updater downloads the
+The CDI, KubeVirt and kubelet-serving-cert-approver operator resources, plus the origin-ca-issuer
+CRDs, are pinned upstream artifacts. Refresh them only through
+[`scripts/update-vendored-operators.sh`](scripts/update-vendored-operators.sh): edit its corresponding
+version, source commit and SHA-256 constants and run it from any directory in this repository. The updater downloads the
 pinned release assets, reapplies the reviewed resource-scoped Checkov dispositions with the tested
 `scripts/annotate-vendored-checkov` helper, and runs Checkov before replacing either committed file.
 It requires `curl`, `go`, `sha256sum`, and the Checkov version pinned in the script on the local path.
@@ -143,6 +144,18 @@ Its isolated-file scan excludes CKV2_K8S_6 only: Checkov does not model the comm
 check and remains authoritative for graph findings. Before applying that file-level exclusion, the
 source validator requires every bundled workload to remain in the corresponding `cdi` or `kubevirt`
 namespace covered by those policies.
+
+Use `scripts/update-vendored-operators.sh --render-remotes` to refresh only origin-ca-issuer and
+kubelet-serving-cert-approver. Their source URLs use immutable commits and their bytes are pinned by
+SHA-256. The CRDs have no workload/RBAC Checkov dispositions: the updater requires their declared
+CRD identities and scans the secrets framework with the same canary. The cert-approver retains its
+HA deployment and has reviewed resource-scoped dispositions; its namespace is likewise protected by
+the committed Cilium policy. Its generated files contain one upstream resource each, preserving the
+original document bytes apart from the reviewed annotations. Offline CI concatenates the declared
+resource order and validates the original digest and operator image version, so manual edits or a
+Renovate version-only bump fail until the whole bundle is re-vendored. Re-check the local PDB selector
+against the upstream pod labels on a refresh. All these resources render locally without network
+access; `scripts/render-remote-resource-exceptions.tsv` has no remaining exceptions.
 
 ## Local Development Cluster
 

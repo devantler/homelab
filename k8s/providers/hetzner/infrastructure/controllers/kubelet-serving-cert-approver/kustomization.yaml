@@ -13,11 +13,19 @@ resources:
   # active approvers. The standalone PDB (pod-disruption-budget.yaml) makes the
   # node drain-safe (maxUnavailable: 1).
   #
-  # Pinned to a release tag (not the moving `main` branch) for reproducibility:
-  # Renovate bumps the version in this URL automatically via the github-releases
-  # custom manager in .github/renovate.json (the project ships no Helm chart, only
-  # these raw install manifests, so a kustomize remote resource is the install
-  # path). On a bump, re-check the PDB selector still matches the upstream labels.
-  - https://raw.githubusercontent.com/alex1989hu/kubelet-serving-cert-approver/v0.12.0/deploy/ha-install.yaml
+  # Vendored without changing upstream document bytes apart from reviewed
+  # Checkov annotations. The updater pins an immutable source commit and SHA-256;
+  # Renovate tracks its version there. Re-vendor the whole bundle on a bump and
+  # re-check the standalone PDB selector against the upstream pod labels.
+  - namespace.yaml
+  - service-account.yaml
+  - role.yaml
+  - cluster-role-certificates.yaml
+  - cluster-role-events.yaml
+  - role-binding-events.yaml
+  - role-binding-leader-election.yaml
+  - cluster-role-binding.yaml
+  - service.yaml
+  - deployment.yaml
   - cilium-network-policy.yaml
   - pod-disruption-budget.yaml
