@@ -254,6 +254,9 @@ jobs:
               - 'scripts/tests/test-restrict-tenant-secret-stores.sh'
               - 'scripts/tests/test-restrict-tenant-network-policies.sh'
               - 'scripts/tests/test-add-baseline-context.sh'
+              - 'scripts/tests/test-longhorn-ui-baseline-context.sh'
+              - 'scripts/tests/test-guard-longhorn-ui-baseline-context.sh'
+              - 'scripts/guard-longhorn-ui-baseline-context.sh'
               # The fixtures are the other half of that test: a PR touching only
               # resources.yaml, patched-resources.yaml, values.yaml or
               # kyverno-test.yaml would otherwise leave this filter false, so
@@ -1034,6 +1037,9 @@ jobs:
           bash scripts/tests/test-provider-drc-pod-seccomp.sh
           shellcheck scripts/tests/test-add-baseline-context.sh
           bash scripts/tests/test-add-baseline-context.sh
+          shellcheck scripts/guard-longhorn-ui-baseline-context.sh scripts/tests/test-guard-longhorn-ui-baseline-context.sh scripts/tests/test-longhorn-ui-baseline-context.sh
+          bash scripts/tests/test-guard-longhorn-ui-baseline-context.sh
+          bash scripts/tests/test-longhorn-ui-baseline-context.sh
 
       - name: 🚦 Validate default-off Cilium bandwidth manager
         if: needs.changes.outputs.k8s == 'true'

@@ -199,6 +199,9 @@ spec:
                 template:
                   spec:
                     securityContext:
+                      # Source-owned C-0211 canary: the UI uses only emptyDir
+                      # volumes and sets no fsGroup, so this changes no ownership.
+                      fsGroupChangePolicy: OnRootMismatch
                       runAsNonRoot: true
                       runAsUser: 499
                       runAsGroup: 486
@@ -207,6 +210,8 @@ spec:
                     containers:
                       - name: longhorn-ui
                         securityContext:
+                          # Preserve runtime SELinux/MCS label allocation.
+                          seLinuxOptions: {}
                           runAsNonRoot: true
                           runAsUser: 499
                           runAsGroup: 486

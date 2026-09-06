@@ -162,6 +162,14 @@ runs:
         echo "::error::Prod cluster (context admin@prod) is unreachable with the restored kubeconfig (last kubectl error: ${last_err}). KUBE_CONFIG (and likely TALOS_CONFIG) are probably stale after a cluster rebuild — refresh both and update the 'prod' environment secrets. See docs/dr/runbook.md → 'Refresh CI deploy credentials'."
         exit 1
 
+    - name: 🧪 Check the Longhorn UI baseline canary
+      id: longhorn_ui_baseline
+      # Only arms when the desired source declares the two defaults and the
+      # live template still lacks them. Already-applied and reverted canaries
+      # do not impose these initial-rollout assumptions on unrelated deploys.
+      shell: bash
+      run: bash scripts/guard-longhorn-ui-baseline-context.sh before-publish
+
     - name: 💾 Validate live persistence retirement safety
       # A commit parent is not evidence that its protection reached production:
       # two direct pushes can be waiting behind one manual dispatch. Compare the
@@ -292,6 +300,13 @@ runs:
       env:
         PLATFORM_MANIFEST_DIGEST: ${{ steps.publish_platform_manifest.outputs.digest }}
       run: ./scripts/wait-for-platform-flux-revision.sh "${PLATFORM_MANIFEST_DIGEST}"
+
+    - name: 🧪 Verify the Longhorn UI baseline canary
+      if: steps.longhorn_ui_baseline.outputs.rollout_required == 'true'
+      # A failed after-apply proof fails this deployment. The merge queue's
+      # existing unsuccessful-deploy heal restores main through this action.
+      shell: bash
+      run: bash scripts/guard-longhorn-ui-baseline-context.sh after-reconcile
 
     - name: 🛡️ Restore autoscaling once the released revision is Ready
       id: cilium_rollout_gate_release
