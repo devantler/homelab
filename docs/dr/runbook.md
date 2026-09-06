@@ -588,6 +588,34 @@ two GitHub `prod` environment secrets:
 | `KUBE_CONFIG`  | `~/.kube/config`  | `ksail cluster update` drift detection (kube API)  |
 | `TALOS_CONFIG` | `~/.talos/config` | `ksail cluster update` machine-config / secret sync |
 
+### Endpoint selection during ordinary deployments
+
+The shared `deploy-prod` action runs
+[`scripts/use-prod-stable-api-endpoint.sh`](../../scripts/use-prod-stable-api-endpoint.sh)
+immediately after restoring `KUBE_CONFIG`, before its first Kubernetes API call.
+The script resolves the production floating IP through the Hetzner API, requires
+exactly one match with KSail's ownership and cluster labels, and updates only the
+restored `admin@prod` cluster's server address. Missing, ambiguous, or foreign
+floating-IP state stops deployment before a node can be rolled.
+
+A kubeconfig whose server still names a replaced control-plane node therefore
+does not need an environment-secret refresh solely to change that address. The
+deployment selects the stable address on each run, preserves the kubeconfig's
+credentials and CA, and checks `/readyz` through normal TLS validation. Check the
+`Select stable prod API endpoint` and `Verify prod cluster is reachable` steps
+when diagnosing endpoint failures.
+
+`TALOS_CONFIG` retains direct node endpoints. Do not point the Talos API at the
+Kubernetes floating IP: recovery access must remain available when etcd or the
+Kubernetes API is unhealthy.
+
+This automatic selection does not validate a control-plane failure drill by
+itself. A controlled recreate must separately demonstrate continued Kubernetes
+access without a secret refresh, with health and recovery checks recorded for
+that drill.
+
+### Credential refresh after a full rebuild
+
 After a **full rebuild** (Scenario 4) the API endpoint and Talos PKI change,
 so both secrets are stale. Symptom in CI: the
 `🩺 Verify prod cluster is reachable` preflight fails, or
