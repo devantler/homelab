@@ -144,6 +144,11 @@
   },
   "packageRules": [
     {
+      "description": "Review the Kyverno chart and CI policy engine together; chart and CLI use different version numbers, so check the chart appVersion when accepting the grouped update.",
+      "matchPackageNames": ["kyverno", "kyverno/kyverno"],
+      "groupName": "kyverno"
+    },
+    {
       "description": "flux-operator is tracked by the dedicated regex customManager above (the built-in `flux` manager stalled on it). Disable the `flux` manager for this chart so the two managers cannot open duplicate PRs if the flux manager later resumes.",
       "matchManagers": ["flux"],
       "matchPackageNames": [

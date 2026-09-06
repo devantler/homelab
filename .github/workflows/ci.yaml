@@ -6,6 +6,10 @@ on:
 
 permissions: {}
 
+env:
+  # renovate: datasource=github-releases depName=kyverno/kyverno extractVersion=^v(?<version>.+)$
+  KYVERNO_VERSION: "1.19.0"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
@@ -640,7 +644,7 @@ jobs:
       - name: ⚖️ Install Kyverno CLI for package admission checks
         uses: kyverno/action-install-cli@fcee92fca5c883169ef9927acf543e0b5fc58289 # v0.2.0
         with:
-          release: v1.18.2
+          release: v${{ env.KYVERNO_VERSION }}
 
       - name: 🔐 Verify proposed first-party Crossplane packages
         # The package image becomes the provider controller's Pod image. Check
@@ -982,12 +986,11 @@ jobs:
 
       - name: ⚖️ Install Kyverno CLI
         if: needs.changes.outputs.k8s == 'true'
-        # Pinned to the version the cluster actually runs (the kyverno Helm
-        # release is v1.18.2), so a policy that passes here is evaluated by the
-        # same engine that admits it in production. Bump both together.
+        # Both admission checks and policy fixtures consume the shared CLI pin.
+        # Review it with the Kyverno chart's appVersion when updating the group.
         uses: kyverno/action-install-cli@fcee92fca5c883169ef9927acf543e0b5fc58289 # v0.2.0
         with:
-          release: v1.18.2
+          release: v${{ env.KYVERNO_VERSION }}
 
       - name: 🔒 Validate Umami provisioning serialization
         if: needs.changes.outputs.k8s == 'true'
