@@ -383,6 +383,22 @@ grep -q 'control characters' "${dir}/stderr.log" ||
   fail "scenario 'url_control_chars': the control-character guard did not report"
 pass "a webhook URL carrying a control character fails before any delivery"
 
+# Scenario 5d — PLAINTEXT DELIVERY. The webhook token travels in the URL path,
+# and the allow-coroot network policy permits hooks.slack.com by PORT, not by
+# scheme — so an `http://…:443` value would be delivered in the clear. The
+# scheme is checked beside the control-character guard, before any delivery,
+# and the refusal names the requirement. Same guard as the stranded-volume
+# alert (#3560).
+dir="$(setup_scenario plain_http 200 "${degraded_body}" 'http://hooks.test.invalid:443/delivery-target')"
+if run_scenario "${dir}"; then
+  fail "scenario 'plain_http': an http:// webhook URL was accepted"
+fi
+[ "$(deliveries "${dir}")" = "0" ] ||
+  fail "scenario 'plain_http': delivered over plaintext"
+grep -q 'must use https://' "${dir}/stderr.log" ||
+  fail "scenario 'plain_http': the refusal does not name the https requirement"
+pass "a non-https webhook URL fails before any delivery"
+
 # Scenario 6 — a CRD-less cluster is a supported state, not a failure.
 dir="$(setup_scenario no_crd 404 '{}' "${REAL_WEBHOOK}")"
 run_scenario "${dir}" || fail "scenario 'no_crd': a 404 should exit 0"
