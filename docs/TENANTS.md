@@ -186,6 +186,15 @@ pointing at `publish-app.yaml`. No Flux `spec.decryption` is needed — tenant
 secrets are delivered by External Secrets from OpenBao (§3), not SOPS-encrypted
 inside the artifact.
 
+Tenant network rules must omit `fromNodes`, `toNodes`, `fromGroups`, and `toGroups`,
+including empty or null fields. Node selectors reach the host network, while
+provider groups resolve infrastructure addresses outside the namespace. Use
+ordinary pod selectors or the supported explicit destinations instead. A tenant
+use case for node or provider selection needs a deliberate platform boundary
+change with validation before enabling it; turning on a Cilium integration alone
+does not grant that capability. The platform controllers retain their existing
+identity exemptions.
+
 Finally, add the directory to
 [`k8s/bases/apps/kustomization.yaml`](../k8s/bases/apps/kustomization.yaml):
 
