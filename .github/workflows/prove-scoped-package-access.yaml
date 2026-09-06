@@ -1,0 +1,81 @@
+name: Prove Scoped Package Access
+
+# #3274 is an experiment, not an authentication cutover. Only reviewed main may
+# use the existing App and Flux pull credentials; PRs run the hermetic tests.
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: prove-scoped-package-access
+  cancel-in-progress: false
+
+jobs:
+  prove:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: prod
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout reviewed main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Build the probe and install the pinned image reader
+        env:
+          # renovate: datasource=github-releases depName=google/go-containerregistry
+          CRANE_VERSION: v0.21.9
+        run: |
+          go build -o "$RUNNER_TEMP/prove-scoped-package-access" ./scripts/prove-scoped-package-access
+          go install "github.com/google/go-containerregistry/cmd/crane@${CRANE_VERSION}"
+
+      - name: Setup KSail for the existing encrypted pull credential
+        env:
+          # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
+          KSAIL_VERSION: "7.181.2"
+          GITHUB_TOKEN: ${{ github.token }}
+        run: .github/scripts/setup-ksail.sh
+
+      - name: Stage the independent baseline credential
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          set -euo pipefail
+          source scripts/ghcr-auth-lib.sh
+          umask 077
+          baseline_dir="$RUNNER_TEMP/scoped-package-baseline"
+          mkdir -p "$baseline_dir"
+          chmod 700 "$baseline_dir"
+          decrypt_flux_ghcr_docker_config "$baseline_dir/config.json"
+
+      - name: Mint the repository-scoped candidate
+        id: candidate
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: devantler-tech
+          repositories: wedding-app
+          permission-packages: read
+
+      - name: Prove own-image pull and cross-repository denial
+        env:
+          SCOPED_APP_TOKEN: ${{ steps.candidate.outputs.token }}
+          DOCKER_CONFIG: ${{ runner.temp }}/scoped-package-baseline
+        run: |
+          set -o pipefail
+          "$RUNNER_TEMP/prove-scoped-package-access" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the baseline credential
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/scoped-package-baseline"
