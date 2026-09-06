@@ -481,6 +481,8 @@ assert_generated_policy_contract() {
   # Evaluate admission-time and mutate-existing rules against both the real
   # Namespace trigger and the real policy target. Every emitted form of
   # allow-crossplane must remain byte-for-byte equivalent at the spec level.
+  # Kyverno 1.19 also loads --resource inputs into its offline target store;
+  # repeating the same object as --target-resource causes a duplicate panic.
   # shellcheck disable=SC2016 # $index is a yq variable.
   CROSSPLANE_MUTATION_DIR="${mutation_dir}" yq e -N \
     -s 'strenv(CROSSPLANE_MUTATION_DIR) + "/" + ($index | tostring) + "-" + .metadata.name + ".yaml"' \
@@ -494,7 +496,6 @@ assert_generated_policy_contract() {
     kyverno apply "${mutation_dir}" \
       --resource "${controllers_dir}/crossplane/namespace.yaml" \
       --resource "${controllers_dir}/crossplane/cilium-network-policy.yaml" \
-      --target-resource "${controllers_dir}/crossplane/cilium-network-policy.yaml" \
       --output "${mutation_output_dir}" \
       --remove-color 2>&1
   )"; then
