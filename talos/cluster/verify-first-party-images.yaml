@@ -104,10 +104,18 @@ rules:
   # catch-all below (first-match-wins). Requires ksail >= the first release
   # that ships the GoReleaser docker_signs cosign step (devantler-tech/ksail
   # #5165) AND the ksail-operator HelmRelease pinned to that signed image tag.
+  # The ref is pinned to the release-tag GRAMMAR, not merely to `v*`: cd.yaml
+  # signs on any `v*` tag push and checks nothing about the tag itself, so a
+  # `v.+` ref clause would accept refs/tags/vanything and refs/tags/v/../evil,
+  # which are tags in shape only. The grammar is the same OCI-semver form as
+  # the provider identity below, carries the same DELIBERATE no-length-cap
+  # difference (pinned by the inventory test), and is kept byte-identical to
+  # the Kyverno attestor by that test. The publisher's own check is tracked at
+  # devantler-tech/ksail#6895.
   - image: ghcr.io/devantler-tech/ksail*
     keyless:
       issuer: https://token.actions.githubusercontent.com
-      subjectRegex: ^https://github\.com/devantler-tech/ksail/\.github/workflows/cd\.yaml@refs/tags/v.+$
+      subjectRegex: ^https://github\.com/devantler-tech/ksail/\.github/workflows/cd\.yaml@refs/tags/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*)|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\.((0|[1-9][0-9]*)|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?$
   # Crossplane PROVIDER package images (ghcr.io/devantler-tech/provider-upjet-*)
   # are signed by each provider repo's OWN publish-provider-package.yml — a
   # different keyless identity than publish-app.yaml, because the upstream

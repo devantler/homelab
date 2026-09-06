@@ -122,12 +122,20 @@ spec:
           identities:
             - issuer: https://token.actions.githubusercontent.com
               subjectRegExp: ^https://github\.com/devantler-tech/provider-upjet-[a-z0-9-]+/\.github/workflows/publish-provider-package\.yml@refs/tags/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*)|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\.((0|[1-9][0-9]*)|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?$
+    # ksail images are signed by ksail's OWN release pipeline (cd.yaml). The
+    # ref is pinned to the release-tag GRAMMAR, not merely to `v*`: cd.yaml
+    # signs on any `v*` tag push and checks nothing about the tag itself, so a
+    # `v.+` ref clause would accept refs/tags/vanything and refs/tags/v/../evil,
+    # which are tags in shape only. Same OCI-semver grammar and same DELIBERATE
+    # no-length-cap difference as the provider identity above; kept
+    # byte-identical to the Talos ImageVerificationConfig rule by the inventory
+    # test. The publisher's own check is tracked at devantler-tech/ksail#6895.
     - name: ksailcd
       cosign:
         keyless:
           identities:
             - issuer: https://token.actions.githubusercontent.com
-              subjectRegExp: ^https://github\.com/devantler-tech/ksail/\.github/workflows/cd\.yaml@refs/tags/v.+$
+              subjectRegExp: ^https://github\.com/devantler-tech/ksail/\.github/workflows/cd\.yaml@refs/tags/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*)|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\.((0|[1-9][0-9]*)|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?$
   validations:
     - expression: >-
         (images.containers + images.initContainers + images.ephemeralContainers)
