@@ -221,9 +221,8 @@ jobs:
               - 'ksail.yaml'
               - 'ksail.prod.yaml'
               - '.sops.yaml'
-              - 'talos-local/**'
-              - 'talos/**'
-              - 'scripts/validate-naming.py'
+              - 'talos*/**'
+              - '.github/manifest-naming.yaml'
               - 'scripts/validate-embedded-json.py'
               - '.github/scripts/setup-ksail.sh'
               - '.github/scripts/kyverno-version.sh'
@@ -1702,22 +1701,29 @@ jobs:
     name: 🏷️ Validate Naming Conventions
     needs: [changes]
     # Static folder/file naming gate: kebab-case dirs, one-resource-per-file,
-    # type-led filenames, and flux-kustomization disambiguation. Pure Python
-    # stdlib — no cluster, no secrets, no network — so it also runs on fork PRs
-    # and returns in seconds. See scripts/validate-naming.py and AGENTS.md
+    # type-led filenames, and flux-kustomization disambiguation. The shared Go
+    # action needs no cluster or secrets and also runs on fork PRs. Go setup/build
+    # can download dependencies. See .github/manifest-naming.yaml and AGENTS.md
     # 'File and Directory Naming Conventions'.
     if: github.event_name == 'pull_request' && needs.changes.outputs.k8s == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read # checkout repository
     steps:
+      - name: 🛡️ Harden runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
       - name: 📑 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: 🏷️ Validate naming conventions
-        run: python3 scripts/validate-naming.py
+        uses: devantler-tech/actions/validate-naming@883d891a0e6a2c9420d2b60aea9d5f47c20ce803 # v13.5.0
+        with:
+          enabled: "true"
 
   validate-talos:
     name: 🧪 Validate Talos Machine Config
