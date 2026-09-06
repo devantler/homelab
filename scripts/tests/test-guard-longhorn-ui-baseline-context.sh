@@ -108,7 +108,8 @@ grep -qx 'rollout_required=false' "${scratch}/outputs"
 
 # The deployed workflow must call the same real guard on each side of the
 # artifact boundary. A standalone passing checker is not an enforced rollout.
-yq -o=json '.runs.steps' "${root_dir}/.github/actions/deploy-prod/action.yml" |
+for workflow in .github/actions/deploy-prod/action.yml .github/workflows/dr-rebuild.yaml; do
+  yq -o=json '.runs.steps // .jobs.rebuild.steps' "${root_dir}/${workflow}" |
   jq -e '
     map(.id // "") as $ids |
     ($ids | index("longhorn_ui_baseline")) as $before |
@@ -118,4 +119,5 @@ yq -o=json '.runs.steps' "${root_dir}/.github/actions/deploy-prod/action.yml" |
     $before != null and $publish != null and $ready != null and
     $before < $publish and ($after | length) == 1 and $after[0].key > $ready and
     $after[0].value.if == "steps.longhorn_ui_baseline.outputs.rollout_required == '\''true'\''"' >/dev/null
+done
 printf 'PASS: Longhorn UI preflight, post-proof, absent/error, drift, readiness and privilege controls\n'

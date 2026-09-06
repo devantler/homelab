@@ -18,7 +18,8 @@ The real pinned chart test exercises the defaults present and absent, proves
 that every other rendered resource is identical, and renders the source rollback.
 It fails if a renamed chart target causes the post-renderer to miss the UI.
 
-The shared production deploy action handles the evidence in deployment order:
+The shared production deploy action and disaster-recovery rebuild workflow
+handle the evidence in deployment order:
 
 1. Before publication, the read-only canary guard checks whether the desired
    source declares the defaults and the stored UI template still lacks them.
@@ -37,8 +38,8 @@ The shared production deploy action handles the evidence in deployment order:
 4. A failed merge-group deployment remains failed and the existing heal job
    restores the current `main` revision. Removing only the two source defaults
    restores the prior rendered resources; it preserves the existing UI hardening.
-   A manual CD failure requires the same normal Git revert and CD recovery path;
-   it does not have the merge-group heal job.
+   A manual CD or rebuild failure requires the normal Git revert and recovery
+   path; those workflows do not have the merge-group heal job.
 
 An engineer can reproduce the read-only phases with
 `bash scripts/guard-longhorn-ui-baseline-context.sh before-publish --context <read-only-context>`

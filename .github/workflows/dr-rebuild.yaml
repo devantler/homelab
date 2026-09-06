@@ -242,6 +242,12 @@ jobs:
         # the bridge safely repairs root auth so Flux can create them.
         run: ./scripts/refresh-flux-ghcr-auth.sh --allow-incomplete-fanout
 
+      - name: 🧪 Check the Longhorn UI baseline canary
+        id: longhorn_ui_baseline
+        # A fresh installation still requires stored-template proof after Flux
+        # converges. Reverted and already-applied canaries remain disarmed.
+        run: bash scripts/guard-longhorn-ui-baseline-context.sh before-publish
+
       - name: 📦 Publish evidenced manifests to GHCR
         id: publish_platform_manifest
         uses: ./.github/actions/deploy-prod/publish-platform-manifests
@@ -277,6 +283,10 @@ jobs:
               --for=condition=Ready --timeout=35m
           done
           echo "✅ All Flux Kustomizations Ready — fresh platform converged."
+
+      - name: 🧪 Verify the Longhorn UI baseline canary
+        if: steps.longhorn_ui_baseline.outputs.rollout_required == 'true'
+        run: bash scripts/guard-longhorn-ui-baseline-context.sh after-reconcile
 
       - name: 🛡️ Reassert or release the Cilium rollout gate
         if: always() && steps.wait_flux.outcome == 'success'
