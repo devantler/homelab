@@ -97,6 +97,11 @@ jobs:
           shellcheck scripts/tests/test-check-first-party-package-signatures.sh
           bash scripts/tests/test-check-first-party-package-signatures.sh
 
+      - name: 🔐 Validate the scoped package-access experiment
+        # Always run, including workflow-only changes. The real registry proof
+        # is manual and uses credentials only after this code reaches main.
+        run: go test ./scripts/prove-scoped-package-access
+
       # The guard above proves every matcher pins A revision. It cannot say WHICH, and
       # narrowing them to approved revisions (#2818) needs that fact for each consumer.
       # This runs the hermetic half of the report that computes it: the network resolver
