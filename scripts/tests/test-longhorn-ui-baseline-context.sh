@@ -62,10 +62,25 @@ jq -e '[.[] | select(.kind == "Deployment" and .metadata.name == "longhorn-ui") 
   ([.spec.template.spec.containers[] | .securityContext.seLinuxOptions] == [{}]) and
   ([.spec.template.spec.volumes[] | has("emptyDir")] | all)] == [true]' \
   "${scratch}/on-resources.json" >/dev/null || fail 'UI canary defaults or ephemeral storage contract missing'
-jq -e '[.[] | select(.kind == "Deployment" and .metadata.name == "longhorn-ui") |
-  .spec.template.spec.securityContext.fsGroupChangePolicy == null and
-  ([.spec.template.spec.containers[] | .securityContext.seLinuxOptions] == [null])] == [true]' \
-  "${scratch}/off-resources.json" >/dev/null || fail 'disabled canary must omit both new defaults'
+chart_defaults_absent() {
+  jq -e '[.[] | select(.kind == "Deployment" and .metadata.name == "longhorn-ui") |
+    .spec.template.spec.securityContext.fsGroupChangePolicy == null and
+    .spec.template.spec.securityContext.seLinuxOptions == null and
+    ([.spec.template.spec.containers[] | .securityContext.seLinuxOptions] == [null])] == [true]' \
+    "$1" >/dev/null
+}
+chart_defaults_absent "${scratch}/off-resources.json" ||
+  fail 'chart now supplies a default or inherited SELinux options; review the canary before overriding them'
+
+# Model an upstream chart starting to supply pod options. The container's empty
+# object would shadow those options, even though normalizing the two canary
+# fields would still produce an otherwise identical render.
+jq 'map(if .kind == "Deployment" and .metadata.name == "longhorn-ui" then
+    .spec.template.spec.securityContext.seLinuxOptions = {type:"upstream_type"}
+  else . end)' "${scratch}/off-resources.json" >"${scratch}/inherited-selinux.json"
+if chart_defaults_absent "${scratch}/inherited-selinux.json"; then
+  fail 'compatibility check accepted inherited pod SELinux options that the canary would shadow'
+fi
 
 jq -S 'map(if .kind == "Deployment" and .metadata.name == "longhorn-ui" then
     del(.spec.template.spec.securityContext.fsGroupChangePolicy) |
