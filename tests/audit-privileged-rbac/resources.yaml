@@ -284,3 +284,43 @@ metadata:
 rules:
   - nonResourceURLs: ["/healthz", "/livez"]
     verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: inert-namespaced-user-impersonation
+  namespace: sample
+rules:
+  - apiGroups: [""]
+    resources: ["users", "groups"]
+    verbs: ["impersonate"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: inert-namespaced-auth-impersonation
+  namespace: sample
+rules:
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["uids", "userextras/scopes"]
+    verbs: ["impersonate"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: inert-namespaced-clusterrole-escalation
+  namespace: sample
+rules:
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles"]
+    verbs: ["escalate"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: namespaced-clusterrole-bind
+  namespace: sample
+rules:
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles"]
+    verbs: ["bind"]

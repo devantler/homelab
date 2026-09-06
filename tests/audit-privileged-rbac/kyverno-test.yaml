@@ -26,7 +26,7 @@ results:
   - policy: audit-privileged-rbac
     rule: privileged-rules
     kind: ClusterRole
-    result: fail
+    result: warn
     resources:
       - triple-wildcard
       - wildcard-with-extra-values
@@ -53,10 +53,14 @@ results:
     resources:
       - sample/namespaced-reader
       - sample/namespaced-null-rules
+      - sample/inert-namespaced-user-impersonation
+      - sample/inert-namespaced-auth-impersonation
+      - sample/inert-namespaced-clusterrole-escalation
   - policy: audit-privileged-rbac
     rule: privileged-rules
     kind: Role
-    result: fail
+    result: warn
     resources:
       - sample/namespaced-wildcard
       - sample/impersonate-serviceaccounts
+      - sample/namespaced-clusterrole-bind

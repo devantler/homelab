@@ -23,9 +23,9 @@ yq -o=json "$grant" | jq -e '
 kyverno apply "$policy" \
   --resource "${repo_root}/tests/audit-privileged-rbac/resources.yaml" \
   --audit-warn --warn-exit-code 0 >"$result" 2>&1
-if ! grep -Fq 'pass: 12, fail: 0, warn: 20, error: 0, skip: 0' "$result"; then
+if ! grep -Fq 'pass: 15, fail: 0, warn: 21, error: 0, skip: 0' "$result"; then
   cat "$result"
   echo 'RBAC Audit fixture census did not match the expected results' >&2
   exit 1
 fi
-echo 'RBAC Audit: 12 ordinary grants pass, 20 privileged grants warn; reporting access is read-only.'
+echo 'RBAC Audit: 15 ordinary or inert grants pass, 21 privileged grants warn; reporting access is read-only.'

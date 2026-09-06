@@ -16,6 +16,9 @@ and service accounts in the core API group, plus UIDs and user-extra subresource
 in `authentication.k8s.io`. These differ from the `roles` and `clusterroles`
 resources governing `bind` and `escalate`. Ordinary reads, non-resource health
 checks, and empty or not-yet-populated aggregated roles do not trigger findings.
+Namespaced Roles are evaluated at their effective scope: they can bind a
+ClusterRole through a namespaced binding and impersonate service accounts, but
+cannot authorize cluster-wide user impersonation or ClusterRole escalation.
 See [Kubernetes impersonation](https://kubernetes.io/docs/reference/access-authn-authz/user-impersonation/)
 and [RBAC privilege escalation](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping).
 
