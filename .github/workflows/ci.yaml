@@ -352,6 +352,7 @@ jobs:
               - 'scripts/tests/test-flux-reconcile-control-plane-restart.sh'
               - 'scripts/tests/test-opencost-usage-scraper.sh'
               - 'scripts/tests/test-crossplane-sync-exporter.sh'
+              - 'scripts/tests/test-crossplane-sync-alerter.sh'
               - 'scripts/tests/test-crossplane-egress-policy.sh'
               - 'scripts/tests/crossplane-egress-policy-rules.yaml'
               - 'scripts/tests/test-cnpg-degraded-alert.sh'
@@ -1109,6 +1110,10 @@ jobs:
         # reads exactly like a fleet with nothing wrong. Schema validation cannot
         # see any of it, so render the component contract instead.
         run: bash scripts/tests/test-crossplane-sync-exporter.sh
+
+      - name: 📡 Validate Crossplane sync alert delivery
+        if: needs.changes.outputs.k8s == 'true'
+        run: bash scripts/tests/test-crossplane-sync-alerter.sh
 
       - name: 🩺 Validate the CNPG degraded-cluster alert
         if: needs.changes.outputs.k8s == 'true'
