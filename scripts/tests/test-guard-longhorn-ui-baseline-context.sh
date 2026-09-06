@@ -76,6 +76,7 @@ for mutation in \
   '.spec.template.spec.volumes[0]={name:"data",persistentVolumeClaim:{claimName:"storage"}}' \
   '.spec.template.spec.containers[0].securityContext.privileged=true' \
   '.spec.template.spec.containers[0].securityContext.runAsUser=0' \
+  '.spec.template.spec.initContainers=[{name:"unreviewed-init",securityContext:{runAsUser:0}}]' \
   '.metadata.ownerReferences=[{kind:"Operator",name:"rebuilding-owner"}]'; do
   jq "${mutation}" "${scratch}/deployment.json" >"${scratch}/input.json"
   check "invariant rejects ${mutation}" before-publish fail normal

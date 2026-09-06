@@ -25,8 +25,8 @@ The shared production deploy action handles the evidence in deployment order:
    Only that transition arms the canary. A source rollback disarms it before
    reading the workload; a later deployment with the defaults already present
    does not freeze the UI's initial replica count or identity.
-2. An existing canary must be Helm-owned, fully ready, non-root, and use only
-   ephemeral volumes without an `fsGroup`. API failure is an error, never an
+2. An existing canary must be Helm-owned, fully ready, non-root, have no init
+   containers, and use only ephemeral volumes without an `fsGroup`. API failure is an error, never an
    empty population. A reachable API reporting an uninstalled UI allows the
    initial installation but still requires the next step.
 3. After Flux reports the released revision Ready, the guard reads the stored
@@ -53,28 +53,18 @@ namespace. A blanket restart would roll storage managers and CSI workloads and
 can introduce an admission/reconciliation loop for operator-owned resources.
 The UI canary does not establish safety for those workloads.
 
-The next increments follow the same source-first route:
+Helm and Git templates have a source-owned route through values or exact
+post-renderers. Operator-generated templates instead depend on supported owner
+configuration and convergence: admission of a field absent from the owner's
+desired state can cause repeated writes. Storage managers, CSI components and
+operator-generated workloads are outside the UI canary's ephemeral-volume scope.
+Permission to deploy does not prove those compatibility conditions.
 
-1. Re-enumerate stored Deployments, DaemonSets, StatefulSets and CronJobs in the
-   excluded namespaces. Record each owner's source, existing security context,
-   persistent storage, rollout strategy and current readiness. Include regular
-   and init containers; distinguish a missing SELinux object from a deliberate
-   partial or empty object. Exclude stale scanner verdicts from the evidence.
-2. For a Helm- or Git-owned workload, add only the missing defaults to its
-   declared pod template, using chart values where supported and a tested exact
-   post-renderer otherwise. Review one workload's rendered delta and rollback
-   before deploying it. Chart-owned Longhorn components are separate increments
-   from the UI; no manager or CSI restart is implied by this canary.
-3. For an operator-owned workload, first establish how its reconciler builds
-   the desired template. Prefer an operator-supported source field. An admission
-   fallback needs exact owner/object scoping, a tested convergence contract and
-   its own staged preflight/after-apply gate. Keep that owner's mutation off
-   until those conditions are implemented; user permission cannot substitute
-   for them.
-4. Re-measure stored templates and runtime health after each applied increment.
-   Update C-0211 exception sizing only from the new complete measurement. The
-   original 33-workload denominator is historical, and completing the UI canary
-   does not complete platform issue #3239.
+The remaining rollout and its acceptance measurements are tracked in
+[issue #3239](https://github.com/devantler-tech/platform/issues/3239). C-0211 sizing
+depends on a complete measurement of stored controllers and every regular/init
+container, with runtime health evidence. The original 33-workload denominator is
+historical; neither this canary nor a stale scanner verdict completes that target.
 
 The existing namespace inventory test pins the default-off controller rollout.
 Its historical demand for post-rollout evidence inside the activation commit is

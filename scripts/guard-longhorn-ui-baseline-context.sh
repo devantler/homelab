@@ -47,6 +47,7 @@ invariants() {
     .spec.template.spec.securityContext.runAsUser == 499 and
     .spec.template.spec.securityContext.runAsGroup == 486 and
     .spec.template.spec.securityContext.seccompProfile.type == "RuntimeDefault" and
+    ((.spec.template.spec.initContainers // []) | length == 0) and
     ([.spec.template.spec.volumes[] | has("emptyDir")] | all) and
     ([.spec.template.spec.containers[] | .name == "longhorn-ui" and
       .securityContext.runAsNonRoot == true and .securityContext.runAsUser == 499 and
