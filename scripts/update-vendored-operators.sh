@@ -265,14 +265,14 @@ fi
 
 if [ "${mode}" = all ]; then
   prepare_bundle \
-  cdi \
-  "https://github.com/kubevirt/containerized-data-importer/releases/download/${cdi_version}/cdi-operator.yaml" \
-  "${cdi_sha256}"
+    cdi \
+    "https://github.com/kubevirt/containerized-data-importer/releases/download/${cdi_version}/cdi-operator.yaml" \
+    "${cdi_sha256}"
 
   prepare_bundle \
-  kubevirt \
-  "https://github.com/kubevirt/kubevirt/releases/download/${kubevirt_version}/kubevirt-operator.yaml" \
-  "${kubevirt_sha256}"
+    kubevirt \
+    "https://github.com/kubevirt/kubevirt/releases/download/${kubevirt_version}/kubevirt-operator.yaml" \
+    "${kubevirt_sha256}"
 fi
 
 prepare_render_remotes
@@ -281,11 +281,11 @@ prepare_render_remotes
 # A failed second download or scan therefore cannot leave a half-updated pair.
 if [ "${mode}" = all ]; then
   mv \
-  "${work_dir}/cdi-annotated.yaml" \
-  "${repo_root}/k8s/bases/infrastructure/controllers/cdi/cdi-operator.yaml"
+    "${work_dir}/cdi-annotated.yaml" \
+    "${repo_root}/k8s/bases/infrastructure/controllers/cdi/cdi-operator.yaml"
   mv \
-  "${work_dir}/kubevirt-annotated.yaml" \
-  "${repo_root}/k8s/bases/infrastructure/controllers/kubevirt/kubevirt-operator.yaml"
+    "${work_dir}/kubevirt-annotated.yaml" \
+    "${repo_root}/k8s/bases/infrastructure/controllers/kubevirt/kubevirt-operator.yaml"
 fi
 install_render_remotes
 validate_committed_bundles
