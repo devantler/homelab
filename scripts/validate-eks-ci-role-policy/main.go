@@ -1714,10 +1714,39 @@ const (
 // error class — this fingerprint — so nothing else in the authorization surface
 // objected.
 //
+// 2026-09-06 (#3474), superseding the value below rather than rewriting the
+// account above: four workloads ran without the pod-level seccompProfile that
+// validate-pod-security/require-seccomp-profile asserts, and were passing only
+// on Kyverno's allowExistingViolations grandfathering, so any recreate would
+// have been denied. The fix adds pod securityContext VALUES to the
+// policy-reporter HelmRelease (three components) and a postRenderers patch to
+// the open-feature-operator HelmRelease.
+//
+// Conservation proven the same way, with ONE renderer on both sides: all five
+// overlays rendered from this branch and from the same tree with only those two
+// files reverted, compared over the full apiVersion|kind|namespace|name identity
+// in BOTH directions. 553 documents each side — ZERO added, ZERO removed. A
+// negative control that drops a single identity reports 1, so the comparison is
+// not vacuous. No rule, verb, resource, group, subject, ServiceAccount, role
+// reference or policy moved; the digest moves because both edited HelmReleases
+// are themselves selected authorization-capable documents.
+//
+// The value below is again CI's own computed digest (run 34026517145, head
+// 7e169553), for the reason already established: this validator pins its
+// renderer and refuses any other, and the preparing host has kubectl v1.36.1 /
+// kustomize v5.8.1. That run reported the aggregate fingerprint plus the 34
+// unresolved-substitution notes this file emits ONLY alongside a mismatch (see
+// the comment above them) — i.e. the standard explanatory companions, not a
+// second finding.
+//
 // The previous approved aggregate digest was:
 //
+//	a5dac56d1ee989648670e2bd265b56e574512b37e2e19b8caf0fe4738816d1a4
+//
+// and before it:
+//
 //	ab05bc2c95924e372c038f878872aa94e3bd81380daa96a283bd7f74e2132a69
-const expectedRenderedSurfaceSHA = "a5dac56d1ee989648670e2bd265b56e574512b37e2e19b8caf0fe4738816d1a4"
+const expectedRenderedSurfaceSHA = "1fc28a50d08f48c8cc32eb36fe012dc1322f602282ca47b02c418376a7e6dcca"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.

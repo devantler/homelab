@@ -71,6 +71,27 @@ spec:
       limits:
         memory: 256Mi
 
+    # POD-level seccompProfile, required by validate-pod-security's
+    # require-seccomp-profile rule (#3474). The chart already sets it at
+    # CONTAINER level, which that rule does not read: it asserts
+    # /spec/template/spec/securityContext/seccompProfile, so a container-only
+    # profile leaves the workload non-compliant.
+    #
+    # Not currently blocked, and that is the point. Kyverno's default
+    # allowExistingViolations lets UPDATES to an already-violating resource
+    # through, so these three have been running grandfathered rather than
+    # compliant. A CREATE is always evaluated, so a DR rebuild, a namespace
+    # teardown, or a chart change that renames the Deployment would be denied
+    # by the fail-closed webhook — which is exactly how the Crossplane provider
+    # fleet went to zero pods in #3470.
+    #
+    # Merged into the chart's existing podSecurityContext rather than replacing
+    # it: the core block carries fsGroup 1234, and the ui/plugin blocks carry
+    # runAsUser/runAsGroup, all of which must survive.
+    podSecurityContext:
+      seccompProfile:
+        type: RuntimeDefault
+
     ui:
       enabled: true
       # Stateless web frontend; no leader election needed (#2572).
@@ -91,6 +112,12 @@ spec:
           memory: 64Mi
         limits:
           memory: 128Mi
+      # See the core podSecurityContext above (#3474). The chart's ui block
+      # carries runAsUser/runAsGroup, which this merges with rather than
+      # replaces.
+      podSecurityContext:
+        seccompProfile:
+          type: RuntimeDefault
 
     plugin:
       kyverno:
@@ -117,6 +144,12 @@ spec:
             memory: 64Mi
           limits:
             memory: 128Mi
+        # See the core podSecurityContext above (#3474). The chart's
+        # plugin.kyverno block carries runAsUser/runAsGroup, which this merges
+        # with rather than replaces.
+        podSecurityContext:
+          seccompProfile:
+            type: RuntimeDefault
 
     # No prometheus-operator in the cluster, so skip the ServiceMonitor the
     # monitoring sub-chart would create (matches opencost's metrics wiring).
