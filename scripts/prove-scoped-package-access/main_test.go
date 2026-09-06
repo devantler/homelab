@@ -5,7 +5,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -63,6 +65,11 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 		{"empty scope postcheck cannot retain earlier fields", "empty-scope-postcheck", 2},
 		{"partial scope postcheck cannot retain earlier fields", "partial-scope-postcheck", 2},
 		{"redirect cannot receive a credential", "redirect", 2},
+		{"own token exchange unclassified forbidden", "own-token-unclassified", 2},
+		{"own token exchange throttled", "own-token-throttled", 2},
+		{"own token exchange malformed", "own-token-malformed", 2},
+		{"own token exchange missing token", "own-token-empty", 2},
+		{"own manifest response malformed", "own-manifest-malformed", 2},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var redirected, crossed bool
@@ -127,6 +134,23 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 					_, _ = fmt.Fprintf(w, `{"name":%q,"package_type":"container","visibility":"private","owner":{"login":"devantler-tech"},"repository":{"full_name":%q}}`, name, "devantler-tech/"+linked)
 				case r.URL.Path == "/token":
 					_, secret, _ := r.BasicAuth()
+					if secret == "scoped-secret" {
+						switch tc.fault {
+						case "own-token-unclassified":
+							w.WriteHeader(403)
+							_, _ = fmt.Fprint(w, "scoped-secret baseline-secret ::error::untrusted")
+							return
+						case "own-token-throttled":
+							w.WriteHeader(429)
+							return
+						case "own-token-malformed":
+							_, _ = fmt.Fprint(w, "{scoped-secret")
+							return
+						case "own-token-empty":
+							_, _ = fmt.Fprint(w, `{}`)
+							return
+						}
+					}
 					if tc.fault == "bad-token" {
 						_, _ = fmt.Fprint(w, `{broken`)
 						return
@@ -144,6 +168,10 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 						return
 					}
 					if credential == "scoped-secret" {
+						if own && tc.fault == "own-manifest-malformed" {
+							_, _ = fmt.Fprint(w, "{baseline-secret")
+							return
+						}
 						if own && (tc.fault == "own-denied" || (crossed && tc.fault == "expired-after-cross")) {
 							w.WriteHeader(403)
 							_, _ = fmt.Fprint(w, `{"errors":[{"code":"DENIED"}]}`)
@@ -215,6 +243,24 @@ func TestProofRequiresBothDirectionsAndIndependentControls(t *testing.T) {
 			}
 			if tc.fault == "wrong-repository-token" && (len(pulls) != 0 || !strings.Contains(output.String(), "reason=token_repository_scope_unverified\n")) {
 				t.Errorf("foreign repository scope was not rejected before any pull: pulls=%d output=%s", len(pulls), output.String())
+			}
+			// Losing the failed stage/status must fail these cases; raw response text cannot substitute for the classification.
+			wantDiagnostic := map[string]string{
+				"own-token-unclassified": "registry_phase=token_exchange http_status=403 failure_class=unclassified_denial",
+				"own-token-throttled":    "registry_phase=token_exchange http_status=429 failure_class=http_status",
+				"own-token-malformed":    "registry_phase=token_exchange http_status=200 failure_class=invalid_json",
+				"own-token-empty":        "registry_phase=token_exchange http_status=200 failure_class=missing_token",
+				"own-manifest-malformed": "registry_phase=manifest http_status=200 failure_class=invalid_json",
+				"cross-unclassified-403": "registry_phase=manifest http_status=403 failure_class=unclassified_denial",
+				"cross-429":              "registry_phase=manifest http_status=429 failure_class=http_status",
+				"cross-500":              "registry_phase=manifest http_status=500 failure_class=http_status",
+				"cross-404":              "registry_phase=manifest http_status=404 failure_class=http_status",
+			}[tc.fault]
+			if wantDiagnostic != "" && !strings.Contains(output.String(), wantDiagnostic+"\n") {
+				t.Errorf("missing safe failure diagnosis %q in %q", wantDiagnostic, output.String())
+			}
+			if strings.Contains(output.String(), "::error::") || strings.Contains(output.String(), server.URL) {
+				t.Errorf("raw response or endpoint leaked: %q", output.String())
 			}
 			if strings.Contains(output.String(), "secret") {
 				t.Errorf("credential or raw error leaked: %s", output.String())
@@ -310,5 +356,66 @@ exit %d
 				t.Fatal("wrong pull identity")
 			}
 		})
+	}
+}
+
+// roundTripFunc injects transport faults below the real request and manifest logic.
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+type failingResponseBody struct{}
+
+func (failingResponseBody) Read([]byte) (int, error) {
+	return 0, errors.New("scoped-secret ::error::raw read failure")
+}
+func (failingResponseBody) Close() error { return nil }
+
+// TestRegistryRequestFailuresKeepTheirPhaseAndSafeClass catches discarded request
+// status/error classes without permitting network errors or response contents into output.
+func TestRegistryRequestFailuresKeepTheirPhaseAndSafeClass(t *testing.T) {
+	for _, phase := range []string{"token_exchange", "manifest"} {
+		for _, tc := range []struct {
+			name   string
+			status int
+			class  string
+		}{
+			{"transport", 0, "transport"},
+			{"timeout", 0, "timeout"},
+			{"read", 200, "response_read"},
+			{"oversized", 200, "response_size"},
+		} {
+			t.Run(phase+"/"+tc.name, func(t *testing.T) {
+				client := restrictedClient()
+				client.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+					if phase == "manifest" && req.URL.Path == "/token" {
+						return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{"token":"scoped-secret"}`)), Header: make(http.Header)}, nil
+					}
+					switch tc.name {
+					case "transport":
+						return nil, errors.New("scoped-secret ::error::raw transport failure")
+					case "timeout":
+						return nil, fmt.Errorf("scoped-secret: %w", context.DeadlineExceeded)
+					case "read":
+						return &http.Response{StatusCode: 200, Body: failingResponseBody{}, Header: make(http.Header)}, nil
+					default:
+						return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(strings.Repeat("x", (4<<20)+1))), Header: make(http.Header)}, nil
+					}
+				})
+				var out bytes.Buffer
+				p := proof{registryURL: "https://registry.invalid", client: client, output: &out}
+				read := p.manifest(context.Background(), credential{"synthetic-user", "scoped-secret"}, "synthetic-package", "latest")
+				if read.status != 0 || read.digest != "" {
+					t.Fatal("request failure became an accepted manifest or denial")
+				}
+				if got := p.result(2, "registry_read_unavailable", read.diagnostic); got != 2 {
+					t.Fatalf("exit=%d", got)
+				}
+				want := fmt.Sprintf("scoped_package_proof=UNKNOWN reason=registry_read_unavailable registry_phase=%s http_status=%d failure_class=%s\n", phase, tc.status, tc.class)
+				if out.String() != want {
+					t.Fatalf("safe classification=%q, want %q", out.String(), want)
+				}
+			})
+		}
 	}
 }

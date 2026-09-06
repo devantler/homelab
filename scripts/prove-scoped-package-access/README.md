@@ -32,6 +32,22 @@ The process and workflow preserve three outcomes:
 | 1 | FAIL | A valid scoped token could not read its own package, or could read the other package. |
 | 2 | UNKNOWN | Metadata, privacy, token scope, full download or availability could not be established. |
 
+Unavailable registry reads append three diagnostic fields to the UNKNOWN result:
+
+- `registry_phase`: `token_exchange` or `manifest`.
+- `http_status`: the observed numeric status, or `0` when no HTTP response arrived.
+- `failure_class`: a fixed category such as `http_status`, `unclassified_denial`,
+  `invalid_json`, `missing_token`, `invalid_manifest`, `digest_mismatch`,
+  `timeout`, `transport`, `response_read`, or `response_size`. An invalid local
+  request uses `invalid_request`; an unrecognized internal error uses
+  `request_unavailable`.
+
+The status is retained when a response body cannot be read or exceeds the 4 MiB
+limit. These fields classify the failed operation; they do not establish package
+authorization. No response text, headers, endpoints, package identities, digests,
+or underlying error messages are printed. Metadata and full-download failures
+retain their fixed reason codes.
+
 A missing image, throttling, server error, redirect or malformed response never
 counts as a successful restriction. A failed or unknown run does not authorize
 registry-authentication changes. The spike's result must be recorded before its
