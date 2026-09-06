@@ -248,6 +248,12 @@
       "matchPackageNames": ["alex1989hu/kubelet-serving-cert-approver"],
       "automerge": false,
       "addLabels": ["security/review-required"]
+    },
+    {
+      "description": "Review the Kyverno chart and CI policy engine together. Grouping can produce a one-sided update because their releases are independent; require the chart appVersion to match the shared CLI pin before merging. automerge:false follows the broad controller and major-update rules so they cannot bypass this comparison.",
+      "matchPackageNames": ["kyverno", "kyverno/kyverno"],
+      "groupName": "kyverno",
+      "automerge": false
     }
   ],
   "ignorePaths": [

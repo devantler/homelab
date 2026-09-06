@@ -6,7 +6,8 @@ production Flux layers and reads `spec.package` from Crossplane `Provider`,
 `Function`, and `Configuration` resources. OCI source artifacts and third-party
 packages are outside this inventory.
 
-Run the same check locally with Go, kubectl, yq v4, jq, cosign, and Kyverno 1.18.2:
+Run the same check locally with Go, kubectl, yq v4, jq, cosign, and the Kyverno CLI
+version pinned in [the shared CI version script](../.github/scripts/kyverno-version.sh):
 
 ```sh
 bash scripts/check-first-party-package-signatures.sh
@@ -15,7 +16,7 @@ bash scripts/check-first-party-package-signatures.sh
 The script only renders files and reads the registry. It does not contact the
 cluster. For private packages, authenticate to GHCR through a Docker config that
 the credential can read; CI uses its package-read token and removes its temporary
-Docker config after the check. Kyverno 1.18.2's CLI has no Kubernetes Secret
+Docker config after the check. The CLI's offline evaluation has no Kubernetes Secret
 lister, so an ephemeral policy copy replaces its cluster pull-secret references
 with the default Docker credential provider. Image selection, signing identities,
 and validation expressions are preserved. This does not prove the live cluster's

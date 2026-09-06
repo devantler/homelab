@@ -226,6 +226,7 @@ jobs:
               - 'scripts/validate-naming.py'
               - 'scripts/validate-embedded-json.py'
               - '.github/scripts/setup-ksail.sh'
+              - '.github/scripts/kyverno-version.sh'
               - 'scripts/tests/test-setup-ksail.sh'
               - '.github/scripts/setup-talosctl.sh'
               - 'scripts/tests/test-setup-talosctl.sh'
@@ -642,10 +643,14 @@ jobs:
           echo "negative control refused a wrong subject, and the positive path still verifies"
           echo "=> the check above is not vacuous"
 
+      - name: ⚖️ Read Kyverno CLI version
+        id: kyverno-version
+        run: bash .github/scripts/kyverno-version.sh
+
       - name: ⚖️ Install Kyverno CLI for package admission checks
         uses: kyverno/action-install-cli@fcee92fca5c883169ef9927acf543e0b5fc58289 # v0.2.0
         with:
-          release: v1.18.2
+          release: ${{ steps.kyverno-version.outputs.release }}
 
       - name: 🔐 Verify proposed first-party Crossplane packages
         # The package image becomes the provider controller's Pod image. Check
@@ -985,14 +990,18 @@ jobs:
           shellcheck scripts/tests/test-github-config-role-activation-parity.sh
           bash scripts/tests/test-github-config-role-activation-parity.sh
 
+      - name: ⚖️ Read Kyverno CLI version
+        if: needs.changes.outputs.k8s == 'true'
+        id: kyverno-version
+        run: bash .github/scripts/kyverno-version.sh
+
       - name: ⚖️ Install Kyverno CLI
         if: needs.changes.outputs.k8s == 'true'
-        # Pinned to the version the cluster actually runs (the kyverno Helm
-        # release is v1.18.2), so a policy that passes here is evaluated by the
-        # same engine that admits it in production. Bump both together.
+        # Both admission checks and policy fixtures consume the shared CLI pin.
+        # Review it with the Kyverno chart's appVersion when updating the group.
         uses: kyverno/action-install-cli@fcee92fca5c883169ef9927acf543e0b5fc58289 # v0.2.0
         with:
-          release: v1.18.2
+          release: ${{ steps.kyverno-version.outputs.release }}
 
       - name: 🔒 Validate Umami provisioning serialization
         if: needs.changes.outputs.k8s == 'true'
