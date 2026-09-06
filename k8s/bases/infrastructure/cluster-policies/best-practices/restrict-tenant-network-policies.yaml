@@ -330,8 +330,8 @@ spec:
           pin a tenant label with the `k8s:` prefix instead; `kube-apiserver` is
           the only entity a tenant may name; and a CIDR prefix shorter than /16
           — or a CIDR inside private, cluster, link-local, loopback or multicast
-          space, or a CIDRSet entry naming a CiliumCIDRGroup instead of a
-          literal cidr — reaches outside this
+          space, or a CIDRSet entry naming a CiliumCIDRGroup, with or without a
+          literal cidr beside it — reaches outside this
           namespace, as do a rule with only toPorts, a toFQDNs pattern of `*`,
           and a toServices entry that names no service.
           Name the destinations this workload actually needs.
