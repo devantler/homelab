@@ -1,0 +1,20 @@
+---
+# Validate-only background scans run in the reports controller. Apply this
+# read-only grant in the controllers layer before the policy in infrastructure,
+# so existing Roles and ClusterRoles are included without forbidden watch loops.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno:reports-controller:read-rbac
+  labels:
+    rbac.kyverno.io/aggregate-to-reports-controller: "true"
+rules:
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - clusterroles
+    verbs:
+      - get
+      - list
+      - watch
