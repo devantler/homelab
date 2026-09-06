@@ -254,6 +254,8 @@ jobs:
               # kyverno-test.yaml would otherwise leave this filter false, so
               # neither kyverno test nor the shell gate would run on its own change.
               - 'tests/add-baseline-context/**'
+              - 'tests/audit-privileged-rbac/**'
+              - 'scripts/tests/test-audit-privileged-rbac.sh'
               # The declarative fixtures are the other half of that test: a PR that
               # touches only resources.yaml or kyverno-test.yaml would otherwise leave
               # the k8s filter false, so neither kyverno test nor the shell gate runs.
@@ -1007,6 +1009,8 @@ jobs:
         # required; the CLI evaluates the committed ClusterPolicy files offline.
         run: |
           kyverno test ./tests
+          shellcheck scripts/tests/test-audit-privileged-rbac.sh
+          bash scripts/tests/test-audit-privileged-rbac.sh
           shellcheck scripts/tests/test-restrict-tenant-secret-stores.sh
           bash scripts/tests/test-restrict-tenant-secret-stores.sh
           shellcheck scripts/tests/test-restrict-tenant-network-policies.sh

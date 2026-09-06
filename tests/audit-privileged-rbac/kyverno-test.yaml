@@ -1,0 +1,62 @@
+---
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: audit-privileged-rbac
+policies:
+  - ../../k8s/bases/infrastructure/cluster-policies/best-practices/audit-privileged-rbac.yaml
+resources:
+  - resources.yaml
+results:
+  - policy: audit-privileged-rbac
+    rule: privileged-rules
+    kind: ClusterRole
+    result: pass
+    resources:
+      - read-only-rbac
+      - application-manager
+      - read-all
+      - inert-custom-group-verb
+      - inert-resource-verb
+      - read-users
+      - read-auth-metadata
+      - aggregate-not-yet-populated
+      - null-rules
+      - non-resource-health-reader
+  - policy: audit-privileged-rbac
+    rule: privileged-rules
+    kind: ClusterRole
+    result: fail
+    resources:
+      - triple-wildcard
+      - wildcard-with-extra-values
+      - bind-role
+      - escalate-clusterrole
+      - rbac-wildcard-verbs
+      - rbac-wildcard-resources
+      - rbac-wildcard-group
+      - impersonate-users
+      - impersonate-groups
+      - impersonate-wildcard-verbs
+      - impersonate-wildcard-group
+      - impersonate-wildcard-resources
+      - impersonate-uids
+      - impersonate-extras
+      - impersonate-extras-subresource-wildcard
+      - impersonate-auth-wildcard-verbs
+      - impersonate-auth-wildcard-resources
+      - resource-name-constrained
+  - policy: audit-privileged-rbac
+    rule: privileged-rules
+    kind: Role
+    result: pass
+    resources:
+      - sample/namespaced-reader
+      - sample/namespaced-null-rules
+  - policy: audit-privileged-rbac
+    rule: privileged-rules
+    kind: Role
+    result: fail
+    resources:
+      - sample/namespaced-wildcard
+      - sample/impersonate-serviceaccounts
