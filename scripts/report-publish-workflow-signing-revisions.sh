@@ -430,15 +430,20 @@ tag_commit() {
   printf '%s\n' "$sha"
 }
 
+# Classify publication for <repo> <tag> <expected-commit-sha> using complete Actions data.
+# Returns 0 for a matching success, 1 for no success or an invalid expected SHA,
+# 2 for success only at another commit, and 3 when the response cannot establish an answer.
+# Keeps stdout empty; query results produce one bounded diagnostic on stderr.
 tag_was_published() {
-  local repo="$1" tag="$2" sha="$3" runs
+  local repo="$1" tag="$2" sha="$3" runs summary diagnostic
   # The commit is REQUIRED, never defaulted: an empty expected SHA would make the match below
   # vacuous and restore exactly the moved-tag hole this argument exists to close.
   is_sha "$sha" || return 1
   # Scoped to this tag rather than fetching the newest 100 runs of the whole repository: on a
   # repository with frequent pushes a candidate release's run falls off that first page, every
   # retry re-fetches the same incomplete page, and a healthy consumer stays UNRESOLVED until the
-  # next release. Filtering by ref makes the result set small enough that one page is complete.
+  # next release. Filtering by ref usually fits one page; the count check below refuses an
+  # incomplete page rather than assuming that a missing run never published.
   # The tag goes in as a PARAMETER, not interpolated into the query string. A tag may
   # carry SemVer build metadata (`v2.0.0+build.1`) and this script resolves such tags as
   # themselves, so a raw `+` reaches the wire unencoded, where query parsing reads it as a
@@ -450,37 +455,59 @@ tag_was_published() {
   # caller's walk then stepped BACKWARD and reported an older release's signing revision as
   # the signer of what is deployed -- a confident wrong answer built from a transient error.
   # Exit 3 says the question could not be answered, so the caller refuses instead of guessing.
-  runs="$(gh_retry api --method GET "repos/devantler-tech/${repo}/actions/runs" \
-    --raw-field "branch=${tag}" --raw-field event=push --raw-field per_page=100)" || return 3
-  # `head_sha` pins the run to the commit the tag resolves to TODAY. A historical run for a
-  # since-moved tag still carries the old commit and no longer counts as evidence that the
-  # artifact the current commit describes was ever published.
-  if printf '%s' "$runs" |
-    jq -r --arg t "$tag" --arg s "$sha" '
-      [.workflow_runs[]
-       | select(.head_branch == $t and .path == ".github/workflows/cd.yaml"
-                and .head_sha == $s)
-       | .conclusion] | .[]' 2>/dev/null |
-    grep -qx 'success'; then
-    return 0
+  # Only bounded, escaped identifiers and fixed classifications/counts enter the log.
+  # Response bodies, arbitrary fields and parser/API errors never become diagnostics.
+  printf -v diagnostic 'publication-evidence repo=%q tag=%q' "${repo:0:128}" "${tag:0:128}"
+  if ! runs="$(gh_retry api --method GET "repos/devantler-tech/${repo}/actions/runs" \
+    --raw-field "branch=${tag}" --raw-field event=push --raw-field per_page=100)"; then
+    printf '%s response=query-failed classification=query-unknown\n' "$diagnostic" >&2
+    return 3
   fi
-  # 🔴 A MOVED TAG IS NOT THE SAME AS AN UNPUBLISHED ONE, and collapsing them would swap one
-  # wrong answer for another. "Never published" is ordinary — the walk steps to the previous
-  # release. But a tag with a successful run at a DIFFERENT commit has published something,
-  # just not what it now points at; walking silently past it would report an older release's
-  # workflow revision as the signer of what is deployed, which is the confident wrong answer
-  # this report exists to avoid. It is an anomaly, so it is surfaced by name (exit 2) and the
-  # caller refuses rather than guessing which commit the deployed artifact came from.
-  if printf '%s' "$runs" |
-    jq -r --arg t "$tag" --arg s "$sha" '
-      [.workflow_runs[]
-       | select(.head_branch == $t and .path == ".github/workflows/cd.yaml"
-                and .head_sha != null and .head_sha != $s)
-       | .conclusion] | .[]' 2>/dev/null |
-    grep -qx 'success'; then
-    return 2
+  # A successful HTTP read can still be malformed or incomplete. In a jq|grep condition,
+  # parser errors used to mean "unpublished", while .workflow_runs[] also accepted object
+  # values as runs. Validate one document and every classification field before selecting.
+  if ! summary="$(printf '%s' "$runs" | jq -ers --arg t "$tag" --arg s "$sha" '
+    if length != 1 then error("expected one response") else .[0] end
+    | if type == "object"
+         and has("total_count") and has("workflow_runs")
+         and (.total_count | type == "number" and . >= 0 and . <= 9007199254740991 and floor == .)
+         and (.workflow_runs | type == "array")
+         and all(.workflow_runs[];
+           type == "object"
+           and has("head_branch") and has("path") and has("head_sha") and has("conclusion")
+           and (.head_branch | type == "string" or type == "null")
+           and (.path | type == "string")
+           and (.head_sha | type == "string" and test("^[0-9a-f]{40}$"))
+           and (.conclusion | type == "string" or type == "null"))
+      then . else error("invalid response shape") end
+    | .workflow_runs as $runs
+    | [$runs[] | select(.head_branch == $t and .path == ".github/workflows/cd.yaml")] as $matching
+    # Keep comparisons in jq: valid JSON integers can use exponent notation, which
+    # shell integer tests reject. Arithmetic normalizes their diagnostic spelling;
+    # the validation above bounds counts to integers jq can represent exactly.
+    | [(.total_count == ($runs | length)), (.total_count + 0), ($runs | length), ($matching | length),
+       ([$matching[] | select(.head_sha == $s and .conclusion == "success")] | length),
+       ([$matching[] | select(.head_sha != $s and .conclusion == "success")] | length)]
+    | @tsv' 2>/dev/null)"; then
+    printf '%s response=invalid classification=query-unknown\n' "$diagnostic" >&2
+    return 3
   fi
-  return 1
+  local complete total returned matching successful_current successful_other response=complete classification rc
+  IFS=$'\t' read -r complete total returned matching successful_current successful_other <<<"$summary"
+  if [ "$complete" != true ]; then
+    response=incomplete classification=query-unknown rc=3
+  # `head_sha` binds publication to the tag current commit. Preserve successful current
+  # publication precedence; only a success at another commit is a moved-tag anomaly.
+  elif [ "$successful_current" -gt 0 ]; then
+    classification=published rc=0
+  elif [ "$successful_other" -gt 0 ]; then
+    classification=moved-tag rc=2
+  else
+    classification=unpublished rc=1
+  fi
+  printf '%s response=%s total=%s returned=%s matching=%s successful-current=%s successful-other=%s classification=%s\n' \
+    "$diagnostic" "$response" "$total" "$returned" "$matching" "$successful_current" "$successful_other" "$classification" >&2
+  return "$rc"
 }
 
 # The tag that produced the DEPLOYED artifact.
