@@ -239,24 +239,24 @@ results:
       - tenant-ns/attack-cidrset-group-selector-beside-cidr-ingress
     kind: CiliumNetworkPolicy
     result: fail
-  # CONTROL: public CIDRs stay admitted by BOTH rules — including the /16s
-  # that sit immediately outside each refused block, so the boundaries are
-  # proven exact, and a CIDRSet entry with a literal cidr plus `except`.
+  # CONTROL: CIDRs outside the protected ranges stay admitted by BOTH rules:
+  # a public IPv6 destination, documentation ranges, boundary neighbours and
+  # a CIDRSet entry with a literal cidr plus `except`.
   - policy: restrict-tenant-network-policies
     rule: cnp-egress-destinations-must-be-constrained
     resources:
       - tenant-ns/allow-web-egress-public-v6
-      - tenant-ns/allow-web-egress-public-cidrset-except
-      - tenant-ns/allow-web-ingress-from-public-cidr
-      - tenant-ns/allow-web-egress-public-adjacent-to-reserved
+      - tenant-ns/allow-web-egress-documentation-cidrset-except
+      - tenant-ns/allow-web-ingress-from-documentation-cidr
+      - tenant-ns/allow-web-egress-outside-protected-ranges
     kind: CiliumNetworkPolicy
     result: pass
   - policy: restrict-tenant-network-policies
     rule: cnp-ingress-sources-must-be-constrained
     resources:
       - tenant-ns/allow-web-egress-public-v6
-      - tenant-ns/allow-web-egress-public-cidrset-except
-      - tenant-ns/allow-web-ingress-from-public-cidr
-      - tenant-ns/allow-web-egress-public-adjacent-to-reserved
+      - tenant-ns/allow-web-egress-documentation-cidrset-except
+      - tenant-ns/allow-web-ingress-from-documentation-cidr
+      - tenant-ns/allow-web-egress-outside-protected-ranges
     kind: CiliumNetworkPolicy
     result: pass

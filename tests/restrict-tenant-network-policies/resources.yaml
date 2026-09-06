@@ -465,7 +465,7 @@ specs:
 ---
 # ATTACK: four /8 prefixes. Each is individually shorter than the /16 floor, so
 # each entry is refused on its own — this fixture pins that per-entry rejection.
-# Separate deny-list fixtures below refuse non-global blocks even when every
+# Separate deny-list fixtures below refuse the protected ranges even when every
 # entry meets the prefix floor. Aggregate reach across public destinations is
 # outside this namespace-boundary policy; this fixture tests the floor alone.
 apiVersion: cilium.io/v2
@@ -1184,7 +1184,7 @@ spec:
         - "ff00::/16"
         - "ffff::/16"
 ---
-# ATTACK: a reserved entry sitting BESIDE a legitimate public one. Cilium
+# ATTACK: a reserved entry sitting BESIDE an admitted documentation range. Cilium
 # unions allow rules, so the reserved entry decides — the check is per entry.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -1248,7 +1248,7 @@ spec:
 ---
 # ── DENY cases: a CIDRSet entry carrying BOTH a literal cidr AND a group ─────
 # Cilium applies every populated source in a CIDRSet entry, so a harmless
-# public `cidr` beside a `cidrGroupRef` — or beside an empty
+# documentation `cidr` beside a `cidrGroupRef` — or beside an empty
 # `cidrGroupSelector`, which names every group — still grants the group's
 # ranges. A whitelist that only counts entries WITH a cidr admits these: the
 # entry contributes one item to both sides of the count. Each was measured
@@ -1309,7 +1309,7 @@ spec:
         - cidr: 203.0.113.0/24
           cidrGroupSelector: {}
 ---
-# ── ADMIT cases: public CIDRs, including the deny-list's exact neighbours ────
+# ── ADMIT cases: CIDRs outside the protected ranges ─────────────────────────
 # OK: a public IPv6 destination.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -1326,10 +1326,11 @@ spec:
 ---
 # OK: a CIDRSet entry with a literal cidr and an `except` — the whitelist asks
 # only that `cidr` be present, so the narrowing spelling stays admitted.
+# This documentation range is outside the protected list; it is not globally reachable.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: allow-web-egress-public-cidrset-except
+  name: allow-web-egress-documentation-cidrset-except
   namespace: tenant-ns
 spec:
   endpointSelector:
@@ -1341,11 +1342,11 @@ spec:
           except:
             - 203.0.113.7/32
 ---
-# OK, ingress side: a public source.
+# OK, ingress side: a documentation source outside the protected list.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: allow-web-ingress-from-public-cidr
+  name: allow-web-ingress-from-documentation-cidr
   namespace: tenant-ns
 spec:
   endpointSelector:
@@ -1359,12 +1360,12 @@ spec:
             - port: "8080"
               protocol: TCP
 ---
-# OK: the public /16s that sit IMMEDIATELY OUTSIDE each refused block — the
-# control that the deny-list's boundaries are exact rather than generous.
+# OK: boundary neighbours and a documentation range outside the protected list.
+# Admission proves these entries miss the deny-list, not that they are globally reachable.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: allow-web-egress-public-adjacent-to-reserved
+  name: allow-web-egress-outside-protected-ranges
   namespace: tenant-ns
 spec:
   endpointSelector:

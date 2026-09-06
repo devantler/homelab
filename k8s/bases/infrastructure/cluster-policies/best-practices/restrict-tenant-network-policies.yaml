@@ -53,14 +53,16 @@
 #     the same ground. A prefix-length floor refuses every such split at once.
 #     The floor is PER ENTRY and cannot bound an aggregate — every /16 in turn
 #     still unions to an address family — so it is paired with a DENY-LIST of
-#     the address space that is non-global by definition: the private, CGNAT,
+#     these protected address ranges: private, CGNAT,
 #     loopback, link-local (cloud metadata), benchmarking, multicast and
 #     reserved blocks for IPv4, and ::/8 (every IPv4-embedding spelling), 6to4,
 #     ULA, link-local, site-local and multicast for IPv6. That is the boundary
 #     this policy holds: the cluster's own address space — the node network,
 #     the pod network and the Service CIDR all live in 10/8 — the host, and the
 #     metadata endpoint. Any set that covers an address family contains one of
-#     those blocks and is refused. What the deny-list does NOT bound is a set
+#     those blocks and is refused. This is not an IANA global-reachability
+#     classifier: documentation ranges, for example, are outside this list.
+#     What the deny-list does NOT bound is a set
 #     of individually public entries covering most of the public internet;
 #     that is the reach `toFQDNs` with a fixed suffix already grants, it stays
 #     outside the namespace floor, and bounding it needs a per-namespace quota
@@ -133,7 +135,7 @@ metadata:
       constraint and may not name a reserved identity, another namespace or
       another cluster by label key, only `kube-apiserver` (and `ingress` on the
       ingress side) may be named as an entity, CIDR entries shorter than /16
-      or inside non-global address space are refused and every CIDRSet entry
+      or inside the protected address ranges listed above are refused and every CIDRSet entry
       must carry a literal cidr and name no CiliumCIDRGroup, and the generated `default-deny` and
       `allow-dns` names are reserved. Ordinary additive allow-lists are
       unaffected, as are policies applied by flux-system's kustomize-controller
@@ -287,7 +289,7 @@ spec:
                 operator: NotEquals
                 value: "{{ length(request.object.spec.ingress[].fromCIDRSet[].cidr || `[]`) }}"
               # …and refuse the group fields OUTRIGHT. Cilium applies every
-              # populated source in a CIDRSet entry, so a public `cidr` beside a
+              # populated source in a CIDRSet entry, so an admitted `cidr` beside a
               # `cidrGroupRef` — or beside an empty `cidrGroupSelector`, which
               # names every group — still grants the group's ranges, and the
               # count above admits it (one entry on both sides). Keyed on the
@@ -374,7 +376,7 @@ spec:
               - key: "{{ length(request.object.spec.egress[].toCIDRSet[].cidr || `[]` | [?regex_match('^[^/]*/0*([0-9]|1[0-5])$', @)]) }}"
                 operator: GreaterThan
                 value: 0
-              # Non-global address-space DENY-LIST and the literal-cidr
+              # Protected address-range DENY-LIST and the literal-cidr
               # whitelist for CIDRSet entries — same pattern and reasoning as
               # the ingress rule.
               - key: "{{ length(request.object.spec.egress[].toCIDR[] || `[]` | [?regex_match('(?i)^((0|10|127)[.]|100[.](6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])[.]|169[.]254[.]|172[.](1[6-9]|2[0-9]|3[01])[.]|192[.]168[.]|198[.]1[89][.]|(22[4-9]|2[3-5][0-9])[.]|0*[0-9a-f]?[0-9a-f]?:|2002:|f[cd][0-9a-f][0-9a-f]:|fe[89a-f][0-9a-f]:|ff[0-9a-f][0-9a-f]:)', @)]) }}"
