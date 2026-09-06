@@ -1245,7 +1245,6 @@ spec:
     - fromCIDRSet:
         - cidrGroupRef: platform-ingress-sources
 ---
----
 # ── DENY cases: a CIDRSet entry carrying BOTH a literal cidr AND a group ─────
 # Cilium applies every populated source in a CIDRSet entry, so a harmless
 # documentation `cidr` beside a `cidrGroupRef` — or beside an empty
