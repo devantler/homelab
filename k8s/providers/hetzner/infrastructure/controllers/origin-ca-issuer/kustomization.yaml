@@ -5,5 +5,6 @@ resources:
   - helm-release.yaml
   - helm-repository.yaml
   - pod-disruption-budget.yaml
-  - https://raw.githubusercontent.com/cloudflare/origin-ca-issuer/trunk/deploy/crds/cert-manager.k8s.cloudflare.com_clusteroriginissuers.yaml
-  - https://raw.githubusercontent.com/cloudflare/origin-ca-issuer/trunk/deploy/crds/cert-manager.k8s.cloudflare.com_originissuers.yaml
+  # Immutable source commits/digests live in scripts/update-vendored-operators.sh.
+  - custom-resource-definition-clusteroriginissuers.yaml
+  - custom-resource-definition-originissuers.yaml

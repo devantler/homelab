@@ -1754,7 +1754,15 @@ const (
 // changed documents contain only the reviewed SELinux policy/template updates.
 // Removing one Namespace in a negative control reports exactly one removal.
 // Previous aggregate: 1fc28a50d08f48c8cc32eb36fe012dc1322f602282ca47b02c418376a7e6dcca.
-const expectedRenderedSurfaceSHA = "d76e357336f1c4817766463bf7990648b5c8b019939aaf680606929d51bd46b4"
+// Re-approved for #3445/#3446 using checksum-verified kubectl v1.36.2 /
+// Kustomize v5.8.1 against main 6a4ca89. All five roots retain 555 identities,
+// with no additions, removals or duplicates. Exactly three objects change:
+// cert-approver's certificates ClusterRole, default events RoleBinding and
+// Deployment gain only reviewed Checkov annotations. Removing those annotations
+// restores byte-equivalent parsed objects; no RBAC grant or workload field
+// changes. A negative control removing one identity reports exactly one removal.
+// Previous aggregate: d76e357336f1c4817766463bf7990648b5c8b019939aaf680606929d51bd46b4.
+const expectedRenderedSurfaceSHA = "ea907ed3b00ccb2086e2445e8d7ef9e1050cf0c77f4779c1f7d1b03cb8950191"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
