@@ -165,8 +165,8 @@ runs:
     - name: 🧪 Check the Longhorn UI baseline canary
       id: longhorn_ui_baseline
       # Only arms when the desired source declares the two defaults and the
-      # live template still lacks them. Already-applied and reverted canaries
-      # do not impose these initial-rollout assumptions on unrelated deploys.
+      # live template lacks them or has no successful proof for this object.
+      # Proven and reverted canaries do not constrain unrelated deployments.
       shell: bash
       run: bash scripts/guard-longhorn-ui-baseline-context.sh before-publish
 
@@ -302,11 +302,21 @@ runs:
       run: ./scripts/wait-for-platform-flux-revision.sh "${PLATFORM_MANIFEST_DIGEST}"
 
     - name: 🧪 Verify the Longhorn UI baseline canary
+      id: verify_longhorn_ui_baseline
       if: steps.longhorn_ui_baseline.outputs.rollout_required == 'true'
       # A failed after-apply proof fails this deployment. The merge queue's
       # existing unsuccessful-deploy heal restores main through this action.
       shell: bash
       run: bash scripts/guard-longhorn-ui-baseline-context.sh after-reconcile
+
+    - name: 🧾 Record the successful Longhorn UI canary proof
+      if: steps.longhorn_ui_baseline.outputs.rollout_required == 'true'
+      # The JSON Patch atomically tests the final observed UID and resourceVersion;
+      # a concurrent write or replacement cannot receive an old success receipt.
+      shell: bash
+      env:
+        LONGHORN_UI_BASELINE_PROOF_PATCH: ${{ steps.verify_longhorn_ui_baseline.outputs.proof_patch }}
+      run: kubectl --context admin@prod patch deployment longhorn-ui --namespace longhorn-system --type json --patch "${LONGHORN_UI_BASELINE_PROOF_PATCH}"
 
     - name: 🛡️ Restore autoscaling once the released revision is Ready
       id: cilium_rollout_gate_release

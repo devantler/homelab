@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Read-only guard for the first source-owned Longhorn UI baseline rollout.
-# Already-configured workloads and a source rollback disarm the canary, so it
+# Successfully proven workloads and a source rollback disarm the canary, so it
 # does not freeze the chart's replica count or identity on future deployments.
 set -euo pipefail
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -30,6 +30,11 @@ read_ui() {
 has_defaults() {
   jq -e '.spec.template.spec.securityContext.fsGroupChangePolicy == "OnRootMismatch" and
     ([.spec.template.spec.containers[] | .securityContext.seLinuxOptions] == [{}])' \
+    "${scratch}/deployment.json" >/dev/null
+}
+has_proof() {
+  jq -e '.metadata.uid != null and
+    .metadata.annotations["pod-security.devantler.tech/longhorn-ui-baseline-proof"] == .metadata.uid' \
     "${scratch}/deployment.json" >/dev/null
 }
 invariants() {
@@ -73,7 +78,7 @@ if [[ "${phase}" == before-publish ]]; then
     exit 0
   fi
   read_ui
-  if [[ -s "${scratch}/deployment.json" ]] && has_defaults; then
+  if [[ -s "${scratch}/deployment.json" ]] && has_defaults && has_proof; then
     output false
     exit 0
   fi
@@ -115,4 +120,15 @@ for ((sample = 0; sample < 3; sample++)); do
   fi
   [[ "${write_changes}" -lt 2 ]] || fail 'repeated owner writes continued during observation'
 done
+# The guard remains read-only. The deployment workflow records this receipt only
+# after proof succeeds, using tests on the exact final observed UID and version.
+# A failed proof or a crash before recording leaves the next deployment armed.
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  proof_patch="$(jq -c '[
+    {op:"test",path:"/metadata/uid",value:.metadata.uid},
+    {op:"test",path:"/metadata/resourceVersion",value:.metadata.resourceVersion},
+    {op:"add",path:"/metadata/annotations/pod-security.devantler.tech~1longhorn-ui-baseline-proof",value:.metadata.uid}
+  ]' "${scratch}/deployment.json")"
+  printf 'proof_patch=%s\n' "${proof_patch}" >>"${GITHUB_OUTPUT}"
+fi
 printf 'PASS: Longhorn UI source defaults are stored, ready, and stable; generation=%s\n' "${generation}"

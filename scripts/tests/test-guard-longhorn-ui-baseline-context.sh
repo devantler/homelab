@@ -2,6 +2,7 @@
 # Check decisions against API fixtures, with kubectl as the external boundary.
 set -euo pipefail
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+real_kubectl="$(command -v kubectl)"
 scratch="$(mktemp -d)"
 trap 'rm -rf "${scratch}"' EXIT
 mkdir "${scratch}/bin"
@@ -23,6 +24,9 @@ YAML
 cat >"${scratch}/deployment.json" <<'JSON'
 {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"longhorn-ui","namespace":"longhorn-system","generation":7,"annotations":{"meta.helm.sh/release-name":"longhorn","meta.helm.sh/release-namespace":"longhorn-system"}},"spec":{"replicas":1,"template":{"spec":{"securityContext":{"runAsNonRoot":true,"runAsUser":499,"runAsGroup":486,"seccompProfile":{"type":"RuntimeDefault"}},"containers":[{"name":"longhorn-ui","securityContext":{"runAsNonRoot":true,"runAsUser":499,"runAsGroup":486,"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"seccompProfile":{"type":"RuntimeDefault"}}}],"volumes":[{"name":"cache","emptyDir":{}},{"name":"config","emptyDir":{}},{"name":"run","emptyDir":{}}]}}},"status":{"observedGeneration":7,"replicas":1,"updatedReplicas":1,"readyReplicas":1,"availableReplicas":1}}
 JSON
+jq '.metadata.uid="ui-uid" | .metadata.resourceVersion="700"' \
+  "${scratch}/deployment.json" >"${scratch}/identified.json"
+mv "${scratch}/identified.json" "${scratch}/deployment.json"
 cat >"${scratch}/bin/kubectl" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -65,9 +69,37 @@ jq '.spec.template.spec.securityContext.fsGroupChangePolicy="OnRootMismatch" |
   .spec.template.spec.containers[0].securityContext.seLinuxOptions={}' \
   "${scratch}/deployment.json" >"${scratch}/hardened.json"
 cp "${scratch}/hardened.json" "${scratch}/input.json"
-check 'repeated deploy accepts existing canary' before-publish pass normal
-grep -qx 'rollout_required=false' "${scratch}/outputs"
+check 'applied fields without a successful proof must retry verification' before-publish pass normal
+grep -qx 'rollout_required=true' "${scratch}/outputs"
 check 'ready and stable hardened UI passes' after-reconcile pass normal
+proof_patch="$(sed -n 's/^proof_patch=//p' "${scratch}/outputs")"
+[[ -n "${proof_patch}" ]]
+"${real_kubectl}" patch --local --type json --patch "${proof_patch}" \
+  -f "${scratch}/input.json" -o json >"${scratch}/proven.json"
+cp "${scratch}/proven.json" "${scratch}/input.json"
+check 'successful proof disarms the same deployment' before-publish pass normal
+grep -qx 'rollout_required=false' "${scratch}/outputs"
+jq '.spec.replicas=2 | .spec.template.spec.containers[0].securityContext.runAsUser=501' \
+  "${scratch}/proven.json" >"${scratch}/input.json"
+check 'completed canary does not freeze later chart identity or replica changes' before-publish pass normal
+grep -qx 'rollout_required=false' "${scratch}/outputs"
+jq 'del(.metadata.annotations["pod-security.devantler.tech/longhorn-ui-baseline-proof"])' \
+  "${scratch}/proven.json" >"${scratch}/input.json"
+check 'lost proof safely requires revalidation' before-publish pass normal
+grep -qx 'rollout_required=true' "${scratch}/outputs"
+
+for mutation in '.metadata.uid="replacement-uid"' \
+  '.metadata.resourceVersion="701" | .spec.template.spec.containers[0].securityContext.runAsUser=500'; do
+  jq "${mutation}" "${scratch}/hardened.json" >"${scratch}/changed.json"
+  if "${real_kubectl}" patch --local --type json --patch "${proof_patch}" \
+    -f "${scratch}/changed.json" -o json >/dev/null 2>&1; then
+    printf 'FAIL: success receipt accepted a changed object: %s\n' "${mutation}" >&2
+    exit 1
+  fi
+done
+jq '.metadata.uid="replacement-uid"' "${scratch}/proven.json" >"${scratch}/input.json"
+check 'a replacement cannot inherit the prior deployment proof' before-publish pass normal
+grep -qx 'rollout_required=true' "${scratch}/outputs"
 
 for mutation in \
   '.status.availableReplicas=0' \
@@ -100,6 +132,9 @@ mv "${FIXTURE_DIR}/next.json" "${FIXTURE_DIR}/input.json"
 SH
 cp "${scratch}/hardened.json" "${scratch}/input.json"
 check 'repeated writes without generation movement fail closed' after-reconcile fail normal
+[[ ! -s "${scratch}/outputs" ]]
+check 'failed post-proof still requires verification on retry' before-publish pass normal
+grep -qx 'rollout_required=true' "${scratch}/outputs"
 
 # Source rollback must disarm before accessing the failed workload.
 printf 'spec: {}\n' >"${scratch}/release.yaml"
@@ -116,8 +151,14 @@ for workflow in .github/actions/deploy-prod/action.yml .github/workflows/dr-rebu
     ($ids | index("publish_platform_manifest")) as $publish |
     ($ids | index("wait_flux_revision")) as $ready |
     to_entries | map(select(.value.run == "bash scripts/guard-longhorn-ui-baseline-context.sh after-reconcile")) as $after |
+    map(select(.value.env.LONGHORN_UI_BASELINE_PROOF_PATCH != null)) as $record |
     $before != null and $publish != null and $ready != null and
     $before < $publish and ($after | length) == 1 and $after[0].key > $ready and
-    $after[0].value.if == "steps.longhorn_ui_baseline.outputs.rollout_required == '\''true'\''"' >/dev/null
+    $after[0].value.if == "steps.longhorn_ui_baseline.outputs.rollout_required == '\''true'\''" and
+    $after[0].value.id == "verify_longhorn_ui_baseline" and
+    ($record | length) == 1 and $record[0].key > $after[0].key and
+    $record[0].value.if == $after[0].value.if and
+    $record[0].value.env.LONGHORN_UI_BASELINE_PROOF_PATCH == "${{ steps.verify_longhorn_ui_baseline.outputs.proof_patch }}" and
+    ($record[0].value.run | contains("--patch \"${LONGHORN_UI_BASELINE_PROOF_PATCH}\""))' >/dev/null
 done
 printf 'PASS: Longhorn UI preflight, post-proof, absent/error, drift, readiness and privilege controls\n'

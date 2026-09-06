@@ -22,10 +22,11 @@ The shared production deploy action and disaster-recovery rebuild workflow
 handle the evidence in deployment order:
 
 1. Before publication, the read-only canary guard checks whether the desired
-   source declares the defaults and the stored UI template still lacks them.
-   Only that transition arms the canary. A source rollback disarms it before
-   reading the workload; a later deployment with the defaults already present
-   does not freeze the UI's initial replica count or identity.
+   source declares the defaults and the stored UI template has both fields plus
+   a successful proof for its own UID. Fields alone never disarm verification:
+   a failed first proof or a crash before recording must retry. A source rollback
+   disarms before reading the workload; a successfully proven deployment does
+   not freeze the UI's initial replica count or identity on later chart changes.
 2. An existing canary must be Helm-owned, fully ready, non-root, have no init
    containers, and use only ephemeral volumes without an `fsGroup`. API failure is an error, never an
    empty population. A reachable API reporting an uninstalled UI allows the
@@ -35,7 +36,14 @@ handle the evidence in deployment order:
    Missing fields, unhealthy replicas, changed privilege settings or a rewriting
    owner fail the deployment. The output records the observed generation without
    emitting workload environment values or credentials.
-4. A failed merge-group deployment remains failed and the existing heal job
+4. Only after that proof succeeds, a separate workflow step records the
+   `pod-security.devantler.tech/longhorn-ui-baseline-proof` metadata annotation.
+   Its JSON Patch atomically tests the UID and resourceVersion from the final
+   observed object before recording that UID. A concurrent change or replacement
+   rejects the write; no earlier observation can certify a different object.
+   The chart does not declare this annotation. Losing the receipt safely requires
+   revalidation, and a replacement cannot inherit the prior Deployment's proof.
+5. A failed merge-group deployment remains failed and the existing heal job
    restores the current `main` revision. Removing only the two source defaults
    restores the prior rendered resources; it preserves the existing UI hardening.
    A manual CD or rebuild failure requires the normal Git revert and recovery
