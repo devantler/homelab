@@ -33,12 +33,29 @@ func restrictedClient() *http.Client {
 	}}
 }
 
+// requestFailure is an internal classification; the underlying network error is discarded.
+type requestFailure string
+
+func (requestFailure) Error() string { return "registry request unavailable" }
+
+// requestFailureClass admits only the fixed categories produced by request.
+func requestFailureClass(err error) string {
+	var failure requestFailure
+	if errors.As(err, &failure) {
+		switch failure {
+		case "invalid_request", "timeout", "transport", "response_read", "response_size":
+			return string(failure)
+		}
+	}
+	return "request_unavailable"
+}
+
 // URLs and repositories are deliberately fixed in main: this credential-bearing
 // experiment is not a general registry client or an arbitrary URL fetcher.
 func (p proof) request(ctx context.Context, endpoint, authorization string) (int, []byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return 0, nil, errors.New("invalid request")
+		return 0, nil, requestFailure("invalid_request")
 	}
 	if authorization != "" {
 		req.Header.Set("Authorization", authorization)
@@ -46,13 +63,22 @@ func (p proof) request(ctx context.Context, endpoint, authorization string) (int
 	req.Header.Set("Accept", "application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.github+json")
 	response, err := p.client.Do(req)
 	if err != nil {
-		return 0, nil, errors.New("request unavailable")
+		if errors.Is(err, context.DeadlineExceeded) {
+			return 0, nil, requestFailure("timeout")
+		}
+		return 0, nil, requestFailure("transport")
 	}
 	// A read-only response has no pending write to commit on close.
 	defer func() { _ = response.Body.Close() }()
 	data, err := io.ReadAll(io.LimitReader(response.Body, (4<<20)+1))
-	if err != nil || len(data) > 4<<20 {
-		return 0, nil, errors.New("response unavailable or oversized")
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return response.StatusCode, nil, requestFailure("timeout")
+		}
+		return response.StatusCode, nil, requestFailure("response_read")
+	}
+	if len(data) > 4<<20 {
+		return response.StatusCode, nil, requestFailure("response_size")
 	}
 	return response.StatusCode, data, nil
 }
@@ -89,68 +115,111 @@ func authorizationDenial(status int, data []byte) bool {
 	return true
 }
 
-// Resolve a manifest through GHCR's token exchange using a single identity. A
-// missing tag, throttling, a redirect, malformed JSON or transport failure is
-// never treated as an authorization denial.
-func (p proof) manifest(ctx context.Context, auth credential, repository, ref string) (int, string) {
+// registryDiagnostic carries only fixed classifications and an HTTP status, never server text.
+type registryDiagnostic struct {
+	phase  string
+	status int
+	class  string
+}
+
+type registryRead struct {
+	status     int
+	digest     string
+	diagnostic registryDiagnostic
+}
+
+// manifest accepts only validated manifests or classified authorization denials.
+// All other outcomes retain a safe diagnosis without changing the proof verdict.
+func (p proof) manifest(ctx context.Context, auth credential, repository, ref string) registryRead {
 	authorization := ""
 	if auth.password != "" {
 		authorization = "Basic " + base64.StdEncoding.EncodeToString([]byte(auth.username+":"+auth.password))
 	}
 	query := url.Values{"service": {"ghcr.io"}, "scope": {"repository:devantler-tech/" + repository + ":pull"}}
 	status, data, err := p.request(ctx, p.registryURL+"/token?"+query.Encode(), authorization)
+	diagnostic := registryDiagnostic{phase: "token_exchange", status: status}
 	if err != nil {
-		return 0, ""
+		diagnostic.class = requestFailureClass(err)
+		return registryRead{diagnostic: diagnostic}
 	}
 	if authorizationDenial(status, data) {
-		return status, ""
+		diagnostic.class = "authorization_denial"
+		return registryRead{status: status, diagnostic: diagnostic}
+	}
+	if status != http.StatusOK {
+		diagnostic.class = "http_status"
+		if denied(status) {
+			diagnostic.class = "unclassified_denial"
+		}
+		return registryRead{diagnostic: diagnostic}
 	}
 	var token struct {
 		Token       string `json:"token"`
 		AccessToken string `json:"access_token"`
 	}
-	if status != 200 || json.Unmarshal(data, &token) != nil {
-		return 0, ""
+	if json.Unmarshal(data, &token) != nil {
+		diagnostic.class = "invalid_json"
+		return registryRead{diagnostic: diagnostic}
 	}
 	if token.Token == "" {
 		token.Token = token.AccessToken
 	}
 	if token.Token == "" {
-		return 0, ""
+		diagnostic.class = "missing_token"
+		return registryRead{diagnostic: diagnostic}
 	}
 	status, data, err = p.request(ctx, p.registryURL+"/v2/devantler-tech/"+repository+"/manifests/"+ref, "Bearer "+token.Token)
+	diagnostic = registryDiagnostic{phase: "manifest", status: status}
 	if err != nil {
-		return 0, ""
+		diagnostic.class = requestFailureClass(err)
+		return registryRead{diagnostic: diagnostic}
 	}
-	if denied(status) && !authorizationDenial(status, data) {
-		return 0, ""
+	if authorizationDenial(status, data) {
+		diagnostic.class = "authorization_denial"
+		return registryRead{status: status, diagnostic: diagnostic}
 	}
-	if status != 200 {
-		return status, ""
+	if status != http.StatusOK {
+		diagnostic.class = "http_status"
+		if denied(status) {
+			diagnostic.class = "unclassified_denial"
+		}
+		return registryRead{diagnostic: diagnostic}
 	}
 	var manifest struct {
 		SchemaVersion int    `json:"schemaVersion"`
 		MediaType     string `json:"mediaType"`
 	}
-	if json.Unmarshal(data, &manifest) != nil || manifest.SchemaVersion != 2 {
-		return 0, ""
+	if json.Unmarshal(data, &manifest) != nil {
+		diagnostic.class = "invalid_json"
+		return registryRead{diagnostic: diagnostic}
+	}
+	if manifest.SchemaVersion != 2 {
+		diagnostic.class = "invalid_manifest"
+		return registryRead{diagnostic: diagnostic}
 	}
 	switch manifest.MediaType {
 	case "application/vnd.oci.image.index.v1+json", "application/vnd.oci.image.manifest.v1+json", "application/vnd.docker.distribution.manifest.list.v2+json", "application/vnd.docker.distribution.manifest.v2+json":
 	default:
-		return 0, ""
+		diagnostic.class = "invalid_manifest"
+		return registryRead{diagnostic: diagnostic}
 	}
 	digest := fmt.Sprintf("sha256:%x", sha256.Sum256(data))
 	if strings.HasPrefix(ref, "sha256:") && ref != digest {
-		return 0, ""
+		diagnostic.class = "digest_mismatch"
+		return registryRead{diagnostic: diagnostic}
 	}
-	return status, digest
+	return registryRead{status: status, digest: digest}
 }
 
-// result emits only the fixed verdict and reason; missing output cannot count as success.
-func (p proof) result(code int, reason string) int {
+// result emits fixed classifications only; missing output cannot count as success.
+func (p proof) result(code int, reason string, diagnostics ...registryDiagnostic) int {
 	verdict := []string{"PASS", "FAIL", "UNKNOWN"}[code]
-	if _, err := fmt.Fprintf(p.output, "scoped_package_proof=%s reason=%s\n", verdict, reason); err != nil {
+	line := fmt.Sprintf("scoped_package_proof=%s reason=%s", verdict, reason)
+	if code == 2 && len(diagnostics) == 1 && diagnostics[0].class != "" {
+		d := diagnostics[0]
+		line += fmt.Sprintf(" registry_phase=%s http_status=%d failure_class=%s", d.phase, d.status, d.class)
+	}
+	if _, err := fmt.Fprintln(p.output, line); err != nil {
 		return 2
 	}
 	return code
@@ -187,43 +256,46 @@ func (p proof) run(ctx context.Context) int {
 		if !p.metadata(ctx, "/orgs/devantler-tech/packages/container/"+repository, p.baseline.password, &metadata) || metadata.Name != repository || metadata.PackageType != "container" || metadata.Visibility != "private" || metadata.Owner.Login != "devantler-tech" || metadata.Repository.FullName != "devantler-tech/"+repository {
 			return p.result(2, "private_package_association_unverified")
 		}
-		status, digest := p.manifest(ctx, p.baseline, repository, "latest")
-		if status != 200 {
-			return p.result(2, "baseline_manifest_unavailable")
+		read := p.manifest(ctx, p.baseline, repository, "latest")
+		if read.status != 200 {
+			return p.result(2, "baseline_manifest_unavailable", read.diagnostic)
 		}
+		digest := read.digest
 		digests[i] = digest
-		status, _ = p.manifest(ctx, credential{}, repository, digest)
-		if !denied(status) {
-			return p.result(2, "anonymous_denial_unverified")
+		read = p.manifest(ctx, credential{}, repository, digest)
+		if !denied(read.status) {
+			return p.result(2, "anonymous_denial_unverified", read.diagnostic)
 		}
 		if p.pull(ctx, p.baseline, "ghcr.io/devantler-tech/"+repository+"@"+digest) != nil {
 			return p.result(2, "baseline_full_pull_unavailable")
 		}
 	}
 	// A successful own pull includes the image's blobs, not just its manifest.
-	ownStatus, _ := p.manifest(ctx, p.scoped, repositories[0], digests[0])
+	ownRead := p.manifest(ctx, p.scoped, repositories[0], digests[0])
+	ownStatus := ownRead.status
 	if ownStatus != 200 && !denied(ownStatus) {
-		return p.result(2, "scoped_own_read_unavailable")
+		return p.result(2, "scoped_own_read_unavailable", ownRead.diagnostic)
 	}
 	ownImage := "ghcr.io/devantler-tech/" + repositories[0] + "@" + digests[0]
 	if ownStatus == 200 && p.pull(ctx, p.scoped, ownImage) != nil {
 		return p.result(2, "scoped_own_full_pull_unavailable")
 	}
-	crossStatus, _ := p.manifest(ctx, p.scoped, repositories[1], digests[1])
+	crossRead := p.manifest(ctx, p.scoped, repositories[1], digests[1])
+	crossStatus := crossRead.status
 	if crossStatus != 200 && !denied(crossStatus) {
-		return p.result(2, "scoped_cross_read_unavailable")
+		return p.result(2, "scoped_cross_read_unavailable", crossRead.diagnostic)
 	}
 	// Repeat both baselines and the scoped positive after the negative. An expired
 	// token or registry incident during the comparison cannot pass the boundary.
 	for i, repository := range repositories {
-		status, _ := p.manifest(ctx, p.baseline, repository, digests[i])
-		if status != 200 {
-			return p.result(2, "baseline_postcheck_unavailable")
+		read := p.manifest(ctx, p.baseline, repository, digests[i])
+		if read.status != 200 {
+			return p.result(2, "baseline_postcheck_unavailable", read.diagnostic)
 		}
 	}
-	postOwnStatus, _ := p.manifest(ctx, p.scoped, repositories[0], digests[0])
-	if postOwnStatus != ownStatus {
-		return p.result(2, "scoped_own_postcheck_changed")
+	postOwnRead := p.manifest(ctx, p.scoped, repositories[0], digests[0])
+	if postOwnRead.status != ownStatus {
+		return p.result(2, "scoped_own_postcheck_changed", postOwnRead.diagnostic)
 	}
 	// Rebind the installation identity too; otherwise two denied reads from an
 	// expired token would falsely refute an otherwise usable authentication path.
