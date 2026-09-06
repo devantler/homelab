@@ -58,3 +58,36 @@ spec:
       # node drain/failure (not double-reconciliation). Drain safety comes from
       # the standalone maxUnavailable: 1 PDB (pod-disruption-budget.yaml).
       replicas: 2
+  postRenderers:
+    # POD-level seccompProfile, required by validate-pod-security's
+    # require-seccomp-profile rule (#3474). A post-renderer rather than a values
+    # key because this chart exposes NO securityContext knob at all — v0.9.3's
+    # values.yaml has neither podSecurityContext nor securityContext, so there is
+    # nothing to set. Same reason and shape as simply-dns-webhook's patch.
+    #
+    # The chart does render a pod securityContext (`runAsNonRoot: true`), and a
+    # strategic-merge patch MERGES into it, so that field survives — asserted by
+    # the rendered before/after in the PR rather than assumed.
+    #
+    # Not currently blocked, and that is the point: Kyverno's default
+    # allowExistingViolations lets UPDATES to an already-violating resource
+    # through, so this has been running grandfathered rather than compliant. A
+    # CREATE is always evaluated, so a DR rebuild or a chart change that renames
+    # the Deployment would be denied by the fail-closed webhook — how the
+    # Crossplane provider fleet went to zero pods in #3470.
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: open-feature-operator-controller-manager
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: open-feature-operator-controller-manager
+              spec:
+                template:
+                  spec:
+                    securityContext:
+                      seccompProfile:
+                        type: RuntimeDefault
