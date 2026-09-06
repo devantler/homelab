@@ -144,11 +144,6 @@
   },
   "packageRules": [
     {
-      "description": "Review the Kyverno chart and CI policy engine together; chart and CLI use different version numbers, so check the chart appVersion when accepting the grouped update.",
-      "matchPackageNames": ["kyverno", "kyverno/kyverno"],
-      "groupName": "kyverno"
-    },
-    {
       "description": "flux-operator is tracked by the dedicated regex customManager above (the built-in `flux` manager stalled on it). Disable the `flux` manager for this chart so the two managers cannot open duplicate PRs if the flux manager later resumes.",
       "matchManagers": ["flux"],
       "matchPackageNames": [
@@ -253,6 +248,12 @@
       "matchPackageNames": ["alex1989hu/kubelet-serving-cert-approver"],
       "automerge": false,
       "addLabels": ["security/review-required"]
+    },
+    {
+      "description": "Review the Kyverno chart and CI policy engine together. Grouping can produce a one-sided update because their releases are independent; require the chart appVersion to match the shared CLI pin before merging. automerge:false follows the broad controller and major-update rules so they cannot bypass this comparison.",
+      "matchPackageNames": ["kyverno", "kyverno/kyverno"],
+      "groupName": "kyverno",
+      "automerge": false
     }
   ],
   "ignorePaths": [
