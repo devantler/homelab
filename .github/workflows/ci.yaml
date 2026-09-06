@@ -224,6 +224,8 @@ jobs:
               - 'scripts/tests/test-setup-ksail.sh'
               - '.github/scripts/setup-talosctl.sh'
               - 'scripts/tests/test-setup-talosctl.sh'
+              - '.github/scripts/setup-supply-chain-tools.sh'
+              - 'scripts/tests/test-setup-supply-chain-tools.sh'
               - '.github/actions/deploy-prod/action.yml'
               - '.github/workflows/dr-rebuild.yaml'
               - '.github/workflows/validate-image-verifier-liveness.yaml'
@@ -701,7 +703,7 @@ jobs:
         shell: bash
         env:
           # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
-          KSAIL_VERSION: "7.181.0"
+          KSAIL_VERSION: "7.181.2"
           GITHUB_TOKEN: ${{ github.token }}
         run: .github/scripts/setup-ksail.sh
 
@@ -781,6 +783,19 @@ jobs:
         run: |
           shellcheck .github/scripts/setup-talosctl.sh scripts/tests/test-setup-talosctl.sh
           bash scripts/tests/test-setup-talosctl.sh
+
+      - name: 🔐 Validate supply-chain tool integrity
+        if: needs.changes.outputs.k8s == 'true'
+        run: |
+          shellcheck .github/scripts/setup-supply-chain-tools.sh scripts/tests/test-setup-supply-chain-tools.sh
+          bash scripts/tests/test-setup-supply-chain-tools.sh
+
+      - name: 🔐 Exercise verified supply-chain tools
+        if: needs.changes.outputs.k8s == 'true'
+        run: |
+          .github/scripts/setup-supply-chain-tools.sh
+          /usr/local/bin/syft scan dir:. --output cyclonedx-json=tool-integrity.cdx.json
+          jq -e '.bomFormat == "CycloneDX" and (.components | length > 0)' tool-integrity.cdx.json
 
       - name: 🔐 Validate Flux GHCR credential bridge
         # Pure local tests with fake ksail/docker/kubectl commands: no SOPS key,
@@ -1351,7 +1366,7 @@ jobs:
         shell: bash
         env:
           # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
-          KSAIL_VERSION: "7.181.0"
+          KSAIL_VERSION: "7.181.2"
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           .github/scripts/setup-ksail.sh
@@ -1983,7 +1998,7 @@ jobs:
         shell: bash
         env:
           # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
-          KSAIL_VERSION: "7.181.0"
+          KSAIL_VERSION: "7.181.2"
           GITHUB_TOKEN: ${{ github.token }}
         run: .github/scripts/setup-ksail.sh
 

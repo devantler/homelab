@@ -372,6 +372,87 @@ else
   failures=$((failures + 1))
 fi
 
+# --- 12b. the ksail identity pins the SAME RELEASE-TAG GRAMMAR ---------------
+# ksail's cd.yaml signs on any `v*` tag push and performs no grammar check of its own
+# (devantler-tech/ksail#6895 tracks the publisher's half), so the refs that can reach a
+# signature are exactly `v*` — wider than "a release". `v.+$` constrained only the first
+# character after the slash, so refs/tags/vanything and refs/tags/v/../evil satisfied every
+# clause of the identity. Same parity rule as section 12: admission (Kyverno) and the kubelet
+# pull (Talos) must carry the same identity AND issuer, or a ksail image accepted by one is
+# refused by the other as an ImagePullBackOff neither file explains alone.
+talos_ksail_identity="$(yq -r '.rules[] | select(.image == "ghcr.io/devantler-tech/ksail*") | .keyless.subjectRegex' "$real")"
+talos_ksail_issuer="$(yq -r '.rules[] | select(.image == "ghcr.io/devantler-tech/ksail*") | .keyless.issuer' "$real")"
+kyverno_ksail_identity="$(yq -r '.spec.attestors[] | select(.name == "ksailcd") | .cosign.keyless.identities[].subjectRegExp' "$kyverno_policy")"
+kyverno_ksail_issuer="$(yq -r '.spec.attestors[] | select(.name == "ksailcd") | .cosign.keyless.identities[].issuer' "$kyverno_policy")"
+
+if [ -z "$talos_ksail_identity" ] || [ "$talos_ksail_identity" = "null" ]; then
+  echo "FAIL  no ksail subjectRegex in ${real}"
+  failures=$((failures + 1))
+elif [ "$talos_ksail_identity" != "$kyverno_ksail_identity" ]; then
+  echo "FAIL  the ksail identity differs between the Talos and Kyverno verifiers"
+  echo "        talos:   ${talos_ksail_identity}"
+  echo "        kyverno: ${kyverno_ksail_identity}"
+  failures=$((failures + 1))
+elif [ -z "$talos_ksail_issuer" ] || [ "$talos_ksail_issuer" = "null" ] || [ "$talos_ksail_issuer" != "$kyverno_ksail_issuer" ]; then
+  echo "FAIL  the ksail ISSUER differs between the Talos and Kyverno verifiers"
+  echo "        talos:   ${talos_ksail_issuer}"
+  echo "        kyverno: ${kyverno_ksail_issuer}"
+  failures=$((failures + 1))
+else
+  echo "ok    ksail identity: Talos and Kyverno carry the same regex and issuer"
+fi
+
+# The identity binds nothing unless Kyverno ROUTES ghcr.io/devantler-tech/ksail* images to it —
+# the same guard section 12 applies to the provider attestor.
+ksail_validation="$(yq -r '
+  [ .spec.validations[]
+    | select(.expression | test("startsWith\\(.ghcr\\.io/devantler-tech/ksail.\\)"))
+    | select(.expression | test("attestors\\.ksailcd")) ] | length' "$kyverno_policy")"
+if [ "$ksail_validation" != "1" ]; then
+  echo "FAIL  expected exactly 1 Kyverno validation routing ksail* to attestors.ksailcd, found ${ksail_validation}"
+  failures=$((failures + 1))
+else
+  echo "ok    ksail identity: Kyverno routes ksail* to attestors.ksailcd"
+fi
+
+# accept -> a real release tag (semantic-release publishes vMAJOR.MINOR.PATCH, prereleases allowed).
+# reject -> a ref that is a tag only in shape; the verifier must not accept what a release never is.
+ksail_identity_prefix='https://github.com/devantler-tech/ksail/.github/workflows/cd.yaml@refs/tags/'
+ksail_grammar_failures=0
+ksail_grammar_checked=0
+for tc in \
+  'accept v7.181.8' 'accept v0.1.0' 'accept v10.20.30' 'accept v8.0.0-beta.1' \
+  'accept v1.0.0-rc.1.2' 'accept v1.0.0-0' 'accept v1.0.0-alpha' \
+  'reject vanything' 'reject v/../evil' 'reject v1latest' 'reject v1/anything' 'reject v1.0' \
+  'reject v1' 'reject v1.0.0/../evil' 'reject v01.0.0' 'reject v1.0.0-' 'reject v1.0.0-rc.1/evil' \
+  'reject v1.0.0-01' 'reject v1.0.0..0'; do
+  ksail_grammar_checked=$((ksail_grammar_checked + 1))
+  want="${tc%% *}"
+  tag="${tc##* }"
+  if printf '%s' "${ksail_identity_prefix}${tag}" | grep -Eq "$talos_ksail_identity"; then
+    got=accept
+  else
+    got=reject
+  fi
+  if [ "$got" != "$want" ]; then
+    echo "FAIL  ksail identity should ${want} refs/tags/${tag}, got ${got}"
+    ksail_grammar_failures=$((ksail_grammar_failures + 1))
+  fi
+done
+failures=$((failures + ksail_grammar_failures))
+if [ "$ksail_grammar_failures" -eq 0 ]; then
+  echo "ok    ksail identity: release-tag grammar (${ksail_grammar_checked} tags)"
+fi
+
+# The same deliberate difference as the provider identity: no length cap, pinned so a change
+# on either side is deliberate rather than silent.
+if printf '%s' "${ksail_identity_prefix}${over_length_tag}" | grep -Eq "$talos_ksail_identity"; then
+  echo "ok    ksail identity: the 128-char tag cap is deliberately NOT mirrored"
+else
+  echo "FAIL  the ksail identity now rejects a 129-char tag: update the DELIBERATE DIFFERENCE comment in both verifier files"
+  failures=$((failures + 1))
+fi
+
 # --- 9. THE DEFAULT PROBE PATH: no secret may reach argv -------------------
 # Every case above goes through INVENTORY_PROBE_CMD, so none of them exercises the real probe —
 # the credential lookup, the Basic-authenticated token exchange, the Bearer manifest read, and the

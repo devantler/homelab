@@ -465,9 +465,9 @@ specs:
 ---
 # ATTACK: four /8 prefixes. Each is individually shorter than the /16 floor, so
 # each entry is refused on its own — this fixture pins that per-entry rejection.
-# It deliberately does NOT demonstrate the AGGREGATE class: a per-entry floor
-# cannot bound a union, and closing that needs an allow-list of permitted
-# ranges (see the KNOWN LIMIT in the policy header).
+# Separate deny-list fixtures below refuse non-global blocks even when every
+# entry meets the prefix floor. Aggregate reach across public destinations is
+# outside this namespace-boundary policy; this fixture tests the floor alone.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
