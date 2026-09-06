@@ -8,7 +8,7 @@
 # - runAsNonRoot: true (C-0013) — pod + container
 # - runAsUser: 1000 + runAsGroup: 1000 (C-0013/C-0211 non-root user+group) — pod level
 # - fsGroup: 1000 + fsGroupChangePolicy: OnRootMismatch (C-0211) — pod level
-# - seLinuxOptions: {level: s0} (C-0211 CIS-5.7.3) — containers + initContainers
+# - seLinuxOptions: {} (C-0211 CIS-5.7.3) — containers + initContainers
 # - hostUsers: false — only in namespaces that explicitly opt in after userns
 #   validation
 #
@@ -37,13 +37,12 @@
 # - fsGroup uses a conditional anchor, so any workload that sets its own (every
 #   PVC-mounting workload in scope does) keeps it; only stateless pods get the
 #   default, where it governs emptyDir/projected-volume ownership harmlessly.
-# - seLinuxOptions is a no-op on this AppArmor cluster — runc ignores SELinux labels
-#   when SELinux isn't the active LSM (verified: Cilium already ships one and a probe
-#   pod ran fine) — but CIS-5.7.3 requires it and it is correct defense-in-depth on
-#   any SELinux node. level: s0 is the default non-privileged MCS level (not Cilium's
-#   spc_t, which is for privileged pods).
+# - Empty seLinuxOptions satisfies C-0211 without pinning a level or type.
+#   The runtime retains its default SELinux type and per-pod MCS categories on
+#   SELinux nodes; this AppArmor cluster ignores the options. Explicit pod or
+#   container options are preserved as whole objects, including empty mappings.
 #
-# Uses +(key) to never overwrite values explicitly set by Helm charts.
+# Uses +(key) anchors or presence guards to preserve explicit chart values.
 # Excluded namespaces require elevated privileges by design.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -197,8 +196,6 @@ spec:
                           - ALL
                       +(seccompProfile):
                         type: RuntimeDefault
-                      +(seLinuxOptions):
-                        level: s0
           - list: "request.object.spec.initContainers[]"
             patchStrategicMerge:
               spec:
@@ -213,8 +210,32 @@ spec:
                           - ALL
                       +(seccompProfile):
                         type: RuntimeDefault
-                      +(seLinuxOptions):
-                        level: s0
+          - list: "request.object.spec.containers"
+            preconditions:
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
+                  operator: Equals
+                  value: "false"
+                - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
+                  operator: Equals
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/containers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}
+          - list: "request.object.spec.initContainers[]"
+            preconditions:
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
+                  operator: Equals
+                  value: "false"
+                - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
+                  operator: Equals
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/initContainers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}
     # Pods exempt from the pod-level runAsUser/runAsGroup injection in
     # add-pod-security-context (image-baked non-1000 UIDs: cert-manager, keda,
     # opencost; and tofu-controller runner pods) still must satisfy the rest of
@@ -262,9 +283,8 @@ spec:
     # seLinuxOptions, which are not privilege fields:
     # - fsGroupChangePolicy only governs ownership-relabel behaviour when the
     #   kubelet applies an fsGroup to a volume. It grants nothing.
-    # - seLinuxOptions {level: s0} is the default non-privileged MCS level and is
-    #   a no-op on this AppArmor cluster (runc ignores SELinux labels when SELinux
-    #   is not the active LSM), retained as CIS-5.7.3 defense-in-depth.
+    # - Empty seLinuxOptions keeps runtime SELinux label allocation, satisfies
+    #   C-0211, and is a no-op on this AppArmor cluster.
     # Excluding them cost both controls across the whole excluded population:
     # measured against live prod specs 2026-08-29, 210/210 pods in those twelve
     # namespaces have no fsGroupChangePolicy and 189/210 have at least one
@@ -301,56 +321,11 @@ spec:
           spec:
             securityContext:
               +(fsGroupChangePolicy): OnRootMismatch
-    # A pod-level seLinuxOptions that EXISTS but carries no `level` is the one
-    # shape neither rule above closes, and both still report success. The
-    # container foreach below deliberately skips it — a container-level object
-    # REPLACES the pod-level struct wholesale, so writing `level` there would
-    # discard the operator's sibling fields — and the pod rule above fills only
-    # fsGroupChangePolicy. Every container with no override therefore inherits
-    # `{user: system_u}` with no level, and the promised C-0211 field is never
-    # supplied. Measured 2026-08-30: `velero/podlevel-partial` came back with
-    # its containers inheriting a level-less object.
-    #
-    # Fill the missing leaf at POD scope, where it is free: the `+(level)`
-    # anchor preserves every sibling, and one write covers all containers and
-    # initContainers that do not override.
-    #
-    # The precondition scopes this to pods that ALREADY carry a pod-level
-    # object, so it never creates one where the author set none — that shape is
-    # the container rule's, and creating a pod-level object here would silently
-    # move ownership between rules and change the `plain` case.
-    - name: add-baseline-context-optin-pod-selinux-level
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-              namespaceSelector:
-                matchLabels:
-                  pod-security.devantler.tech/baseline-context: enabled
-      preconditions:
-        all:
-          - key: "{{ request.object.spec.securityContext.seLinuxOptions || '' }}"
-            operator: NotEquals
-            value: ''
-          - key: "{{ request.object.spec.securityContext.seLinuxOptions.level || '' }}"
-            operator: Equals
-            value: ''
-      mutate:
-        patchStrategicMerge:
-          spec:
-            securityContext:
-              seLinuxOptions:
-                +(level): s0
-    # The anchor is on the LEAF (`+(level)`), not the whole object. Anchoring
-    # `+(seLinuxOptions)` would fire only when the object is entirely absent, so a
-    # container carrying some other SELinux field with no `level` would be reported
-    # as mutated while `level` stayed unset — measured 2026-08-29: such a container
-    # came back `{user: system_u}`. The leaf anchor fills the missing field and
-    # preserves siblings. `tests/add-baseline-context` pins all three states; do not
-    # collapse this back to an object-level anchor.
+    # Default only a missing container object when no pod object is inherited.
+    # Kubernetes replaces the whole pod-level struct with a container override,
+    # even an empty one. Never fill individual leaves or shadow pod options.
+    # JSON Patch preserves the empty mapping that strategic merge omits; key
+    # presence guards supply the same preservation boundary as a +() anchor.
     - name: add-baseline-context-optin-containers
       match:
         any:
@@ -365,60 +340,32 @@ spec:
       mutate:
         foreach:
           - list: "request.object.spec.containers"
-            # A container-level seLinuxOptions REPLACES the pod-level struct wholesale
-            # (kubelet DetermineEffectiveSecurityContext), so injecting `level` into a
-            # container that has none would discard the pod's ENTIRE SELinux identity for
-            # that container — measured 2026-08-29: a pod declaring
-            # `{user: system_u, level: s9}` came back with the container on `{level: s0}`,
-            # losing both the operator's level and its user. Inject only when the pod sets
-            # no SELinux options at all, or when the container already overrides them.
-            # "Overrides" is tested by KEY PRESENCE, not truthiness: a container that sets
-            # `seLinuxOptions: {}` is an override Kubernetes honours (the pod-level object no
-            # longer applies to it), yet the empty mapping is falsy to JMESPath, so an
-            # `|| ''` test read it as absent and left that container with no level at all.
             preconditions:
-              any:
-                - key: "{{ request.object.spec.securityContext.seLinuxOptions || '' }}"
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: ''
+                  value: "false"
                 - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: "true"
-            patchStrategicMerge:
-              spec:
-                containers:
-                  - (name): "{{element.name}}"
-                    securityContext:
-                      seLinuxOptions:
-                        +(level): s0
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/containers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}
           - list: "request.object.spec.initContainers[]"
-            # A container-level seLinuxOptions REPLACES the pod-level struct wholesale
-            # (kubelet DetermineEffectiveSecurityContext), so injecting `level` into a
-            # container that has none would discard the pod's ENTIRE SELinux identity for
-            # that container — measured 2026-08-29: a pod declaring
-            # `{user: system_u, level: s9}` came back with the container on `{level: s0}`,
-            # losing both the operator's level and its user. Inject only when the pod sets
-            # no SELinux options at all, or when the container already overrides them.
-            # "Overrides" is tested by KEY PRESENCE, not truthiness: a container that sets
-            # `seLinuxOptions: {}` is an override Kubernetes honours (the pod-level object no
-            # longer applies to it), yet the empty mapping is falsy to JMESPath, so an
-            # `|| ''` test read it as absent and left that container with no level at all.
             preconditions:
-              any:
-                - key: "{{ request.object.spec.securityContext.seLinuxOptions || '' }}"
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: ''
+                  value: "false"
                 - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: "true"
-            patchStrategicMerge:
-              spec:
-                initContainers:
-                  - (name): "{{element.name}}"
-                    securityContext:
-                      seLinuxOptions:
-                        +(level): s0
-    # CONTROLLER-KIND COUNTERPARTS of the three opt-in rules above. Those rules
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/initContainers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}
+    # CONTROLLER-KIND COUNTERPARTS of the two opt-in rules above. Those rules
     # match `Pod` and this policy generates no autogen rules (its live
     # `status.autogen` is empty), so they mutate only at pod admission and the
     # STORED controller spec — the one Kubescape scores for C-0211 — is never
@@ -486,7 +433,7 @@ spec:
     # CREATE-only. A Job spawned from a mutated CronJob already carries the
     # fields; a standalone Job gets them at creation.
     #
-    # Same two fields, same leaf-level SELinux anchors and the same
+    # Same two fields, same whole-object SELinux guards and the same
     # wholesale-replace guards as the pod rules; only the path differs
     # (`spec.template.spec`, and `spec.jobTemplate.spec.template.spec` for
     # CronJobs). `tests/add-baseline-context` pins every state for the
@@ -520,44 +467,6 @@ spec:
               spec:
                 securityContext:
                   +(fsGroupChangePolicy): OnRootMismatch
-    - name: add-baseline-context-optin-controllers-pod-selinux-level
-      match:
-        any:
-          - resources:
-              kinds:
-                - Deployment
-                - StatefulSet
-                - DaemonSet
-              operations:
-                - CREATE
-                - UPDATE
-              namespaceSelector:
-                matchLabels:
-                  pod-security.devantler.tech/baseline-context-controllers: enabled
-          - resources:
-              kinds:
-                - Job
-              operations:
-                - CREATE
-              namespaceSelector:
-                matchLabels:
-                  pod-security.devantler.tech/baseline-context-controllers: enabled
-      preconditions:
-        all:
-          - key: "{{ request.object.spec.template.spec.securityContext.seLinuxOptions || '' }}"
-            operator: NotEquals
-            value: ''
-          - key: "{{ request.object.spec.template.spec.securityContext.seLinuxOptions.level || '' }}"
-            operator: Equals
-            value: ''
-      mutate:
-        patchStrategicMerge:
-          spec:
-            template:
-              spec:
-                securityContext:
-                  seLinuxOptions:
-                    +(level): s0
     - name: add-baseline-context-optin-controllers-containers
       match:
         any:
@@ -584,40 +493,30 @@ spec:
         foreach:
           - list: "request.object.spec.template.spec.containers"
             preconditions:
-              any:
-                - key: "{{ request.object.spec.template.spec.securityContext.seLinuxOptions || '' }}"
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.template.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: ''
+                  value: "false"
                 - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: "true"
-            patchStrategicMerge:
-              spec:
-                template:
-                  spec:
-                    containers:
-                      - (name): "{{element.name}}"
-                        securityContext:
-                          seLinuxOptions:
-                            +(level): s0
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/template/spec/containers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}
           - list: "request.object.spec.template.spec.initContainers[]"
             preconditions:
-              any:
-                - key: "{{ request.object.spec.template.spec.securityContext.seLinuxOptions || '' }}"
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.template.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: ''
+                  value: "false"
                 - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: "true"
-            patchStrategicMerge:
-              spec:
-                template:
-                  spec:
-                    initContainers:
-                      - (name): "{{element.name}}"
-                        securityContext:
-                          seLinuxOptions:
-                            +(level): s0
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/template/spec/initContainers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}
     - name: add-baseline-context-optin-cronjobs
       match:
         any:
@@ -639,36 +538,6 @@ spec:
                   spec:
                     securityContext:
                       +(fsGroupChangePolicy): OnRootMismatch
-    - name: add-baseline-context-optin-cronjobs-pod-selinux-level
-      match:
-        any:
-          - resources:
-              kinds:
-                - CronJob
-              operations:
-                - CREATE
-                - UPDATE
-              namespaceSelector:
-                matchLabels:
-                  pod-security.devantler.tech/baseline-context-controllers: enabled
-      preconditions:
-        all:
-          - key: "{{ request.object.spec.jobTemplate.spec.template.spec.securityContext.seLinuxOptions || '' }}"
-            operator: NotEquals
-            value: ''
-          - key: "{{ request.object.spec.jobTemplate.spec.template.spec.securityContext.seLinuxOptions.level || '' }}"
-            operator: Equals
-            value: ''
-      mutate:
-        patchStrategicMerge:
-          spec:
-            jobTemplate:
-              spec:
-                template:
-                  spec:
-                    securityContext:
-                      seLinuxOptions:
-                        +(level): s0
     - name: add-baseline-context-optin-cronjobs-containers
       match:
         any:
@@ -685,41 +554,27 @@ spec:
         foreach:
           - list: "request.object.spec.jobTemplate.spec.template.spec.containers"
             preconditions:
-              any:
-                - key: "{{ request.object.spec.jobTemplate.spec.template.spec.securityContext.seLinuxOptions || '' }}"
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.jobTemplate.spec.template.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: ''
+                  value: "false"
                 - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: "true"
-            patchStrategicMerge:
-              spec:
-                jobTemplate:
-                  spec:
-                    template:
-                      spec:
-                        containers:
-                          - (name): "{{element.name}}"
-                            securityContext:
-                              seLinuxOptions:
-                                +(level): s0
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/jobTemplate/spec/template/spec/containers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}
           - list: "request.object.spec.jobTemplate.spec.template.spec.initContainers[]"
             preconditions:
-              any:
-                - key: "{{ request.object.spec.jobTemplate.spec.template.spec.securityContext.seLinuxOptions || '' }}"
+              all:
+                - key: "{{ to_string(contains(keys(request.object.spec.jobTemplate.spec.template.spec.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: ''
+                  value: "false"
                 - key: "{{ to_string(contains(keys(element.securityContext || `{}`), 'seLinuxOptions')) }}"
                   operator: Equals
-                  value: "true"
-            patchStrategicMerge:
-              spec:
-                jobTemplate:
-                  spec:
-                    template:
-                      spec:
-                        initContainers:
-                          - (name): "{{element.name}}"
-                            securityContext:
-                              seLinuxOptions:
-                                +(level): s0
+                  value: "false"
+            patchesJson6902: |-
+              - op: add
+                path: /spec/jobTemplate/spec/template/spec/initContainers/{{elementIndex}}/securityContext/seLinuxOptions
+                value: {}

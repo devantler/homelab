@@ -23,10 +23,9 @@ metadata:
     # seLinuxOptions at all. That last shape matters — with no pod-level SELinux
     # object anywhere, only the two straightforward rules apply
     # (add-baseline-context-optin-namespaces supplies fsGroupChangePolicy,
-    # add-baseline-context-optin-containers supplies level: s0 per container).
-    # add-baseline-context-optin-pod-selinux-level requires a pre-existing
-    # pod-level object, so it cannot fire here; none of the wholesale-replace
-    # hazards that rule exists for are reachable in this namespace.
+    # add-baseline-context-optin-containers supplies an empty SELinux object).
+    # Explicit pod options remain inherited; none of the wholesale-replace
+    # hazards are reachable in this measured namespace shape.
     #
     # The rules are CREATE-only, so running pods are unaffected until they are
     # next recreated.

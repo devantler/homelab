@@ -9,14 +9,12 @@ spec:
     - name: init
       image: velero/velero-plugin:v1.0.0
       securityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
   containers:
     - name: app
       image: velero/velero:v1.0.0
       securityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
   securityContext:
     fsGroupChangePolicy: OnRootMismatch
 ---
@@ -30,8 +28,7 @@ spec:
     - name: app
       image: velero/velero:v1.0.0
       securityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
   securityContext:
     fsGroupChangePolicy: OnRootMismatch
 ---
@@ -46,14 +43,12 @@ spec:
       image: velero/velero-plugin:v1.0.0
       securityContext:
         seLinuxOptions:
-          level: s0
           user: system_u
   containers:
     - name: app
       image: velero/velero:v1.0.0
       securityContext:
         seLinuxOptions:
-          level: s0
           user: system_u
   securityContext:
     fsGroupChangePolicy: OnRootMismatch
@@ -91,7 +86,6 @@ spec:
   securityContext:
     fsGroupChangePolicy: OnRootMismatch
     seLinuxOptions:
-      level: s0
       user: system_u
 ---
 apiVersion: v1
@@ -109,14 +103,12 @@ spec:
     - name: init
       image: ghcr.io/coroot/coroot-node-agent:v1.0.0
       securityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
   containers:
     - name: node-agent
       image: ghcr.io/coroot/coroot-node-agent:v1.0.0
       securityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
   securityContext:
     fsGroupChangePolicy: OnRootMismatch
 ---
@@ -138,14 +130,12 @@ spec:
         - name: init
           image: ghcr.io/coroot/coroot-operator:1.9.5
           securityContext:
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
       containers:
         - name: operator
           image: ghcr.io/coroot/coroot-operator:1.9.5
           securityContext:
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
       securityContext:
         fsGroupChangePolicy: OnRootMismatch
 ---
@@ -168,8 +158,7 @@ spec:
         - name: server
           image: ghcr.io/coroot/coroot:1.22.2
           securityContext:
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
       securityContext:
         fsGroupChangePolicy: OnRootMismatch
 ---
@@ -192,8 +181,7 @@ spec:
           image: longhornio/longhorn-manager:v1.9.0
           securityContext:
             privileged: true
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
       securityContext:
         fsGroupChangePolicy: OnRootMismatch
 ---
@@ -213,14 +201,12 @@ spec:
             - name: init
               image: ghcr.io/coroot/coroot:1.22.2
               securityContext:
-                seLinuxOptions:
-                  level: s0
+                seLinuxOptions: {}
           containers:
             - name: job
               image: ghcr.io/coroot/coroot:1.22.2
               securityContext:
-                seLinuxOptions:
-                  level: s0
+                seLinuxOptions: {}
           securityContext:
             fsGroupChangePolicy: OnRootMismatch
 ---
@@ -267,7 +253,6 @@ spec:
       securityContext:
         seLinuxOptions:
           user: system_u
-          level: s0
         fsGroupChangePolicy: OnRootMismatch
       initContainers:
         - name: init
@@ -289,8 +274,7 @@ spec:
         - name: job
           image: ghcr.io/coroot/coroot:1.22.2
           securityContext:
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
       securityContext:
         fsGroupChangePolicy: OnRootMismatch
 ---
@@ -309,7 +293,6 @@ spec:
           securityContext:
             seLinuxOptions:
               user: system_u
-              level: s0
             fsGroupChangePolicy: OnRootMismatch
           initContainers:
             - name: init
@@ -354,14 +337,12 @@ spec:
     - name: init
       image: velero/velero-plugin:v1.0.0
       securityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
   containers:
     - name: app
       image: velero/velero:v1.0.0
       securityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
     - name: plain
       image: velero/velero:v1.0.0
 ---
@@ -388,13 +369,11 @@ spec:
         - name: init
           image: velero/velero:v1.16.0
           securityContext:
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
       containers:
         - name: velero
           image: velero/velero:v1.16.0
           securityContext:
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
         - name: plain
           image: velero/velero:v1.16.0

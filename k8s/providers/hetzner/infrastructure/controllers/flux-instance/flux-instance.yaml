@@ -230,8 +230,7 @@ spec:
             value: OnRootMismatch
           - op: add
             path: /spec/template/spec/containers/0/securityContext/seLinuxOptions
-            value:
-              level: s0
+            value: {}
       # Enforce cosign signature verification on the ROOT source — the
       # flux-system OCIRepository every controller, tenant binding and policy
       # arrives through. Without this the root artifact is pulled from a mutable

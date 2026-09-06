@@ -1746,7 +1746,15 @@ const (
 // and before it:
 //
 //	ab05bc2c95924e372c038f878872aa94e3bd81380daa96a283bd7f74e2132a69
-const expectedRenderedSurfaceSHA = "1fc28a50d08f48c8cc32eb36fe012dc1322f602282ca47b02c418376a7e6dcca"
+//
+// Re-approved for #3477: SELinux defaults leave label allocation to the runtime.
+// kubectl v1.36.2 / Kustomize v5.8.1 rendered all five overlays on base 19642fe9
+// and this tree: 553 identities on each side, zero additions/removals/duplicates.
+// All 82 grant-bearing RBAC and ServiceAccount documents are unchanged; the 16
+// changed documents contain only the reviewed SELinux policy/template updates.
+// Removing one Namespace in a negative control reports exactly one removal.
+// Previous aggregate: 1fc28a50d08f48c8cc32eb36fe012dc1322f602282ca47b02c418376a7e6dcca.
+const expectedRenderedSurfaceSHA = "d76e357336f1c4817766463bf7990648b5c8b019939aaf680606929d51bd46b4"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.

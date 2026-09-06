@@ -84,8 +84,7 @@ spec:
             seccompProfile:
               type: RuntimeDefault
             # CIS-5.7.3 (C-0211); a documented no-op on this AppArmor cluster.
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
           resources:
             requests:
               cpu: 10m
@@ -115,8 +114,7 @@ spec:
             seccompProfile:
               type: RuntimeDefault
             # CIS-5.7.3 (C-0211); a documented no-op on this AppArmor cluster.
-            seLinuxOptions:
-              level: s0
+            seLinuxOptions: {}
           resources:
             requests:
               cpu: 20m

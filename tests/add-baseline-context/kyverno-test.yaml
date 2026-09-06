@@ -32,25 +32,10 @@ results:
     resources:
       - velero/plain
       - velero/no-init
-      - velero/partial
       - observability/coroot-node-agent
     kind: Pod
     result: pass
     patchedResources: patched-resources.yaml
-  # The pod-scope SELinux fill closes the one shape the container foreach must
-  # leave alone: a pod-level object that exists but carries no `level`. It fires
-  # for exactly that shape and nothing else.
-  - policy: add-security-context
-    rule: add-baseline-context-optin-pod-selinux-level
-    resources:
-      - velero/podlevel-partial
-    kind: Pod
-    result: pass
-    patchedResources: patched-resources.yaml
-  # OFF state, and the anchor-preservation case. chaos-mesh carries no opt-in
-  # label so neither rule may touch it; velero/preset already sets both fields to
-  # non-default values, so the conditional anchors leave it unchanged and the
-  # mutation is reported as skipped.
   - policy: add-security-context
     rule: add-baseline-context-optin-namespaces
     resources:
@@ -62,32 +47,12 @@ results:
     rule: add-baseline-context-optin-containers
     resources:
       - chaos-mesh/unlabelled
+      - velero/partial
       - velero/preset
       - velero/podlevel
       - velero/podlevel-partial
     kind: Pod
     result: skip
-  # The pod-scope fill must NOT fire anywhere else: not where the pod sets no
-  # SELinux object at all (that shape belongs to the container rule), and not
-  # where the pod-level object is already complete.
-  - policy: add-security-context
-    rule: add-baseline-context-optin-pod-selinux-level
-    resources:
-      - chaos-mesh/unlabelled
-      - velero/plain
-      - velero/no-init
-      - velero/partial
-      - velero/preset
-      - velero/podlevel
-      # The observability fixture sets no pod-level SELinux object, so this rule
-      # must not fire there either — that shape belongs to the container rule.
-      - observability/coroot-node-agent
-    kind: Pod
-    result: skip
-  # --- Controller kinds ---------------------------------------------------
-  # The stored controller spec is what Kubescape scores and the pod rules never
-  # reach it, so every state above is pinned again at the controller object.
-  # ON state, template path.
   - policy: add-security-context
     rule: add-baseline-context-optin-controllers
     resources:
@@ -145,15 +110,6 @@ results:
     kind: CronJob
     result: pass
     patchedResources: patched-resources.yaml
-  # The pod-scope SELinux fill at controller scope: fires only on the
-  # pod-level-object-without-level shape.
-  - policy: add-security-context
-    rule: add-baseline-context-optin-controllers-pod-selinux-level
-    resources:
-      - velero/podlevel-partial-deploy
-    kind: Deployment
-    result: pass
-    patchedResources: patched-resources.yaml
   - policy: add-security-context
     rule: add-baseline-context-optin-controllers
     resources:
@@ -180,22 +136,6 @@ results:
     kind: Deployment
     result: skip
   - policy: add-security-context
-    rule: add-baseline-context-optin-controllers-pod-selinux-level
-    resources:
-      - chaos-mesh/unlabelled-deploy
-      - velero/preset-deploy
-      - velero/podlevel-deploy
-      - observability/operator-deploy
-    kind: Deployment
-    result: skip
-  - policy: add-security-context
-    rule: add-baseline-context-optin-cronjobs-pod-selinux-level
-    resources:
-      - observability/nightly-cronjob
-    kind: CronJob
-    result: skip
-  # A standalone Job (CREATE-only kind) takes the template path.
-  - policy: add-security-context
     rule: add-baseline-context-optin-controllers
     resources:
       - observability/oneshot-job
@@ -209,16 +149,6 @@ results:
     kind: Job
     result: pass
     patchedResources: patched-resources.yaml
-  # The jobTemplate pod-scope fill fires on exactly the partial pod-level shape
-  # and nowhere else; the CronJob rules still land fsGroupChangePolicy on the
-  # pod-level fixtures and keep the container foreach out.
-  - policy: add-security-context
-    rule: add-baseline-context-optin-cronjobs-pod-selinux-level
-    resources:
-      - velero/podlevel-partial-cronjob
-    kind: CronJob
-    result: pass
-    patchedResources: patched-resources.yaml
   - policy: add-security-context
     rule: add-baseline-context-optin-cronjobs
     resources:
@@ -227,12 +157,6 @@ results:
     kind: CronJob
     result: pass
     patchedResources: patched-resources.yaml
-  - policy: add-security-context
-    rule: add-baseline-context-optin-cronjobs-pod-selinux-level
-    resources:
-      - velero/podlevel-cronjob
-    kind: CronJob
-    result: skip
   - policy: add-security-context
     rule: add-baseline-context-optin-cronjobs-containers
     resources:
@@ -253,23 +177,19 @@ results:
       - kubescape/podlabel-only-deploy
     kind: Deployment
     result: skip
-  # An explicitly EMPTY container-level SELinux object under a complete pod-level
-  # object is an override Kubernetes honours, so the container rule must fill its
-  # level (and leave the sibling container that sets nothing alone).
+  # Explicit empty container overrides are preserved unchanged.
   - policy: add-security-context
     rule: add-baseline-context-optin-containers
     resources:
       - velero/empty-override
     kind: Pod
-    result: pass
-    patchedResources: patched-resources.yaml
+    result: skip
   - policy: add-security-context
     rule: add-baseline-context-optin-controllers-containers
     resources:
       - velero/empty-override-deploy
     kind: Deployment
-    result: pass
-    patchedResources: patched-resources.yaml
+    result: skip
   - policy: add-security-context
     rule: add-baseline-context-optin-controllers
     resources:
