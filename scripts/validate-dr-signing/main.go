@@ -345,43 +345,224 @@ func drRequiredPermissionNames() string {
 	return strings.Join(names, ", ")
 }
 
+// publicationStep is one step of the composite publication action reduced to
+// the surfaces the runner actually executes: the action it invokes, the shell
+// it runs, and the `env`/`with` mappings those receive. Names, ids and YAML
+// comments are deliberately absent — they are documentation, and a contract
+// satisfied by documentation is satisfied by an action that publishes nothing.
+type publicationStep struct {
+	uses string
+	run  string
+	env  map[string]any
+	with map[string]any
+}
+
+// executableRunLines removes full-line shell comments from a run block.
+// It does not parse shell syntax; callers that require a command to execute
+// must validate the entire block with runsExactly instead of matching a line.
+func executableRunLines(run string) []string {
+	lines := make([]string, 0)
+	for _, line := range strings.Split(run, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return lines
+}
+
+// runsLineContaining reports whether one line of the step's run block contains
+// `want`. Only the run block is searched, so a matching comment or step name
+// elsewhere in the action cannot stand in for the command.
+func (s publicationStep) runsLineContaining(want string) bool {
+	for _, line := range executableRunLines(s.run) {
+		if strings.Contains(line, want) {
+			return true
+		}
+	}
+	return false
+}
+
+// runsExactly accepts only the required command, optional strict shell setup,
+// and blank/comment lines. Rejecting every other line prevents heredocs,
+// functions, and early exits from leaving a matching command unexecuted.
+func (s publicationStep) runsExactly(want string) bool {
+	found := false
+	for _, line := range executableRunLines(s.run) {
+		switch strings.TrimSpace(line) {
+		case "", "set -euo pipefail":
+			continue
+		case want:
+			found = true
+		default:
+			return false
+		}
+	}
+	return found
+}
+
+// usesActionWithPrefix reports whether the step invokes an action whose
+// reference starts with `want` (the `@` boundary keeps `actions/attest@` from
+// matching `actions/attest-build-provenance@`).
+func (s publicationStep) usesActionWithPrefix(want string) bool {
+	return strings.HasPrefix(s.uses, want)
+}
+
+// parsePublicationSteps decodes the composite action and returns its steps in
+// declaration order.
+//
+// 🔴 THE CONTRACT IS CHECKED AGAINST PARSED STEPS, NEVER AGAINST THE FILE'S
+// TEXT. The scanning version matched raw lines, so `# run: syft scan …` in a
+// comment or a step *named* after the installer command satisfied the check
+// while the runner executed nothing of the sort. Reading `run`/`uses`/`env`/`with`
+// separates those surfaces; runsExactly also constrains critical tool commands
+// so quoted shell payloads cannot stand in for their execution.
+func parsePublicationSteps(action string) ([]publicationStep, error) {
+	document, err := decodeWorkflow(action)
+	if err != nil {
+		return nil, fmt.Errorf("publication action is unreadable, so its steps cannot be checked: %w", err)
+	}
+	runs, ok := document["runs"].(map[string]any)
+	if !ok {
+		return nil, errors.New("publication action has no runs mapping, so it has no steps to check")
+	}
+	rawSteps, ok := runs["steps"].([]any)
+	if !ok || len(rawSteps) == 0 {
+		return nil, errors.New("publication action declares no steps, so nothing publishes")
+	}
+	steps := make([]publicationStep, 0, len(rawSteps))
+	for index, raw := range rawSteps {
+		step, ok := raw.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("publication action step %d is not a mapping, so it cannot be checked", index)
+		}
+		uses, _ := step["uses"].(string)
+		run, _ := step["run"].(string)
+		env, _ := step["env"].(map[string]any)
+		with, _ := step["with"].(map[string]any)
+		steps = append(steps, publicationStep{uses: strings.TrimSpace(uses), run: run, env: env, with: with})
+	}
+	return steps, nil
+}
+
+// findPublicationStep returns the position of the first step `matches`
+// accepts. Positions are step indexes, so ordering is decided by where a step
+// sits in the chain rather than by which line of the file mentions it first.
+func findPublicationStep(steps []publicationStep, matches func(publicationStep) bool) (int, bool) {
+	for index, step := range steps {
+		if matches(step) {
+			return index, true
+		}
+	}
+	return 0, false
+}
+
+// anyPublicationStep reports whether some step satisfies `matches`.
+func anyPublicationStep(steps []publicationStep, matches func(publicationStep) bool) bool {
+	_, ok := findPublicationStep(steps, matches)
+	return ok
+}
+
+// countDigestBindings counts the `env`/`with` values that read the resolved
+// staging digest — the binding every evidence step must carry so it attests
+// the bytes that were pushed rather than whatever a tag names later.
+func countDigestBindings(steps []publicationStep) int {
+	const binding = "steps.resolve_staging.outputs.digest"
+	count := 0
+	for _, step := range steps {
+		for _, mapping := range []map[string]any{step.env, step.with} {
+			for _, raw := range mapping {
+				if value, ok := raw.(string); ok && strings.Contains(value, binding) {
+					count++
+				}
+			}
+		}
+	}
+	return count
+}
+
 func validatePublicationAction(action string) error {
-	if !containsLine(action, `STAGING_TAG="staging-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"`) {
+	steps, err := parsePublicationSteps(action)
+	if err != nil {
+		return err
+	}
+	installIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.runsExactly(".github/scripts/setup-supply-chain-tools.sh")
+	})
+	if !ok {
+		return errors.New("publication action must install verified supply-chain tools before publishing")
+	}
+	if anyPublicationStep(steps, func(step publicationStep) bool {
+		return step.usesActionWithPrefix("sigstore/cosign-installer@") ||
+			step.usesActionWithPrefix("anchore/sbom-action@")
+	}) {
+		return errors.New("publication action must use verified supply-chain tools instead of unpinned binary installers")
+	}
+	if !anyPublicationStep(steps, func(step publicationStep) bool {
+		return step.runsLineContaining(`STAGING_TAG="staging-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"`)
+	}) {
 		return errors.New("publication action must build a unique staging reference from the SHA, run, and attempt")
 	}
-	if !containsLine(action, "STAGING_OCI_REF: ${{ steps.staging_reference.outputs.oci_ref }}") {
-		return errors.New("publication action must use an environment bridge for the generated staging reference")
-	}
-	pushIdx, ok := lineIndexContaining(action, `workload push "${STAGING_OCI_REF}"`)
+	pushIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.runsLineContaining(`workload push "${STAGING_OCI_REF}"`)
+	})
 	if !ok {
 		return errors.New("publication action must push only the allowlisted staging reference")
 	}
-	resolveIdx, ok := lineIndexContaining(action, `docker buildx imagetools inspect "${STAGING_REF}"`)
+	// The bridge is asserted on the push step's own env: an expression that
+	// reaches the shell through any other step's mapping is not the bridge.
+	if bridge, _ := steps[pushIdx].env["STAGING_OCI_REF"].(string); strings.TrimSpace(bridge) !=
+		"${{ steps.staging_reference.outputs.oci_ref }}" {
+		return errors.New("publication action must use an environment bridge for the generated staging reference")
+	}
+	if installIdx >= pushIdx {
+		return errors.New("publication action must install verified supply-chain tools before publishing")
+	}
+	resolveIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.runsLineContaining(`docker buildx imagetools inspect "${STAGING_REF}"`)
+	})
 	if !ok {
 		return errors.New("publication action must resolve the staging reference to an immutable digest")
 	}
-	signIdx, ok := lineIndexContaining(action, "cosign sign ")
+	signIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.runsLineContaining("cosign sign ")
+	})
 	if !ok {
 		return errors.New("publication action would promote the artifact without signing it")
 	}
-	if !containsLine(action, `cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`) {
+	if !steps[signIdx].runsExactly(
+		`cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+	) {
 		return errors.New(
 			"publication action must sign the resolved staging digest rather than a mutable tag",
 		)
 	}
-	sbomIdx, ok := lineIndexContaining(action, "uses: anchore/sbom-action@")
+	sbomIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.runsLineContaining("syft scan ")
+	})
 	if !ok {
 		return errors.New("publication action is missing SBOM generation")
 	}
-	attestSBOMIdx, ok := lineIndexContaining(action, "uses: actions/attest@")
+	if !steps[sbomIdx].runsExactly(
+		`syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
+	) {
+		return errors.New("publication action must generate the CycloneDX SBOM from the resolved staging digest")
+	}
+	attestSBOMIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.usesActionWithPrefix("actions/attest@")
+	})
 	if !ok {
 		return errors.New("publication action is missing the required SBOM attestation")
 	}
-	provenanceIdx, ok := lineIndexContaining(action, "uses: actions/attest-build-provenance@")
+	provenanceIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.usesActionWithPrefix("actions/attest-build-provenance@")
+	})
 	if !ok {
 		return errors.New("publication action is missing the required provenance attestation")
 	}
-	promoteIdx, ok := lineIndexContaining(action, "docker buildx imagetools create --prefer-index=false")
+	promoteIdx, ok := findPublicationStep(steps, func(step publicationStep) bool {
+		return step.runsLineContaining("docker buildx imagetools create --prefer-index=false")
+	})
 	if !ok {
 		return errors.New("publication action must use digest-preserving latest promotion")
 	}
@@ -390,13 +571,13 @@ func validatePublicationAction(action string) error {
 		sbomIdx >= attestSBOMIdx || attestSBOMIdx >= provenanceIdx || provenanceIdx >= promoteIdx {
 		return errors.New("publication action must complete push, resolution, signature, SBOM, and provenance before promotion")
 	}
-	if strings.Count(action, "steps.resolve_staging.outputs.digest") < 4 {
+	if countDigestBindings(steps) < 4 {
 		return errors.New("publication action must bind every evidence step to the resolved staging digest")
 	}
-	if !containsLine(action, `"${SUBJECT_NAME}@${STAGING_DIGEST}"`) {
+	if !steps[promoteIdx].runsLineContaining(`"${SUBJECT_NAME}@${STAGING_DIGEST}"`) {
 		return errors.New("publication action must promote the exact evidenced digest")
 	}
-	if !containsLine(action, `if [[ "${LATEST_DIGEST}" != "${STAGING_DIGEST}" ]]; then`) {
+	if !steps[promoteIdx].runsLineContaining(`if [[ "${LATEST_DIGEST}" != "${STAGING_DIGEST}" ]]; then`) {
 		return errors.New("publication action must verify latest resolves to the staged digest")
 	}
 
@@ -1433,16 +1614,6 @@ func containsLine(block string, want string) bool {
 	}
 	return false
 }
-
-func lineIndexContaining(block string, want string) (int, bool) {
-	for i, line := range strings.Split(block, "\n") {
-		if strings.Contains(line, want) {
-			return i, true
-		}
-	}
-	return 0, false
-}
-
 func run(workflowPath string, configPath string, stdout io.Writer, stderr io.Writer) int {
 	workflow, err := os.ReadFile(workflowPath) //nolint:gosec // The explicit CLI path is the validator input.
 	if err != nil {

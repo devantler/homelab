@@ -679,3 +679,280 @@ spec:
             serviceName: db
         - k8sServiceSelector:
             selector: {}
+---
+# ── DENY cases: selector KEYS that name an identity, a namespace or a cluster ─
+# Each selector below is non-empty and uses only the whitelisted operators, so
+# every earlier condition reads it as "constrained". What it names is the
+# problem: Cilium exposes reserved identities, the pod namespace and the cluster
+# name as ordinary selectable labels, so a selector can reach the same broad
+# destination an entity or a CIDR is refused for. Each was measured ADMITTED
+# before the key check landed.
+# ATTACK: the world identity, spelled as a label instead of an entity.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-reserved-world-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            reserved:world: ""
+---
+# ATTACK: the same identity with NO source prefix. Cilium defaults a
+# prefix-less selector key to `any:`, which matches a label from every source
+# — reserved included — so `world` alone selects the world identity.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-bare-world-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            world: ""
+---
+# ATTACK: the explicit `any:` spelling of the host identity.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-any-host-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            any:host: ""
+---
+# ATTACK: a reserved identity named through the matchExpressions `In` form,
+# which the operator whitelist accepts.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-reserved-expression-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchExpressions:
+            - key: reserved:remote-node
+              operator: In
+              values:
+                - ""
+---
+# ATTACK: another namespace, named through the namespace label. Cilium scopes a
+# toEndpoints selector to the policy's own namespace only when no namespace
+# key is present; this key overrides that scoping.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-cross-namespace-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+---
+# ATTACK: the same namespace key through the `In` form, listing two namespaces.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-cross-namespace-expression-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchExpressions:
+            - key: k8s:io.kubernetes.pod.namespace
+              operator: In
+              values:
+                - kube-system
+                - flux-system
+---
+# ATTACK: a namespace selected by one of ITS labels rather than its name — the
+# `io.cilium.k8s.namespace.labels.` prefix Cilium projects onto every pod.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-namespace-labels-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name: kube-system
+---
+# ATTACK: another cluster, named through the cluster-name label — the selector
+# spelling of the refused `cluster-mesh` entity.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-cluster-name-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.cilium.k8s.policy.cluster: other-cluster
+---
+# ATTACK: a reserved identity sitting BESIDE a properly pinned selector. Cilium
+# unions allow rules, so the broad entry decides — the check has to be per
+# selector, not "does this policy pin any ordinary label".
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-reserved-beside-constrained-egress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: db
+        - matchLabels:
+            reserved:world: ""
+---
+# ATTACK, ingress side: the host identity as a source label.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-reserved-host-ingress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            reserved:host: ""
+---
+# ATTACK, ingress side: every pod of another namespace as a source.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-cross-namespace-ingress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+---
+# ATTACK, ingress side: the namespace key with NO source prefix (`any:`).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-selector-bare-namespace-ingress
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+---
+# ── ADMIT cases: the narrow identity, and ordinary source-prefixed keys ───────
+# OK: the post-Gateway `ingress` identity as a SOURCE label — the selector
+# spelling of the `fromEntities: [ingress]` carve-out, and the one reserved
+# identity a tenant workload legitimately names on the ingress side.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-web-ingress-from-ingress-selector
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            reserved:ingress: ""
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+---
+# OK: ordinary workload labels written WITH the `k8s:` source prefix, including
+# a Kubernetes label that happens to be named like a reserved identity. The
+# prefix pins the source, so `k8s:cluster` can only ever match a pod label and
+# never the identity — this is the spelling the deny message points a tenant
+# at, so it has to keep passing.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-web-egress-k8s-prefixed-labels
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:app: db
+            k8s:cluster: blue
+          matchExpressions:
+            - key: k8s:tier
+              operator: In
+              values:
+                - backend
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+---
+# OK: the kube-apiserver identity as a DESTINATION label — the selector
+# spelling of the `toEntities: [kube-apiserver]` carve-out, so the key check
+# mirrors the entity whitelist on the egress side exactly as it does on ingress.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-web-egress-to-kube-apiserver-selector
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            reserved:kube-apiserver: ""
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP
