@@ -1482,6 +1482,9 @@ fi
 #     only the network response replaced; its stdout must remain empty and its one
 #     diagnostic line must not expose arbitrary response fields or parser errors.
 # ---------------------------------------------------------------------------
+# Check <name> <expected-status> <publication-classification> <response-classification> <body>.
+# Runs the real publication classifier with an offline response, accumulating failures
+# for the exit status, empty stdout, diagnostic classification and response-data leakage.
 publication_response_case() {
   local name="$1" expected="$2" classification="$3" response="$4" body="$5" rc=0
   local fixture="$WORK/response-$name.json" out="$WORK/response-$name.out" err="$WORK/response-$name.err"

@@ -430,6 +430,10 @@ tag_commit() {
   printf '%s\n' "$sha"
 }
 
+# Classify publication for <repo> <tag> <expected-commit-sha> using complete Actions data.
+# Returns 0 for a matching success, 1 for no success or an invalid expected SHA,
+# 2 for success only at another commit, and 3 when the response cannot establish an answer.
+# Keeps stdout empty; query results produce one bounded diagnostic on stderr.
 tag_was_published() {
   local repo="$1" tag="$2" sha="$3" runs summary diagnostic
   # The commit is REQUIRED, never defaulted: an empty expected SHA would make the match below
