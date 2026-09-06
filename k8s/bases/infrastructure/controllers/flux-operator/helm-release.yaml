@@ -66,9 +66,8 @@ spec:
   # - fsGroupChangePolicy governs the kubelet's volume ownership pass, which runs only
   #   when a pod sets fsGroup. This pod sets none, and its only volumes are an emptyDir
   #   and the projected service-account token — no PVC, no hostPath.
-  # - seLinuxOptions {level: s0} is the default non-privileged MCS level and a no-op on
-  #   this AppArmor cluster (runc ignores SELinux labels when SELinux is not the active
-  #   LSM), retained as CIS-5.7.3 defense-in-depth on any SELinux node.
+  # - Empty seLinuxOptions satisfies C-0211 while leaving SELinux type and MCS
+  #   categories to the runtime. It is a no-op on this AppArmor cluster.
   #
   # Neither carries the runAsGroup-without-runAsUser coupling documented above, so
   # neither can stop the sandbox building.
@@ -108,8 +107,7 @@ spec:
                 value: 65532
               - op: add
                 path: /spec/template/spec/containers/0/securityContext/seLinuxOptions
-                value:
-                  level: s0
+                value: {}
           - target:
               kind: Deployment
               name: flux-operator

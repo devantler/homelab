@@ -61,12 +61,7 @@ spec:
     - name: app
       image: velero/velero:v1.0.0
 ---
-# Opted-in namespace whose container already carries a PARTIAL seLinuxOptions —
-# some other field set, `level` absent. A conditional anchor on the whole object
-# (`+(seLinuxOptions)`) sees it present and skips, leaving `level` unset while
-# still reporting the rule as applied. Anchoring the leaf (`+(level)`) instead
-# fills in the missing field and preserves the sibling. Measured 2026-08-29:
-# with the object-level anchor this pod came back `{user: system_u}` — no level.
+# Partial container options retain every operator field and leave level unset.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -111,14 +106,7 @@ spec:
     - name: app
       image: velero/velero:v1.0.0
 ---
-# Opted-in namespace whose POD-level securityContext declares a PARTIAL SELinux
-# object — a sibling field set, `level` absent — with containers carrying none of
-# their own. The container foreach must still skip (a container-level object
-# would replace the pod struct wholesale and drop `user`), so nothing below the
-# pod can supply the missing field; without a pod-scope fill the containers
-# inherit a level-less object and C-0211 stays unmet while every rule reports
-# success. This is the shape `podlevel` does not cover: that one is already
-# complete (`level: s9`).
+# Partial pod options remain inherited as a whole with runtime-selected level.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -141,13 +129,8 @@ spec:
 # initContainers carrying no seLinuxOptions at all — no pod-level SELinux object
 # anywhere in the namespace.
 #
-# That is the plain shape, so the two straightforward rules do all the work and
-# add-baseline-context-optin-pod-selinux-level cannot fire (it requires a
-# pre-existing pod-level object). Pinned as its own case rather than leaning on
-# velero/plain because the issue's guardrail is explicit that a rollout proves
-# each namespace rather than assuming the previous one generalises — and because
-# this fixture records WHICH shape was onboarded, so a future namespace
-# presenting a different one is not silently assumed covered.
+# This fixture pins the opted-in observability shape separately from velero.
+# Both fields are supplied without creating a pod-level SELinux object.
 #
 # hostPID and the hostPath volume are coroot's node-agent (eBPF collection); no
 # rule reads them, they are here so the fixture is recognisably the real workload.
@@ -313,7 +296,7 @@ spec:
 ---
 # A complete pod-level SELinux object with containers carrying none: the
 # container foreach must stay out (a container-level object would replace the
-# pod struct wholesale), the pod-scope fill must not fire (level present), and
+# pod struct wholesale), and
 # fsGroupChangePolicy still lands.
 apiVersion: apps/v1
 kind: Deployment
@@ -340,8 +323,7 @@ spec:
         - name: velero
           image: velero/velero:v1.16.0
 ---
-# A pod-level SELinux object that EXISTS but has no `level`: only the pod-scope
-# fill may supply it, preserving the sibling `user`.
+# Partial pod options on a Deployment remain inherited without a fixed level.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -380,8 +362,7 @@ spec:
         - name: job
           image: ghcr.io/coroot/coroot:1.22.2
 ---
-# A CronJob whose pod-level SELinux object exists but has no `level`: only the
-# jobTemplate pod-scope fill may supply it, preserving the sibling `user`.
+# Partial pod options on a CronJob remain inherited without a fixed level.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -404,8 +385,7 @@ spec:
             - name: velero
               image: velero/velero:v1.16.0
 ---
-# A CronJob with a complete pod-level SELinux object: the container foreach and
-# the pod-scope fill both stay out; fsGroupChangePolicy still lands.
+# A CronJob with complete pod options: the container foreach stays out; fsGroupChangePolicy still lands.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -447,12 +427,7 @@ spec:
         - name: app
           image: quay.io/kubescape/operator:v0.2.0
 ---
-# A container that EXPLICITLY sets `seLinuxOptions: {}` under a complete pod-level
-# object. Kubernetes treats that non-null empty object as an override, so the
-# effective container context has no level unless the rule fills it — but the
-# empty mapping is falsy to JMESPath, so an `|| ''` presence test reads it as
-# absent and the container is left without a level. The key-presence test
-# distinguishes the two shapes. Pinned at pod scope (this) and controller scope.
+# Explicit empty container options override the pod object and stay empty.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -506,3 +481,130 @@ spec:
             seLinuxOptions: {}
         - name: plain
           image: velero/velero:v1.16.0
+---
+# Runtime default and inheritance regression.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: general-plain
+  namespace: default
+spec:
+  initContainers:
+    - name: init
+      image: velero/velero-plugin:v1.0.0
+  containers:
+    - name: app
+      image: velero/velero:v1.0.0
+---
+# Runtime default and inheritance regression.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: general-podlevel
+  namespace: default
+spec:
+  securityContext:
+    seLinuxOptions:
+      user: system_u
+      level: s9
+  initContainers:
+    - name: init
+      image: velero/velero-plugin:v1.0.0
+  containers:
+    - name: app
+      image: velero/velero:v1.0.0
+---
+# Runtime default and inheritance regression.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: general-partial
+  namespace: default
+spec:
+  initContainers:
+    - name: init
+      image: velero/velero-plugin:v1.0.0
+      securityContext:
+        seLinuxOptions:
+          user: system_u
+  containers:
+    - name: app
+      image: velero/velero:v1.0.0
+      securityContext:
+        seLinuxOptions:
+          user: system_u
+---
+# Runtime default and inheritance regression.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: general-empty-pod
+  namespace: default
+spec:
+  securityContext:
+    seLinuxOptions: {}
+  initContainers:
+    - name: init
+      image: velero/velero-plugin:v1.0.0
+  containers:
+    - name: app
+      image: velero/velero:v1.0.0
+---
+# Runtime default and inheritance regression.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: empty-pod
+  namespace: velero
+spec:
+  securityContext:
+    seLinuxOptions: {}
+  initContainers:
+    - name: init
+      image: velero/velero-plugin:v1.0.0
+  containers:
+    - name: app
+      image: velero/velero:v1.0.0
+---
+# Runtime default and inheritance regression.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: empty-pod-deploy
+  namespace: velero
+spec:
+  selector:
+    matchLabels:
+      app: podlevel-deploy
+  template:
+    metadata:
+      labels:
+        app: podlevel-deploy
+    spec:
+      securityContext:
+        seLinuxOptions: {}
+      initContainers:
+        - name: init
+          image: velero/velero:v1.16.0
+      containers:
+        - name: velero
+          image: velero/velero:v1.16.0
+---
+# Runtime default and inheritance regression.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: empty-pod-cronjob
+  namespace: velero
+spec:
+  schedule: "0 5 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            seLinuxOptions: {}
+          containers:
+            - name: velero
+              image: velero/velero:v1.16.0

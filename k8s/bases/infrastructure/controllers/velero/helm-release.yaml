@@ -55,12 +55,11 @@ spec:
         # readOnlyRootFilesystem is safe here (unlike the main server below).
         # UID 65532 matches this image's baked nonroot user.
         securityContext:
-          # SELinux level for the plugin-copy initContainer's stored template
+          # Runtime-selected SELinux labels for the plugin-copy initContainer's stored template
           # (#3522). The pod declares no seLinuxOptions, so this container-level
           # object replaces no inherited struct -- the wholesale-replace hazard
           # in #3469 is unreachable here.
-          seLinuxOptions:
-            level: s0
+          seLinuxOptions: {}
           runAsNonRoot: true
           runAsUser: 65532
           allowPrivilegeEscalation: false
@@ -103,10 +102,9 @@ spec:
       seccompProfile:
         type: RuntimeDefault
     containerSecurityContext:
-      # SELinux level for the server container's stored template (#3522).
+      # Runtime-selected SELinux labels for the server container's stored template (#3522).
       # The pod sets no seLinuxOptions, so this replaces no inherited struct.
-      seLinuxOptions:
-        level: s0
+      seLinuxOptions: {}
       runAsNonRoot: true
       runAsUser: 65532
       allowPrivilegeEscalation: false
@@ -240,8 +238,7 @@ spec:
       # The DaemonSet declares no pod-level seLinuxOptions, so this
       # container-level object replaces no inherited struct (#3469).
       containerSecurityContext:
-        seLinuxOptions:
-          level: s0
+        seLinuxOptions: {}
       updateStrategy:
         type: RollingUpdate
         rollingUpdate:

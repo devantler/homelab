@@ -50,8 +50,7 @@ spec:
                     - ALL
                 seccompProfile:
                   type: RuntimeDefault
-                seLinuxOptions:
-                  level: s0
+                seLinuxOptions: {}
               resources:
                 requests:
                   cpu: 10m
