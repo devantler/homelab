@@ -1110,7 +1110,7 @@ func TestPublicationActionRejectsEachAblation(t *testing.T) {
 		},
 		{
 			name:    "without the environment bridge an expression reaches shell code",
-			old:     "STAGING_OCI_REF: ${{ steps.staging_reference.outputs.oci_ref }}\n",
+			old:     "        STAGING_OCI_REF: ${{ steps.staging_reference.outputs.oci_ref }}\n",
 			wantErr: "environment bridge",
 		},
 		{
@@ -1276,15 +1276,194 @@ func TestPublicationActionRejectsPromotionBeforeEvidence(t *testing.T) {
 	t.Parallel()
 
 	publisher := repoFile(t, ".github/actions/deploy-prod/publish-platform-manifests/action.yml")
-	const provenance = "      uses: actions/attest-build-provenance@"
-	const promotion = "        docker buildx imagetools create --prefer-index=false"
-	publisher = strings.ReplaceAll(publisher, provenance, "      uses: actions/temporary-placeholder@")
-	publisher = strings.ReplaceAll(publisher, promotion, "        uses: actions/attest-build-provenance@")
-	publisher = strings.ReplaceAll(publisher, "      uses: actions/temporary-placeholder@", "      run: docker buildx imagetools create --prefer-index=false")
+	publisher = moveStepToEnd(t, publisher, "    - name: 🪪 Attest build provenance (SLSA L3)\n")
 
 	err := validatePublicationAction(publisher)
 	if err == nil || !strings.Contains(err.Error(), "before promotion") {
 		t.Fatalf("promotion before provenance was accepted: %v", err)
+	}
+}
+
+// moveStepToEnd relocates one whole step — from its `- name:` line up to the
+// next step's — after the final step, so an ordering ablation reshapes the
+// PARSED step sequence rather than shuffling raw text between fields.
+func moveStepToEnd(t *testing.T, action string, stepHeader string) string {
+	t.Helper()
+
+	start := strings.Index(action, stepHeader)
+	if start < 0 {
+		t.Fatalf("ablation changed nothing — no step starts with %q", stepHeader)
+	}
+	rest := action[start+len(stepHeader):]
+	next := strings.Index(rest, "\n    - name: ")
+	if next < 0 {
+		t.Fatalf("step %q is already the last step, so moving it reorders nothing", stepHeader)
+	}
+	end := start + len(stepHeader) + next + 1
+	block := action[start:end]
+	remainder := action[:start] + action[end:]
+	if !strings.HasSuffix(remainder, "\n") {
+		remainder += "\n"
+	}
+	return remainder + block
+}
+
+// publicationSmuggle is one required publication string relocated out of the
+// executable field the contract must read it from.
+type publicationSmuggle struct {
+	name     string
+	old      string // the executable text the contract requires
+	inert    string // what replaces it in the executable field
+	stepName string // the `- name:` line of the step that carries it
+	wantErr  string
+}
+
+// publicationSmuggles lists every required string and the step that carries it.
+//
+// 🔴 EVERY MATCH IN validatePublicationAction USED TO BE A RAW-TEXT MATCH, so a
+// comment, a step name, or an env value carrying the expected text satisfied
+// the contract while the executable step did something else. These cases place
+// each required string in exactly those non-executable positions and require
+// the same refusal as when the string is absent altogether.
+var publicationSmuggles = []publicationSmuggle{
+	{
+		name:     "the verified tool installer",
+		old:      "run: .github/scripts/setup-supply-chain-tools.sh",
+		inert:    "run: echo no-verified-tools",
+		stepName: "    - name: 🔐 Install verified supply-chain tools",
+		wantErr:  "verified supply-chain tools",
+	},
+	{
+		name:     "the unique staging tag",
+		old:      `STAGING_TAG="staging-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"`,
+		inert:    `STAGING_TAG="latest"`,
+		stepName: "    - name: 🏷️ Create unique staging reference",
+		wantErr:  "unique staging reference",
+	},
+	{
+		name:     "the staging push",
+		old:      `workload push "${STAGING_OCI_REF}"`,
+		inert:    "echo skip-push",
+		stepName: "    - name: 📦 Push manifests to the staging reference",
+		wantErr:  "staging reference",
+	},
+	{
+		name:     "the digest resolution",
+		old:      `docker buildx imagetools inspect "${STAGING_REF}"`,
+		inert:    "echo skip-resolve",
+		stepName: "    - name: 🔎 Resolve the staged manifest digest",
+		wantErr:  "immutable digest",
+	},
+	{
+		name:     "the signature",
+		old:      `cosign sign --yes --recursive "ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}"`,
+		inert:    "echo skip-signing",
+		stepName: "    - name: 🖋️ Sign the staged digest with cosign",
+		wantErr:  "without signing",
+	},
+	{
+		name:     "the SBOM scan",
+		old:      `syft scan "registry:ghcr.io/devantler-tech/platform/manifests@${STAGING_DIGEST}" --output cyclonedx-json=sbom.cdx.json`,
+		inert:    "echo skip-sbom",
+		stepName: "    - name: 📋 Generate SBOM (CycloneDX)",
+		wantErr:  "missing SBOM generation",
+	},
+	{
+		name:     "the SBOM attestation action",
+		old:      "uses: actions/attest@",
+		inert:    "run: echo skip-attest-",
+		stepName: "    - name: 🪪 Attest SBOM",
+		wantErr:  "SBOM attestation",
+	},
+	{
+		name:     "the provenance attestation action",
+		old:      "uses: actions/attest-build-provenance@",
+		inert:    "run: echo skip-provenance-",
+		stepName: "    - name: 🪪 Attest build provenance (SLSA L3)",
+		wantErr:  "provenance attestation",
+	},
+	{
+		name:     "the digest-preserving promotion",
+		old:      "docker buildx imagetools create --prefer-index=false",
+		inert:    "echo skip-promote",
+		stepName: "    - name: 🚀 Promote the evidenced digest to latest",
+		wantErr:  "digest-preserving",
+	},
+	{
+		name:     "the post-promotion equality check",
+		old:      `if [[ "${LATEST_DIGEST}" != "${STAGING_DIGEST}" ]]; then`,
+		inert:    "if false; then",
+		stepName: "    - name: 🚀 Promote the evidenced digest to latest",
+		wantErr:  "verify latest",
+	},
+	{
+		name:     "the staging reference environment bridge",
+		old:      "STAGING_OCI_REF: ${{ steps.staging_reference.outputs.oci_ref }}",
+		inert:    "STAGING_OCI_UNUSED: unused",
+		stepName: "    - name: 📦 Push manifests to the staging reference",
+		wantErr:  "environment bridge",
+	},
+}
+
+// TestPublicationActionIgnoresRequiredTextOutsideExecutableFields pins the
+// contract to parsed steps: text in a YAML comment, a step name, or a trailing
+// shell comment is prose, and prose never satisfies a required command.
+func TestPublicationActionIgnoresRequiredTextOutsideExecutableFields(t *testing.T) {
+	t.Parallel()
+
+	publisher := repoFile(t, ".github/actions/deploy-prod/publish-platform-manifests/action.yml")
+	smuggles := map[string]func(publicationSmuggle) string{
+		"in a YAML comment line": func(c publicationSmuggle) string {
+			return strings.Replace(publisher, c.old, c.inert+"\n        # "+c.old, 1)
+		},
+		"in the step name": func(c publicationSmuggle) string {
+			ablated := strings.Replace(publisher, c.old, c.inert, 1)
+			return strings.Replace(ablated, c.stepName, "    - name: '"+c.old+"'", 1)
+		},
+		"in a trailing shell comment": func(c publicationSmuggle) string {
+			return strings.Replace(publisher, c.old, c.inert+" # "+c.old, 1)
+		},
+	}
+
+	for _, testCase := range publicationSmuggles {
+		for where, smuggle := range smuggles {
+			t.Run(testCase.name+" "+where, func(t *testing.T) {
+				t.Parallel()
+				if !strings.Contains(publisher, testCase.stepName) {
+					t.Fatalf("no step carries the name line %q", testCase.stepName)
+				}
+				ablated := smuggle(testCase)
+				if ablated == publisher {
+					t.Fatalf("ablation changed nothing — the control does not target a real line")
+				}
+				if !strings.Contains(ablated, testCase.old) {
+					t.Fatalf("the smuggled text is absent, so this proves nothing about prose matching")
+				}
+				err := validatePublicationAction(ablated)
+				if err == nil || !strings.Contains(err.Error(), testCase.wantErr) {
+					t.Fatalf("prose satisfied the contract: got %v, want error mentioning %q", err, testCase.wantErr)
+				}
+			})
+		}
+	}
+}
+
+// TestPublicationActionCountsDigestBindingsInStepFieldsOnly pins the evidence
+// binding count to env and with values and run lines, never to comments.
+func TestPublicationActionCountsDigestBindingsInStepFieldsOnly(t *testing.T) {
+	t.Parallel()
+
+	publisher := repoFile(t, ".github/actions/deploy-prod/publish-platform-manifests/action.yml")
+	const binding = "${{ steps.resolve_staging.outputs.digest }}"
+	unbound := strings.ReplaceAll(publisher, binding, "${{ steps.other.outputs.digest }}")
+	if unbound == publisher {
+		t.Fatalf("ablation changed nothing — the shipped publisher carries no digest bindings")
+	}
+	unbound += strings.Repeat("# "+binding+"\n", 4)
+
+	err := validatePublicationAction(unbound)
+	if err == nil || !strings.Contains(err.Error(), "bind every evidence step") {
+		t.Fatalf("comment-only digest bindings satisfied the contract: %v", err)
 	}
 }
 
