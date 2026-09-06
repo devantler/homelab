@@ -202,3 +202,61 @@ results:
       - tenant-ns/allow-web-egress-to-kube-apiserver-selector
     kind: CiliumNetworkPolicy
     result: pass
+  # ── CIDR entries inside NON-GLOBAL address space, and group references ─────
+  # Each clears the /16 prefix floor and was measured ADMITTED before the
+  # deny-list landed. The boundary is the cluster's own address space, the
+  # host, the metadata endpoint, and the link-local/loopback/multicast blocks;
+  # any set covering an address family contains one of them.
+  - policy: restrict-tenant-network-policies
+    rule: cnp-egress-destinations-must-be-constrained
+    resources:
+      - tenant-ns/attack-cidr-pod-network-egress
+      - tenant-ns/attack-cidr-private-172-cidrset-egress
+      - tenant-ns/attack-cidr-link-local-metadata-egress
+      - tenant-ns/attack-cidr-loopback-egress
+      - tenant-ns/attack-cidr-cgnat-egress
+      - tenant-ns/attack-cidr-multicast-egress
+      - tenant-ns/attack-cidr-ipv4-mapped-v6-egress
+      - tenant-ns/attack-cidr-ula-v6-egress
+      - tenant-ns/attack-cidr-ula-v6-uppercase-egress
+      - tenant-ns/attack-cidr-six-to-four-egress
+      - tenant-ns/attack-cidr-every-slash16-v4-egress
+      - tenant-ns/attack-cidr-every-slash16-v6-egress
+      - tenant-ns/attack-cidr-reserved-beside-legitimate-egress
+      - tenant-ns/attack-cidrset-group-ref-egress
+      - tenant-ns/attack-cidrset-group-selector-egress
+      - tenant-ns/attack-cidrset-group-ref-beside-cidr-egress
+      - tenant-ns/attack-cidrset-group-selector-beside-cidr-egress
+    kind: CiliumNetworkPolicy
+    result: fail
+  - policy: restrict-tenant-network-policies
+    rule: cnp-ingress-sources-must-be-constrained
+    resources:
+      - tenant-ns/attack-cidr-node-private-network-ingress
+      - tenant-ns/attack-cidr-link-local-v6-ingress
+      - tenant-ns/attack-cidrset-group-ref-ingress
+      - tenant-ns/attack-cidrset-group-ref-beside-cidr-ingress
+      - tenant-ns/attack-cidrset-group-selector-beside-cidr-ingress
+    kind: CiliumNetworkPolicy
+    result: fail
+  # CONTROL: CIDRs outside the protected ranges stay admitted by BOTH rules:
+  # a public IPv6 destination, documentation ranges, boundary neighbours and
+  # a CIDRSet entry with a literal cidr plus `except`.
+  - policy: restrict-tenant-network-policies
+    rule: cnp-egress-destinations-must-be-constrained
+    resources:
+      - tenant-ns/allow-web-egress-public-v6
+      - tenant-ns/allow-web-egress-documentation-cidrset-except
+      - tenant-ns/allow-web-ingress-from-documentation-cidr
+      - tenant-ns/allow-web-egress-outside-protected-ranges
+    kind: CiliumNetworkPolicy
+    result: pass
+  - policy: restrict-tenant-network-policies
+    rule: cnp-ingress-sources-must-be-constrained
+    resources:
+      - tenant-ns/allow-web-egress-public-v6
+      - tenant-ns/allow-web-egress-documentation-cidrset-except
+      - tenant-ns/allow-web-ingress-from-documentation-cidr
+      - tenant-ns/allow-web-egress-outside-protected-ranges
+    kind: CiliumNetworkPolicy
+    result: pass
