@@ -18,10 +18,9 @@
 #   2. no Longhorn Replica or Engine still references it via spec.nodeID (so a
 #      node holding live volume data is never touched).
 # A real, present node fails test 1 and is kept. Set DRY_RUN=true to log the
-# decisions without mutating anything:
-#   kubectl -n longhorn-system create job stale-node-cleanup-dryrun \
-#     --from=cronjob/longhorn-stale-node-cleanup
-# (then inspect the pod log; the CronJob itself runs with DRY_RUN=false).
+# decisions without mutating anything. Before creating a derived Job, set
+# DRY_RUN=true in its manifest; the Job's name does not select dry-run behavior.
+# The CronJob itself runs with DRY_RUN=false.
 #
 # Egress to the kube-apiserver and DNS is already granted to every pod in the
 # namespace by the allow-longhorn CiliumNetworkPolicy (endpointSelector: {}), so
@@ -64,6 +63,7 @@ spec:
           automountServiceAccountToken: true
           restartPolicy: Never
           securityContext:
+            fsGroupChangePolicy: OnRootMismatch
             runAsNonRoot: true
             runAsUser: 65532
             runAsGroup: 65532
@@ -79,6 +79,7 @@ spec:
               # shell; the tag tracks the kubectl minor, matching the cluster.
               image: docker.io/alpine/k8s:1.36.2@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47
               securityContext:
+                seLinuxOptions: {}
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true
                 runAsNonRoot: true
