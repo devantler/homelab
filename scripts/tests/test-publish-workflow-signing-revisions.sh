@@ -645,11 +645,15 @@ case "$args" in
       printf 'API rate limit exceeded\n' >&2
       exit 1
     fi
+    if [ -n "${BM_RUNS_RESPONSE_TAG:-}" ] && [ "$bm_ref" = "$BM_RUNS_RESPONSE_TAG" ]; then
+      cat "$BM_RUNS_RESPONSE_FILE"
+      exit 0
+    fi
     # A tag that was QUERIED SUCCESSFULLY and simply never published: the run exists and
     # failed. This is the ordinary case the walk is built for, and it is what separates
     # "the answer is no" from "there is no answer".
     if [ -n "${BM_UNPUBLISHED_TAG:-}" ] && [ "$bm_ref" = "$BM_UNPUBLISHED_TAG" ]; then
-      printf '{"workflow_runs":[{"name":"CD","conclusion":"failure","path":".github/workflows/cd.yaml","head_branch":"%s","head_sha":"%s"}]}\n' \
+      printf '{"total_count":1,"workflow_runs":[{"name":"CD","conclusion":"failure","path":".github/workflows/cd.yaml","head_branch":"%s","head_sha":"%s"}]}\n' \
         "$bm_ref" "${BM_TAG_SHA:-$BM_SHA_C}"
       exit 0
     fi
@@ -660,7 +664,7 @@ case "$args" in
     # Its run carries that same commit, or the tag would read as MOVED and refuse.
     [ -n "${BM_OWNCOMMIT_TAG:-}" ] && [ "$bm_ref" = "$BM_OWNCOMMIT_TAG" ] && bm_run_sha="$BM_SHA_B"
     [ "$bm_ref" = "${BM_MOVED_TAG:-}" ] && bm_run_sha="$BM_SHA_A"
-    printf '{"workflow_runs":[{"name":"CD","conclusion":"success","path":".github/workflows/cd.yaml","head_branch":"%s","head_sha":"%s"}]}\n' "$bm_ref" "$bm_run_sha"
+    printf '{"total_count":1,"workflow_runs":[{"name":"CD","conclusion":"success","path":".github/workflows/cd.yaml","head_branch":"%s","head_sha":"%s"}]}\n' "$bm_ref" "$bm_run_sha"
     ;;
   *"/contents/.github/workflows/cd.yaml"*)
     # The pin DEPENDS ON THE REF, which is what makes the walk's choice observable: the
@@ -1471,8 +1475,91 @@ else
   pass 'an exact manifest tag must exist under the exact spelling Flux requests'
 fi
 
+# ---------------------------------------------------------------------------
+# 29. AN HTTP-SUCCESS BODY IS NOT NECESSARILY COMPLETE PUBLICATION EVIDENCE.
+#     Parse errors used to become "unpublished", and an object instead of an array
+#     could even count as a successful publication. Exercise the real function with
+#     only the network response replaced; its stdout must remain empty and its one
+#     diagnostic line must not expose arbitrary response fields or parser errors.
+# ---------------------------------------------------------------------------
+publication_response_case() {
+  local name="$1" expected="$2" classification="$3" response="$4" body="$5" rc=0
+  local fixture="$WORK/response-$name.json" out="$WORK/response-$name.out" err="$WORK/response-$name.err"
+  printf '%s\n' "$body" >"$fixture"
+  BM_RUNS_RESPONSE_TAG=v2.0.0 BM_RUNS_RESPONSE_FILE="$fixture" PATH="$bm_bin:$PATH" \
+    bash -c 'source "$1"; tag_was_published wedding-app v2.0.0 "$2"' \
+    bash "$SCRIPT" "$SHA_C" >"$out" 2>"$err" || rc=$?
+  local before="$failures"
+  [ "$rc" -eq "$expected" ] || fail "$name classified as $rc, expected $expected"
+  [ ! -s "$out" ] || fail "$name polluted the publication result on stdout"
+  grep -q "response=$response" "$err" || fail "$name omitted its response classification"
+  grep -q "classification=$classification" "$err" || fail "$name omitted its publication classification"
+  [ "$(wc -l <"$err" | tr -d ' ')" -eq 1 ] || fail "$name emitted more or less than one diagnostic line"
+  if grep -q 'RESPONSE_ONLY_SENTINEL' "$out" "$err"; then
+    fail "$name leaked arbitrary response content"
+  fi
+  [ "$failures" -ne "$before" ] || pass "publication response $name preserves status, stdout and safe diagnostics"
+}
+
+pr_success="$(jq -cn --arg sha "$SHA_C" '{total_count:1,workflow_runs:[{name:"RESPONSE_ONLY_SENTINEL",head_branch:"v2.0.0",path:".github/workflows/cd.yaml",head_sha:$sha,conclusion:"success"}]}')"
+publication_response_case success 0 published complete "$pr_success"
+publication_response_case empty 1 unpublished complete '{"total_count":0,"workflow_runs":[],"private":"RESPONSE_ONLY_SENTINEL"}'
+publication_response_case failed 1 unpublished complete "$(jq '.workflow_runs[0].conclusion="failure"' <<<"$pr_success")"
+publication_response_case pending 1 unpublished complete "$(jq '.workflow_runs[0].conclusion=null' <<<"$pr_success")"
+publication_response_case other-workflow 1 unpublished complete "$(jq '.workflow_runs[0].path=".github/workflows/ci.yaml"' <<<"$pr_success")"
+publication_response_case other-tag 1 unpublished complete "$(jq '.workflow_runs[0].head_branch="v1.0.0"' <<<"$pr_success")"
+publication_response_case null-branch 1 unpublished complete "$(jq '.workflow_runs[0].head_branch=null' <<<"$pr_success")"
+publication_response_case moved 2 moved-tag complete "$(jq --arg sha "$SHA_A" '.workflow_runs[0].head_sha=$sha' <<<"$pr_success")"
+publication_response_case current-and-moved 0 published complete "$(jq --arg sha "$SHA_A" '.total_count=2 | .workflow_runs += [(.workflow_runs[0] | .head_sha=$sha)]' <<<"$pr_success")"
+publication_response_case invalid-json 3 query-unknown invalid 'RESPONSE_ONLY_SENTINEL is not JSON'
+publication_response_case multiple-documents 3 query-unknown invalid "$pr_success $pr_success"
+publication_response_case null-root 3 query-unknown invalid null
+publication_response_case array-root 3 query-unknown invalid "[$pr_success]"
+publication_response_case null-runs 3 query-unknown invalid '{"total_count":0,"workflow_runs":null}'
+publication_response_case missing-runs 3 query-unknown invalid '{"total_count":0}'
+publication_response_case object-runs 3 query-unknown invalid "$(jq '.workflow_runs={wrong:.workflow_runs[0]}' <<<"$pr_success")"
+publication_response_case missing-count 3 query-unknown invalid "$(jq 'del(.total_count)' <<<"$pr_success")"
+publication_response_case string-count 3 query-unknown invalid "$(jq '.total_count="1"' <<<"$pr_success")"
+publication_response_case negative-count 3 query-unknown invalid "$(jq '.total_count=-1' <<<"$pr_success")"
+publication_response_case fractional-count 3 query-unknown invalid "$(jq '.total_count=1.5' <<<"$pr_success")"
+publication_response_case oversized-count 3 query-unknown invalid "$(jq '.total_count=1e30' <<<"$pr_success")"
+publication_response_case exponent-count 0 published complete "$(printf '%s' "$pr_success" | sed 's/"total_count":1/"total_count":1e0/')"
+publication_response_case exponent-incomplete-count 3 query-unknown incomplete "$(printf '%s' "$pr_success" | sed 's/"total_count":1/"total_count":1e3/')"
+publication_response_case inconsistent-count 3 query-unknown incomplete "$(jq '.total_count=0' <<<"$pr_success")"
+publication_response_case truncated-success 3 query-unknown incomplete "$(jq '.total_count=101' <<<"$pr_success")"
+publication_response_case truncated-full-page 3 query-unknown incomplete "$(jq '.total_count=101 | .workflow_runs=[range(0;100) | {head_branch:"v2.0.0",path:".github/workflows/cd.yaml",head_sha:"3333333333333333333333333333333333333333",conclusion:"failure"}]' <<<"$pr_success")"
+publication_response_case null-row 3 query-unknown invalid "$(jq '.workflow_runs=[null]' <<<"$pr_success")"
+publication_response_case missing-field 3 query-unknown invalid "$(jq 'del(.workflow_runs[0].conclusion)' <<<"$pr_success")"
+publication_response_case malformed-sha 3 query-unknown invalid "$(jq '.workflow_runs[0].head_sha="short"' <<<"$pr_success")"
+publication_response_case malformed-path 3 query-unknown invalid "$(jq '.workflow_runs[0].path=[]' <<<"$pr_success")"
+publication_response_case malformed-branch 3 query-unknown invalid "$(jq '.workflow_runs[0].head_branch=123' <<<"$pr_success")"
+publication_response_case malformed-conclusion 3 query-unknown invalid "$(jq '.workflow_runs[0].conclusion=false' <<<"$pr_success")"
+
+# Count summaries preserve the distinction between unrelated runs and publications.
+grep -q 'total=1 returned=1 matching=1 successful-current=1 successful-other=0' "$WORK/response-success.err" ||
+  fail 'the successful response omitted the counts that explain its selection'
+grep -q 'total=101 returned=100' "$WORK/response-truncated-full-page.err" ||
+  fail 'the incomplete response omitted its advertised and observed counts'
+
+# A malformed/incomplete newest candidate must stop the REAL semver walk, even when
+# the registry would permit falling back. The old parser silently resolved 1.9.0.
+for pr_case in null-runs truncated-full-page; do
+  pr_out="$WORK/response-walk-$pr_case.out"
+  if BM_WEDDING_TAGS='v2.0.0\nv1.9.0\n' BM_WEDDING_REGISTRY_TAGS='1.9.0\n' \
+    BM_RUNS_RESPONSE_TAG=v2.0.0 BM_RUNS_RESPONSE_FILE="$WORK/response-$pr_case.json" \
+    BM_SHA_A="$SHA_A" BM_SHA_B="$SHA_B" BM_SHA_C="$SHA_C" PATH="$bm_bin:$PATH" \
+    PUBLISH_CONSUMER_ROOT="$bm_root" "$SCRIPT" >"$pr_out" 2>&1; then
+    fail "$pr_case workflow response was silently walked past to an older version"
+  else
+    grep -q '^UNRESOLVED wedding-app' "$pr_out" || fail "$pr_case did not leave its consumer unresolved"
+    grep -q 'could not read the workflow runs for tag v2.0.0' "$pr_out" || fail "$pr_case refused for an unrelated reason"
+    [ "$(grep -c '^IN-SYNC' "$pr_out" || true)" -eq "$expected_insync" ] || fail "$pr_case affected other consumers"
+    pass "$pr_case publication evidence stops the semver walk"
+  fi
+done
+
 if [ "$failures" -ne 0 ]; then
   printf '\n%d failure(s)\n' "$failures" >&2
   exit 1
 fi
-printf '\nPASS: publish-workflow signing-revision report (28 cases)\n'
+printf '\nPASS: publish-workflow signing-revision report (29 groups)\n'
