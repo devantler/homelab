@@ -48,6 +48,13 @@
 #     the obvious ones, but `remote-node` reaches host-networked workloads and
 #     `cluster-mesh` reaches meshed clusters — so the check is a WHITELIST of the
 #     entities a namespaced workload legitimately names, not a list of broad ones.
+#   * Node selectors and provider groups (`fromNodes`/`toNodes` and
+#     `fromGroups`/`toGroups`). Nodes belong to the host network, and provider
+#     groups resolve external infrastructure into CIDRs without passing the
+#     literal-CIDR checks below. Neither field has a tenant use case within the
+#     namespace boundary, so field presence is refused, even when empty or null
+#     beside an otherwise valid rule. Enabling node selection or a provider
+#     integration must not silently activate previously admitted tenant rules.
 #   * Any CIDR prefix shorter than /16. `0.0.0.0/0` and `::/0` are only the
 #     shortest spellings of "everything": `0.0.0.0/1` plus `128.0.0.0/1` covers
 #     the same ground. A prefix-length floor refuses every such split at once.
@@ -142,7 +149,8 @@ metadata:
       namespaces from dissolving the generated default-deny floor: every
       ingress source and egress destination selector must carry a real
       constraint and may not name a reserved identity, another namespace or
-      another cluster by label key, only `kube-apiserver` (and `ingress` on the
+      another cluster by label key, node selectors and provider groups are refused,
+      only `kube-apiserver` (and `ingress` on the
       ingress side) may be named as an entity, CIDR entries shorter than /16
       or inside the protected address ranges listed above are refused and every CIDRSet entry
       must carry a literal cidr and name no CiliumCIDRGroup, and the generated `default-deny`,
@@ -181,7 +189,8 @@ spec:
         failureAction: Enforce
         message: >-
           Every ingress source in a tenant CiliumNetworkPolicy must be
-          constrained. A fromEndpoints selector with no matchLabels and no
+          constrained. fromNodes and fromGroups are outside the tenant namespace
+          boundary and must be omitted. A fromEndpoints selector with no matchLabels and no
           matchExpressions allows all sources; a selector key naming a reserved
           identity (`reserved:host`, or its bare/`any:` spelling), another
           namespace (`k8s:io.kubernetes.pod.namespace`,
@@ -239,6 +248,12 @@ spec:
               - key: "{{ length(request.object.spec.ingress[] || `[]`) }}"
                 operator: NotEquals
                 value: "{{ length(request.object.spec.ingress[] || `[]` | [?fromEndpoints || fromCIDR || fromCIDRSet || fromEntities || fromNodes || fromGroups]) }}"
+              # Reject the fields themselves: a pinned node or provider group
+              # is no more namespace-scoped than an empty selector. keys() also
+              # catches empty lists/nulls beside another valid source.
+              - key: "{{ length(request.object.spec.ingress[] || `[]` | [?contains(keys(@), 'fromNodes') || contains(keys(@), 'fromGroups')]) }}"
+                operator: GreaterThan
+                value: 0
               # WHITELIST the entities a tenant may name, rather than blacklisting
               # the broad ones. Cilium's entity vocabulary is open-ended — beyond
               # `all`/`world`/`cluster`, `remote-node` reaches remote nodes and
@@ -333,7 +348,8 @@ spec:
         failureAction: Enforce
         message: >-
           Every egress destination in a tenant CiliumNetworkPolicy must be
-          constrained. A toEndpoints selector with no matchLabels and no
+          constrained. toNodes and toGroups are outside the tenant namespace
+          boundary and must be omitted. A toEndpoints selector with no matchLabels and no
           matchExpressions allows all destinations; a selector key naming a
           reserved identity (`reserved:world`, or its bare/`any:` spelling),
           another namespace (`k8s:io.kubernetes.pod.namespace`,
@@ -367,6 +383,11 @@ spec:
               - key: "{{ length(request.object.spec.egress[] || `[]`) }}"
                 operator: NotEquals
                 value: "{{ length(request.object.spec.egress[] || `[]` | [?toEndpoints || toCIDR || toCIDRSet || toEntities || toNodes || toGroups || toServices || toFQDNs]) }}"
+              # Same field-presence boundary as ingress, including an empty
+              # field beside a permitted destination.
+              - key: "{{ length(request.object.spec.egress[] || `[]` | [?contains(keys(@), 'toNodes') || contains(keys(@), 'toGroups')]) }}"
+                operator: GreaterThan
+                value: 0
               # A toFQDNs destination counts as named above, so the catch-all
               # pattern needs refusing on its own — `*` matches every name.
               # Counted with a JMESPath equality filter rather than AnyIn: Kyverno

@@ -72,7 +72,12 @@ apply "${tests}/platform-author/resources.yaml" \
 expect_summary "pass: 2, fail: 2, warn: 0, error: 0, skip: 0" \
   "control: a tenant must NOT be able to submit the broad platform body"
 
-# 6. Static action guard. Every count above is a RULE result; none of them says
+# 6. Node/provider fields are forbidden even when empty beside a valid rule.
+apply "${tests}/node-group-resources.yaml" "${tests}/values.yaml" "${tests}/user-info.yaml"
+expect_summary "pass: 48, fail: 16, warn: 0, error: 0, skip: 0" \
+  "tenant node/provider selectors must remain forbidden"
+
+# 7. Static action guard. Every count above is a RULE result; none of them says
 #    what admission actually does on a violation. Enforcement lives in each
 #    rule's own `failureAction`, because the deprecated top-level
 #    spec.validationFailureAction defaults an action-less rule to Audit — which

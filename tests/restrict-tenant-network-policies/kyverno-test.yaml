@@ -8,6 +8,7 @@ policies:
     ../../k8s/bases/infrastructure/cluster-policies/best-practices/restrict-tenant-network-policies.yaml
 resources:
   - resources.yaml
+  - node-group-resources.yaml
 # The policy uses a namespaceSelector, so the CLI needs the namespace labels
 # declared explicitly or every case is reported as Excluded — which satisfies
 # `result: fail` too and would pass vacuously. The companion shell test
@@ -285,3 +286,29 @@ results:
       - other-tenant/allow-other-tenant-egress-named-service
     kind: CiliumNetworkPolicy
     result: pass
+  - policy: restrict-tenant-network-policies
+    rule: cnp-ingress-sources-must-be-constrained
+    resources:
+      - tenant-ns/attack-fromnodes-empty-selector
+      - tenant-ns/attack-fromnodes-populated-selector
+      - tenant-ns/attack-fromnodes-empty-list
+      - tenant-ns/attack-fromnodes-null
+      - tenant-ns/attack-fromgroups-empty-selector
+      - tenant-ns/attack-fromgroups-populated-selector
+      - tenant-ns/attack-fromgroups-empty-list
+      - tenant-ns/attack-fromgroups-null
+    kind: CiliumNetworkPolicy
+    result: fail
+  - policy: restrict-tenant-network-policies
+    rule: cnp-egress-destinations-must-be-constrained
+    resources:
+      - tenant-ns/attack-tonodes-empty-selector
+      - tenant-ns/attack-tonodes-populated-selector
+      - tenant-ns/attack-tonodes-empty-list
+      - tenant-ns/attack-tonodes-null
+      - tenant-ns/attack-togroups-empty-selector
+      - tenant-ns/attack-togroups-populated-selector
+      - tenant-ns/attack-togroups-empty-list
+      - tenant-ns/attack-togroups-null
+    kind: CiliumNetworkPolicy
+    result: fail
