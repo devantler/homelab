@@ -361,6 +361,18 @@ spec:
         - matchLabels:
             app: anything
 ---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-cnpg-operator
+  namespace: tenant-ns
+spec:
+  endpointSelector: {}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: anything
+---
 # ── DENY cases: opting out of the namespace's default-deny ───────────────────
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy

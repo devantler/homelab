@@ -92,6 +92,7 @@ results:
     resources:
       - tenant-ns/default-deny
       - tenant-ns/allow-dns
+      - tenant-ns/allow-cnpg-operator
     kind: CiliumNetworkPolicy
     result: fail
   # ── A platform namespace is out of scope entirely ──────────────────────────
