@@ -260,3 +260,27 @@ results:
       - tenant-ns/allow-web-egress-outside-protected-ranges
     kind: CiliumNetworkPolicy
     result: pass
+  # Every Service reference must pin the policy namespace.
+  - policy: restrict-tenant-network-policies
+    rule: cnp-egress-destinations-must-be-constrained
+    resources:
+      - tenant-ns/attack-toservices-foreign-named
+      - tenant-ns/attack-toservices-foreign-selected
+      - tenant-ns/attack-toservices-omitted-named
+      - tenant-ns/attack-toservices-omitted-selected
+      - tenant-ns/attack-toservices-empty-namespace-named
+      - tenant-ns/attack-toservices-empty-namespace-selected
+      - tenant-ns/attack-toservices-foreign-beside-own
+      - tenant-ns/attack-toservices-foreign-in-second-rule
+      - tenant-ns/attack-toservices-own-name-foreign-selector
+      - tenant-ns/attack-toservices-foreign-name-own-selector
+    kind: CiliumNetworkPolicy
+    result: fail
+  # Explicit local namespaces work for selectors and another tenant.
+  - policy: restrict-tenant-network-policies
+    rule: cnp-egress-destinations-must-be-constrained
+    resources:
+      - tenant-ns/allow-web-egress-selected-service-expression
+      - other-tenant/allow-other-tenant-egress-named-service
+    kind: CiliumNetworkPolicy
+    result: pass
