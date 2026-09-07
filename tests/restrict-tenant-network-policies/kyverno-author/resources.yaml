@@ -34,3 +34,24 @@ spec:
               protocol: UDP
             - port: "53"
               protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-cnpg-operator
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: k8s:cnpg.io/cluster
+        operator: Exists
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: cnpg-system
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+            - port: "5432"
+              protocol: TCP

@@ -100,6 +100,53 @@ spec:
                         protocol: UDP
                       - port: "53"
                         protocol: TCP
+    # The CloudNativePG operator runs in cnpg-system and connects directly to each
+    # instance pod — 8000 for the instance manager's status endpoint, 5432 for
+    # PostgreSQL. That path crosses a namespace boundary, and
+    # restrict-tenant-network-policies refuses a tenant selector that names another
+    # namespace, so a tenant CANNOT declare it: a selector carrying no namespace key
+    # is scoped to the policy's own namespace and can never select the operator's
+    # pods. The platform therefore generates it, for the same reason it generates
+    # allow-dns — a platform-required cross-namespace path the tenant may not name.
+    # The destination is pinned to CNPG instance pods (every one carries
+    # `cnpg.io/cluster`) rather than to the whole namespace, so a namespace running
+    # no database gains no reachable path.
+    - name: generate-allow-cnpg-operator
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+      exclude:
+        any:
+          - resources:
+              names:
+                - kube-system
+                - kube-public
+                - kube-node-lease
+      generate:
+        generateExisting: true
+        apiVersion: cilium.io/v2
+        kind: CiliumNetworkPolicy
+        name: allow-cnpg-operator
+        synchronize: true
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          spec:
+            endpointSelector:
+              matchExpressions:
+                - key: k8s:cnpg.io/cluster
+                  operator: Exists
+            ingress:
+              - fromEndpoints:
+                  - matchLabels:
+                      k8s:io.kubernetes.pod.namespace: cnpg-system
+                toPorts:
+                  - ports:
+                      - port: "8000"
+                        protocol: TCP
+                      - port: "5432"
+                        protocol: TCP
     # Standard Kubernetes NetworkPolicy mirror of the Cilium default-deny above.
     # Pure deny (no allow rules); Cilium unions allows across both policy types,
     # so real traffic keeps flowing via the CiliumNetworkPolicies. This exists so
