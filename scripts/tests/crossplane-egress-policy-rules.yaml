@@ -393,6 +393,34 @@ rules:
                }}
              }
            }, {
+             'name': 'generate-allow-cnpg-operator',
+             'match': {'any': [{'resources': {'kinds': ['Namespace']}}]},
+             'exclude': {'any': [{'resources': {'names': [
+               'kube-system', 'kube-public', 'kube-node-lease'
+             ]}}]},
+             'generate': {
+               'generateExisting': true,
+               'apiVersion': 'cilium.io/v2',
+               'kind': 'CiliumNetworkPolicy',
+               'name': 'allow-cnpg-operator',
+               'synchronize': true,
+               'namespace': '{{request.object.metadata.name}}',
+               'data': {'spec': {
+                 'endpointSelector': {'matchExpressions': [
+                   {'key': 'k8s:cnpg.io/cluster', 'operator': 'Exists'}
+                 ]},
+                 'ingress': [{
+                   'fromEndpoints': [{'matchLabels': {
+                     'k8s:io.kubernetes.pod.namespace': 'cnpg-system'
+                   }}],
+                   'toPorts': [{'ports': [
+                     {'port': '8000', 'protocol': 'TCP'},
+                     {'port': '5432', 'protocol': 'TCP'}
+                   ]}]
+                 }]
+               }}
+             }
+           }, {
              'name': 'generate-default-deny-networkpolicy',
              'match': {'any': [{'resources': {'kinds': ['Namespace']}}]},
              'exclude': {'any': [{'resources': {'names': [
@@ -474,7 +502,7 @@ rules:
           (!has(rule.match.resources.names) ||
            rule.match.resources.names.exists(name,
              !name.matches('^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$') ||
-             name in ['allow-crossplane', 'allow-dns', 'default-deny'])) &&
+             name in ['allow-crossplane', 'allow-dns', 'allow-cnpg-operator', 'default-deny'])) &&
           (!has(rule.match.resources.namespaces) ||
            rule.match.resources.namespaces.exists(ns,
              !ns.matches('^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$') ||
@@ -498,7 +526,10 @@ rules:
             ((!has(filter.resources.names) ||
               filter.resources.names.exists(name,
                 !name.matches('^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$') ||
-                name in ['allow-crossplane', 'allow-dns', 'default-deny'])) &&
+                name in [
+                  'allow-crossplane', 'allow-dns',
+                  'allow-cnpg-operator', 'default-deny'
+                ])) &&
              (!has(filter.resources.namespaces) ||
               filter.resources.namespaces.exists(ns,
                 !ns.matches('^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$') ||
@@ -538,7 +569,7 @@ rules:
               filter.resources.names.all(name,
                 name.matches('^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$') &&
                 !(name in [
-                  'allow-crossplane', 'allow-dns', 'default-deny'
+                  'allow-crossplane', 'allow-dns', 'allow-cnpg-operator', 'default-deny'
                 ]))) ||
              (has(filter.resources.namespaces) &&
               filter.resources.namespaces.size() > 0 &&

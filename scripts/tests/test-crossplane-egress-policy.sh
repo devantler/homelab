@@ -440,10 +440,11 @@ assert_generated_policy_contract() {
     printf '%s\n' \
       'generate-default-deny|CiliumNetworkPolicy' \
       'generate-allow-dns|CiliumNetworkPolicy' \
+      'generate-allow-cnpg-operator|CiliumNetworkPolicy' \
       'generate-default-deny-networkpolicy|NetworkPolicy'
   )"
   [ "${actual_generators}" = "${expected_generators}" ] ||
-    fail 'Kyverno must keep exactly the three reviewed generated network-policy rules'
+    fail 'Kyverno must keep exactly the four reviewed generated network-policy rules'
 
   actual_contract="$(
     # shellcheck disable=SC2016 # $policy is a yq variable.
@@ -473,6 +474,7 @@ assert_generated_policy_contract() {
     printf '%s\n' \
       'ClusterPolicy//add-default-deny|generate-default-deny|cilium.io/v2|CiliumNetworkPolicy|default-deny|{{request.object.metadata.name}}|true|true|["Namespace"]|["kube-system","kube-public","kube-node-lease"]|{"egress":[],"enableDefaultDeny":{"egress":true,"ingress":true},"endpointSelector":{},"ingress":[]}' \
       'ClusterPolicy//add-default-deny|generate-allow-dns|cilium.io/v2|CiliumNetworkPolicy|allow-dns|{{request.object.metadata.name}}|true|true|["Namespace"]|["kube-system","kube-public","kube-node-lease"]|{"egress":[{"toEndpoints":[{"matchLabels":{"k8s-app":"kube-dns","k8s:io.kubernetes.pod.namespace":"kube-system"}}],"toPorts":[{"ports":[{"port":"53","protocol":"UDP"},{"port":"53","protocol":"TCP"}]}]}],"endpointSelector":{}}' \
+      'ClusterPolicy//add-default-deny|generate-allow-cnpg-operator|cilium.io/v2|CiliumNetworkPolicy|allow-cnpg-operator|{{request.object.metadata.name}}|true|true|["Namespace"]|["kube-system","kube-public","kube-node-lease"]|{"endpointSelector":{"matchExpressions":[{"key":"k8s:cnpg.io/cluster","operator":"Exists"}]},"ingress":[{"fromEndpoints":[{"matchLabels":{"k8s:io.kubernetes.pod.namespace":"cnpg-system"}}],"toPorts":[{"ports":[{"port":"8000","protocol":"TCP"},{"port":"5432","protocol":"TCP"}]}]}]}' \
       'ClusterPolicy//add-default-deny|generate-default-deny-networkpolicy|networking.k8s.io/v1|NetworkPolicy|default-deny|{{request.object.metadata.name}}|true|true|["Namespace"]|["kube-system","kube-public","kube-node-lease"]|{"podSelector":{},"policyTypes":["Ingress","Egress"]}'
   )"
   [ "${actual_contract}" = "${expected_contract}" ] ||

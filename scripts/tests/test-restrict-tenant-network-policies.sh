@@ -30,31 +30,32 @@ expect_summary() {
   fi
 }
 
-# 1. The tenant fixture set: 67 boundary-dissolving shapes denied, the ordinary
+# 1. The tenant fixture set: 78 boundary-dissolving shapes denied, the ordinary
 #    additive allow-lists admitted. A drop in the fail count means a shape that
 #    used to be refused now admits.
 apply "${tests}/resources.yaml" "${tests}/values.yaml" "${tests}/user-info.yaml"
-expect_summary "pass: 267, fail: 67, warn: 0, error: 0, skip: 0" \
+expect_summary "pass: 309, fail: 78, warn: 0, error: 0, skip: 0" \
   "tenant CiliumNetworkPolicy boundary"
 
 # 2. Carve-out: kyverno's background controller owns the generated floor. These
-#    are the verbatim generated bodies and both carry a reserved name, so a
+#    are the verbatim generated bodies and each carries a reserved name, so a
 #    regression here would block the platform from creating its own default-deny.
 apply "${tests}/kyverno-author/resources.yaml" \
   "${tests}/kyverno-author/values.yaml" "${tests}/kyverno-author/user-info.yaml"
 expect_summary "pass: 0, fail: 0, warn: 0, error: 0, skip: 0" \
-  "generated default-deny/allow-dns must remain creatable by kyverno"
+  "generated default-deny/allow-dns/allow-cnpg-operator must remain creatable by kyverno"
 
 # 3. CONTROL for 2: the identical bodies, in the identical namespace, submitted
 #    by the TENANT. Only the applying identity differs. Without this the zero
 #    above is indistinguishable from the policy simply not matching. Both bodies
 #    fail the reserved-name rule; allow-dns ALSO fails the egress rule, because
-#    it reaches CoreDNS by naming kube-system through the namespace label — the
-#    cross-namespace selector a tenant is refused (#3399). The generated floor
+#    it reaches CoreDNS by naming kube-system through the namespace label, and
+#    allow-cnpg-operator ALSO fails the ingress rule for naming cnpg-system — the
+#    cross-namespace selector a tenant is refused (#3399, #3655). The generated floor
 #    is exempt from that only through its applying identity, which is the point.
 apply "${tests}/kyverno-author/resources.yaml" \
   "${tests}/kyverno-author/values.yaml" "${tests}/user-info.yaml"
-expect_summary "pass: 7, fail: 3, warn: 0, error: 0, skip: 0" \
+expect_summary "pass: 10, fail: 5, warn: 0, error: 0, skip: 0" \
   "control: a tenant must NOT be able to author the reserved generated names"
 
 # 4. Carve-out: platform-authored policies applied by flux-system's

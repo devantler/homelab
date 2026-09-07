@@ -361,6 +361,18 @@ spec:
         - matchLabels:
             app: anything
 ---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-cnpg-operator
+  namespace: tenant-ns
+spec:
+  endpointSelector: {}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: anything
+---
 # ── DENY cases: opting out of the namespace's default-deny ───────────────────
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -639,12 +651,10 @@ spec:
   egress:
     - toServices:
         - k8sService:
+            namespace: tenant-ns
             serviceName: db
 ---
-# OK: a selector that actually pins a label. Note the omitted `namespace`:
-# Cilium defaults it to the policy's OWN namespace, so omitting it is the
-# CONSTRAINED spelling — requiring a namespace here would push tenants toward
-# the cross-namespace form instead.
+# OK: a selector that pins both a label and the policy's namespace.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -657,6 +667,7 @@ spec:
   egress:
     - toServices:
         - k8sServiceSelector:
+            namespace: tenant-ns
             selector:
               matchLabels:
                 app: db
@@ -1388,3 +1399,214 @@ spec:
         - "fbff::/16"
         - "fe00::/16"
         - "fe7f::/16"
+---
+# Service namespace boundary: Cilium treats an empty namespace as any namespace.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-foreign-named
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sService:
+            serviceName: db
+            namespace: other-tenant
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-foreign-selected
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sServiceSelector:
+            namespace: other-tenant
+            selector:
+              matchLabels:
+                app: db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-omitted-named
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sService:
+            serviceName: db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-omitted-selected
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sServiceSelector:
+            selector:
+              matchLabels:
+                app: db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-empty-namespace-named
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sService:
+            serviceName: db
+            namespace: ""
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-empty-namespace-selected
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sServiceSelector:
+            namespace: ""
+            selector:
+              matchLabels:
+                app: db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-foreign-beside-own
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sService:
+            serviceName: db
+            namespace: tenant-ns
+        - k8sServiceSelector:
+            namespace: other-tenant
+            selector:
+              matchLabels:
+                app: db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-foreign-in-second-rule
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sServiceSelector:
+            namespace: tenant-ns
+            selector:
+              matchLabels:
+                app: db
+    - toServices:
+        - k8sService:
+            serviceName: db
+            namespace: other-tenant
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-own-name-foreign-selector
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sService:
+            serviceName: db
+            namespace: tenant-ns
+          k8sServiceSelector:
+            namespace: other-tenant
+            selector:
+              matchLabels:
+                app: db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: attack-toservices-foreign-name-own-selector
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sService:
+            serviceName: db
+            namespace: other-tenant
+          k8sServiceSelector:
+            namespace: tenant-ns
+            selector:
+              matchLabels:
+                app: db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-web-egress-selected-service-expression
+  namespace: tenant-ns
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sServiceSelector:
+            namespace: tenant-ns
+            selector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - db
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-other-tenant-egress-named-service
+  namespace: other-tenant
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web
+  egress:
+    - toServices:
+        - k8sService:
+            serviceName: db
+            namespace: other-tenant

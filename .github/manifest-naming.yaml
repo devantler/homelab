@@ -1,0 +1,22 @@
+version: 1
+resource-roots: [k8s]
+patch-roots: ["talos*"]
+multi-resource-files:
+  - k8s/bases/infrastructure/controllers/cdi/cdi-operator.yaml
+  - k8s/bases/infrastructure/controllers/kubevirt/kubevirt-operator.yaml
+cr-directories:
+  - k8s/bases/infrastructure/cluster-policies
+  - k8s/bases/infrastructure/cluster-role-bindings
+  - k8s/bases/infrastructure/cluster-roles
+  - k8s/bases/infrastructure/cluster-secret-stores
+  - k8s/bases/infrastructure/limit-ranges
+  - k8s/bases/infrastructure/cluster-security-exceptions
+  - k8s/bases/infrastructure/tracing-policies
+  - k8s/bases/infrastructure/external-secrets
+  - k8s/bases/bootstrap/limit-ranges
+  - k8s/bases/bootstrap/priority-classes
+  - k8s/providers/docker/infrastructure/cluster-issuers
+  - k8s/providers/hetzner/infrastructure/cluster-issuers
+  - k8s/providers/hetzner/infrastructure/cluster-policies
+  - k8s/providers/hetzner/infrastructure/volume-snapshot-classes
+  - k8s/providers/hetzner/infrastructure/vertical-pod-autoscalers

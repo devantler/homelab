@@ -62,7 +62,7 @@ runs:
       shell: bash
       env:
         # renovate: datasource=github-releases depName=devantler-tech/ksail extractVersion=^v(?<version>.+)$
-        KSAIL_VERSION: "7.181.2"
+        KSAIL_VERSION: "7.181.3"
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         .github/scripts/setup-ksail.sh
@@ -127,15 +127,11 @@ runs:
         chmod 600 ~/.talos/config
 
     - name: 🩺 Verify prod cluster is reachable
-      # Fail fast if the restored kubeconfig can't reach the prod API server.
-      # When the cluster is unreachable — most commonly because KUBE_CONFIG /
-      # TALOS_CONFIG are stale after a cluster rebuild — `ksail cluster update`
-      # otherwise only warns, falls back to a "nothing is installed" baseline,
-      # proposes a full reinstall, and then fails mid-apply against the live
-      # nodes (a confusing, potentially destructive failure mode). Catch it
-      # here with an actionable message instead.
-      # Upstream: devantler-tech/ksail#4868 (fail fast) and #4869 (baseline).
-      # Refresh procedure: docs/dr/runbook.md → "Refresh CI deploy credentials".
+      # Fail fast if the selected Kubernetes API endpoint is not ready or reachable.
+      # Require a successful Kubernetes readiness probe before allowing
+      # `ksail cluster update` to proceed. A failed probe does not diagnose either
+      # credential set and never tests the Talos API.
+      # Diagnosis: docs/dr/runbook.md → "Endpoint selection during ordinary deployments".
       # Pin --context to admin@prod (ksail.prod.yaml's connection.context) so
       # the check targets the same cluster `ksail cluster update` will use,
       # regardless of the restored kubeconfig's current-context.
@@ -144,7 +140,7 @@ runs:
         # A missing admin@prod context means a malformed/incomplete kubeconfig,
         # not an unreachable cluster — surface that case distinctly.
         if ! kubectl config get-contexts -o name | grep -qx 'admin@prod'; then
-          echo "::error::Restored kubeconfig has no 'admin@prod' context (ksail.prod.yaml's connection.context). KUBE_CONFIG looks malformed or incomplete — refresh it. See docs/dr/runbook.md → 'Refresh CI deploy credentials'."
+          echo "::error::Restored kubeconfig has no 'admin@prod' context (ksail.prod.yaml's connection.context). Inspect the supplied KUBE_CONFIG and restore the expected context from trusted kubeconfig material. See docs/dr/runbook.md → 'Endpoint selection during ordinary deployments'."
           exit 1
         fi
         last_err=""
@@ -159,7 +155,7 @@ runs:
           sleep 10
         done
         last_err=$(printf '%s' "$last_err" | tr '\n' ' ')
-        echo "::error::Prod cluster (context admin@prod) is unreachable with the restored kubeconfig (last kubectl error: ${last_err}). KUBE_CONFIG (and likely TALOS_CONFIG) are probably stale after a cluster rebuild — refresh both and update the 'prod' environment secrets. See docs/dr/runbook.md → 'Refresh CI deploy credentials'."
+        echo "::error::Prod Kubernetes API (context admin@prod) failed its readiness probe after stable endpoint selection (last kubectl error: ${last_err}). Inspect the selected endpoint, network reachability, and API readiness, then diagnose any reported TLS, authentication, or authorization failure. Recover kubeconfig credentials only if that diagnosis confirms a credential failure; this Kubernetes probe does not test Talos credentials. See docs/dr/runbook.md → 'Endpoint selection during ordinary deployments' and, for confirmed credential failures, 'Credential refresh after a full rebuild'."
         exit 1
 
     - name: 🧪 Check the Longhorn UI baseline canary

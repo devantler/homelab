@@ -9,3 +9,6 @@ namespaceSelector:
       app.kubernetes.io/managed-by: ksail
   - name: platform-ns
     labels: {}
+  - name: other-tenant
+    labels:
+      app.kubernetes.io/managed-by: ksail

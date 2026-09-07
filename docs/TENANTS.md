@@ -180,6 +180,24 @@ grants below) and rename — with:
 > only the default-deny floor, the external-dns cross-namespace
 > grants, and the Vault role/policy.
 
+Tenant `CiliumNetworkPolicy` Service references must explicitly set the Service
+namespace to the policy's own namespace. This applies to both `k8sService` and
+`k8sServiceSelector`: Cilium treats an omitted or empty namespace as a match across
+namespaces, so admission refuses those forms as well as foreign namespaces. For
+example, a policy in `my-tenant` can allow its own database Service with:
+
+```yaml
+egress:
+  - toServices:
+      - k8sService:
+          serviceName: db
+          namespace: my-tenant
+```
+
+Service selectors likewise need `namespace: my-tenant` beside `selector`, plus a
+specific label or an `In` expression. Platform-generated DNS and other policies
+applied by the platform controllers retain their existing identity exemptions.
+
 In `oci-repository.yaml` / `flux-kustomization.yaml`, update the `name`/`namespace`/`url`
 (`oci://ghcr.io/devantler-tech/<tenant>/manifests`) and keep the `verify` block
 pointing at `publish-app.yaml`. No Flux `spec.decryption` is needed — tenant
