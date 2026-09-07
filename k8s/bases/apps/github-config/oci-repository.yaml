@@ -29,4 +29,4 @@ spec:
       # signer and this consumer's current publish-workflow pin in one identity.
       # Regeneration updates the pair and the approved set in the same PR.
       - issuer: '^https://token\.actions\.githubusercontent\.com$'
-        subject: '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-manifests\.yaml@(b3783a5148b844b3f1f4011cdc84871ad66348c1|3ee6cb9bbd616c2a38779be41a5e41f3e77282d0)$'
+        subject: '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-manifests\.yaml@3ee6cb9bbd616c2a38779be41a5e41f3e77282d0$'
