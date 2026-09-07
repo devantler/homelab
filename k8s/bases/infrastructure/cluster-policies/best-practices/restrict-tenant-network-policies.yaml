@@ -120,8 +120,9 @@
 # are untouched. Two applying identities are excluded — flux-system's
 # kustomize-controller, which applies what the PLATFORM ships into a tenant
 # namespace, and kyverno's background-controller, which is what actually creates
-# and re-synchronises the generated default-deny/allow-dns objects. Without the
-# second exclusion this policy would refuse the very floor it exists to protect.
+# and re-synchronises the generated default-deny, allow-dns and
+# allow-cnpg-operator objects. Without the second exclusion this policy
+# would refuse the very floor it exists to protect.
 # The discriminator is the applying identity, which a tenant cannot forge.
 # Because the excludes match on request.userInfo the policy is admission-only
 # (background: false); every escape is a create/update passing through admission,
