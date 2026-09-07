@@ -1,6 +1,0 @@
-# Temporary, unreferenced fixture for hosted RED proof; removed before review.
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: naming-gate-fixture
-  namespace: naming-fixture
