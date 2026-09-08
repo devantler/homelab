@@ -571,12 +571,20 @@ assert_helm_rules_reject() {
   local fixture_body="$2"
   local failure_message="$3"
   local fixture_path="${test_temp_root}/${fixture_name}.yaml"
+  local expected_rule="${4:-}"
+  local validation_output
 
   printf '%s\n' "${fixture_body}" >"${fixture_path}"
-  if ksail workload validate "${fixture_path}" \
+  if validation_output="$(ksail workload validate "${fixture_path}" \
     --skip-helm-render \
-    --rules "${helm_policy_rules}" >/dev/null 2>&1; then
+    --rules "${helm_policy_rules}" 2>&1)"; then
     fail "${failure_message}"
+  fi
+  if [ -n "${expected_rule}" ] &&
+    { [[ "${validation_output}" != *"rule \"${expected_rule}\" violated"* ]] ||
+      [[ "${validation_output}" == *'rule evaluation failed:'* ]]; }; then
+    printf '%s\n' "${validation_output}" >&2
+    fail "${failure_message}: expected a policy rejection without evaluation errors"
   fi
 }
 
@@ -634,13 +642,32 @@ helm_cilium_specs_fixture=$'apiVersion: cilium.io/v2\nkind: CiliumNetworkPolicy\
 assert_helm_rules_reject \
   'helm-cilium-specs' \
   "${helm_cilium_specs_fixture}" \
-  'the Helm-render guard must inspect every Cilium policy rule under specs'
+  'the Helm-render guard must inspect every Cilium policy rule under specs' \
+  'reject-crossplane-cilium-policy-specs'
+
+helm_cilium_specs_only_fixture=$'apiVersion: cilium.io/v2\nkind: CiliumNetworkPolicy\nmetadata:\n  name: chart-specs-only\n  namespace: crossplane-system\nspecs:\n- endpointSelector: {}\n  ingress:\n  - {}'
+assert_helm_rules_accept \
+  'helm-cilium-specs-only-ingress' \
+  "${helm_cilium_specs_only_fixture}" \
+  'the Helm-render guard must accept ingress-only specs without a singular spec'
+assert_helm_rules_reject \
+  'helm-cilium-specs-only-egress' \
+  "${helm_cilium_specs_only_fixture/ingress:/egress:}" \
+  'the Helm-render guard must reject Crossplane egress in specs without a singular spec' \
+  'reject-crossplane-cilium-policy-specs'
 
 helm_clusterwide_specs_fixture=$'apiVersion: cilium.io/v2\nkind: CiliumClusterwideNetworkPolicy\nmetadata:\n  name: chart-clusterwide-specs-deny\nspecs:\n- endpointSelector: {}\n  egressDeny:\n  - {}'
 assert_helm_rules_reject \
   'helm-clusterwide-cilium-specs' \
   "${helm_clusterwide_specs_fixture}" \
-  'the Helm-render guard must inspect every cluster-wide Cilium policy rule under specs'
+  'the Helm-render guard must inspect every cluster-wide Cilium policy rule under specs' \
+  'reject-crossplane-cilium-policy-specs'
+
+helm_unrelated_clusterwide_specs_fixture=$'apiVersion: cilium.io/v2\nkind: CiliumClusterwideNetworkPolicy\nmetadata:\n  name: chart-unrelated-specs\nspecs:\n- endpointSelector:\n    matchLabels:\n      k8s:io.kubernetes.pod.namespace: kube-system\n  egressDeny:\n  - toCIDR: [169.254.169.254/32]'
+assert_helm_rules_accept \
+  'helm-unrelated-clusterwide-specs' \
+  "${helm_unrelated_clusterwide_specs_fixture}" \
+  'the Helm-render guard must accept unrelated namespace specs without a singular spec'
 
 helm_widened_allow_policy_fixture=$'apiVersion: cilium.io/v2\nkind: CiliumNetworkPolicy\nmetadata:\n  name: allow-crossplane\n  namespace: crossplane-system\nspec:\n  endpointSelector: {}\n  egress:\n  - toEntities: [world]'
 assert_helm_rules_reject \
