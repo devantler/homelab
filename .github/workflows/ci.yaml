@@ -234,6 +234,12 @@ jobs:
           shellcheck scripts/tests/test-rgd-template-static-scan-wiring.sh
           bash scripts/tests/test-rgd-template-static-scan-wiring.sh
 
+      - name: Validate dedicated wedding backup staging
+        run: |
+          node --version
+          yq --version
+          node --test tests/wedding-backup-staging/*.test.mjs
+
       - name: 🔍 Filter paths
         uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter

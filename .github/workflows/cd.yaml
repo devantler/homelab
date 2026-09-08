@@ -7,6 +7,12 @@ name: CD
 # re-deployed what the merge queue had already shipped.)
 on:
   workflow_dispatch:
+    inputs:
+      verify-wedding-backup-staging:
+        description: Verify the staged dedicated wedding backup credential after deployment
+        required: false
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -312,6 +318,7 @@ jobs:
         uses: ./.github/actions/deploy-prod
         with:
           sops-age-key: ${{ secrets.SOPS_AGE_KEY }}
+          verify-wedding-backup-staging: ${{ inputs.verify-wedding-backup-staging }}
           kube-config: ${{ secrets.KUBE_CONFIG }}
           talos-config: ${{ secrets.TALOS_CONFIG }}
           ghcr-token: ${{ secrets.GHCR_TOKEN }}
