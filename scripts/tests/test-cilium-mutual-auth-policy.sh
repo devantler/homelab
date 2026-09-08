@@ -135,4 +135,14 @@ if [[ -n "${required_authentication_policies}" && -z "${enabled_authentication_r
   fail 'Cilium authentication and SPIRE must be enabled when a required-authentication policy is rendered'
 fi
 
+spire_vpas="$(printf '%s\n' "${rendered}" | yq e -r '
+  select(.kind == "VerticalPodAutoscaler" and .metadata.namespace == "kube-system") |
+  select(.spec.targetRef.name == "spire-agent" or .spec.targetRef.name == "spire-server") |
+  .metadata.name
+' -)" || fail 'the rendered SPIRE autoscaler inspection must succeed'
+
+if [[ -z "${enabled_authentication_releases}" && -n "${spire_vpas}" ]]; then
+  fail "disabled SPIRE must not retain autoscalers for absent workloads: ${spire_vpas}"
+fi
+
 printf 'PASS: rendered production Cilium authentication preserves allow-lists and is disabled or consumed\n'

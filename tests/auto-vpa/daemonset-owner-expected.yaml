@@ -1,0 +1,32 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: daemonset-owner
+  namespace: apps
+  ownerReferences:
+    - apiVersion: apps/v1
+      kind: DaemonSet
+      name: daemonset-owner
+      uid: 00000000-0000-4000-8000-000000000003
+      controller: false
+      blockOwnerDeletion: false
+  labels:
+    app.kubernetes.io/managed-by: kyverno
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: DaemonSet
+    name: daemonset-owner
+  resourcePolicy:
+    containerPolicies:
+      - containerName: '*'
+        controlledResources:
+          - cpu
+        controlledValues: RequestsAndLimits
+        minAllowed:
+          cpu: 50m
+        maxAllowed:
+          cpu: "1"
+  updatePolicy:
+    updateMode: InPlaceOrRecreate
+    minReplicas: 1
