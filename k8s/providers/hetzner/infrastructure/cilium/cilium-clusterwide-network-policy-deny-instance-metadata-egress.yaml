@@ -2,26 +2,68 @@ apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-workload-instance-metadata-egress
-spec:
-  # Cilium endpoint selectors match managed workload endpoints. Deliberately
-  # omit nodeSelector so Talos and host bootstrap traffic remain outside this
-  # policy. Crossplane keeps the same deny in its existing namespaced egress
-  # policy so that policy remains its only static egress owner.
-  endpointSelector:
-    matchExpressions:
-      - key: k8s:io.kubernetes.pod.namespace
-        operator: Exists
-      - key: k8s:io.kubernetes.pod.namespace
-        operator: NotIn
-        values:
-          - crossplane-system
-  # Cilium turns on default-deny for every direction a policy has rules in, so
-  # an egressDeny rule on its own would revoke all egress from the endpoints
-  # selected above unless some other policy allows it back. This policy is
-  # meant to subtract one destination, not to become every workload's egress
-  # allow-list, so keep default-deny off and let the deny stand on its own.
-  enableDefaultDeny:
-    egress: false
-  egressDeny:
-    - toCIDR:
-        - 169.254.169.254/32
+# The node CSI driver must read its server ID and location from Hetzner metadata
+# before it can mount volumes. Only kube-system's hcloud-csi/node identity is
+# outside this deny. A separate allow rule cannot override an egressDeny.
+#
+# Select the complement of that four-label identity: other workload namespaces,
+# OR kube-system with any of the three application labels missing or different.
+# NotIn also matches absent labels, so an incomplete identity remains protected.
+# Crossplane retains its independent metadata deny. Every branch requires a pod
+# namespace and omits nodeSelector, leaving Talos host identities untouched.
+# Keep default-deny off in EVERY branch: this control subtracts one destination,
+# and must never turn into an implicit allow-list for all other egress.
+specs:
+  - endpointSelector:
+      matchExpressions:
+        - key: k8s:io.kubernetes.pod.namespace
+          operator: Exists
+        - key: k8s:io.kubernetes.pod.namespace
+          operator: NotIn
+          values:
+            - crossplane-system
+            - kube-system
+    enableDefaultDeny:
+      egress: false
+    egressDeny:
+      - toCIDR:
+          - 169.254.169.254/32
+  - endpointSelector:
+      matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+      matchExpressions:
+        - key: k8s:app.kubernetes.io/name
+          operator: NotIn
+          values:
+            - hcloud-csi
+    enableDefaultDeny:
+      egress: false
+    egressDeny:
+      - toCIDR:
+          - 169.254.169.254/32
+  - endpointSelector:
+      matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+      matchExpressions:
+        - key: k8s:app.kubernetes.io/instance
+          operator: NotIn
+          values:
+            - hcloud-csi
+    enableDefaultDeny:
+      egress: false
+    egressDeny:
+      - toCIDR:
+          - 169.254.169.254/32
+  - endpointSelector:
+      matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+      matchExpressions:
+        - key: k8s:app.kubernetes.io/component
+          operator: NotIn
+          values:
+            - node
+    enableDefaultDeny:
+      egress: false
+    egressDeny:
+      - toCIDR:
+          - 169.254.169.254/32

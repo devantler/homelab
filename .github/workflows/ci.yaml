@@ -1079,8 +1079,8 @@ jobs:
       - name: 🔐 Validate workload metadata egress isolation
         if: needs.changes.outputs.k8s == 'true'
         # Render both provider infrastructure entry points. The control must
-        # cover every workload in Hetzner/prod without selecting Talos hosts
-        # or leaking into the local Docker provider.
+        # preserve the exact CSI node exception and deny other workloads without
+        # selecting Talos hosts or leaking into the local Docker provider.
         run: |
           shellcheck scripts/tests/test-cilium-metadata-egress-policy.sh
           bash scripts/tests/test-cilium-metadata-egress-policy.sh
