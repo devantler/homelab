@@ -1,6 +1,7 @@
 # Mirrors the wedding-app policy: an always-on web app plus a CloudNativePG
 # cluster in one namespace. Covers Gateway ingress to Umami (3000), intra-namespace
-# app<->db traffic, and CNPG operator management (cnpg-system).
+# app<->db traffic. The generated allow-cnpg-operator policy supplies management
+# ingress only to database instance pods from the operator's exact identity.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -28,16 +29,6 @@ spec:
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: umami
-    # CNPG operator reaches the instance status (8000) and PostgreSQL (5432)
-    - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: cnpg-system
-      toPorts:
-        - ports:
-            - port: "8000"
-              protocol: TCP
-            - port: "5432"
-              protocol: TCP
     # OpenBao Database secrets engine: the OpenBao server connects to PostgreSQL
     # to validate database/config/umami-postgres and rotate the 'umami' static
     # role (the postgresql-database-plugin runs in-process in the OpenBao pod).

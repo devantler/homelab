@@ -4,14 +4,10 @@
 # the rest for every observability pod — intra-namespace traffic in both
 # directions (so the Coroot server reaches coroot-db on 5432), egress to the
 # kube-apiserver (CNPG manages the cluster), and DNS via kube-dns. This policy
-# adds ONLY the two coroot-db-specific gaps that base policy does not grant, so
-# it stays in the hetzner overlay (CNPG is prod-only):
-#   1. ingress from the cnpg-system operator (it reaches each instance's status
-#      endpoint on 8000 and PostgreSQL on 5432 — base allows only
-#      observability-namespace sources);
-#   2. egress to Cloudflare R2 for the barman-cloud backup sidecar's WAL
-#      archiving + base backups (base allows only Slack/healthchecks/coroot.com
-#      on 443).
+# adds Cloudflare R2 egress for the barman-cloud backup sidecar's WAL archiving
+# and base backups. It stays in the hetzner overlay (CNPG is prod-only).
+# The generated allow-cnpg-operator policy supplies database management ingress
+# from the operator's exact identity; a namespace-wide grant here would widen it.
 # Mirrors the CNPG-specific clauses of umami's networkpolicy.yaml. Scoped to the
 # coroot-db instance pods via CNPG's cnpg.io/cluster label.
 apiVersion: cilium.io/v2
@@ -23,17 +19,6 @@ spec:
   endpointSelector:
     matchLabels:
       cnpg.io/cluster: coroot-db
-  ingress:
-    # CNPG operator reaches the instance status (8000) and PostgreSQL (5432).
-    - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: cnpg-system
-      toPorts:
-        - ports:
-            - port: "8000"
-              protocol: TCP
-            - port: "5432"
-              protocol: TCP
   egress:
     # coroot-db -> Cloudflare R2 (S3) for the barman-cloud sidecar's WAL
     # archiving + base backups (cluster.yaml + object-store.yaml).

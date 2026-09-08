@@ -344,6 +344,7 @@ jobs:
               - 'go.sum'
               - 'scripts/tests/test-cilium-bandwidth-manager-component.sh'
               - 'scripts/tests/test-cilium-metadata-egress-policy.sh'
+              - 'scripts/tests/cnpg-network-policy/**'
               - 'scripts/tests/test-cilium-mutual-auth-policy.sh'
               - 'scripts/tests/test-cilium-mutual-auth-policy-regressions.sh'
               - 'scripts/tests/test-coroot-postgres-scrape-policy.sh'
@@ -1362,6 +1363,10 @@ jobs:
         # success (#2863). Pin the rewrite over BOTH path-bearing fields, plus
         # idempotency, the hard error, and the clean-scan case.
         run: bash scripts/tests/test-normalize-sarif-paths.sh
+
+      - name: 🐘 Validate CNPG operator network boundary
+        if: needs.changes.outputs.k8s == 'true'
+        run: go test ./scripts/tests/cnpg-network-policy
 
       - name: 📢 Validate reconciliation-Alert namespace coverage
         if: needs.changes.outputs.k8s == 'true'

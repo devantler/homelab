@@ -1,7 +1,7 @@
 # An always-on web app plus a CloudNativePG cluster in one namespace — same
 # shape as the umami / wedding-app policies. Covers forward-auth ingress to
-# Backstage (7007), intra-namespace app<->db traffic, and CNPG operator
-# management (cnpg-system).
+# Backstage (7007) and intra-namespace app<->db traffic. The generated
+# allow-cnpg-operator policy supplies management ingress only to database pods.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -23,16 +23,6 @@ spec:
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: backstage
-    # CNPG operator reaches the instance status (8000) and PostgreSQL (5432).
-    - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: cnpg-system
-      toPorts:
-        - ports:
-            - port: "8000"
-              protocol: TCP
-            - port: "5432"
-              protocol: TCP
   egress:
     # Intra-namespace (Backstage -> DB).
     - toEndpoints:

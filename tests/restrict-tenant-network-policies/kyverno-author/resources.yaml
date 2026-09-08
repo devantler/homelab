@@ -50,6 +50,8 @@ spec:
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: cnpg-system
+            k8s:app.kubernetes.io/name: cloudnative-pg
+            k8s:app.kubernetes.io/instance: cloudnative-pg
       toPorts:
         - ports:
             - port: "8000"
