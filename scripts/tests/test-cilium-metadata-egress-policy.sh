@@ -18,6 +18,7 @@ readonly tmp_dir
 trap 'rm -rf "${tmp_dir}"' EXIT
 readonly prod_render="${tmp_dir}/prod.yaml"
 readonly rendered_policy="${tmp_dir}/policy.yaml"
+readonly policy_json="${tmp_dir}/policy.json"
 readonly rendered_coredns_policy="${tmp_dir}/coredns-policy.yaml"
 readonly controllers_layer_render="${tmp_dir}/controllers-layer.yaml"
 readonly controllers_render="${tmp_dir}/controllers.yaml"
@@ -70,41 +71,67 @@ fi
 yq -e '.apiVersion == "cilium.io/v2" and .kind == "CiliumClusterwideNetworkPolicy"' \
   "${rendered_policy}" >/dev/null ||
   fail 'the rendered control is not a CiliumClusterwideNetworkPolicy'
-yq -e '(.spec.endpointSelector | keys | length) == 1 and
-  (.spec.endpointSelector.matchExpressions | length) == 2 and
-  ([.spec.endpointSelector.matchExpressions[] |
-    select(.key == "k8s:io.kubernetes.pod.namespace" and
-      .operator == "Exists" and
-      has("values") == false)] | length) == 1 and
-  ([.spec.endpointSelector.matchExpressions[] |
-    select(.key == "k8s:io.kubernetes.pod.namespace" and
-      .operator == "NotIn" and
-      (.values | length) == 1 and
-      .values[0] == "crossplane-system")] | length) == 1' \
-  "${rendered_policy}" >/dev/null ||
-  fail 'the cluster-wide policy must select workload namespaces, exclude reserved identities, and exclude Crossplane'
-yq -e '.spec | has("nodeSelector") == false' "${rendered_policy}" >/dev/null ||
-  fail 'the workload policy must not select Talos hosts'
-yq -e '.spec.egressDeny | length == 1' "${rendered_policy}" >/dev/null ||
-  fail 'the policy must have exactly one deny rule'
-yq -e '.spec.egressDeny[0] | (keys | length) == 1' "${rendered_policy}" >/dev/null ||
-  fail 'the deny rule must not carry additional destinations'
-yq -e '.spec.egressDeny[0] | has("toCIDR")' "${rendered_policy}" >/dev/null ||
-  fail 'the deny rule must use a CIDR destination'
-yq -e '.spec.egressDeny[0].toCIDR | length == 1' "${rendered_policy}" >/dev/null ||
-  fail 'the deny rule must contain exactly one CIDR'
-yq -e '.spec.egressDeny[0].toCIDR[0] == "169.254.169.254/32"' \
-  "${rendered_policy}" >/dev/null ||
-  fail 'the deny rule must target only the instance metadata address'
+yq -o=json '.' "${rendered_policy}" >"${policy_json}"
+# Exercise selector semantics on the rendered policy, including every missing
+# and mismatched identity label. NotIn matches a missing key; Exists does not.
+# The expected boundary is independent of how many deny rules implement it.
+jq -er '
+  def rules: if has("specs") then .specs else [.spec] end;
+  def matches($selector; $labels):
+    all(($selector.matchLabels // {} | to_entries)[];
+      $labels[.key] == .value) and
+    all(($selector.matchExpressions // [])[];
+      . as $e |
+      if .operator == "Exists" then $labels | has($e.key)
+      elif .operator == "NotIn" then
+        ($e.values | index($labels[$e.key])) == null
+      elif .operator == "In" then
+        ($e.values | index($labels[$e.key])) != null
+      else error("unsupported selector operator") end);
+  . as $policy |
+  [ ["kube-system", "tenant-example", "crossplane-system", null][] as $ns |
+    ["hcloud-csi", "other-app", null][] as $name |
+    ["hcloud-csi", "other-instance", null][] as $instance |
+    ["node", "controller", null][] as $component |
+    {
+      labels: ({
+        "k8s:io.kubernetes.pod.namespace": $ns,
+        "k8s:app.kubernetes.io/name": $name,
+        "k8s:app.kubernetes.io/instance": $instance,
+        "k8s:app.kubernetes.io/component": $component
+      } | with_entries(select(.value != null))),
+      denied: ($ns != null and $ns != "crossplane-system" and
+        ([$ns, $name, $instance, $component] !=
+          ["kube-system", "hcloud-csi", "hcloud-csi", "node"]))
+    }
+  ] as $cases |
+  [$cases[] | . as $case |
+    ($policy | rules | any(.[]; matches(.endpointSelector; $case.labels))) as $selected |
+    select($selected != .denied) | {labels, expectedDenied: .denied, selected: $selected}
+  ] as $failures |
+  if ($cases | length) != 108 then error("incomplete selector matrix")
+  elif ($failures | length) > 0 then error($failures | tojson)
+  else "PASS: all 108 metadata selector cases preserve the exact CSI node exception" end
+' "${policy_json}" || fail 'the metadata selector boundary does not match the infrastructure exception'
+
+jq -e '
+  (has("spec") != has("specs")) and
+  (
+  (if has("specs") then .specs else [.spec] end) as $rules |
+  ($rules | length) > 0 and all($rules[];
+    (keys == ["egressDeny", "enableDefaultDeny", "endpointSelector"]) and
+    .egressDeny == [{"toCIDR": ["169.254.169.254/32"]}] and
+    .enableDefaultDeny == {"egress": false})
+  )
+' "${policy_json}" >/dev/null ||
+  fail 'every metadata rule must deny only the metadata address without enabling default-deny or selecting hosts'
 
 # A policy carrying only egressDeny rules puts every selected endpoint into
 # default-deny egress: the CRD defaults enableDefaultDeny to true for each
-# direction that has rules. This policy selects every namespace except
-# crossplane-system and carries no egress allow rules, so leaving the field
+# direction that has rules. This policy carries no egress allow rules, so leaving the field
 # unset silently revokes egress from every workload that has no allow policy
 # of its own. Pin it off so the deny stays a deny.
-yq -e '.spec.enableDefaultDeny.egress == false' "${rendered_policy}" >/dev/null ||
-  fail 'the metadata deny must not put selected endpoints into default-deny egress'
+# The per-rule assertion above keeps it off in every selector branch.
 
 yq -e '(.spec.endpointSelector | keys | length) == 1 and
   (.spec.endpointSelector.matchLabels | keys | length) == 1 and
@@ -137,4 +164,4 @@ yq -e '(.spec.egressDeny | length) == 1 and
   "${crossplane_policy}" >/dev/null ||
   fail 'the existing Crossplane policy must carry the same exact metadata deny'
 
-printf 'PASS: production denies workload metadata egress without selecting Talos hosts\n'
+printf 'PASS: production preserves workload metadata isolation and the CSI node exception\n'
