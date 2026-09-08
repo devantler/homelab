@@ -9,6 +9,8 @@
 // format: a JSON array of PostureExceptionPolicy objects. This command derives
 // that file from the CRs at scan time, so CI and the cluster can never disagree
 // about the exception set.
+// The CR's ignore action maps to native disable. Native alertOnly acknowledges
+// a finding but keeps it failing in current Kubescape result handling.
 //
 // Fail-closed by design: any CR shape this converter does not recognise (an
 // unknown spec.match key, a posture action other than `ignore`, a
@@ -596,7 +598,7 @@ func convertDocument(doc any, path string) (*policy, error) {
 	result := &policy{
 		Name:            name,
 		PolicyType:      "postureExceptionPolicy",
-		Actions:         []string{"alertOnly"},
+		Actions:         []string{"disable"},
 		Resources:       resources,
 		PosturePolicies: policies,
 		mirrorExcluded:  mirrorExcluded,

@@ -71,7 +71,7 @@ data:
         "name": "admission-controllers",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -95,7 +95,7 @@ data:
         "name": "batch-workloads",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -125,7 +125,7 @@ data:
         "name": "cilium-network-policies",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -152,7 +152,7 @@ data:
         "name": "controller-rbac",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -188,7 +188,7 @@ data:
         "name": "delete-capable-rbac-by-design",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -406,7 +406,7 @@ data:
         "name": "exec-into-container-rbac",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -470,7 +470,7 @@ data:
         "name": "gitops-managed-cronjobs",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -491,7 +491,7 @@ data:
         "name": "health-probes",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -515,7 +515,7 @@ data:
         "name": "helm-chart-metadata",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -539,7 +539,7 @@ data:
         "name": "image-verification",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -560,7 +560,7 @@ data:
         "name": "infrastructure-privileged",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -611,7 +611,7 @@ data:
         "name": "kubescape-privileged",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -670,7 +670,7 @@ data:
         "name": "pod-security-mutations",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -694,7 +694,7 @@ data:
         "name": "pod-security-mutations-unscoped",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -718,7 +718,7 @@ data:
         "name": "readonly-rootfs-pending",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -739,7 +739,7 @@ data:
         "name": "secret-reader-rbac",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -1188,7 +1188,7 @@ data:
         "name": "service-account-tokens",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -1224,7 +1224,7 @@ data:
         "name": "umami-provisioning-service-account-token",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -1253,7 +1253,7 @@ data:
         "name": "upstream-chart-defaults",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -1283,7 +1283,7 @@ data:
         "name": "vpa-managed-resources",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {
@@ -1313,7 +1313,7 @@ data:
         "name": "wildcard-rbac-by-design",
         "policyType": "postureExceptionPolicy",
         "actions": [
-          "alertOnly"
+          "disable"
         ],
         "resources": [
           {

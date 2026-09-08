@@ -48,9 +48,9 @@ var errMalformedJSON = errors.New("malformed JSON")
 // generator emits others for surfaces this bridge does not derive.
 const posturePolicyType = "postureExceptionPolicy"
 
-// exceptionActionAlertOnly is the only exception action this command
-// understands, and the only one the generator emits.
-const exceptionActionAlertOnly = "alertOnly"
+// exceptionActionDisable is the generator's native suppression action.
+// alertOnly acknowledges a finding without removing it from actionable results.
+const exceptionActionDisable = "disable"
 
 // attributesDesignator is the only resource designator type this command
 // implements; the generator emits no other today.
@@ -178,7 +178,7 @@ type rawPolicy struct {
 	Name       string `json:"name"`
 	PolicyType string `json:"policyType"`
 	// Actions is what the policy asks Kubescape to DO with a matched control.
-	// The generator emits exactly ["alertOnly"]; discarding the field would let
+	// The generator emits exactly ["disable"]; discarding the field would let
 	// an artifact declaring some other action still act as a full suppressor
 	// here — see compilePolicy, which requires it rather than assuming it.
 	Actions   []string `json:"actions"`
@@ -657,17 +657,18 @@ func compilePolicy(p rawPolicy, path string) (exception, error) {
 	}
 
 	// The action is what makes a policy an exception at all. The generator emits
-	// exactly ["alertOnly"] for every policy it writes, so anything else did not
+	// exactly ["disable"] for every policy it writes, so anything else did not
 	// come from it — a stale, hand-edited or schema-changed artifact. Applying it
 	// anyway would suppress findings under semantics this command never checked,
 	// which is the same silent-widening direction the anchoring rules below guard.
 	//
-	// Requiring it is fail-closed and cannot fire on today's artifact.
-	if len(p.Actions) != 1 || p.Actions[0] != exceptionActionAlertOnly {
+	// Regenerate legacy alertOnly artifacts: current Kubescape acknowledges
+	// those findings but keeps them failing, so suppressing them here would drift.
+	if len(p.Actions) != 1 || p.Actions[0] != exceptionActionDisable {
 		return exception{}, fmt.Errorf("%w: %s: policy %q declares actions %v, but this command only "+
 			"understands exactly [%q]; a policy carrying any other action would be applied as a full "+
 			"suppressor under semantics that were never validated",
-			errBadExceptions, path, p.Name, p.Actions, exceptionActionAlertOnly)
+			errBadExceptions, path, p.Name, p.Actions, exceptionActionDisable)
 	}
 
 	for _, pp := range p.PosturePolicies {
