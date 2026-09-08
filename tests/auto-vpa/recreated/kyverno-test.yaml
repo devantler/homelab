@@ -1,0 +1,25 @@
+{
+  "apiVersion": "cli.kyverno.io/v1alpha1",
+  "kind": "Test",
+  "metadata": {
+    "name": "auto-vpa-recreated-workload"
+  },
+  "policies": [
+    "../../../k8s/bases/infrastructure/cluster-policies/best-practices/auto-vpa.yaml"
+  ],
+  "resources": [
+    "deployment-owner.yaml"
+  ],
+  "results": [
+    {
+      "policy": "auto-vpa",
+      "rule": "generate-vpa-for-deployment",
+      "resources": [
+        "apps/deployment-owner"
+      ],
+      "kind": "Deployment",
+      "result": "pass",
+      "generatedResource": "deployment-owner-expected.yaml"
+    }
+  ]
+}

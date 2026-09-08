@@ -1,0 +1,31 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "StatefulSet",
+  "metadata": {
+    "name": "statefulset-owner",
+    "namespace": "apps",
+    "uid": "00000000-0000-4000-8000-000000000002"
+  },
+  "spec": {
+    "selector": {
+      "matchLabels": {
+        "app": "statefulset-owner"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "statefulset-owner"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "nginx:1.27"
+          }
+        ]
+      }
+    }
+  }
+}

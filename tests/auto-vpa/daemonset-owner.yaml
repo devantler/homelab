@@ -1,0 +1,31 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "DaemonSet",
+  "metadata": {
+    "name": "daemonset-owner",
+    "namespace": "apps",
+    "uid": "00000000-0000-4000-8000-000000000003"
+  },
+  "spec": {
+    "selector": {
+      "matchLabels": {
+        "app": "daemonset-owner"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "daemonset-owner"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "nginx:1.27"
+          }
+        ]
+      }
+    }
+  }
+}

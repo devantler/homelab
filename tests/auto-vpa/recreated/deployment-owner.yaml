@@ -1,0 +1,31 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "deployment-owner",
+    "namespace": "apps",
+    "uid": "00000000-0000-4000-8000-000000000004"
+  },
+  "spec": {
+    "selector": {
+      "matchLabels": {
+        "app": "deployment-owner"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "deployment-owner"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "nginx:1.27"
+          }
+        ]
+      }
+    }
+  }
+}

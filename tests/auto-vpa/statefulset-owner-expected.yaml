@@ -1,0 +1,51 @@
+{
+  "apiVersion": "autoscaling.k8s.io/v1",
+  "kind": "VerticalPodAutoscaler",
+  "metadata": {
+    "name": "statefulset-owner",
+    "namespace": "apps",
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "kind": "StatefulSet",
+        "name": "statefulset-owner",
+        "uid": "00000000-0000-4000-8000-000000000002",
+        "controller": false,
+        "blockOwnerDeletion": false
+      }
+    ],
+    "labels": {
+      "app.kubernetes.io/managed-by": "kyverno"
+    }
+  },
+  "spec": {
+    "targetRef": {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "name": "statefulset-owner"
+    },
+    "resourcePolicy": {
+      "containerPolicies": [
+        {
+          "containerName": "*",
+          "controlledResources": [
+            "cpu",
+            "memory"
+          ],
+          "controlledValues": "RequestsAndLimits",
+          "minAllowed": {
+            "cpu": "50m",
+            "memory": "64Mi"
+          },
+          "maxAllowed": {
+            "cpu": "3",
+            "memory": "6Gi"
+          }
+        }
+      ]
+    },
+    "updatePolicy": {
+      "updateMode": "Initial"
+    }
+  }
+}

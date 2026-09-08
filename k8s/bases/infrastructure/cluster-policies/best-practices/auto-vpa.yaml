@@ -58,7 +58,19 @@ spec:
         name: "{{request.object.metadata.name}}"
         namespace: "{{request.object.metadata.namespace}}"
         synchronize: true
+        # Backfill existing workloads and make Kubernetes garbage collection own
+        # the VPA lifecycle. A recreated workload receives its new UID here, so
+        # a generated VPA cannot outlive or silently target the replacement.
+        generateExisting: true
         data:
+          metadata:
+            ownerReferences:
+              - apiVersion: "{{request.object.apiVersion}}"
+                kind: "{{request.object.kind}}"
+                name: "{{request.object.metadata.name}}"
+                uid: "{{request.object.metadata.uid}}"
+                controller: false
+                blockOwnerDeletion: false
           spec:
             targetRef:
               apiVersion: apps/v1
@@ -114,7 +126,19 @@ spec:
         name: "{{request.object.metadata.name}}"
         namespace: "{{request.object.metadata.namespace}}"
         synchronize: true
+        # Backfill existing workloads and make Kubernetes garbage collection own
+        # the VPA lifecycle. A recreated workload receives its new UID here, so
+        # a generated VPA cannot outlive or silently target the replacement.
+        generateExisting: true
         data:
+          metadata:
+            ownerReferences:
+              - apiVersion: "{{request.object.apiVersion}}"
+                kind: "{{request.object.kind}}"
+                name: "{{request.object.metadata.name}}"
+                uid: "{{request.object.metadata.uid}}"
+                controller: false
+                blockOwnerDeletion: false
           spec:
             targetRef:
               apiVersion: apps/v1
@@ -176,7 +200,19 @@ spec:
         name: "{{request.object.metadata.name}}"
         namespace: "{{request.object.metadata.namespace}}"
         synchronize: true
+        # Backfill existing workloads and make Kubernetes garbage collection own
+        # the VPA lifecycle. A recreated workload receives its new UID here, so
+        # a generated VPA cannot outlive or silently target the replacement.
+        generateExisting: true
         data:
+          metadata:
+            ownerReferences:
+              - apiVersion: "{{request.object.apiVersion}}"
+                kind: "{{request.object.kind}}"
+                name: "{{request.object.metadata.name}}"
+                uid: "{{request.object.metadata.uid}}"
+                controller: false
+                blockOwnerDeletion: false
           spec:
             targetRef:
               apiVersion: apps/v1

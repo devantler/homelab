@@ -1,0 +1,47 @@
+{
+  "apiVersion": "cli.kyverno.io/v1alpha1",
+  "kind": "Test",
+  "metadata": {
+    "name": "auto-vpa-owner-identity"
+  },
+  "policies": [
+    "../../k8s/bases/infrastructure/cluster-policies/best-practices/auto-vpa.yaml"
+  ],
+  "resources": [
+    "deployment-owner.yaml",
+    "statefulset-owner.yaml",
+    "daemonset-owner.yaml"
+  ],
+  "results": [
+    {
+      "policy": "auto-vpa",
+      "rule": "generate-vpa-for-deployment",
+      "resources": [
+        "apps/deployment-owner"
+      ],
+      "kind": "Deployment",
+      "result": "pass",
+      "generatedResource": "deployment-owner-expected.yaml"
+    },
+    {
+      "policy": "auto-vpa",
+      "rule": "generate-vpa-for-statefulset",
+      "resources": [
+        "apps/statefulset-owner"
+      ],
+      "kind": "StatefulSet",
+      "result": "pass",
+      "generatedResource": "statefulset-owner-expected.yaml"
+    },
+    {
+      "policy": "auto-vpa",
+      "rule": "generate-vpa-for-daemonset",
+      "resources": [
+        "apps/daemonset-owner"
+      ],
+      "kind": "DaemonSet",
+      "result": "pass",
+      "generatedResource": "daemonset-owner-expected.yaml"
+    }
+  ]
+}

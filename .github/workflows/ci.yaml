@@ -263,6 +263,7 @@ jobs:
               # neither kyverno test nor the shell gate would run on its own change.
               - 'tests/add-baseline-context/**'
               - 'tests/audit-privileged-rbac/**'
+              - 'tests/auto-vpa/**'
               - 'scripts/tests/test-audit-privileged-rbac.sh'
               # The declarative fixtures are the other half of that test: a PR that
               # touches only resources.yaml or kyverno-test.yaml would otherwise leave

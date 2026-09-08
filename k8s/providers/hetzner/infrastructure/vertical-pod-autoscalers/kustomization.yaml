@@ -21,8 +21,6 @@
 #     still fits the smallest autoscale-cx23 worker.
 #   * kyverno-admission-controller → RequestsOnly with a 1Gi memory ceiling, so
 #     VPA right-sizes requests without replacing the authored 1Gi safety limit.
-#   * spire-server → updateMode Initial: it is a singleton StatefulSet on an RWO
-#     volume, so it is right-sized only at its next natural restart, never evicted.
 #
 # GENEROUS MEMORY RATIO (no OOM): the base LimitRanges
 # (k8s/bases/{bootstrap,infrastructure}/limit-ranges/) are CPU-only; the parent hetzner
@@ -35,7 +33,7 @@
 # EVICTION SAFETY: in-place resize means no eviction in the normal path; for the
 # Recreate fallback, the eviction-sensitive targets are HA so it is harmless —
 # kyverno controllers + coredns run 2 replicas with PDBs (coredns PDB added in
-# controllers/coredns/), and spire-server uses updateMode Initial.
+# controllers/coredns/).
 #
 # longhorn-system is deliberately NOT here: it already has auto-vpa-managed VPAs
 # (not globally filtered) and its LimitRange MUST stay memory-unset (the
@@ -60,8 +58,6 @@ resources:
   - kyverno-reports-controller.yaml
   - metrics-server.yaml
   - snapshot-controller.yaml
-  - spire-agent.yaml
-  - spire-server.yaml
   - tetragon-operator.yaml
   - tetragon.yaml
 patches:
@@ -95,7 +91,7 @@ patches:
   # exactly the cluster-autoscaler's scale-down utilization threshold — making
   # autoscale nodes unremovable even when empty of movable pods (the
   # 2026-06-30 four-node ratchet). Memory reverts to the authored values in
-  # the cilium HelmRelease (agent 512Mi, envoy 64Mi, spire-agent 128Mi, ...)
+  # the cilium HelmRelease (agent 512Mi, envoy 64Mi, ...)
   # with the generous kube-system LimitRange memory default (4Gi) as the
   # burst limit. CPU stays managed (compressible, no OOM risk); per-node pods
   # must still fit the smallest autoscale-cx23 worker.
@@ -149,12 +145,3 @@ patches:
       - op: replace
         path: /spec/resourcePolicy/containerPolicies/0/controlledValues
         value: RequestsOnly
-  # spire-server: singleton StatefulSet on an RWO volume — never evict.
-  - target:
-      kind: VerticalPodAutoscaler
-      name: spire-server
-    patch: |
-      - op: replace
-        path: /spec/updatePolicy
-        value:
-          updateMode: Initial
