@@ -1807,8 +1807,38 @@ const (
 // green — which is what re-arms the mutation controls that append an attacker
 // ClusterRoleBinding to cluster-admin, or a KRO Tenant, since every one of them
 // passes trivially while the baseline is red.
-// Previous aggregate: 165ed85b44e9dd5434d606854776a38aa40e82515ffb6b767ecd77f6cfab579a.
-const expectedRenderedSurfaceSHA = "fc59566d0ec91c68279981d90f2d14470280025b05f7f1874d9c0e56cd93574f"
+//
+// Moved again by the metrics-server baseline security defaults (#3676): the
+// chart values gain a pod-level fsGroupChangePolicy: OnRootMismatch and a
+// container-level seLinuxOptions: {}, so the rendered Deployment carries two
+// more securityContext fields.
+//
+// CONSERVATION, read off the check's own error set, which walks actual→expected
+// and expected→actual separately. The failing run reported EXACTLY ONE error
+// class — this aggregate — with ZERO `unapproved rendered <identity>`, ZERO
+// `missing rendered authorization resource` and ZERO `duplicate rendered`. So
+// membership is conserved in both directions and every pinned per-identity
+// fingerprint still passes; no subject, grant, binding or ServiceAccount moved.
+// A Deployment is not a grant-bearing kind, and the 17 `unresolved Flux
+// substitution` notes are the usual companions of a mismatch, not a second
+// finding.
+//
+// The authored delta is confined to one Deployment's securityContext. Rendering
+// the chart at its pinned 3.14.0 with and without these values differs by
+// exactly the two added fields and nothing else: the pinned runAsUser, dropped
+// capabilities, read-only root filesystem and seccomp profile are all preserved
+// by Helm's map merge, and image, volumes, replicas and the disruption budget
+// are untouched.
+//
+// RENDERER PROVENANCE, on the same terms as the entries above: measured on this
+// host's kubectl v1.36.1 with kustomize v5.8.1 through the test path, which
+// renders via renderAuthorizationLayers and so does not pass run()'s renderer
+// gate. CI's SHA256-verified kubectl v1.36.2 is what approves this constant, and
+// if it computes a different aggregate the check fails closed and reports the
+// value it computed. Restoring the superseded value fails with exactly this
+// fingerprint, so the baseline is not vacuous.
+// Previous aggregate: fc59566d0ec91c68279981d90f2d14470280025b05f7f1874d9c0e56cd93574f.
+const expectedRenderedSurfaceSHA = "1b17b64243f850afd2acc2b8af2fa5ed270e3a88d42db80437d2de40d7861a12"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
