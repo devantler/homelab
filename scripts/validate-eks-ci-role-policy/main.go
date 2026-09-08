@@ -1777,7 +1777,14 @@ const (
 // seLinuxOptions. Real chart omitted/enabled/rollback renders retain all five
 // chart identities and differ only by those two operator Deployment fields.
 // Previous aggregate: a7bffd8423a99b738dd231a04b96a8e7d12b89eb2d308b26613d3004341a1c33.
-const expectedRenderedSurfaceSHA = "78ec24f102127ad42d3a005ad6fcdd4f86c4a8df3eaca7679b21aff53f0d0b35"
+// Refreshed for #3437's explicit Velero maintenance resources. Checksum-verified
+// kubectl v1.36.2 / Kustomize v5.8.1 compared all five roots against main
+// 67dc40e7: 555 documents on each side and no identity changes. Only the Velero
+// HelmRelease changes; removing configuration.repositoryMaintenanceJob restores
+// the identical parsed resource. Chart 12.1.0 renders the four resource values
+// into the existing maintenance ConfigMap, preserving three retained Jobs.
+// Previous aggregate: 78ec24f102127ad42d3a005ad6fcdd4f86c4a8df3eaca7679b21aff53f0d0b35.
+const expectedRenderedSurfaceSHA = "165ed85b44e9dd5434d606854776a38aa40e82515ffb6b767ecd77f6cfab579a"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
