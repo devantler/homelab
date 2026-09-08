@@ -14,7 +14,7 @@ spec:
   chart:
     spec:
       chart: vpa
-      version: 5.0.0
+      version: 5.0.1
       sourceRef:
         kind: HelmRepository
         name: vertical-pod-autoscaler
