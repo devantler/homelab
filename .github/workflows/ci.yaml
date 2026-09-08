@@ -20,6 +20,7 @@ jobs:
     outputs:
       k8s: ${{ steps.filter.outputs.k8s }}
       bridge_validation: ${{ steps.filter.outputs.bridge_validation }}
+      exec_bit: ${{ steps.filter.outputs.exec_bit }}
       talos: ${{ steps.filter.outputs.talos }}
     steps:
       - name: 📑 Checkout
@@ -484,6 +485,12 @@ jobs:
               - '.github/actions/deploy-prod/**'
               - '.github/workflows/dr-rebuild.yaml'
               - '.github/workflows/ci.yaml'
+            # Any change under either root can add an invocation, remove one, or
+            # change a tracked mode, so the exec-bit guard keys on the whole surface
+            # rather than a file list that would go stale in the dangerous direction.
+            exec_bit:
+              - 'scripts/**'
+              - '.github/**'
             talos:
               - 'talos/**'
               - 'talos-local/**'
@@ -1231,6 +1238,22 @@ jobs:
         run: |
           bash scripts/guard-gitrepository-commit-pin.sh k8s
           bash scripts/tests/test-guard-gitrepository-commit-pin.sh
+
+      - name: 🔐 Validate directly-invoked scripts are tracked executable
+        if: needs.changes.outputs.exec_bit == 'true'
+        # A script a workflow runs as ./scripts/<name> must be tracked 100755, because
+        # CI clones from git and the tracked mode is what the runner gets. Caught live on
+        # #3530, where a promotion gate was committed 100644 and died "permission denied"
+        # BEFORE verifying anything — present, reviewed green, and inert. Nothing that runs
+        # could see it: shellcheck was clean, bash <file> passed, and the script own suite
+        # passed, because none of them exec the file. The class has been introduced three
+        # times, twice via an awk-into-tmp-and-mv idiom that drops the bit while leaving the
+        # content byte-correct. The guard derives the requirement from the invocation, so a
+        # script that moves behind an interpreter stops needing the bit, and finding NO
+        # direct invocation is cannot-check rather than a clean pass.
+        run: |
+          bash scripts/guard-tracked-exec-bit.sh .
+          bash scripts/tests/test-guard-tracked-exec-bit.sh
 
       - name: 🌐 Validate no render path fetches over the network
         if: needs.changes.outputs.k8s == 'true'
