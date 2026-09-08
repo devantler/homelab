@@ -117,7 +117,7 @@ fi
 #
 # BSD grep has no lookbehind, so each leading delimiter is spelled as a class.
 readonly SCRIPT_PATH_RE='(\.github|scripts)/[A-Za-z0-9_./-]+\.sh'
-readonly LEADING_DELIM='(^|[[:space:]|&;("'"'"'])'
+readonly LEADING_DELIM='(^|[[:space:]|&;(]|(^|[[:space:]|&;(])["'"'"'])'
 readonly TOKEN_RE='[^[:space:]]+'
 
 scan="$(
@@ -125,11 +125,28 @@ scan="$(
     -r .github scripts 2>/dev/null || true
 )"
 
+# 🔴 SPLIT AT `&&` / `||` BEFORE EXTRACTING, NOT ONLY WHILE CLASSIFYING.
+#
+# Resetting the classifier at a separator fixes `echo ready && ./scripts/x.sh`,
+# where the swallowed segment is the harmless one. It does NOT fix the mirror
+# image, `./scripts/a.sh && bash ./scripts/b.sh`: `grep -o` takes the longest
+# leftmost match, so BOTH paths land in one occurrence that ends at b.sh, the
+# classifier judges it by b.sh's `bash` prefix, and a.sh — genuinely execed and
+# possibly 100644 — never becomes an occurrence of its own to judge. Splitting
+# first gives each command its own segment, so each path is extracted in its own
+# command position.
+#
+# Only whitespace-delimited `&&` and `||` are split. `;` and `|` are deliberately
+# NOT, because splitting is the FALSE-POSITIVE direction — every new segment
+# creates a fresh command position — and those two appear inside quoted strings
+# and YAML block scalars far too often to treat as separators textually.
+segmented="$(printf '%s\n' "$scan" | sed -E 's/[[:space:]]+(\&\&|\|\|)[[:space:]]+/\n/g')"
+
 invocations="$(
   {
-    printf '%s\n' "$scan" |
+    printf '%s\n' "$segmented" |
       grep -oE "${LEADING_DELIM}(${TOKEN_RE}[[:space:]]+)*\./${SCRIPT_PATH_RE}" || true
-    printf '%s\n' "$scan" |
+    printf '%s\n' "$segmented" |
       grep -oE "run:[[:space:]]+[\"']?(${TOKEN_RE}[[:space:]]+)*(\./)?${SCRIPT_PATH_RE}" || true
     # A run block puts the command at the START of its own line. But line-leading
     # position is command position only when the PREVIOUS line did not end in a
@@ -141,7 +158,7 @@ invocations="$(
     # occurrence STOPS at the path instead of running to the end of the line,
     # which is what lets a trailing argument coexist with a line-leading command.
     awk '!cont { print }
-         { cont = ($0 ~ /\\[[:space:]]*$/) }' <<<"$scan" |
+         { cont = ($0 ~ /\\[[:space:]]*$/) }' <<<"$segmented" |
       grep -oE "^[[:space:]]*(${TOKEN_RE}[[:space:]]+)*(\./)?${SCRIPT_PATH_RE}" || true
   }
 )"
@@ -172,15 +189,32 @@ while IFS= read -r occurrence; do
   saw_wrapper=0
   for token in ${prefix_tokens+"${prefix_tokens[@]}"}; do
     case "$token" in
-      "&&" | "||" | "|" | ";" | "(" | '"' | "'") ;;               # operator: a command position follows
-      if | elif | while | until | then | do | else | "!" | "{") ;; # control keyword: likewise
+      # 🔴 A SEPARATOR RESETS THE WALK; IT DOES NOT MERELY PASS.
+      #
+      # Extraction is greedy, so one occurrence can span several commands
+      # (`echo ready && ./scripts/x.sh`). Judging it by whatever came first
+      # discarded it at `echo` and never reached the `&&` proving a FRESH
+      # command position follows — the guard then reported success over a
+      # script the step genuinely execs. State is therefore per-SEGMENT:
+      # everything before the separator is spent.
+      "&&" | "||" | "|" | ";" | "(")
+        reaches_path=1
+        saw_wrapper=0
+        ;;
+      if | elif | while | until | then | do | else | "!" | "{") # control keyword: likewise
+        reaches_path=1
+        saw_wrapper=0
+        ;;
+      # A quote is TRANSPARENT — never a reset. It marks a command position in
+      # `run: "./scripts/x.sh"`, but in `foo "./scripts/x.sh"` the path is an
+      # ARGUMENT to foo, and resetting here would resurrect exactly that.
+      '"' | "'") ;;
       -*)
         # An option, admissible only as an option TO a wrapper already accepted.
         # A bare leading `-` is the YAML sequence marker, which introduces a list
         # entry — a path filter, not a command.
         if ((saw_wrapper == 0)); then
           reaches_path=0
-          break
         fi
         ;;
       *=*) ;;                                                     # NAME=value: an environment assignment is transparent
@@ -189,11 +223,9 @@ while IFS= read -r occurrence; do
         ;;
       bash | sh | zsh | dash | ksh | source | .)                   # handed to an interpreter
         reaches_path=0
-        break
         ;;
       *)                                                           # an argument to some other command, which does not exec it
         reaches_path=0
-        break
         ;;
     esac
   done

@@ -70,6 +70,8 @@ jobs:
         # of it. Unconditional also removes the path filter as a way to skip the check,
         # which is the failure mode the guard exists to catch, one level up.
         run: |
+          shellcheck scripts/guard-tracked-exec-bit.sh
+          shellcheck scripts/tests/test-guard-tracked-exec-bit.sh
           bash scripts/guard-tracked-exec-bit.sh .
           bash scripts/tests/test-guard-tracked-exec-bit.sh
 

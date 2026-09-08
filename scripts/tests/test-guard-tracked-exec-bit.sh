@@ -309,6 +309,88 @@ make_fixture "$work/quoted-assign-bash" -x 'FOO="${BAR}" bash scripts/fixture-ta
 expect "QUOTED-ASSIGN interpreter behind a quoted assignment stays accepted" 0 \
   "" "$work/quoted-assign-bash"
 
+
+# CHAINED COMMAND: `cmd && ./scripts/x.sh` puts a SECOND command position after the
+# separator, and the walk has to notice. Extraction is greedy, so the occurrence
+# begins at `echo`; the classifier hit that unknown token, broke immediately and
+# discarded the whole occurrence, never reaching the `&&` that proves a fresh
+# command position follows. With the anchor satisfying anti-vacuity the guard then
+# reported success over a script it genuinely execs. The walk now RESETS at a
+# separator instead of judging the occurrence by its first segment.
+make_fixture "$work/chained" -x 'echo ready && ./scripts/fixture-target.sh' anchor
+expect "CHAIN direct invocation after a command separator is rejected" 1 \
+  "is tracked 100644, not 100755" "$work/chained"
+
+# The counterpart, so the reset cannot become "accept whatever follows a
+# separator": an INTERPRETER after the separator is still not a direct exec.
+make_fixture "$work/chained-bash" -x 'echo ready && bash ./scripts/fixture-target.sh' anchor
+expect "CHAIN interpreter after a command separator stays accepted" 0 \
+  "" "$work/chained-bash"
+
+# ASSIGNMENT VALUE: `HELPER="./scripts/x.sh"` stores a path, it does not run one.
+# The opening quote is a leading delimiter, so extraction started AT the quote and
+# dropped the `HELPER=` that gives it its meaning; the classifier then saw a lone
+# `"`, read it as an operator and required an execute bit on a file that is only
+# ever handed to an interpreter. That is a false POSITIVE — it fails every PR and
+# merge-group run — so the fixture asserts the guard passes.
+make_assign_value_fixture() {
+  local dir="$1"
+  mkdir -p "$dir/scripts" "$dir/.github/workflows"
+  cd "$dir"
+  git init -q .
+  git config user.email t@example.com
+  git config user.name t
+  printf '#!/usr/bin/env bash\necho hi\n' > scripts/fixture-target.sh
+  printf '#!/usr/bin/env bash\necho anchor\n' > scripts/fixture-anchor.sh
+  {
+    printf '#!/usr/bin/env bash\n'
+    printf 'HELPER="./scripts/fixture-target.sh"\n'
+    # shellcheck disable=SC2016 # the literal $HELPER is the fixture; it must not expand
+    printf 'bash "$HELPER"\n'
+  } > scripts/fixture-caller.sh
+  printf 'jobs:\n  j:\n    steps:\n      - run: ./scripts/fixture-anchor.sh\n' > .github/workflows/w.yaml
+  git add -A
+  git update-index --chmod=-x scripts/fixture-target.sh
+  git update-index --chmod=+x scripts/fixture-anchor.sh
+  git update-index --chmod=+x scripts/fixture-caller.sh
+  git -c commit.gpgsign=false commit -qm fixture
+  cd - > /dev/null
+}
+make_assign_value_fixture "$work/assign-value"
+expect "ASSIGN-VALUE a path stored in a quoted assignment is not an invocation" 0 \
+  "" "$work/assign-value"
+
+# THE MIRROR IMAGE OF CHAIN, and the reason the split had to happen in EXTRACTION
+# rather than only in the classifier. Here the swallowed segment is the one that
+# matters: `grep -o` takes the longest leftmost match, so both paths land in one
+# occurrence ending at the interpreter-invoked path, the classifier judges it by
+# that `bash` prefix, and the genuinely-execed FIRST path never becomes an
+# occurrence of its own. A classifier-only reset still reports success here.
+make_chain_first_fixture() {
+  local dir="$1"
+  mkdir -p "$dir/scripts" "$dir/.github/workflows"
+  cd "$dir"
+  git init -q .
+  git config user.email t@example.com
+  git config user.name t
+  printf '#!/usr/bin/env bash\necho a\n' > scripts/fixture-target.sh
+  printf '#!/usr/bin/env bash\necho b\n' > scripts/fixture-other.sh
+  printf '#!/usr/bin/env bash\necho anchor\n' > scripts/fixture-anchor.sh
+  {
+    printf 'jobs:\n  j:\n    steps:\n'
+    printf '      - run: ./scripts/fixture-target.sh && bash ./scripts/fixture-other.sh\n'
+    printf '      - run: ./scripts/fixture-anchor.sh\n'
+  } > .github/workflows/w.yaml
+  git add -A
+  git update-index --chmod=-x scripts/fixture-target.sh
+  git update-index --chmod=-x scripts/fixture-other.sh
+  git update-index --chmod=+x scripts/fixture-anchor.sh
+  git -c commit.gpgsign=false commit -qm fixture
+  cd - > /dev/null
+}
+make_chain_first_fixture "$work/chain-first"
+expect "CHAIN-FIRST a direct invocation BEFORE a separator is still checked" 1 \
+  "'scripts/fixture-target.sh' is invoked directly" "$work/chain-first"
 if ((failures > 0)); then
   echo "::error::$failures exec-bit guard assertion(s) failed"
   exit 1
