@@ -60,6 +60,12 @@ spec:
 		t.Errorf("policyType = %q", got.PolicyType)
 	}
 
+	// Native alertOnly now acknowledges a finding without suppressing it.
+	// The CR's ignore action must retain its exclusion from the scanner's score.
+	if len(got.Actions) != 1 || got.Actions[0] != "disable" {
+		t.Errorf("ignore must emit the native suppression action [disable], got %v", got.Actions)
+	}
+
 	// controlID is a plain value => anchored; an already-anchored name is kept.
 	if got.PosturePolicies[0].ControlID != "^C-0002$" {
 		t.Errorf("controlID = %q, want ^C-0002$", got.PosturePolicies[0].ControlID)

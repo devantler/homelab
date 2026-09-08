@@ -9,6 +9,11 @@ the decision for each workload/control pair.
 The oracle is read-only. It changes neither the cluster nor the committed
 exception resources.
 
+The generated artifact maps the CR's `ignore` action to Kubescape's native
+`disable` action. `alertOnly` acknowledges a finding while leaving it actionable.
+Regenerate artifacts produced by older converters before using the oracle;
+the reader rejects legacy `alertOnly`, mixed, missing, and unknown actions.
+
 ## Collect hydrated posture summaries
 
 Kubescape strips `spec.controls` from LIST responses and ignores server-side

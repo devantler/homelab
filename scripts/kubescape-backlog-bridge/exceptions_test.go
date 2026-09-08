@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -32,7 +34,7 @@ func policyDoc(name string, controlIDs []string, resourceAttrs ...string) string
 		resources = append(resources, fmt.Sprintf(`{"designatorType":"Attributes","attributes":%s}`, attrs))
 	}
 
-	return fmt.Sprintf(`{"name":%q,"policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	return fmt.Sprintf(`{"name":%q,"policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[%s],"posturePolicies":[%s],"reason":"test fixture"}`,
 		name, strings.Join(resources, ","), strings.Join(controls, ","))
 }
@@ -49,6 +51,82 @@ func loadFixture(t *testing.T, raw string) []exception {
 	}
 
 	return got
+}
+
+// The real converter and the backlog oracle must agree on native suppression,
+// while a different name, namespace, kind, or control stays actionable.
+func TestGeneratedIgnoreArtifactPreservesExactScope(t *testing.T) {
+	dir := t.TempDir()
+	input := `kind: ClusterSecurityException
+metadata:
+  name: accepted-job
+spec:
+  posture:
+    - controlID: C-0016
+      action: ignore
+  match:
+    resources:
+      - kind: Job
+        name: nightly
+---
+kind: ClusterSecurityException
+metadata:
+  name: accepted-namespace
+spec:
+  posture:
+    - controlID: C-0017
+      action: ignore
+  match:
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values: [app]
+`
+	if err := os.WriteFile(filepath.Join(dir, "exception.yaml"), []byte(input), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	output := filepath.Join(t.TempDir(), "exceptions.json")
+	cmd := exec.CommandContext(t.Context(), "go", "run", "../generate-kubescape-exceptions", "-o", output, dir)
+	if log, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("generate real exception artifact: %v: %s", err, log)
+	}
+
+	policies, err := loadExceptions(output)
+	if err != nil {
+		t.Fatalf("load real exception artifact: %v", err)
+	}
+	for _, tc := range []struct {
+		name, control, kind, namespace, resource string
+		want                                     bool
+	}{
+		{"exact", "C-0016", "Job", "app", "nightly", true},
+		{"other name", "C-0016", "Job", "app", "nightly-other", false},
+		{"matching namespace", "C-0017", "Job", "app", "any", true},
+		{"other namespace", "C-0017", "Job", "other", "any", false},
+		{"other kind", "C-0016", "Deployment", "app", "nightly", false},
+		{"other control", "C-00160", "Job", "app", "nightly", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got := excepted(policies, tc.control, component{Kind: tc.kind, Namespace: tc.namespace, Name: tc.resource})
+			if got != tc.want {
+				t.Fatalf("excepted = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestNativeDisableSuppressesOnlyMatchedFinding(t *testing.T) {
+	raw := exceptionsDoc(policyDoc("accepted", []string{"C-0016"},
+		`{"kind":"^Job$","name":"^nightly$","namespace":"^app$"}`))
+	policies := loadFixture(t, raw)
+	if !excepted(policies, "C-0016", component{Kind: "Job", Namespace: "app", Name: "nightly"}) {
+		t.Fatal("native disable must suppress the matching accepted finding")
+	}
+	if excepted(policies, "C-0016", component{Kind: "Job", Namespace: "app", Name: "other"}) {
+		t.Fatal("an unmatched finding must remain actionable")
+	}
 }
 
 // A control the platform has deliberately accepted is not actionable backlog
@@ -146,7 +224,7 @@ func TestAnchoredControlIDDoesNotMatchByPrefix(t *testing.T) {
 // rejects partial anchoring for exactly this reason. The loader enforces the same contract rather
 // than trusting that every artifact reaching it was generated.
 func TestUnanchoredControlIDIsRejected(t *testing.T) {
-	raw := `[{"name":"unanchored","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"unanchored","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 		`"posturePolicies":[{"controlID":"C-001"}],"reason":"test fixture"}]`
 
@@ -162,7 +240,7 @@ func TestUnanchoredControlIDIsRejected(t *testing.T) {
 // anchored at only one end is still substring-matchable at the open end, so "^C-001" matches
 // C-0016 just as the bare form does.
 func TestPartiallyAnchoredControlIDIsRejected(t *testing.T) {
-	raw := `[{"name":"partial","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"partial","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 		`"posturePolicies":[{"controlID":"^C-001"}],"reason":"test fixture"}]`
 
@@ -181,7 +259,7 @@ func TestPartiallyAnchoredControlIDIsRejected(t *testing.T) {
 // XC-002). Validating anchoring as text is therefore not enough on its own — the compiled pattern
 // has to carry full-match semantics.
 func TestAlternationCannotDefeatAnchoring(t *testing.T) {
-	raw := `[{"name":"alternation","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"alternation","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 		`"posturePolicies":[{"controlID":"^C-001|C-002$"}],"reason":"test fixture"}]`
 
@@ -212,7 +290,7 @@ func TestAlternationCannotDefeatAnchoring(t *testing.T) {
 // `kind: Job` designator substring-matched CronJob and silently widened the exception to a workload
 // kind the platform never accepted.
 func TestUnanchoredAttributeDoesNotMatchBySubstring(t *testing.T) {
-	raw := `[{"name":"substring-kind","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"substring-kind","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"Job"}}],` +
 		`"posturePolicies":[{"controlID":"^C-0016$"}],"reason":"test fixture"}]`
 
@@ -295,7 +373,7 @@ func TestPolicyWithNoControlsCoversNothing(t *testing.T) {
 // TestUnknownExceptionPolicyTypeIsRejected; this is the over-tightening control
 // that the one type the generator DOES emit still loads.
 func TestGeneratedPolicyTypeIsAccepted(t *testing.T) {
-	raw := `[{"name":"ok","policyType":"` + posturePolicyType + `","actions":["alertOnly"],` +
+	raw := `[{"name":"ok","policyType":"` + posturePolicyType + `","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Deployment$"}}],` +
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`
 
@@ -324,7 +402,7 @@ func TestMalformedExceptionsDocumentIsAHardError(t *testing.T) {
 
 func TestUncompilablePatternIsAHardError(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "exceptions.json")
-	writeRaw(t, path, `[{"name":"bad","policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	writeRaw(t, path, `[{"name":"bad","policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"("}}],`+
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`)
 
@@ -399,7 +477,7 @@ func TestExceptionsFlagChangesTheReportEndToEnd(t *testing.T) {
 // would suppress real controls under semantics this command does not implement.
 func TestUnknownDesignatorTypeIsRejected(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "exceptions.json")
-	writeRaw(t, path, `[{"name":"future","policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	writeRaw(t, path, `[{"name":"future","policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[{"designatorType":"future-type","attributes":{"kind":".*"}}],`+
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`)
 
@@ -416,13 +494,15 @@ func TestUnknownDesignatorTypeIsRejected(t *testing.T) {
 // A policy that does not declare the generator's action must not be applied.
 // The action is what makes it an exception; without it the loader would be
 // suppressing findings under semantics it never checked.
-func TestPolicyWithoutAlertOnlyActionIsRejected(t *testing.T) {
+func TestPolicyWithoutDisableActionIsRejected(t *testing.T) {
 	for name, actions := range map[string]string{
-		"absent":     ``,
-		"empty":      `"actions":[],`,
-		"other":      `"actions":["disable"],`,
-		"extra":      `"actions":["alertOnly","disable"],`,
-		"wrong case": `"actions":["ALERTONLY"],`,
+		"absent":                 ``,
+		"empty":                  `"actions":[],`,
+		"legacy acknowledgement": `"actions":["alertOnly"],`,
+		"unknown":                `"actions":["future"],`,
+		"duplicate":              `"actions":["disable","disable"],`,
+		"extra":                  `"actions":["disable","alertOnly"],`,
+		"wrong case":             `"actions":["DISABLE"],`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			raw := `[{"name":"p","policyType":"postureExceptionPolicy",` + actions +
@@ -442,7 +522,7 @@ func TestPolicyWithoutAlertOnlyActionIsRejected(t *testing.T) {
 // The generator's own shape must keep loading, so the guard above cannot be
 // satisfied by simply refusing everything.
 func TestGeneratorActionIsAccepted(t *testing.T) {
-	raw := `[{"name":"p","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"p","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`
 
@@ -469,15 +549,15 @@ func TestGeneratorActionIsAccepted(t *testing.T) {
 // was removed at all.
 func TestExceptionPolicyThatCanCoverNothingIsRejected(t *testing.T) {
 	for name, raw := range map[string]string{
-		"no posturePolicies": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+		"no posturePolicies": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["disable"],` +
 			`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 			`"posturePolicies":[]}]`,
-		"every controlID empty": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+		"every controlID empty": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["disable"],` +
 			`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 			`"posturePolicies":[{"controlID":""}]}]`,
-		"no resources": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+		"no resources": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["disable"],` +
 			`"resources":[],"posturePolicies":[{"controlID":"^C-0016$"}]}]`,
-		"designator with no attributes": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+		"designator with no attributes": `[{"name":"p","policyType":"postureExceptionPolicy","actions":["disable"],` +
 			`"resources":[{"designatorType":"Attributes","attributes":{}}],` +
 			`"posturePolicies":[{"controlID":"^C-0016$"}]}]`,
 	} {
@@ -523,7 +603,7 @@ func TestUnknownDesignatorKeyNeverMatches(t *testing.T) {
 // were applied. The generator emits no empty controlID (0 of 93 measured), so
 // refusing is fail-closed.
 func TestEmptyControlIDEntryIsRejectedEvenBesideAValidSibling(t *testing.T) {
-	raw := `[{"name":"partial","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"partial","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 		`"posturePolicies":[{"controlID":"^C-0016$"},{"controlID":""}]}]`
 
@@ -555,7 +635,7 @@ func TestNamespacePatternMatchingClusterScopeIsRejected(t *testing.T) {
 		"empty alternation": `^()$`,
 	} {
 		t.Run(name, func(t *testing.T) {
-			raw := `[{"name":"broad","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+			raw := `[{"name":"broad","policyType":"postureExceptionPolicy","actions":["disable"],` +
 				`"resources":[{"designatorType":"Attributes","attributes":{"namespace":"` + pattern + `"}}],` +
 				`"posturePolicies":[{"controlID":"^C-0016$"}]}]`
 
@@ -573,7 +653,7 @@ func TestNamespacePatternMatchingClusterScopeIsRejected(t *testing.T) {
 // and `kind: ".*"` — genuine generator output, 115 uses — must be UNAFFECTED,
 // since the guard is namespace-only.
 func TestRealNamespaceAndWildcardKindStillLoad(t *testing.T) {
-	raw := `[{"name":"ok","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"ok","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"namespace":"^(kube-system|velero)$"}},` +
 		`{"designatorType":"Attributes","attributes":{"kind":".*"}}],` +
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`
@@ -599,14 +679,14 @@ func TestRealNamespaceAndWildcardKindStillLoad(t *testing.T) {
 func TestDuplicateKeysInExceptionsAreRejected(t *testing.T) {
 	for name, raw := range map[string]string{
 		"duplicate attribute widens the scope": `[{"name":"p","policyType":"postureExceptionPolicy",` +
-			`"actions":["alertOnly"],"resources":[{"designatorType":"Attributes",` +
+			`"actions":["disable"],"resources":[{"designatorType":"Attributes",` +
 			`"attributes":{"kind":"^Job$","kind":".*"}}],"posturePolicies":[{"controlID":"^C-0016$"}]}]`,
 		// Deliberately a field NO other guard inspects, so this subtest can only
 		// pass because duplicates are detected. A duplicate "policyType" would
 		// pass for the wrong reason — the last value trips the unknown-type
 		// guard — and would therefore prove nothing about this fix.
 		"duplicate policy name": `[{"name":"first","policyType":"postureExceptionPolicy",` +
-			`"actions":["alertOnly"],"resources":[{"designatorType":"Attributes",` +
+			`"actions":["disable"],"resources":[{"designatorType":"Attributes",` +
 			`"attributes":{"kind":".*"}}],"posturePolicies":[{"controlID":"^C-0016$"}],` +
 			`"name":"second"}]`,
 	} {
@@ -641,7 +721,7 @@ func TestNonDuplicateExceptionsStillLoad(t *testing.T) {
 // real generated artifact and every live scan document (2215 posture + 117 CVE
 // objects), there are ZERO case-variant sibling keys.
 func TestCaseVariantDuplicateKeysAreRejected(t *testing.T) {
-	raw := `[{"name":"p","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+	raw := `[{"name":"p","policyType":"postureExceptionPolicy","actions":["disable"],` +
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Job$"},` +
 		`"Attributes":{"kind":".*"}}],"posturePolicies":[{"controlID":"^C-0016$"}]}]`
 
@@ -675,7 +755,7 @@ func TestPatternThatCanOnlyMatchEmptyIsRejected(t *testing.T) {
 		t.Run(pattern, func(t *testing.T) {
 			exc := filepath.Join(t.TempDir(), "exceptions.json")
 			writeRaw(t, exc, `[{"name":"vacuous","policyType":"postureExceptionPolicy",`+
-				`"actions":["alertOnly"],`+
+				`"actions":["disable"],`+
 				`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Deployment$"}}],`+
 				`"posturePolicies":[{"controlID":"`+pattern+`"}]}]`)
 
@@ -702,7 +782,7 @@ func TestPatternsThatCanMatchSomethingStillLoad(t *testing.T) {
 		t.Run(pattern, func(t *testing.T) {
 			exc := filepath.Join(t.TempDir(), "exceptions.json")
 			writeRaw(t, exc, `[{"name":"real","policyType":"postureExceptionPolicy",`+
-				`"actions":["alertOnly"],`+
+				`"actions":["disable"],`+
 				`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Deployment$"}}],`+
 				`"posturePolicies":[{"controlID":"`+pattern+`"}]}]`)
 
@@ -726,7 +806,7 @@ func TestPatternsThatCanMatchSomethingStillLoad(t *testing.T) {
 // walker malformed input.
 func TestMalformedArtifactTerminatesInsteadOfHanging(t *testing.T) {
 	for _, raw := range []string{
-		`[{"name":"v","policyType":"postureExceptionPolicy","actions":["alertOnly"],` +
+		`[{"name":"v","policyType":"postureExceptionPolicy","actions":["disable"],` +
 			`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^D$"}}],` +
 			`"posturePolicies":[{"controlID":"^[^\x00]$"}]}]`,
 		`[{"name":"v",`,
@@ -767,7 +847,7 @@ func TestMalformedArtifactTerminatesInsteadOfHanging(t *testing.T) {
 // strings.EqualFold reports them equal. So a lowercase-keyed `seen` set treats
 // them as distinct and the wildcard still lands.
 func TestUnicodeCaseAliasDuplicateIsRejected(t *testing.T) {
-	raw := "[{\"name\":\"p\",\"policyType\":\"postureExceptionPolicy\",\"actions\":[\"alertOnly\"]," +
+	raw := "[{\"name\":\"p\",\"policyType\":\"postureExceptionPolicy\",\"actions\":[\"disable\"]," +
 		"\"resources\":[{\"designatorType\":\"Attributes\",\"attributes\":{\"kind\":\"^Job$\"}," +
 		"\"attributeſ\":{\"kind\":\".*\"}}],\"posturePolicies\":[{\"controlID\":\"^C-0016$\"}]}]"
 

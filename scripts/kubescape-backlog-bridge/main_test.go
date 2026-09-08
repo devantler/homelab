@@ -1117,7 +1117,7 @@ func TestCVEDocumentWithoutSeverityBucketsIsRejected(t *testing.T) {
 // across every framework, so it is refused rather than silently widened.
 func TestFrameworkScopedExceptionIsRejected(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "exceptions.json")
-	writeRaw(t, path, `[{"name":"fw","policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	writeRaw(t, path, `[{"name":"fw","policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":".*"}}],`+
 		`"posturePolicies":[{"controlID":"^C-0016$","frameworkName":"^nsa$"}]}]`)
 
@@ -1677,7 +1677,7 @@ func TestFilteredAllClearSaysTheFindingsWereExcepted(t *testing.T) {
 	dir := t.TempDir()
 
 	exc := filepath.Join(dir, "exceptions.json")
-	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Deployment$"}}],`+
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`)
 
@@ -1731,7 +1731,7 @@ func TestMixedFilteredReportDisclosesSuppression(t *testing.T) {
 	dir := t.TempDir()
 
 	exc := filepath.Join(dir, "exceptions.json")
-	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Deployment$"}}],`+
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`)
 
@@ -1766,7 +1766,7 @@ func TestFilteredReportThatSuppressedNothingMakesNoSuppressionClaim(t *testing.T
 	dir := t.TempDir()
 
 	exc := filepath.Join(dir, "exceptions.json")
-	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Deployment$"}}],`+
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`)
 
@@ -1801,7 +1801,7 @@ func TestSuppressionNoteDoesNotClaimCVEEntriesWereFiltered(t *testing.T) {
 	dir := t.TempDir()
 
 	exc := filepath.Join(dir, "exceptions.json")
-	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["alertOnly"],`+
+	writeRaw(t, exc, `[{"name":"accepted","policyType":"postureExceptionPolicy","actions":["disable"],`+
 		`"resources":[{"designatorType":"Attributes","attributes":{"kind":"^Deployment$"}}],`+
 		`"posturePolicies":[{"controlID":"^C-0016$"}]}]`)
 
