@@ -391,6 +391,48 @@ make_chain_first_fixture() {
 make_chain_first_fixture "$work/chain-first"
 expect "CHAIN-FIRST a direct invocation BEFORE a separator is still checked" 1 \
   "'scripts/fixture-target.sh' is invoked directly" "$work/chain-first"
+
+# GLUED SEMICOLON: bash needs no space before `;`, so `echo ready; scripts/x.sh`
+# yields the prefix word `ready;`. The classifier's `;` arm matches a SEPARATE
+# token only, so the word hit the catch-all and the occurrence was discarded —
+# a fail-open, since anti-vacuity was satisfied by the anchor. `;` is now split
+# into its own word before the walk.
+make_fixture "$work/semi-line" -x 'echo ready; scripts/fixture-target.sh' anchor
+expect "SEMI glued semicolon before a bare path is rejected" 1 \
+  "is tracked 100644, not 100755" "$work/semi-line"
+
+# The interpreter control, so the split cannot become "accept whatever follows a
+# semicolon".
+make_fixture "$work/semi-bash" -x 'echo ready; bash scripts/fixture-target.sh' anchor
+expect "SEMI interpreter after a glued semicolon stays accepted" 0 \
+  "" "$work/semi-bash"
+
+# The same shape inside a `run: |` block, which reaches the guard through the
+# line-leading branch rather than the `run:` branch — a separate extraction path,
+# so it needs its own fixture rather than being assumed equivalent.
+make_semi_block_fixture() {
+  local dir="$1"
+  mkdir -p "$dir/scripts" "$dir/.github/workflows"
+  cd "$dir"
+  git init -q .
+  git config user.email t@example.com
+  git config user.name t
+  printf '#!/usr/bin/env bash\necho hi\n' > scripts/fixture-target.sh
+  printf '#!/usr/bin/env bash\necho anchor\n' > scripts/fixture-anchor.sh
+  {
+    printf 'jobs:\n  j:\n    steps:\n      - run: |\n'
+    printf '          echo ready; scripts/fixture-target.sh\n'
+    printf '      - run: ./scripts/fixture-anchor.sh\n'
+  } > .github/workflows/w.yaml
+  git add -A
+  git update-index --chmod=-x scripts/fixture-target.sh
+  git update-index --chmod=+x scripts/fixture-anchor.sh
+  git -c commit.gpgsign=false commit -qm fixture
+  cd - > /dev/null
+}
+make_semi_block_fixture "$work/semi-block"
+expect "SEMI glued semicolon inside a run block is rejected" 1 \
+  "is tracked 100644, not 100755" "$work/semi-block"
 if ((failures > 0)); then
   echo "::error::$failures exec-bit guard assertion(s) failed"
   exit 1

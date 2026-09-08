@@ -184,6 +184,19 @@ while IFS= read -r occurrence; do
   # which would have judged all three correctly, never ran on them. Extraction
   # now captures however many words sit in front of the path and every decision
   # is made here, where a form that is not provably still an exec is discarded.
+  # 🔴 `;` BINDS TO THE PRECEDING WORD, SO IT MUST BE TOKENISED, NOT JUST MATCHED.
+  #
+  # Bash needs no whitespace before a semicolon, so `echo ready; scripts/x.sh`
+  # yields the prefix word `ready;` — which hits the catch-all and discards the
+  # occurrence, while the `;` arm below never sees it. That is a fail-open: a
+  # directly-execed script tracked 100644 goes unchecked whenever another
+  # invocation satisfies anti-vacuity. Splitting `;` into its own word here lets
+  # the existing separator arm do its job, and does it in the CLASSIFIER rather
+  # than in extraction on purpose — a `;` inside a quoted string still only
+  # yields a stray reset within one occurrence's prefix, where the words around
+  # it are still judged, instead of manufacturing a new command position for the
+  # whole line the way an extraction split would.
+  prefix="${prefix//;/ ; }"
   read -ra prefix_tokens <<<"$prefix"
   reaches_path=1
   saw_wrapper=0
