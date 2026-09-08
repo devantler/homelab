@@ -167,6 +167,20 @@ spec:
       # ~24x. (Applies to newly-created BackupRepositories; existing ones keep
       # their stored frequency until recreated.)
       defaultRepoMaintainFrequency: 24h
+      repositoryMaintenanceJob:
+        repositoryConfigData:
+          global:
+            # Maintenance runs in separate Jobs and does not inherit the server's
+            # resources below. Explicitly preserve its 16:1 memory headroom: the
+            # namespace's 512Mi limit OOMKills full Kopia maintenance, even when a
+            # later retry succeeds and makes BackupRepository Ready again. The
+            # ratio also survives any RequestsAndLimits VPA admission adjustment.
+            podResources:
+              cpuRequest: 15m
+              cpuLimit: 500m
+              memoryRequest: 128Mi
+              memoryLimit: 2Gi
+            keepLatestMaintenanceJobs: 3
       features: ""
 
     # Velero runs a SINGLE replica — this is correct, not a gap, and is why
