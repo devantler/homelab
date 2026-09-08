@@ -4,7 +4,11 @@ metadata:
   name: allow-cnpg
   namespace: cnpg-system
 spec:
-  endpointSelector: {}
+  # The namespace also hosts the Barman plugin; only the operator manages DBs.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: cloudnative-pg
+      app.kubernetes.io/instance: cloudnative-pg
   ingress:
     # Webhook from kube-apiserver (hostNetwork on control plane nodes)
     - fromEntities:
@@ -23,6 +27,8 @@ spec:
     - toEndpoints:
         - matchExpressions:
             - key: k8s:io.kubernetes.pod.namespace
+              operator: Exists
+            - key: k8s:cnpg.io/cluster
               operator: Exists
       toPorts:
         - ports:
