@@ -77,7 +77,7 @@ spec:
               # StartError exit 128 "stat /bin/sh: no such file or directory"
               # (observed live 2026-07-02). alpine/k8s ships kubectl + a POSIX
               # shell; the tag tracks the kubectl minor, matching the cluster.
-              image: docker.io/alpine/k8s:1.36.2@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47
+              image: docker.io/alpine/k8s:1.37.0@sha256:b421c2e9419edb98db39b6ab641669f4db7bb2acf354f22450c6b7e7176d1ff4
               securityContext:
                 seLinuxOptions: {}
                 allowPrivilegeEscalation: false
