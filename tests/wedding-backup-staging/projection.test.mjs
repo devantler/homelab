@@ -13,6 +13,10 @@ test('true compares only the fixed dedicated pairs and returns no source-decrypt
  assert.deepEqual(result,{verified:true,projectionEqual:true,liveSourceStable:true});
  assert.equal(h.reads.filter(x=>x==='bootstrapSecret').length,2);
  assert.equal(h.reads.filter(x=>x==='projectedSecret').length,2);
+ assert.deepEqual(h.bindings,[
+  {sourceSha:'f'.repeat(40),recipeSha:'a'.repeat(40),digest:'sha256:'+'b'.repeat(64)},
+  {sourceSha:'f'.repeat(40),recipeSha:'a'.repeat(40),digest:'sha256:'+'b'.repeat(64)}
+ ]);
  assert.deepEqual(h.calls,[]);
  assert.equal(JSON.stringify(result).includes(id),false);
  assert.equal(JSON.stringify(result).includes(secret),false);

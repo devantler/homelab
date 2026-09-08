@@ -2,7 +2,7 @@ import { targets } from '../../scripts/wedding-backup-projection.mjs';
 export const sha = 'a'.repeat(40), digest = `sha256:${'b'.repeat(64)}`;
 export const id = 'c'.repeat(32), secret = 'd'.repeat(64);
 export const enc = s => Buffer.from(s).toString('base64');
-export const opts = { sourceSha: sha, recipeSha: sha, digest, endpoint: `https://${'e'.repeat(32)}.r2.cloudflarestorage.com` };
+export const opts = { sourceSha: 'f'.repeat(40), recipeSha: sha, digest, endpoint: `https://${'e'.repeat(32)}.r2.cloudflarestorage.com` };
 export const invocation = { repository: 'devantler-tech/platform', event: 'workflow_dispatch', ref: 'refs/heads/main', sha, checkout: sha, attempt: '1', run: '12345', workflowRef:'devantler-tech/platform/.github/workflows/cd.yaml@refs/heads/main', workflowSha:sha };
 const ready = { conditions: [{ type: 'Ready', status: 'True' }], observedGeneration: 1 };
 export function fixtures() {
@@ -41,14 +41,14 @@ export function fixtures() {
 }
 export function harness(change = () => {}, invocationPatch = {}) {
   const docs = fixtures(); change(docs);
-  const reads = [], calls = [], receipts = [];
+  const reads = [], calls = [], receipts = [], bindings = [];
   const deps = {
     invocation: { ...invocation, ...invocationPatch },
     read: async target => { reads.push(target.id); return structuredClone(docs[target.id]); },
     decrypt: async () => { calls.push('decrypt'); return {access_key_id:id,secret_access_key:secret}; },
-    sourceUnchanged: async () => true,
+    sourceUnchanged: async binding => { bindings.push(structuredClone(binding)); return true; },
     probe: async () => { throw Error('S3 execution is forbidden'); },
     record: async () => { throw Error('Private identity recording is forbidden'); }
   };
-  return { docs, reads, calls, receipts, deps };
+  return { docs, reads, calls, receipts, bindings, deps };
 }

@@ -8,6 +8,9 @@ export async function run(env){
  try{
   if(env.WEDDING_BACKUP_VERIFY!=='true'||env.WEDDING_BACKUP_PUBLISH_RESULT!=='success'||env.WEDDING_BACKUP_WAIT_RESULT!=='success')throw Error('refused');
   const workspace=await realpath(env.GITHUB_WORKSPACE),recipeDirectory=await realpath(path.dirname(fileURLToPath(import.meta.url)));
+  // CD's default checkout publishes GITHUB_SHA. Preserve that event identity;
+  // the source guard refuses a different workflow revision instead of claiming
+  // that GITHUB_WORKFLOW_SHA was the checkout which produced the artifact.
   const options={enabled:true,sourceSha:env.GITHUB_SHA,recipeSha:env.GITHUB_WORKFLOW_SHA,digest:env.WEDDING_BACKUP_DIGEST};
   const sourceUnchanged=await createSourceGuard({workspace,recipeDirectory,sourceSha:options.sourceSha,recipeSha:options.recipeSha,cipherSha:env.WEDDING_BACKUP_CIPHER_SHA256,bootstrapSha:env.WEDDING_BACKUP_BOOTSTRAP_SHA256,git:await realpath(env.WEDDING_BACKUP_GIT_BIN)});
   const result=await verifyProjection(options,{

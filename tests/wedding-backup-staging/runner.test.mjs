@@ -23,7 +23,7 @@ test('real one-use CLI joins same-job publication and compares only two syntheti
  const result=JSON.parse(stdout);assert.deepEqual(result,{verified:true,projectionEqual:true,liveSourceStable:true,sourceSha:f.commit,digest,run:'12345'});
  const reads=(await readFile(path.join(f.dir,'reads'),'utf8')).trim().split('\n');assert.equal(reads.length,18);assert.equal(reads.filter(x=>x.includes('/Secret/')).length,4);assert.equal(stdout.includes(id)||stdout.includes(secret),false);
 });
-for(const [label,patch] of [['failed wait',{WEDDING_BACKUP_WAIT_RESULT:'failure'}],['missing digest',{WEDDING_BACKUP_DIGEST:''}],['wrong invocation',{GITHUB_EVENT_NAME:'pull_request'}],['rerun',{GITHUB_RUN_ATTEMPT:'2'}],['wrong ciphertext',{WEDDING_BACKUP_CIPHER_SHA256:'f'.repeat(64)}]])test('real CLI '+label+' makes no API reads',async t=>{
+for(const [label,patch] of [['failed wait',{WEDDING_BACKUP_WAIT_RESULT:'failure'}],['missing digest',{WEDDING_BACKUP_DIGEST:''}],['wrong invocation',{GITHUB_EVENT_NAME:'pull_request'}],['rerun',{GITHUB_RUN_ATTEMPT:'2'}],['wrong ciphertext',{WEDDING_BACKUP_CIPHER_SHA256:'f'.repeat(64)}],['different workflow revision',{GITHUB_WORKFLOW_SHA:'f'.repeat(40)}],['different event revision',{GITHUB_SHA:'f'.repeat(40)}]])test('real CLI '+label+' makes no API reads',async t=>{
  const f=await fixture(t);let result;
  try{execFileSync(node,[path.join(f.dir,'scripts/verify-wedding-backup-staging.mjs')],{cwd:f.dir,env:{...f.env,...patch},encoding:'utf8',stdio:['ignore','pipe','pipe']});assert.fail('accepted');}catch(e){assert.equal(e.status,2);assert.equal(e.stderr,'');result=e.stdout;}
  assert.deepEqual(JSON.parse(result),{verified:false});await assert.rejects(readFile(path.join(f.dir,'reads')));
