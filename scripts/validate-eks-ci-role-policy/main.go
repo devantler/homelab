@@ -1784,7 +1784,31 @@ const (
 // the identical parsed resource. Chart 12.1.0 renders the four resource values
 // into the existing maintenance ConfigMap, preserving three retained Jobs.
 // Previous aggregate: 78ec24f102127ad42d3a005ad6fcdd4f86c4a8df3eaca7679b21aff53f0d0b35.
-const expectedRenderedSurfaceSHA = "165ed85b44e9dd5434d606854776a38aa40e82515ffb6b767ecd77f6cfab579a"
+// Refreshed for #3666's actual-budget sidecar bump. The enablebanking-seed
+// container in the actual-budget HelmRelease moves from actual-server:26.8.1 to
+// 26.9.0; that HelmRelease is itself a selected authorization-capable document,
+// so a container image tag alone moves the aggregate. No rule, verb, resource,
+// group, subject, ServiceAccount, role reference, trust policy, permission
+// boundary or substitution source is in the diff. Conservation comes from this
+// validator's own finer-grained controls: CI run 34244390357 at head fc8bbda2
+// reported exactly one error class — this fingerprint — with zero per-resource
+// mismatches and zero missing or duplicate identities, and that loop walks
+// actual-vs-expected and expected-vs-actual separately, so surface membership
+// and every pinned grant-bearing RBAC and ServiceAccount document are conserved
+// in BOTH directions. The branch also trails main on two exact-pinned chart
+// versions (flagger, vertical-pod-autoscaler): both merged into main AFTER the
+// superseded value was approved in #3670, and main still passes that value, so
+// exactPinnedHelmChartVersion normalises them and the sidecar tag is the sole
+// driver. Reproduced independently off CI: repositoryInputs renders through
+// renderAuthorizationLayers directly, so it does not pass run()'s renderer gate,
+// and this tree rendered under kubectl v1.36.1 yields the identical digest that
+// CI's v1.36.2 published. Restoring the superseded value fails with exactly this
+// fingerprint, so the baseline is not vacuous, and the whole package suite is
+// green — which is what re-arms the mutation controls that append an attacker
+// ClusterRoleBinding to cluster-admin, or a KRO Tenant, since every one of them
+// passes trivially while the baseline is red.
+// Previous aggregate: 165ed85b44e9dd5434d606854776a38aa40e82515ffb6b767ecd77f6cfab579a.
+const expectedRenderedSurfaceSHA = "fc59566d0ec91c68279981d90f2d14470280025b05f7f1874d9c0e56cd93574f"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
