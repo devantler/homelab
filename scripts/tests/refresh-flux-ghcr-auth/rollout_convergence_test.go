@@ -282,7 +282,12 @@ func TestRemovedTargetRequiresAuthoritativeUnambiguousInventory(t *testing.T) {
 	}
 }
 
-func TestDeselectionCannotEmptyTheRequiredTargetSet(t *testing.T) {
+// Autoscaled nodes are removed routinely, so every selected target disappearing
+// is churn rather than a failed rollout: two fresh inventories have already
+// proved that no live node needs synchronization. Take another whole convergence
+// round instead of failing the queue, and cut the root credential over only once
+// a round completes having deselected nothing.
+func TestDeselectionEmptyingTheTargetSetTakesAnotherConvergenceRound(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	result := f.runHelper(validConfig(), nil, map[string]string{
@@ -290,11 +295,22 @@ func TestDeselectionCannotEmptyTheRequiredTargetSet(t *testing.T) {
 		"FAKE_TALOS_VERIFIED_IMAGE":        "ghcr.io/devantler-tech/ksail:v7.166.0",
 		"FAKE_NODE_REMOVED_BEFORE_PROCESS": "prod-worker-1 prod-control-plane-1",
 	})
-	requireFailureResult(t, result)
-	requireContains(t, result.stdout+result.stderr, "empty successful rollout")
+	requireSuccessResult(t, result)
+	requireContains(t, result.stdout+result.stderr, "deselected")
+	requireNotContains(t, result.stdout+result.stderr, "empty successful rollout")
 	operations := readLines(f.operationLog)
-	requireNoLine(t, operations, "root-patch")
+	// The targets vanished before any of them was touched, so nothing was mutated.
 	requireNotContains(t, strings.Join(operations, "\n"), "talos-revision:")
+	// Root auth still waits for a convergence round that deselects nothing.
+	fanoutPasses := lineIndices(operations, "variables-patch")
+	if len(fanoutPasses) < 2 {
+		t.Fatalf("fanout pass count = %d, want at least 2", len(fanoutPasses))
+	}
+	rootCutover := lineIndex(t, operations, "root-patch")
+	if fanoutPasses[1] >= rootCutover {
+		t.Errorf("root cutover did not follow a second convergence round: fanout=%d root=%d",
+			fanoutPasses[1], rootCutover)
+	}
 }
 
 func TestRemovedNodeAfterMutationStillFailsClosed(t *testing.T) {

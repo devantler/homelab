@@ -3660,8 +3660,17 @@ sync_talos_registry_auth() {
         consecutive_clean_inventories=$((consecutive_clean_inventories + 1))
         if ((consecutive_clean_inventories >= 2)); then
           if ((deselected_any_node == 1 && processed_any_node == 0)); then
-            echo "::error::Every selected Talos target was removed before verification; refusing an empty successful rollout."
-            return 1
+            # Autoscaled nodes are removed routinely, so a target vanishing is
+            # churn rather than a failed rollout -- and each removal was proved
+            # against a fresh unambiguous inventory before it was deselected.
+            # Nothing was verified in this pass, though, so it must not stand in
+            # for the mutation-free pass root cutover requires: report it
+            # distinctly and let the caller converge again. The caller's bounded
+            # round loop still fails closed, with root auth unchanged, if the
+            # node set never settles.
+            echo "::notice::Every selected Talos target was removed before verification; converging again before any root credential change."
+            printf '%s\n' deselected >"${sync_result_file}"
+            return 0
           fi
           if ((processed_any_node == 1)); then
             printf '%s\n' processed >"${sync_result_file}"
