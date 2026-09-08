@@ -5,3 +5,4 @@ resources:
   - ../../../providers/docker/bootstrap
   - config-map.yaml
   - secret.enc.yaml
+  - secret-wedding-db-backup-r2.enc.yaml

@@ -10,6 +10,10 @@ description: >-
   secret is passed in as an input.
 
 inputs:
+  verify-wedding-backup-staging:
+    description: Compare the staged dedicated wedding backup credential during an opted-in manual deployment.
+    required: false
+    default: "false"
   sops-age-key:
     description: SOPS Age private key (secrets.SOPS_AGE_KEY) for decrypting SOPS-encrypted manifests.
     required: true
@@ -296,6 +300,26 @@ runs:
       env:
         PLATFORM_MANIFEST_DIGEST: ${{ steps.publish_platform_manifest.outputs.digest }}
       run: ./scripts/wait-for-platform-flux-revision.sh "${PLATFORM_MANIFEST_DIGEST}"
+
+    - name: Verify staged wedding backup credential
+      id: verify_wedding_backup_staging
+      shell: bash
+      env:
+        WEDDING_BACKUP_VERIFY: ${{ inputs.verify-wedding-backup-staging }}
+        WEDDING_BACKUP_PUBLISH_RESULT: ${{ steps.publish_platform_manifest.outcome }}
+        WEDDING_BACKUP_WAIT_RESULT: ${{ steps.wait_flux_revision.outcome }}
+        WEDDING_BACKUP_DIGEST: ${{ steps.publish_platform_manifest.outputs.digest }}
+        # Approved encrypted input and its bootstrap resource membership.
+        WEDDING_BACKUP_CIPHER_SHA256: d6bb515a499858776b042800164b8804ca1685c7f6f8e500d91eaf5e8380b906
+        WEDDING_BACKUP_BOOTSTRAP_SHA256: ce03b858d87dd669a5a67c552af6f85790f8ebb57f535c066fd3b62c60a4eda7
+      run: |
+        if [[ "${WEDDING_BACKUP_VERIFY}" == "false" || -z "${WEDDING_BACKUP_VERIFY}" ]]; then
+          exit 0
+        fi
+        WEDDING_BACKUP_KUBECTL_BIN="$(command -v kubectl)"
+        WEDDING_BACKUP_GIT_BIN="$(command -v git)"
+        export WEDDING_BACKUP_KUBECTL_BIN WEDDING_BACKUP_GIT_BIN
+        node scripts/verify-wedding-backup-staging.mjs
 
     - name: 🧪 Verify the Longhorn UI baseline canary
       id: verify_longhorn_ui_baseline

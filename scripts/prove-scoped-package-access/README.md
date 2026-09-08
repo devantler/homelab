@@ -50,6 +50,15 @@ authorization. No response text, headers, endpoints, package identities, digests
 or underlying error messages are printed. Metadata and full-download failures
 retain their fixed reason codes.
 
+An own-image manifest 404 gets one bounded diagnostic comparison: re-read the
+same digest with the baseline, repeat the candidate read, re-read the baseline,
+then revalidate the candidate's exact repository scope. A stable mismatch emits
+`scoped_own_manifest_not_visible_with_live_controls`. A failed baseline, changed
+candidate response, or unverified scope keeps its specific postcheck reason.
+Every outcome on this path remains UNKNOWN. The comparison establishes observed
+visibility only; it does not explain the authorization cause, prove a full
+candidate pull, or test the cross-package boundary.
+
 A missing image, throttling, server error, redirect or malformed response never
 counts as a successful restriction. A failed or unknown run does not authorize
 registry-authentication changes. The spike's result must be recorded before its

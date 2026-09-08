@@ -1784,12 +1784,93 @@ const (
 // the identical parsed resource. Chart 12.1.0 renders the four resource values
 // into the existing maintenance ConfigMap, preserving three retained Jobs.
 // Previous aggregate: 78ec24f102127ad42d3a005ad6fcdd4f86c4a8df3eaca7679b21aff53f0d0b35.
-// Refreshed for #3686's Kubescape host-data lifecycle reconciler. Against main
-// 7e622a38, the added identity can only list core Nodes and list/delete the ten
-// hostdata.kubescape.cloud resource classes. Its sole workload is the bounded,
-// non-overlapping cleanup CronJob; no existing identity or binding changed.
-// Previous aggregate: 165ed85b44e9dd5434d606854776a38aa40e82515ffb6b767ecd77f6cfab579a.
-const expectedRenderedSurfaceSHA = "46dcf33cf5292c88b2b3d2f0a449456e866c5836585d8ea5f697e361ce17d8bc"
+// Refreshed for #3666's actual-budget sidecar bump. The enablebanking-seed
+// container in the actual-budget HelmRelease moves from actual-server:26.8.1 to
+// 26.9.0; that HelmRelease is itself a selected authorization-capable document,
+// so a container image tag alone moves the aggregate. No rule, verb, resource,
+// group, subject, ServiceAccount, role reference, trust policy, permission
+// boundary or substitution source is in the diff. Conservation comes from this
+// validator's own finer-grained controls: CI run 34244390357 at head fc8bbda2
+// reported exactly one error class — this fingerprint — with zero per-resource
+// mismatches and zero missing or duplicate identities, and that loop walks
+// actual-vs-expected and expected-vs-actual separately, so surface membership
+// and every pinned grant-bearing RBAC and ServiceAccount document are conserved
+// in BOTH directions. The branch also trails main on two exact-pinned chart
+// versions (flagger, vertical-pod-autoscaler): both merged into main AFTER the
+// superseded value was approved in #3670, and main still passes that value, so
+// exactPinnedHelmChartVersion normalises them and the sidecar tag is the sole
+// driver. Reproduced independently off CI: repositoryInputs renders through
+// renderAuthorizationLayers directly, so it does not pass run()'s renderer gate,
+// and this tree rendered under kubectl v1.36.1 yields the identical digest that
+// CI's v1.36.2 published. Restoring the superseded value fails with exactly this
+// fingerprint, so the baseline is not vacuous, and the whole package suite is
+// green — which is what re-arms the mutation controls that append an attacker
+// ClusterRoleBinding to cluster-admin, or a KRO Tenant, since every one of them
+// passes trivially while the baseline is red.
+//
+// Moved again by the metrics-server baseline security defaults (#3676): the
+// chart values gain a pod-level fsGroupChangePolicy: OnRootMismatch and a
+// container-level seLinuxOptions: {}, so the rendered Deployment carries two
+// more securityContext fields.
+//
+// CONSERVATION, read off the check's own error set, which walks actual→expected
+// and expected→actual separately. The failing run reported EXACTLY ONE error
+// class — this aggregate — with ZERO `unapproved rendered <identity>`, ZERO
+// `missing rendered authorization resource` and ZERO `duplicate rendered`. So
+// membership is conserved in both directions and every pinned per-identity
+// fingerprint still passes; no subject, grant, binding or ServiceAccount moved.
+// A Deployment is not a grant-bearing kind, and the 17 `unresolved Flux
+// substitution` notes are the usual companions of a mismatch, not a second
+// finding.
+//
+// The authored delta is confined to one Deployment's securityContext. Rendering
+// the chart at its pinned 3.14.0 with and without these values differs by
+// exactly the two added fields and nothing else: the pinned runAsUser, dropped
+// capabilities, read-only root filesystem and seccomp profile are all preserved
+// by Helm's map merge, and image, volumes, replicas and the disruption budget
+// are untouched.
+//
+// RENDERER PROVENANCE, on the same terms as the entries above: measured on this
+// host's kubectl v1.36.1 with kustomize v5.8.1 through the test path, which
+// renders via renderAuthorizationLayers and so does not pass run()'s renderer
+// gate. CI's SHA256-verified kubectl v1.36.2 is what approves this constant, and
+// if it computes a different aggregate the check fails closed and reports the
+// value it computed. Restoring the superseded value fails with exactly this
+// fingerprint, so the baseline is not vacuous.
+// Previous aggregate: fc59566d0ec91c68279981d90f2d14470280025b05f7f1874d9c0e56cd93574f.
+//
+// Moved again by merging main into this branch. Both sides had re-approved this
+// constant independently — main for the metrics-server baseline security
+// defaults, this branch for #3686's Kubescape host-data lifecycle reconciler —
+// so the merged tree renders an aggregate neither side carried. Superseded value
+// 46dcf33cf5292c88b2b3d2f0a449456e866c5836585d8ea5f697e361ce17d8bc.
+//
+// MEMBERSHIP, rendered directly rather than inferred. This branch deliberately
+// ADDS an identity, so the usual both-directions conservation claim does not
+// apply and was not made. Rendering all five authorization overlays on the
+// merged tree and on main 5eecbd43 and diffing grant-bearing identities gives
+// 86 against 83: exactly three ADDED — ClusterRole and ClusterRoleBinding
+// kubescape-hostdata-cleanup, and ServiceAccount kubescape/kubescape-hostdata-
+// cleanup — and ZERO REMOVED. That is precisely this branch's declared delta,
+// so the merge introduced nothing beyond the union of the two intended changes.
+// The check's own error set agrees from the other side: exactly ONE error class
+// — this aggregate — with ZERO `missing rendered authorization resource` and
+// ZERO `duplicate rendered`, so nothing main had was dropped. The 34
+// `unresolved Flux substitution` notes are the usual companions of a mismatch.
+//
+// The added grant is bounded: list on core Nodes, and list/delete on exactly the
+// ten hostdata.kubescape.cloud resource classes. No wildcard verb or resource,
+// no secret access, and the binding names only the dedicated ServiceAccount.
+//
+// RENDERER PROVENANCE, on the same terms as the entries above, plus a control
+// this host can run: main at 5eecbd43 PASSES here under kubectl v1.36.1 with
+// kustomize v5.8.1 against the constant CI approved, so this renderer reproduces
+// CI's digest and the value below is not a local artifact. CI's SHA256-verified
+// v1.36.2 remains the authority and fails closed with the value it computed.
+// Restoring the superseded value fails with exactly this fingerprint, so the
+// baseline is not vacuous.
+// Previous aggregate: 1b17b64243f850afd2acc2b8af2fa5ed270e3a88d42db80437d2de40d7861a12.
+const expectedRenderedSurfaceSHA = "36049e7ea4817e1d3006e504eea95495341d2c0acbd3ffa5990981b4bf0e4335"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.

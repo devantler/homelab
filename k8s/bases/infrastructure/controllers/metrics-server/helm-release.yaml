@@ -19,6 +19,26 @@ spec:
   # https://github.com/kubernetes-sigs/metrics-server/blob/master/charts/metrics-server/values.yaml
   values:
     replicas: ${metrics_server_replicas:=2}
+    # fsGroupChangePolicy and seLinuxOptions are the two non-privilege C-0211
+    # fields the cluster-wide add-security-context mutation cannot supply here:
+    # that mutation rewrites the running POD, while Kubescape scores the STORED
+    # workload spec (#3239). Writing them into the chart values is the only
+    # route that moves both surfaces. They land under two different chart value
+    # keys: podSecurityContext renders pod-level, securityContext container-level.
+    podSecurityContext:
+      # Inert today, which is the point: this Deployment mounts only emptyDir and
+      # sets no fsGroup, so OnRootMismatch changes no ownership on any volume. It
+      # is a declared default that holds if a future chart revision adds one.
+      fsGroupChangePolicy: OnRootMismatch
+    securityContext:
+      # Preserve runtime SELinux/MCS label allocation. An empty object satisfies
+      # C-0211, which accepts any non-absent seLinuxOptions, without pinning a
+      # level the node would otherwise allocate per-container (#3465).
+      #
+      # Helm merges this map into the chart's own securityContext, so the pinned
+      # user, dropped capabilities, read-only root filesystem and seccomp profile
+      # are all preserved; the rendered container gains this one field.
+      seLinuxOptions: {}
     podDisruptionBudget:
       enabled: true
       # Stays minAvailable: 1: ksail bootstrap-installs metrics-server (ksail.yaml

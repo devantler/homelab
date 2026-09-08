@@ -14,7 +14,7 @@ spec:
   chart:
     spec:
       chart: fleet
-      version: v7.0.16
+      version: v7.0.17
       sourceRef:
         kind: HelmRepository
         name: fleetdm
@@ -175,7 +175,7 @@ spec:
                       # CrashLoopBackOff if MySQL data is lost (e.g. PVC recreation
                       # after storage failures).
                       - name: fleet-db-init
-                        image: fleetdm/fleet:v4.90.1
+                        image: fleetdm/fleet:v4.90.2
                         command: ["fleet", "prepare", "db"]
                         securityContext:
                           runAsUser: 100

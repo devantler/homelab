@@ -225,18 +225,46 @@ func (p proof) result(code int, reason string, diagnostics ...registryDiagnostic
 	return code
 }
 
-// run compares immutable private packages with independent baseline and anonymous controls.
-func (p proof) run(ctx context.Context) int {
-	if p.baseline.username == "" || p.baseline.password == "" || p.scoped.password == "" || p.baseline.password == p.scoped.password {
-		return p.result(2, "independent_credentials_required")
-	}
+// repositoryScopeValid decodes a fresh response on every check: missing fields
+// must never inherit the identity verified by an earlier request.
+func (p proof) repositoryScopeValid(ctx context.Context) bool {
 	var scope struct {
 		TotalCount   int `json:"total_count"`
 		Repositories []struct {
 			FullName string `json:"full_name"`
 		} `json:"repositories"`
 	}
-	if !p.metadata(ctx, "/installation/repositories?per_page=100", p.scoped.password, &scope) || scope.TotalCount != 1 || len(scope.Repositories) != 1 || scope.Repositories[0].FullName != "devantler-tech/wedding-app" {
+	return p.metadata(ctx, "/installation/repositories?per_page=100", p.scoped.password, &scope) && scope.TotalCount == 1 && len(scope.Repositories) == 1 && scope.Repositories[0].FullName == "devantler-tech/wedding-app"
+}
+
+// diagnoseOwnNotFound brackets one repeated candidate read with independent
+// exact-digest controls. A stable 404 establishes a visibility mismatch only;
+// it does not identify the authorization cause or complete either proof half.
+func (p proof) diagnoseOwnNotFound(ctx context.Context, repository, digest string, original registryRead) int {
+	baseline := p.manifest(ctx, p.baseline, repository, digest)
+	if baseline.status != http.StatusOK {
+		return p.result(2, "baseline_postcheck_unavailable", baseline.diagnostic)
+	}
+	repeated := p.manifest(ctx, p.scoped, repository, digest)
+	if repeated.diagnostic != original.diagnostic {
+		return p.result(2, "scoped_own_postcheck_changed", repeated.diagnostic)
+	}
+	baseline = p.manifest(ctx, p.baseline, repository, digest)
+	if baseline.status != http.StatusOK {
+		return p.result(2, "baseline_postcheck_unavailable", baseline.diagnostic)
+	}
+	if !p.repositoryScopeValid(ctx) {
+		return p.result(2, "token_repository_scope_postcheck_unverified")
+	}
+	return p.result(2, "scoped_own_manifest_not_visible_with_live_controls", original.diagnostic)
+}
+
+// run compares immutable private packages with independent baseline and anonymous controls.
+func (p proof) run(ctx context.Context) int {
+	if p.baseline.username == "" || p.baseline.password == "" || p.scoped.password == "" || p.baseline.password == p.scoped.password {
+		return p.result(2, "independent_credentials_required")
+	}
+	if !p.repositoryScopeValid(ctx) {
 		return p.result(2, "token_repository_scope_unverified")
 	}
 	repositories := []string{"wedding-app", "ascoachingogvaner"}
@@ -273,6 +301,9 @@ func (p proof) run(ctx context.Context) int {
 	// A successful own pull includes the image's blobs, not just its manifest.
 	ownRead := p.manifest(ctx, p.scoped, repositories[0], digests[0])
 	ownStatus := ownRead.status
+	if ownRead.diagnostic == (registryDiagnostic{phase: "manifest", status: http.StatusNotFound, class: "http_status"}) {
+		return p.diagnoseOwnNotFound(ctx, repositories[0], digests[0], ownRead)
+	}
 	if ownStatus != 200 && !denied(ownStatus) {
 		return p.result(2, "scoped_own_read_unavailable", ownRead.diagnostic)
 	}
@@ -299,9 +330,7 @@ func (p proof) run(ctx context.Context) int {
 	}
 	// Rebind the installation identity too; otherwise two denied reads from an
 	// expired token would falsely refute an otherwise usable authentication path.
-	scope.TotalCount = 0
-	scope.Repositories = nil
-	if !p.metadata(ctx, "/installation/repositories?per_page=100", p.scoped.password, &scope) || scope.TotalCount != 1 || len(scope.Repositories) != 1 || scope.Repositories[0].FullName != "devantler-tech/wedding-app" {
+	if !p.repositoryScopeValid(ctx) {
 		return p.result(2, "token_repository_scope_postcheck_unverified")
 	}
 	if denied(ownStatus) {
