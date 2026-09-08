@@ -59,7 +59,7 @@ jq -e --argjson required_inputs '[
 jq -e --arg setup "$SETUP_TRIVY" --arg behavior_run "$BEHAVIORAL_RUN" '
   .jobs.validate as $gate
   | (($gate.if // "") ==
-      "github.event_name == '\''pull_request'\'' && (needs.changes.outputs.k8s == '\''true'\'' || needs.changes.outputs.bridge_validation == '\''true'\'')")
+      "github.event_name == '\''pull_request'\'' && (needs.changes.outputs.k8s == '\''true'\'' || needs.changes.outputs.bridge_validation == '\''true'\'' || needs.changes.outputs.exec_bit == '\''true'\'')")
   and (($gate["continue-on-error"] // false) == false)
   and any($gate.steps[];
       (.uses // "") == $setup and .with.version == "v0.74.0")
