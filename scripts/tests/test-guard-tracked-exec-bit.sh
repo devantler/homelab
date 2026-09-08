@@ -183,6 +183,34 @@ make_filter_fixture() {
 }
 make_filter_fixture "$work/filter"
 expect "FILTER quoted path-filter entry is not an invocation" 0 "exec-bit guard OK" "$work/filter"
+
+# .GITHUB BEYOND .GITHUB/SCRIPTS: a composite action ships its own scripts, and
+# `.github/actions/<name>/check.sh` is executed by a run step exactly as an
+# installer under .github/scripts is. Inventorying only .github/scripts left that
+# path outside BOTH the mode inventory and the path regex, so the guard could not
+# find its mode and reported success over it while another invocation kept the
+# sweep non-vacuous.
+make_fixture "$work/ghany" -x '.github/actions/example/check.sh' anchor \
+  '.github/actions/example/check.sh'
+expect "GHANY .github/actions 100644 is rejected" 1 "is tracked 100644, not 100755" "$work/ghany"
+
+# QUOTED BARE PATH IN A RUN STEP: YAML strips the quotes before the shell sees the
+# value, so `run: "scripts/x.sh"` is the same command as `run: scripts/x.sh` and
+# needs the bit. The quote allowance stays scoped to `run:` — a `paths:` entry is
+# also a quoted bare path and must keep being excluded, which FILTER below pins.
+make_fixture "$work/qbare" -x '"scripts/fixture-target.sh"' anchor
+expect "QBARE quoted bare run: command is rejected" 1 "is tracked 100644, not 100755" "$work/qbare"
+
+# CONTROL KEYWORD IS NOT A CONSUMING COMMAND: `if ./scripts/x.sh; then` execs the
+# file; `if` introduces a command position rather than taking it as an argument.
+# It was landing in the catch-all beside genuine argument-takers and being skipped.
+make_fixture "$work/ctrl" -x 'if ./scripts/fixture-target.sh; then echo ok; fi' anchor
+expect "CTRL  if-prefixed invocation is rejected" 1 "is tracked 100644, not 100755" "$work/ctrl"
+
+# ...and the same three surfaces must still RELAX behind an interpreter, so the new
+# coverage is derived from the invocation rather than pinned to a path or keyword.
+make_fixture "$work/ctrl-relaxed" -x 'if bash ./scripts/fixture-target.sh; then echo ok; fi' anchor
+expect "CTRL  if + interpreter is accepted" 0 "exec-bit guard OK" "$work/ctrl-relaxed"
 if ((failures > 0)); then
   echo "::error::$failures exec-bit guard assertion(s) failed"
   exit 1

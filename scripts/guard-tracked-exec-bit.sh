@@ -79,9 +79,9 @@ status=0
 # Both roots are inventoried. `.github/scripts/` holds the CI installers, which
 # a `run:` step executes as its command and which therefore need the bit exactly
 # as much as anything under `scripts/`.
-modes="$(git ls-files -s -- 'scripts/*.sh' 'scripts/**/*.sh' '.github/scripts/*.sh' '.github/scripts/**/*.sh')"
+modes="$(git ls-files -s -- 'scripts/*.sh' 'scripts/**/*.sh' '.github/*.sh' '.github/**/*.sh')"
 if [[ -z "$modes" ]]; then
-  echo "::error::found no tracked *.sh under scripts/ or .github/scripts/; the exec-bit sweep examined nothing, so its result proves nothing"
+  echo "::error::found no tracked *.sh under scripts/ or .github/; the exec-bit sweep examined nothing, so its result proves nothing"
   exit 1
 fi
 
@@ -103,7 +103,7 @@ fi
 # accepted only where a `./` follows it.
 #
 # BSD grep has no lookbehind, so each leading delimiter is spelled as a class.
-readonly SCRIPT_PATH_RE='(\.github/)?scripts/[A-Za-z0-9_./-]+\.sh'
+readonly SCRIPT_PATH_RE='(\.github|scripts)/[A-Za-z0-9_./-]+\.sh'
 readonly LEADING_DELIM='(^|[[:space:]|&;("'"'"'])'
 
 scan="$(
@@ -116,7 +116,7 @@ invocations="$(
     printf '%s\n' "$scan" |
       grep -oE "${LEADING_DELIM}([A-Za-z0-9_.-]+[[:space:]]+)?\./${SCRIPT_PATH_RE}" || true
     printf '%s\n' "$scan" |
-      grep -oE "run:[[:space:]]+([A-Za-z0-9_.-]+[[:space:]]+)?(\./)?${SCRIPT_PATH_RE}" || true
+      grep -oE "run:[[:space:]]+[\"']?([A-Za-z0-9_.-]+[[:space:]]+)?(\./)?${SCRIPT_PATH_RE}" || true
     # A run block puts the command at the START of its own line. But line-leading
     # position is command position only when the PREVIOUS line did not end in a
     # backslash: a continuation line is an ARGUMENT list, and this repository has
@@ -139,7 +139,7 @@ while IFS= read -r occurrence; do
   # rather than a command, so it is stripped alongside the leading delimiters.
   prefix="$(
     printf '%s' "$occurrence" |
-      sed -E "s|(\./)?${SCRIPT_PATH_RE}\$||" |
+      sed -E "s#(\./)?${SCRIPT_PATH_RE}\$##" |
       sed -E 's|^run:||' |
       tr -d '[:space:]'
   )"
@@ -147,6 +147,10 @@ while IFS= read -r occurrence; do
     "" | "&&" | "||" | "|" | ";" | "(" | '"' | "'") ;;     # nothing in front: a direct invocation
     bash | sh | zsh | dash | ksh | source | .) continue ;; # handed to an interpreter
     sudo | exec | time | env | command | nohup | xargs) ;; # a wrapper that still execs the file
+    # A control keyword introduces a command position rather than consuming the
+    # word after it, so `if ./scripts/x.sh; then` execs the file exactly as a
+    # bare `./scripts/x.sh` does. These reached the catch-all and were discarded.
+    if | elif | while | until | then | do | else | "!" | "{") ;;
     *) continue ;;                                         # an argument to some other command, which does not exec it
   esac
 
