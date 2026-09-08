@@ -1,0 +1,22 @@
+# Keep container image garbage collection ahead of the platform's storage
+# warning boundary.
+#
+# Kubelet defaults to collecting above 85% image-filesystem use and stopping at
+# 80%. Coroot warns at 80%, and Longhorn can stop scheduling replicas before the
+# kubelet's default trigger because both share /var on the static workers. That
+# leaves a node indefinitely warning and its Longhorn disk unschedulable while
+# months of superseded workload images remain locally cached.
+#
+# Start at 75% and reclaim to 70%. The five-point hysteresis matches kubelet's
+# default gap, while the lower boundary leaves ten percentage points before the
+# Coroot warning and room for Longhorn replica growth. This is a cluster patch,
+# so new static and autoscaled nodes inherit the same protection.
+#
+# No maximum image age is set: recently unused images remain cached while space
+# is healthy, and kubelet selects reclaim candidates only when the shared
+# filesystem crosses this capacity guard.
+machine:
+  kubelet:
+    extraConfig:
+      imageGCHighThresholdPercent: 75
+      imageGCLowThresholdPercent: 70
