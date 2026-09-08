@@ -19,13 +19,13 @@ spec:
   # https://github.com/kubernetes-sigs/metrics-server/blob/master/charts/metrics-server/values.yaml
   values:
     replicas: ${metrics_server_replicas:=2}
+    # fsGroupChangePolicy and seLinuxOptions are the two non-privilege C-0211
+    # fields the cluster-wide add-security-context mutation cannot supply here:
+    # that mutation rewrites the running POD, while Kubescape scores the STORED
+    # workload spec (#3239). Writing them into the chart values is the only
+    # route that moves both surfaces. They land under two different chart value
+    # keys: podSecurityContext renders pod-level, securityContext container-level.
     podSecurityContext:
-      # fsGroupChangePolicy and seLinuxOptions are the two non-privilege C-0211
-      # fields the cluster-wide add-security-context mutation cannot supply here:
-      # that mutation rewrites the running POD, while Kubescape scores the STORED
-      # workload spec (#3239). Writing them into the chart values is the only
-      # route that moves both surfaces.
-      #
       # Inert today, which is the point: this Deployment mounts only emptyDir and
       # sets no fsGroup, so OnRootMismatch changes no ownership on any volume. It
       # is a declared default that holds if a future chart revision adds one.
