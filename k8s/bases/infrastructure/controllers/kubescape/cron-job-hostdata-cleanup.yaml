@@ -1,0 +1,141 @@
+---
+# Remove Kubescape host-data objects after the Kubernetes Node they describe is
+# gone. Node-agent v0.3.142 creates these cluster-scoped objects without owner
+# references and performs no deletion, so autoscaler churn otherwise grows a
+# permanently stale host inventory (kubescape/node-agent#963).
+#
+# Safety: every host-data inventory and the complete Node inventory are written
+# to local snapshot files before the first deletion. A failed read, or an empty
+# Node list, aborts the entire run. An object is deleted only when its exact name
+# is absent from that authoritative Node snapshot. Set DRY_RUN=true on a derived
+# Job to inspect decisions without mutation; the scheduled reconciler is enabled.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kubescape-hostdata-cleanup
+  namespace: kubescape
+  annotations:
+    checkov.io/skip1: "CKV_K8S_38=the cleanup script reconciles cluster-scoped host data through kubectl"
+spec:
+  schedule: "31 3 * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 300
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: kubescape-hostdata-cleanup
+        spec:
+          serviceAccountName: kubescape-hostdata-cleanup
+          # The Job calls the Kubernetes API, so this one pod needs its token;
+          # the ServiceAccount default remains false for every other consumer.
+          automountServiceAccountToken: true
+          restartPolicy: Never
+          securityContext:
+            fsGroupChangePolicy: OnRootMismatch
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: cleanup
+              image: docker.io/alpine/k8s:1.37.0@sha256:b421c2e9419edb98db39b6ab641669f4db7bb2acf354f22450c6b7e7176d1ff4
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                seLinuxOptions: {}
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 65532
+                runAsGroup: 65532
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: HOME
+                  value: /tmp
+                - name: DRY_RUN
+                  value: "false"
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  DRY_RUN="${DRY_RUN:-false}"
+                  kc() { n=0; until kubectl "$@"; do n=$((n+1)); [ "$n" -ge 5 ] && return 1; sleep $((n*2)); done; }
+
+                  resources="
+                  cloudproviderinfos.hostdata.kubescape.cloud
+                  cniinfos.hostdata.kubescape.cloud
+                  controlplaneinfos.hostdata.kubescape.cloud
+                  kernelversions.hostdata.kubescape.cloud
+                  kubeletinfos.hostdata.kubescape.cloud
+                  kubeproxyinfos.hostdata.kubescape.cloud
+                  linuxkernelvariables.hostdata.kubescape.cloud
+                  linuxsecurityhardeningstatuses.hostdata.kubescape.cloud
+                  openportslists.hostdata.kubescape.cloud
+                  osreleasefiles.hostdata.kubescape.cloud
+                  "
+
+                  echo "kubescape host-data cleanup: starting (DRY_RUN=$DRY_RUN)"
+
+                  # Fetch every authoritative input before mutation. This makes
+                  # a partial API outage a failed run, never an empty inventory.
+                  if ! kc get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' > /tmp/nodes; then
+                    echo "ERROR: failed to list Kubernetes Nodes; refusing cleanup"
+                    exit 1
+                  fi
+                  if [ ! -s /tmp/nodes ]; then
+                    echo "ERROR: Kubernetes Node list is empty; refusing cleanup"
+                    exit 1
+                  fi
+                  for resource in $resources; do
+                    file="/tmp/${resource%%.*}.names"
+                    if ! kc get "$resource" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' > "$file"; then
+                      echo "ERROR: failed to list $resource; refusing cleanup"
+                      exit 1
+                    fi
+                  done
+
+                  kept=0
+                  candidates=0
+                  removed=0
+                  for resource in $resources; do
+                    file="/tmp/${resource%%.*}.names"
+                    while IFS= read -r record; do
+                      [ -n "$record" ] || continue
+                      if grep -Fqx "$record" /tmp/nodes; then
+                        kept=$((kept+1))
+                        continue
+                      fi
+                      candidates=$((candidates+1))
+                      echo "ORPHAN $resource/$record: Kubernetes Node is absent"
+                      if [ "$DRY_RUN" = 'true' ]; then
+                        echo "  [dry-run] would delete $resource/$record"
+                        continue
+                      fi
+                      kc delete "$resource" "$record" --ignore-not-found
+                      removed=$((removed+1))
+                    done < "$file"
+                  done
+                  echo "kubescape host-data cleanup: done (kept=$kept candidates=$candidates removed=$removed)"
+          volumes:
+            - name: tmp
+              emptyDir: {}

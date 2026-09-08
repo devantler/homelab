@@ -1,0 +1,26 @@
+---
+# Reconcile Kubescape's cluster-scoped host-data inventory with the authoritative
+# Kubernetes Node list. The node-agent creates one object per sensed node but
+# upstream v0.3.142 gives those objects no lifecycle owner and never deletes them
+# after autoscaler scale-down (kubescape/node-agent#963).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubescape-hostdata-cleanup
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list"]
+  - apiGroups: ["hostdata.kubescape.cloud"]
+    resources:
+      - cloudproviderinfos
+      - cniinfos
+      - controlplaneinfos
+      - kernelversions
+      - kubeletinfos
+      - kubeproxyinfos
+      - linuxkernelvariables
+      - linuxsecurityhardeningstatuses
+      - openportslists
+      - osreleasefiles
+    verbs: ["list", "delete"]

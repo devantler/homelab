@@ -1784,7 +1784,12 @@ const (
 // the identical parsed resource. Chart 12.1.0 renders the four resource values
 // into the existing maintenance ConfigMap, preserving three retained Jobs.
 // Previous aggregate: 78ec24f102127ad42d3a005ad6fcdd4f86c4a8df3eaca7679b21aff53f0d0b35.
-const expectedRenderedSurfaceSHA = "165ed85b44e9dd5434d606854776a38aa40e82515ffb6b767ecd77f6cfab579a"
+// Refreshed for #3686's Kubescape host-data lifecycle reconciler. Against main
+// 7e622a38, the added identity can only list core Nodes and list/delete the ten
+// hostdata.kubescape.cloud resource classes. Its sole workload is the bounded,
+// non-overlapping cleanup CronJob; no existing identity or binding changed.
+// Previous aggregate: 165ed85b44e9dd5434d606854776a38aa40e82515ffb6b767ecd77f6cfab579a.
+const expectedRenderedSurfaceSHA = "46dcf33cf5292c88b2b3d2f0a449456e866c5836585d8ea5f697e361ce17d8bc"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
