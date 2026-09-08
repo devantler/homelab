@@ -775,7 +775,8 @@ jobs:
     if: >-
       github.event_name == 'pull_request' &&
       (needs.changes.outputs.k8s == 'true' ||
-      needs.changes.outputs.bridge_validation == 'true')
+      needs.changes.outputs.bridge_validation == 'true' ||
+      needs.changes.outputs.exec_bit == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read # checkout repository

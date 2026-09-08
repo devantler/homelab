@@ -75,40 +75,86 @@ status=0
 
 # Tracked mode per path, from the INDEX. `git ls-files -s` prints
 # `<mode> <object> <stage>\t<path>`.
-modes="$(git ls-files -s -- 'scripts/*.sh' 'scripts/**/*.sh')"
+#
+# Both roots are inventoried. `.github/scripts/` holds the CI installers, which
+# a `run:` step executes as its command and which therefore need the bit exactly
+# as much as anything under `scripts/`.
+modes="$(git ls-files -s -- 'scripts/*.sh' 'scripts/**/*.sh' '.github/scripts/*.sh' '.github/scripts/**/*.sh')"
 if [[ -z "$modes" ]]; then
-  echo "::error::found no tracked scripts/**/*.sh; the exec-bit sweep examined nothing, so its result proves nothing"
+  echo "::error::found no tracked *.sh under scripts/ or .github/scripts/; the exec-bit sweep examined nothing, so its result proves nothing"
   exit 1
 fi
 
-# Every `./scripts/<name>.sh` occurrence under the two roots that runs the file
-# directly. The negative lookbehind is spelled as a leading-character class
-# because BSD grep has no lookbehind: the character before the token must not be
-# part of a longer path, and the WORD before it must not be an interpreter.
-invocations="$(
+# 🔴 TWO INVOCATION SHAPES EXIST, AND ONE OF THEM CARRIES NO `./`.
+#
+# An explicitly-relative `./scripts/x.sh` can stand wherever a command can, so it
+# is matched on the character in front of it. A BARE `scripts/x.sh` cannot be
+# matched that way, because the identical text is also how a path filter entry
+# and a shellcheck argument are written; counting those would fail the build over
+# files nothing runs. `.github/scripts/kyverno-version.sh` is exactly that case —
+# it appears as a filter entry and as a `bash`-prefixed call, and is correctly
+# tracked 100644. The bare form is therefore recognised only as the command of a
+# `run:` step, which is the position that actually execs it.
+#
+# 🔴 A SHELL QUOTE IS A DELIMITER ONLY IN FRONT OF `./`.
+#
+# `run: "./scripts/x.sh"` execs the file and needs the bit. Honouring a quote in
+# front of a bare path would re-admit every quoted filter entry, so the quote is
+# accepted only where a `./` follows it.
+#
+# BSD grep has no lookbehind, so each leading delimiter is spelled as a class.
+readonly SCRIPT_PATH_RE='(\.github/)?scripts/[A-Za-z0-9_./-]+\.sh'
+readonly LEADING_DELIM='(^|[[:space:]|&;("'"'"'])'
+
+scan="$(
   grep -rhE -v '^[[:space:]]*#' --include='*.yaml' --include='*.yml' --include='*.sh' \
-    -r .github scripts 2>/dev/null |
-    grep -oE '(^|[[:space:]|&;(])([A-Za-z0-9_.-]+[[:space:]]+)?\./scripts/[A-Za-z0-9_./-]+\.sh' || true
+    -r .github scripts 2>/dev/null || true
+)"
+
+invocations="$(
+  {
+    printf '%s\n' "$scan" |
+      grep -oE "${LEADING_DELIM}([A-Za-z0-9_.-]+[[:space:]]+)?\./${SCRIPT_PATH_RE}" || true
+    printf '%s\n' "$scan" |
+      grep -oE "run:[[:space:]]+([A-Za-z0-9_.-]+[[:space:]]+)?(\./)?${SCRIPT_PATH_RE}" || true
+    # A run block puts the command at the START of its own line. But line-leading
+    # position is command position only when the PREVIOUS line did not end in a
+    # backslash: a continuation line is an ARGUMENT list, and this repository has
+    # exactly that shape, continuing a shellcheck call across several lines over
+    # library files correctly tracked 100644. A stateless line-leading match
+    # reports those as invocations and fails the build. awk carries that one bit
+    # of state. The pattern travels via ENVIRON because the -v option expands
+    # escape sequences in the value and would eat the backslashes.
+    GUARD_LINE_RE="^[[:space:]]*(\./)?${SCRIPT_PATH_RE}" \
+      awk '!cont && $0 ~ ENVIRON["GUARD_LINE_RE"] { print }
+           { cont = ($0 ~ /\\[[:space:]]*$/) }' <<<"$scan" || true
+  }
 )"
 
 direct=""
 while IFS= read -r occurrence; do
   [[ -n "$occurrence" ]] || continue
 
-  # The word immediately before the path, if any.
-  prefix="$(printf '%s' "$occurrence" | sed -E 's|\./scripts/[A-Za-z0-9_./-]+\.sh$||' | tr -d '[:space:]')"
+  # The word immediately before the path, if any. `run:` is the step keyword
+  # rather than a command, so it is stripped alongside the leading delimiters.
+  prefix="$(
+    printf '%s' "$occurrence" |
+      sed -E "s|(\./)?${SCRIPT_PATH_RE}\$||" |
+      sed -E 's|^run:||' |
+      tr -d '[:space:]'
+  )"
   case "$prefix" in
-    "" | "&&" | "||" | "|" | ";" | "(") ;;                 # nothing in front: a direct invocation
+    "" | "&&" | "||" | "|" | ";" | "(" | '"' | "'") ;;     # nothing in front: a direct invocation
     bash | sh | zsh | dash | ksh | source | .) continue ;; # handed to an interpreter
-    *) ;;                                                  # any other word still EXECS the file: sudo, exec, time, xargs, env
+    sudo | exec | time | env | command | nohup | xargs) ;; # a wrapper that still execs the file
+    *) continue ;;                                         # an argument to some other command, which does not exec it
   esac
 
-  path="$(printf '%s' "$occurrence" | grep -oE '\./scripts/[A-Za-z0-9_./-]+\.sh' | sed 's|^\./||')"
+  path="$(printf '%s' "$occurrence" | grep -oE "(\./)?${SCRIPT_PATH_RE}" | sed 's|^\./||')"
   direct="${direct}${path}"$'\n'
 done <<EOF
 $invocations
 EOF
-
 direct="$(printf '%s' "$direct" | sort -u | grep -v '^$' || true)"
 
 if [[ -z "$direct" ]]; then
