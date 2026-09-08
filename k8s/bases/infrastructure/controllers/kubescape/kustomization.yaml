@@ -8,4 +8,10 @@ resources:
   - cilium-network-policy.yaml
   - cluster-role.yaml
   - cluster-role-binding.yaml
+  # Upstream node-agent does not garbage-collect host-data objects for deleted
+  # autoscaled Nodes. Keep that lifecycle reconciled until node-agent#963 lands.
+  - service-account-hostdata-cleanup.yaml
+  - cluster-role-hostdata-cleanup.yaml
+  - cluster-role-binding-hostdata-cleanup.yaml
+  - cron-job-hostdata-cleanup.yaml
   - config-map-headlamp-exceptions.yaml

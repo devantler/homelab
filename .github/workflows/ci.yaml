@@ -1496,6 +1496,15 @@ jobs:
           shellcheck scripts/tests/test-kubescape-self-hosted-scan-persistence.sh
           bash scripts/tests/test-kubescape-self-hosted-scan-persistence.sh
 
+      - name: 🧹 Validate Kubescape host-data cleanup
+        if: needs.changes.outputs.k8s == 'true'
+        # Autoscaled Nodes disappear without removing node-agent's cluster-scoped
+        # host-data objects. Prove the cleanup snapshots every inventory before
+        # deleting only exact records whose Node no longer exists (#3686).
+        run: |
+          shellcheck scripts/tests/test-kubescape-hostdata-cleanup.sh
+          bash scripts/tests/test-kubescape-hostdata-cleanup.sh
+
       - name: 💾 Validate Kubescape storage compatibility image
         if: needs.changes.outputs.k8s == 'true'
         # Storage v0.0.303+ removes APIs this deployment still serves, while

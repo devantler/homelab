@@ -13,6 +13,8 @@
 #   * kube-system/hubble-generate-certs           — Cilium Hubble mTLS cert rotation (Cilium chart)
 #   * kubescape/kubescape-scheduler               — Kubescape posture-scan scheduler (Kubescape chart)
 #   * kubescape/kubevuln-scheduler                — Kubescape image-vuln-scan scheduler (Kubescape chart)
+#   * kubescape/kubescape-hostdata-cleanup        — removes host-data objects for deleted autoscaled
+#                                                   Kubernetes Nodes (platform)
 #   * longhorn-system/longhorn-stale-node-cleanup — prunes stale Longhorn node objects for gone
 #                                                   autoscaled nodes (platform)
 #   * observability/cluster-heartbeat             — external-uptime heartbeat ping (platform)
@@ -45,8 +47,8 @@ spec:
     C-0026 lists every CronJob for manual approval and has no hardening remedy.
     All CronJobs on this cluster are GitOps-managed platform components delivered
     by Flux after PR review (the review is the approval): Cilium Hubble cert
-    rotation, the Kubescape scan schedulers, Longhorn stale-node cleanup, the
-    observability heartbeat / CNPG degraded-cluster alert / stranded-volume-attach
+    rotation, the Kubescape scan schedulers / stale host-data cleanup, Longhorn
+    stale-node cleanup, the observability heartbeat / CNPG degraded-cluster alert / stranded-volume-attach
     alert / Coroot alert-autosuppressor / Coroot cloud-pricing jobs, the OpenBao
     raft-snapshot backup, and Umami tenant provisioning.
     Namespace-scoped to the infrastructure namespaces that run these, so a CronJob

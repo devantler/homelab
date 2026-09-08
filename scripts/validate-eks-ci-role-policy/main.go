@@ -1838,7 +1838,39 @@ const (
 // value it computed. Restoring the superseded value fails with exactly this
 // fingerprint, so the baseline is not vacuous.
 // Previous aggregate: fc59566d0ec91c68279981d90f2d14470280025b05f7f1874d9c0e56cd93574f.
-const expectedRenderedSurfaceSHA = "1b17b64243f850afd2acc2b8af2fa5ed270e3a88d42db80437d2de40d7861a12"
+//
+// Moved again by merging main into this branch. Both sides had re-approved this
+// constant independently — main for the metrics-server baseline security
+// defaults, this branch for #3686's Kubescape host-data lifecycle reconciler —
+// so the merged tree renders an aggregate neither side carried. Superseded value
+// 46dcf33cf5292c88b2b3d2f0a449456e866c5836585d8ea5f697e361ce17d8bc.
+//
+// MEMBERSHIP, rendered directly rather than inferred. This branch deliberately
+// ADDS an identity, so the usual both-directions conservation claim does not
+// apply and was not made. Rendering all five authorization overlays on the
+// merged tree and on main 5eecbd43 and diffing grant-bearing identities gives
+// 86 against 83: exactly three ADDED — ClusterRole and ClusterRoleBinding
+// kubescape-hostdata-cleanup, and ServiceAccount kubescape/kubescape-hostdata-
+// cleanup — and ZERO REMOVED. That is precisely this branch's declared delta,
+// so the merge introduced nothing beyond the union of the two intended changes.
+// The check's own error set agrees from the other side: exactly ONE error class
+// — this aggregate — with ZERO `missing rendered authorization resource` and
+// ZERO `duplicate rendered`, so nothing main had was dropped. The 34
+// `unresolved Flux substitution` notes are the usual companions of a mismatch.
+//
+// The added grant is bounded: list on core Nodes, and list/delete on exactly the
+// ten hostdata.kubescape.cloud resource classes. No wildcard verb or resource,
+// no secret access, and the binding names only the dedicated ServiceAccount.
+//
+// RENDERER PROVENANCE, on the same terms as the entries above, plus a control
+// this host can run: main at 5eecbd43 PASSES here under kubectl v1.36.1 with
+// kustomize v5.8.1 against the constant CI approved, so this renderer reproduces
+// CI's digest and the value below is not a local artifact. CI's SHA256-verified
+// v1.36.2 remains the authority and fails closed with the value it computed.
+// Restoring the superseded value fails with exactly this fingerprint, so the
+// baseline is not vacuous.
+// Previous aggregate: 1b17b64243f850afd2acc2b8af2fa5ed270e3a88d42db80437d2de40d7861a12.
+const expectedRenderedSurfaceSHA = "36049e7ea4817e1d3006e504eea95495341d2c0acbd3ffa5990981b4bf0e4335"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
