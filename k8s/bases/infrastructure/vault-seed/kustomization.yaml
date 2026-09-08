@@ -36,6 +36,7 @@ resources:
   - external-secret-generated-crossview-admin-password.yaml
   - push-secret-push-crossview-admin-password.yaml
   - push-secret-seed-r2-credentials.yaml
+  - push-secret-seed-wedding-db-backup-r2.yaml
   - push-secret-seed-github-app.yaml
   - push-secret-seed-ghcr.yaml
   - push-secret-seed-dex-client-secret.yaml
