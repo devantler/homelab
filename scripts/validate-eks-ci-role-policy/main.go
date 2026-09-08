@@ -1770,7 +1770,14 @@ const (
 // entire rendered release differs only by those two fields on longhorn-ui;
 // manager, CSI, storage objects, identity, capabilities and seccomp are unchanged.
 // Previous aggregate: ea907ed3b00ccb2086e2445e8d7ef9e1050cf0c77f4779c1f7d1b03cb8950191.
-const expectedRenderedSurfaceSHA = "a7bffd8423a99b738dd231a04b96a8e7d12b89eb2d308b26613d3004341a1c33"
+// Refreshed for #3239's native Coroot operator chart values. Pinned kubectl
+// v1.36.2 renders 555 identities on both main 3e1f5f03 and this tree, with no
+// additions or removals. All 83 RBAC/ServiceAccount documents remain unchanged.
+// The sole HelmRelease delta sets pod fsGroupChangePolicy and empty container
+// seLinuxOptions. Real chart omitted/enabled/rollback renders retain all five
+// chart identities and differ only by those two operator Deployment fields.
+// Previous aggregate: a7bffd8423a99b738dd231a04b96a8e7d12b89eb2d308b26613d3004341a1c33.
+const expectedRenderedSurfaceSHA = "78ec24f102127ad42d3a005ad6fcdd4f86c4a8df3eaca7679b21aff53f0d0b35"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
