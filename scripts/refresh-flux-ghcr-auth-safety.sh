@@ -341,7 +341,12 @@ stage_fanout_before_talos() {
       }
       return 0
     fi
-    if ! grep -Fxq -- processed "${talos_sync_result}"; then
+    # `deselected` means every target was proved removed before it was touched,
+    # so nothing was verified and this pass cannot authorise root cutover. It is
+    # a reason to converge again, exactly like `processed` -- not an invalid
+    # result, and not a deploy failure. Only `clean` above cuts root auth over.
+    if ! grep -Fxq -- processed "${talos_sync_result}" &&
+      ! grep -Fxq -- deselected "${talos_sync_result}"; then
       echo "::error::Talos synchronization returned an invalid convergence result; root Flux auth remains unchanged."
       return 1
     fi
