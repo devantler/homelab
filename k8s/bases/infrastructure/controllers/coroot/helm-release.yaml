@@ -44,3 +44,8 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: coroot
+  values:
+    podSecurityContext:
+      fsGroupChangePolicy: OnRootMismatch
+    containerSecurityContext:
+      seLinuxOptions: {}
