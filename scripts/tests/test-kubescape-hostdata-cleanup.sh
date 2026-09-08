@@ -35,7 +35,9 @@ done
 
 readonly container='.spec.jobTemplate.spec.template.spec.containers[] | select(.name == "cleanup")'
 script_body="$(yq eval -r "${container}.command[2]" "$manifest")"
-[ -n "$script_body" ] && [ "$script_body" != 'null' ] || fail 'cleanup script is absent'
+if [ -z "$script_body" ] || [ "$script_body" = 'null' ]; then
+  fail 'cleanup script is absent'
+fi
 
 [ "$(yq eval '.spec.concurrencyPolicy' "$manifest")" = 'Forbid' ] || fail 'concurrent runs are not forbidden'
 [ "$(yq eval '.spec.jobTemplate.spec.backoffLimit' "$manifest")" = '0' ] || fail 'Job retries must stay with the authored API retry loop'
