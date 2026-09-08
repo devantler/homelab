@@ -20,7 +20,6 @@ jobs:
     outputs:
       k8s: ${{ steps.filter.outputs.k8s }}
       bridge_validation: ${{ steps.filter.outputs.bridge_validation }}
-      exec_bit: ${{ steps.filter.outputs.exec_bit }}
       talos: ${{ steps.filter.outputs.talos }}
     steps:
       - name: 📑 Checkout
@@ -52,6 +51,27 @@ jobs:
         run: |
           shellcheck scripts/tests/test-pvc-prune-safety.sh
           bash scripts/tests/test-pvc-prune-safety.sh
+
+      - name: 🔐 Validate directly-invoked scripts are tracked executable
+        # A script a workflow runs as ./scripts/<name> must be tracked 100755, because
+        # CI clones from git and the tracked mode is what the runner gets. Caught live on
+        # #3530, where a promotion gate was committed 100644 and died "permission denied"
+        # BEFORE verifying anything — present, reviewed green, and inert. Nothing that runs
+        # could see it: shellcheck was clean, bash <file> passed, and the script own suite
+        # passed, because none of them exec the file. The class has been introduced three
+        # times, twice via an awk-into-tmp-and-mv idiom that drops the bit while leaving the
+        # content byte-correct. The guard derives the requirement from the invocation, so a
+        # script that moves behind an interpreter stops needing the bit, and finding NO
+        # direct invocation is cannot-check rather than a clean pass.
+        #
+        # Run in the shared changes job, unconditionally, for the same reason the PVC
+        # check above does: the manifest job is pull_request-only, so hosting the guard
+        # there left the merge group — the event that actually gates main — running none
+        # of it. Unconditional also removes the path filter as a way to skip the check,
+        # which is the failure mode the guard exists to catch, one level up.
+        run: |
+          bash scripts/guard-tracked-exec-bit.sh .
+          bash scripts/tests/test-guard-tracked-exec-bit.sh
 
       # The DR contract runs in its own dedicated job (below). This checks that
       # the verify block is in effect at all: it ran at spec.cluster.verify for
@@ -485,12 +505,6 @@ jobs:
               - '.github/actions/deploy-prod/**'
               - '.github/workflows/dr-rebuild.yaml'
               - '.github/workflows/ci.yaml'
-            # Any change under either root can add an invocation, remove one, or
-            # change a tracked mode, so the exec-bit guard keys on the whole surface
-            # rather than a file list that would go stale in the dangerous direction.
-            exec_bit:
-              - 'scripts/**'
-              - '.github/**'
             talos:
               - 'talos/**'
               - 'talos-local/**'
@@ -775,8 +789,7 @@ jobs:
     if: >-
       github.event_name == 'pull_request' &&
       (needs.changes.outputs.k8s == 'true' ||
-      needs.changes.outputs.bridge_validation == 'true' ||
-      needs.changes.outputs.exec_bit == 'true')
+      needs.changes.outputs.bridge_validation == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read # checkout repository
@@ -1239,22 +1252,6 @@ jobs:
         run: |
           bash scripts/guard-gitrepository-commit-pin.sh k8s
           bash scripts/tests/test-guard-gitrepository-commit-pin.sh
-
-      - name: 🔐 Validate directly-invoked scripts are tracked executable
-        if: needs.changes.outputs.exec_bit == 'true'
-        # A script a workflow runs as ./scripts/<name> must be tracked 100755, because
-        # CI clones from git and the tracked mode is what the runner gets. Caught live on
-        # #3530, where a promotion gate was committed 100644 and died "permission denied"
-        # BEFORE verifying anything — present, reviewed green, and inert. Nothing that runs
-        # could see it: shellcheck was clean, bash <file> passed, and the script own suite
-        # passed, because none of them exec the file. The class has been introduced three
-        # times, twice via an awk-into-tmp-and-mv idiom that drops the bit while leaving the
-        # content byte-correct. The guard derives the requirement from the invocation, so a
-        # script that moves behind an interpreter stops needing the bit, and finding NO
-        # direct invocation is cannot-check rather than a clean pass.
-        run: |
-          bash scripts/guard-tracked-exec-bit.sh .
-          bash scripts/tests/test-guard-tracked-exec-bit.sh
 
       - name: 🌐 Validate no render path fetches over the network
         if: needs.changes.outputs.k8s == 'true'

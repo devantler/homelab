@@ -293,6 +293,22 @@ make_trailarg_fixture() {
 }
 make_trailarg_fixture "$work/trailarg"
 expect "TRAIL run-block bare path with trailing argument is rejected" 1 "is tracked 100644, not 100755" "$work/trailarg"
+# A quoted environment assignment is still a direct exec: the shell sets the
+# variable and execs the file. The prefix classifier reads NAME=value as
+# transparent, so this case is about whether extraction hands it the occurrence
+# at all — a character-class TOKEN_RE excluding `"`, `$` and braces did not.
+# shellcheck disable=SC2016 # the literal ${BAR} is the case under test; it must not expand
+make_fixture "$work/quoted-assign" -x 'FOO="${BAR}" scripts/fixture-target.sh' anchor
+expect "QUOTED-ASSIGN quoted env assignment before a bare path is rejected" 1 \
+  "is tracked 100644, not 100755" "$work/quoted-assign"
+
+# The counterpart: the same assignment in front of an INTERPRETER is not a direct
+# exec, so widening extraction must not have made the guard accept everything.
+# shellcheck disable=SC2016 # same: the literal is the fixture
+make_fixture "$work/quoted-assign-bash" -x 'FOO="${BAR}" bash scripts/fixture-target.sh' anchor
+expect "QUOTED-ASSIGN interpreter behind a quoted assignment stays accepted" 0 \
+  "" "$work/quoted-assign-bash"
+
 if ((failures > 0)); then
   echo "::error::$failures exec-bit guard assertion(s) failed"
   exit 1

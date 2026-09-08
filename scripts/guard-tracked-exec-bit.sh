@@ -102,10 +102,23 @@ fi
 # front of a bare path would re-admit every quoted filter entry, so the quote is
 # accepted only where a `./` follows it.
 #
+# 🔴 TOKEN_RE MATCHES ANY WHITESPACE-DELIMITED WORD, AND THAT IS DELIBERATE.
+#
+# It spells what a prefix WORD may look like, never which prefixes are
+# admissible — that is the classifier's job. Enumerating characters here is the
+# blacklist trap the classifier comment below describes, one level up: a
+# character class that omitted `"`, `$` and braces let `FOO="${BAR}" scripts/x.sh`
+# escape extraction entirely, so the classifier — which reads `NAME=value` as a
+# transparent assignment and would have judged it correctly — never saw it.
+#
+# This does not re-admit a quoted filter entry. The risk there is a quote
+# ADJACENT to the path (`- 'scripts/x.sh'`), where no whitespace separates the
+# two, so the quote is never a word of its own and the path never starts a match.
+#
 # BSD grep has no lookbehind, so each leading delimiter is spelled as a class.
 readonly SCRIPT_PATH_RE='(\.github|scripts)/[A-Za-z0-9_./-]+\.sh'
 readonly LEADING_DELIM='(^|[[:space:]|&;("'"'"'])'
-readonly TOKEN_RE='[A-Za-z0-9_.=-]+'
+readonly TOKEN_RE='[^[:space:]]+'
 
 scan="$(
   grep -rhE -v '^[[:space:]]*#' --include='*.yaml' --include='*.yml' --include='*.sh' \
