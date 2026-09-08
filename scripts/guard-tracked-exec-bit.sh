@@ -105,6 +105,7 @@ fi
 # BSD grep has no lookbehind, so each leading delimiter is spelled as a class.
 readonly SCRIPT_PATH_RE='(\.github|scripts)/[A-Za-z0-9_./-]+\.sh'
 readonly LEADING_DELIM='(^|[[:space:]|&;("'"'"'])'
+readonly TOKEN_RE='[A-Za-z0-9_.=-]+'
 
 scan="$(
   grep -rhE -v '^[[:space:]]*#' --include='*.yaml' --include='*.yml' --include='*.sh' \
@@ -114,20 +115,21 @@ scan="$(
 invocations="$(
   {
     printf '%s\n' "$scan" |
-      grep -oE "${LEADING_DELIM}([A-Za-z0-9_.-]+[[:space:]]+)?\./${SCRIPT_PATH_RE}" || true
+      grep -oE "${LEADING_DELIM}(${TOKEN_RE}[[:space:]]+)*\./${SCRIPT_PATH_RE}" || true
     printf '%s\n' "$scan" |
-      grep -oE "run:[[:space:]]+[\"']?([A-Za-z0-9_.-]+[[:space:]]+)?(\./)?${SCRIPT_PATH_RE}" || true
+      grep -oE "run:[[:space:]]+[\"']?(${TOKEN_RE}[[:space:]]+)*(\./)?${SCRIPT_PATH_RE}" || true
     # A run block puts the command at the START of its own line. But line-leading
     # position is command position only when the PREVIOUS line did not end in a
     # backslash: a continuation line is an ARGUMENT list, and this repository has
     # exactly that shape, continuing a shellcheck call across several lines over
     # library files correctly tracked 100644. A stateless line-leading match
     # reports those as invocations and fails the build. awk carries that one bit
-    # of state. The pattern travels via ENVIRON because the -v option expands
-    # escape sequences in the value and would eat the backslashes.
-    GUARD_LINE_RE="^[[:space:]]*(\./)?${SCRIPT_PATH_RE}" \
-      awk '!cont && $0 ~ ENVIRON["GUARD_LINE_RE"] { print }
-           { cont = ($0 ~ /\\[[:space:]]*$/) }' <<<"$scan" || true
+    # of state and nothing else; the extraction is left to grep so the emitted
+    # occurrence STOPS at the path instead of running to the end of the line,
+    # which is what lets a trailing argument coexist with a line-leading command.
+    awk '!cont { print }
+         { cont = ($0 ~ /\\[[:space:]]*$/) }' <<<"$scan" |
+      grep -oE "^[[:space:]]*(${TOKEN_RE}[[:space:]]+)*(\./)?${SCRIPT_PATH_RE}" || true
   }
 )"
 
@@ -135,24 +137,54 @@ direct=""
 while IFS= read -r occurrence; do
   [[ -n "$occurrence" ]] || continue
 
-  # The word immediately before the path, if any. `run:` is the step keyword
-  # rather than a command, so it is stripped alongside the leading delimiters.
+  # Everything in front of the path. `run:` is the step keyword rather than a
+  # command, so it is stripped alongside the leading delimiters.
   prefix="$(
     printf '%s' "$occurrence" |
       sed -E "s#(\./)?${SCRIPT_PATH_RE}\$##" |
-      sed -E 's|^run:||' |
-      tr -d '[:space:]'
+      sed -E 's|^run:||'
   )"
-  case "$prefix" in
-    "" | "&&" | "||" | "|" | ";" | "(" | '"' | "'") ;;     # nothing in front: a direct invocation
-    bash | sh | zsh | dash | ksh | source | .) continue ;; # handed to an interpreter
-    sudo | exec | time | env | command | nohup | xargs) ;; # a wrapper that still execs the file
-    # A control keyword introduces a command position rather than consuming the
-    # word after it, so `if ./scripts/x.sh; then` execs the file exactly as a
-    # bare `./scripts/x.sh` does. These reached the catch-all and were discarded.
-    if | elif | while | until | then | do | else | "!" | "{") ;;
-    *) continue ;;                                         # an argument to some other command, which does not exec it
-  esac
+
+  # 🔴 EXTRACTION IS PERMISSIVE; THIS WALK IS THE WHITELIST THAT DECIDES.
+  #
+  # Enumerating admissible PREFIX SHAPES in the extraction regex instead is what
+  # produced repeated review rounds each finding one more spelling — a bare path
+  # behind two or more words (`env FOO=1 scripts/x.sh`, `FOO=1 scripts/x.sh`,
+  # `sudo -E scripts/x.sh`) escaped extraction entirely, so this classifier,
+  # which would have judged all three correctly, never ran on them. Extraction
+  # now captures however many words sit in front of the path and every decision
+  # is made here, where a form that is not provably still an exec is discarded.
+  read -ra prefix_tokens <<<"$prefix"
+  reaches_path=1
+  saw_wrapper=0
+  for token in ${prefix_tokens+"${prefix_tokens[@]}"}; do
+    case "$token" in
+      "&&" | "||" | "|" | ";" | "(" | '"' | "'") ;;               # operator: a command position follows
+      if | elif | while | until | then | do | else | "!" | "{") ;; # control keyword: likewise
+      -*)
+        # An option, admissible only as an option TO a wrapper already accepted.
+        # A bare leading `-` is the YAML sequence marker, which introduces a list
+        # entry — a path filter, not a command.
+        if ((saw_wrapper == 0)); then
+          reaches_path=0
+          break
+        fi
+        ;;
+      *=*) ;;                                                     # NAME=value: an environment assignment is transparent
+      sudo | exec | time | env | command | nohup | xargs)          # a wrapper that still execs the file
+        saw_wrapper=1
+        ;;
+      bash | sh | zsh | dash | ksh | source | .)                   # handed to an interpreter
+        reaches_path=0
+        break
+        ;;
+      *)                                                           # an argument to some other command, which does not exec it
+        reaches_path=0
+        break
+        ;;
+    esac
+  done
+  ((reaches_path == 1)) || continue
 
   path="$(printf '%s' "$occurrence" | grep -oE "(\./)?${SCRIPT_PATH_RE}" | sed 's|^\./||')"
   direct="${direct}${path}"$'\n'

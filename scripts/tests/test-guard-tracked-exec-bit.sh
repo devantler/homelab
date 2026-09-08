@@ -211,6 +211,88 @@ expect "CTRL  if-prefixed invocation is rejected" 1 "is tracked 100644, not 1007
 # coverage is derived from the invocation rather than pinned to a path or keyword.
 make_fixture "$work/ctrl-relaxed" -x 'if bash ./scripts/fixture-target.sh; then echo ok; fi' anchor
 expect "CTRL  if + interpreter is accepted" 0 "exec-bit guard OK" "$work/ctrl-relaxed"
+
+# MULTI-WORD PREFIX IN FRONT OF A BARE PATH: extraction used to allow at most ONE
+# word before a path, and only a `./`-prefixed path could carry more. A bare path
+# behind two or more words — an environment assignment, or a wrapper with an
+# option — therefore never reached the prefix classifier at all, and the guard
+# reported success over a 100644 file the step really does exec. Review found
+# these one spelling at a time over several rounds, which is why extraction is now
+# permissive and the classifier is the whitelist that decides.
+make_fixture "$work/envassign" -x 'env FOO=1 scripts/fixture-target.sh' anchor
+expect "PREFIX env assignment before bare path is rejected" 1 "is tracked 100644, not 100755" "$work/envassign"
+
+make_fixture "$work/bareassign" -x 'FOO=1 scripts/fixture-target.sh' anchor
+expect "PREFIX bare assignment before bare path is rejected" 1 "is tracked 100644, not 100755" "$work/bareassign"
+
+make_fixture "$work/wrapopt" -x 'sudo -E scripts/fixture-target.sh' anchor
+expect "PREFIX wrapper option before bare path is rejected" 1 "is tracked 100644, not 100755" "$work/wrapopt"
+
+# ...and the widened extraction must still RELAX. The same multi-word prefix ending
+# in an interpreter hands the file over rather than execing it. Without this the
+# three assertions above would pass just as well on a classifier that accepted
+# everything it now reaches, which would prove nothing about discrimination.
+make_fixture "$work/envinterp" -x 'env FOO=1 bash scripts/fixture-target.sh' anchor
+expect "PREFIX env assignment + interpreter is accepted" 0 "exec-bit guard OK" "$work/envinterp"
+
+# A BARE `-` IS THE YAML SEQUENCE MARKER, NOT A COMMAND: an UNQUOTED paths-filter
+# entry is a list item, and the widened extraction now reaches it where the quoted
+# form above is excluded by its quote. Only an option to a wrapper already accepted
+# may sit in front of the path; a lone `-` may not.
+make_unquoted_filter_fixture() {
+  local dir="$1"
+  mkdir -p "$dir/scripts" "$dir/.github/workflows"
+  cd "$dir"
+  git init -q .
+  git config user.email t@example.com
+  git config user.name t
+  printf '#!/usr/bin/env bash\necho lib\n' > scripts/fixture-target.sh
+  printf '#!/usr/bin/env bash\necho anchor\n' > scripts/fixture-anchor.sh
+  {
+    printf 'on:\n  pull_request:\n    paths:\n'
+    printf '      - scripts/fixture-target.sh\n'
+    printf 'jobs:\n  j:\n    steps:\n      - run: ./scripts/fixture-anchor.sh\n'
+  } > .github/workflows/w.yaml
+  git add -A
+  git update-index --chmod=-x scripts/fixture-target.sh
+  git update-index --chmod=+x scripts/fixture-anchor.sh
+  git -c commit.gpgsign=false commit -qm fixture
+  cd - > /dev/null
+}
+make_unquoted_filter_fixture "$work/filter-unquoted"
+expect "FILTER unquoted path-filter entry is not an invocation" 0 "exec-bit guard OK" "$work/filter-unquoted"
+
+# LINE-LEADING BARE PATH WITH A TRAILING ARGUMENT: the run-block scan used to emit
+# the WHOLE line, while the prefix strip anchors the path at end-of-string. An
+# argument after the path defeated that anchor, so the prefix became the entire
+# line, hit the catch-all and was discarded — the guard skipped a script the step
+# genuinely execs. This is not hypothetical: `ci.yaml` runs
+# `scripts/update-vendored-operators.sh --validate-committed` in exactly this
+# shape, and the pre-fix guard did not check it. Extraction now stops at the path.
+# The fixture must use a run BLOCK: as a `run:` line the path is already the end
+# of the `run:` match, so the anchor holds and the case proves nothing.
+make_trailarg_fixture() {
+  local dir="$1"
+  mkdir -p "$dir/scripts" "$dir/.github/workflows"
+  cd "$dir"
+  git init -q .
+  git config user.email t@example.com
+  git config user.name t
+  printf '#!/usr/bin/env bash\necho hi\n' > scripts/fixture-target.sh
+  printf '#!/usr/bin/env bash\necho anchor\n' > scripts/fixture-anchor.sh
+  {
+    printf 'jobs:\n  j:\n    steps:\n      - run: |\n'
+    printf '          scripts/fixture-target.sh --some-flag\n'
+    printf '      - run: ./scripts/fixture-anchor.sh\n'
+  } > .github/workflows/w.yaml
+  git add -A
+  git update-index --chmod=-x scripts/fixture-target.sh
+  git update-index --chmod=+x scripts/fixture-anchor.sh
+  git -c commit.gpgsign=false commit -qm fixture
+  cd - > /dev/null
+}
+make_trailarg_fixture "$work/trailarg"
+expect "TRAIL run-block bare path with trailing argument is rejected" 1 "is tracked 100644, not 100755" "$work/trailarg"
 if ((failures > 0)); then
   echo "::error::$failures exec-bit guard assertion(s) failed"
   exit 1
