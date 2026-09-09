@@ -1,7 +1,8 @@
 ---
-# Exempt the pod-level security-context controls that Kyverno's
-# "add-security-context" ClusterPolicy injects at pod admission
-# (allowPrivilegeEscalation: false, drop ALL capabilities, seccompProfile).
+# Exempt the security-context controls that Kyverno's "add-security-context"
+# ClusterPolicy injects at admission: allowPrivilegeEscalation: false, drop ALL
+# capabilities and seccompProfile on each container, and runAsNonRoot, runAsUser
+# and runAsGroup on the pod.
 # Kubescape scans the stored Deployment/StatefulSet spec — where these
 # Kyverno-injected fields are absent — so they are exempted wherever that
 # mutation actually runs, and only there.
