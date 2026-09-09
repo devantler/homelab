@@ -55,6 +55,8 @@
 # PROD stored specs, which is the surface Kubescape reads, and corroborated
 # independently by the count of Kubescape's own workload-kind scan objects in those
 # namespaces (flux-system 6, longhorn-system 12, observability 15, velero 2).
+# NOTE: this baseline predates tofu-controller's removal (#3480, closed 2026-09-08);
+# the current population is expected to be 34 (flux-system 5). Re-measure to confirm.
 #
 # "Scanned" here means in the scanner's configured scope. The population's absence
 # from the posture score is NOT reducible to the config scan's own producing gaps
@@ -103,8 +105,9 @@
 # post-rollout read-back its documented flip procedure produces. So the 27 are
 # waiting on that per-namespace rollout, not on a mechanism that cannot reach
 # them. Template-level changes are what moved velero and flux-system. flux-system's
-# remaining two are flux-operator and tofu-controller, the latter retired and pending
-# removal in #3480.
+# sole remaining workload in this population is flux-operator; tofu-controller was the
+# second, but it was removed in #3480 (closed 2026-09-08), reducing the population
+# from 35 to 34.
 #
 # The per-workload table and the remediation split are on #3217. These counts are
 # prod-only and the local overlay opts in to a different namespace set, so re-measure
