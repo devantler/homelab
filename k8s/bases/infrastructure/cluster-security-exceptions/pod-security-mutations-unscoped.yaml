@@ -2,25 +2,18 @@
 # The part of the "add-security-context" mutation exemption that cannot yet be
 # scoped to the namespaces that mutation actually runs in.
 #
-# pod-security-mutations.yaml narrows C-0016 and C-0055 to the mutated set,
+# pod-security-mutations.yaml narrows C-0013, C-0016 and C-0055 to the mutated set,
 # because every workload that narrowing exposes is either covered by another
-# exception or already passes. C-0013 and C-0211 do not have that property, for
-# two different reasons, so they stay cluster-wide here until each is resolved.
+# exception or already passes. C-0211 does not have that property, so it stays
+# cluster-wide here until its residual population has a fix behind it.
 #
-# C-0013 — flux-system is the one namespace the mutation excludes that no other
-# exception covers and that IS scanned in-cluster. Five of its six workloads now
-# set the field genuinely: flux-operator at 65532 (patched at its own HelmRelease)
-# and helm-, kustomize-, notification- and source-controller at 65534 (patched in
-# the FluxInstance via the part-of=flux selector). Measured from the live
-# Deployment specs 2026-08-30.
-#
-# The sole remaining gap is tofu-controller, which has no runAsGroup at container
-# or pod level. It is not awaiting a patch: it is a retired workload whose
-# HelmRelease can never reconcile again (the retirement pruned its HelmRepository),
-# and it is already absent from this repository. Removing it is tracked in #3480,
-# and C-0013 narrows once that lands — closing the gap by deletion rather than by
-# setting a uid on a controller that is on its way out. #3223 tracks the narrowing
-# itself and is blocked on #3480.
+# C-0013 LEFT THIS FILE on 2026-09-09 (#3223). It was held here by one measured gap:
+# tofu-controller, the sixth flux-system workload, which had no runAsGroup at
+# container or pod level. That workload was retired in #3480 (closed 2026-09-08), so
+# the gap closed by deletion rather than by setting a uid on a controller already on
+# its way out, and flux-system's five remaining workloads pass C-0013 genuinely —
+# verified live per workload on the subStatus discriminator this file documents. The
+# narrowing and that evidence are recorded in pod-security-mutations.yaml.
 #
 # fail-open-warning:BEGIN — every spec.posture controlID must be named below.
 # 🔴 DO NOT RE-VERIFY ANY CONTROL IN THIS FILE ON workloadconfigurationscans ALONE —
@@ -29,13 +22,9 @@
 # spec.posture below inherits it. Kubescape writes status: passed together with
 # subStatus: "w/exceptions" and a populated appliedIgnoreRules on each suppressed
 # control, so reading .spec.controls[<id>].status.status reports a gate as clearable
-# when nothing behind it has been fixed. Scan status measured 2026-09-02 on both listed
-# controls:
+# when nothing behind it has been fixed. Scan status measured 2026-09-02 on the one
+# control listed below:
 #
-#   * C-0013 — five of the six flux-system workloads now pass genuinely, carrying an
-#     EMPTY subStatus; only tofu-controller, the single workload that is actually
-#     broken, reads passed with subStatus "w/exceptions". Status alone cannot tell the
-#     five apart from the one; subStatus isolates it exactly.
 #   * C-0211 — 35 of 35 scanned workloads read passed with subStatus "w/exceptions",
 #     each carrying appliedIgnoreRules: [pod-security-mutations-unscoped/C-0211]. Against
 #     the stored specs (re-measured 2026-09-03, below) six of the 35 pass both universal
@@ -137,21 +126,18 @@ metadata:
   annotations:
     # Cluster-wide, and knowingly wider than its own rationale: in the twelve
     # namespaces "add-security-context" excludes, nothing injects these fields.
-    # Both controls are retained rather than narrowed on an unmeasured guess —
-    # C-0013 pending #3480 (via #3223); C-0211 sized 2026-09-02 and pending #3217.
+    # C-0211 is retained rather than narrowed on an unmeasured guess — sized
+    # 2026-09-02 and pending #3217. C-0013 was narrowed out on 2026-09-09 (#3223)
+    # once #3480 removed the one workload that failed it.
     platform.devantler.tech/cluster-wide: declared
 spec:
   reason: >-
     Kyverno mutate policy "add-security-context" injects runAsNonRoot, runAsUser,
     runAsGroup and fsGroupChangePolicy at pod admission. The Deployment spec does
-    not contain them and Kubescape scans the stored spec, not the live pod. These
-    two controls remain cluster-wide because narrowing them is blocked on evidence
-    rather than on expressiveness: C-0013 has a measured one-workload gap in
-    flux-system (tofu-controller, pending its removal in #3480), and C-0211's
-    residual population is every scanned workload the mutation does not reach,
-    sized at 35 (#3217).
+    not contain them and Kubescape scans the stored spec, not the live pod. This
+    control remains cluster-wide because narrowing it is blocked on evidence rather
+    than on expressiveness: C-0211's residual population is every scanned workload
+    the mutation does not reach, sized at 35 (#3217).
   posture:
-    - controlID: C-0013
-      action: ignore
     - controlID: C-0211
       action: ignore

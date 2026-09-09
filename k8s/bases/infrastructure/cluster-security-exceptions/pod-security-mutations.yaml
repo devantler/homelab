@@ -14,13 +14,13 @@
 # and therefore this exception — still applies there. Read the mutation's match
 # blocks, not only its exclusions.
 #
-# Narrowing these two controls surfaces nothing, measured 2026-08-18 rather than
-# reasoned. The twelve excluded namespaces split three ways:
+# Narrowing these three controls surfaces nothing, re-measured 2026-09-09 rather
+# than reasoned. The twelve excluded namespaces split three ways:
 #   - Six carry scanned workloads. longhorn-system, observability, velero, kubevirt
-#     and cdi are separately excepted for C-0016 and C-0055 in
+#     and cdi are separately excepted for C-0013, C-0016 and C-0055 in
 #     infrastructure-privileged.yaml. flux-system is the only one no other exception
-#     covers, and all six Flux controllers there read C-0016 `passed` and C-0055
-#     `passed` on the pre-exception scan surface, so both controls hold without this
+#     covers, and its Flux controllers read C-0013, C-0016 and C-0055 `passed` on
+#     the pre-exception scan surface, so all three controls hold without this
 #     exception. (kubevirt and cdi have no live namespace in prod — their scan
 #     objects are residual — but they are excepted either way.)
 #   - Four are not scanned at all: kube-system, kube-public, kube-node-lease and
@@ -31,8 +31,31 @@
 #     and chaos stacks being opt-in.
 # The local overlay opts in to a different set, so re-measure rather than assuming
 # these counts still hold.
-# C-0013 and C-0211 are NOT narrowed with them: both have a measured or unsized
-# gap behind them and stay cluster-wide in pod-security-mutations-unscoped.yaml.
+#
+# C-0013 JOINED THEM on 2026-09-09, once its one measured gap closed by deletion
+# rather than by setting a uid on a controller that was on its way out. It stayed
+# cluster-wide while tofu-controller — the sixth flux-system workload — had no
+# runAsGroup at container or pod level. That workload was retired in #3480 (closed
+# 2026-09-08); flux-system now holds exactly five pod-bearing workloads.
+#
+# 🔴 THE RETIRED WORKLOAD'S SCAN RECORDS DID NOT DISAPPEAR WITH IT, AND THAT IS WHY
+# THIS WAS CHECKED BY KIND RATHER THAN BY NAME. Kubescape does not prune scan
+# records for deleted objects (#3697), so seven tofu/tf-runner records survive in
+# flux-system. None is a workload: they are Secrets, ServiceAccounts, a Role and a
+# RoleBinding, and C-0013 is a container-security control that only pod-bearing
+# kinds carry. So no residual tofu verdict can surface under this narrowing — but
+# "absent from the scan set" is NOT what was verified, because on this surface that
+# would have been false.
+#
+# Verified live 2026-09-09 per workload, not on the aggregate: all five read C-0013
+# `passed` with an EMPTY subStatus and `appliedIgnoreRules: null` — the
+# discriminator pod-security-mutations-unscoped.yaml documents, since a SUPPRESSED
+# control also reads `passed` but carries subStatus "w/exceptions". The stored
+# Deployment specs corroborate it independently of the scanner: flux-operator sets
+# runAsGroup 65532 and the four controllers 65534, each with runAsNonRoot true.
+#
+# C-0211 is NOT narrowed with them: its residual population still has no fix behind
+# it and it stays cluster-wide in pod-security-mutations-unscoped.yaml.
 #
 # readOnlyRootFilesystem (C-0017) is not exempted here. It is set genuinely in each
 # workload's own spec wherever the app tolerates a read-only root (see the app
@@ -65,13 +88,16 @@ spec:
             - chaos-mesh
   reason: >-
     Kyverno mutate policy "add-security-context" injects allowPrivilegeEscalation:
-    false, drop ALL capabilities and seccompProfile at pod admission. The
-    Deployment spec does not contain them and Kubescape scans the stored spec, not
-    the live pod. The exception is scoped to the namespaces that mutation runs in,
-    so it cannot suppress a control where nothing injects it.
+    false, drop ALL capabilities and seccompProfile at container admission, and
+    runAsNonRoot, runAsUser and runAsGroup at pod admission. The Deployment spec
+    does not contain them and Kubescape scans the stored spec, not the live pod.
+    The exception is scoped to the namespaces that mutation runs in, so it cannot
+    suppress a control where nothing injects it.
     readOnlyRootFilesystem (C-0017) is handled separately — set in-spec per
     workload.
   posture:
+    - controlID: C-0013
+      action: ignore
     - controlID: C-0016
       action: ignore
     - controlID: C-0055
