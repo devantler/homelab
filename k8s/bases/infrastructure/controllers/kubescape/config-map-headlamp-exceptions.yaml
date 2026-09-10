@@ -682,13 +682,16 @@ data:
         ],
         "posturePolicies": [
           {
+            "controlID": "^C-0013$"
+          },
+          {
             "controlID": "^C-0016$"
           },
           {
             "controlID": "^C-0055$"
           }
         ],
-        "reason": "Kyverno mutate policy \"add-security-context\" injects allowPrivilegeEscalation: false, drop ALL capabilities and seccompProfile at pod admission. The Deployment spec does not contain them and Kubescape scans the stored spec, not the live pod. The exception is scoped to the namespaces that mutation runs in, so it cannot suppress a control where nothing injects it. readOnlyRootFilesystem (C-0017) is handled separately — set in-spec per workload."
+        "reason": "Kyverno mutate policy \"add-security-context\" injects allowPrivilegeEscalation: false, drop ALL capabilities and seccompProfile at container admission, and runAsNonRoot, runAsUser and runAsGroup at pod admission. The Deployment spec does not contain them and Kubescape scans the stored spec, not the live pod. The exception is scoped to the namespaces that mutation runs in, so it cannot suppress a control where nothing injects it. readOnlyRootFilesystem (C-0017) is handled separately — set in-spec per workload."
       },
       {
         "name": "pod-security-mutations-unscoped",
@@ -706,13 +709,10 @@ data:
         ],
         "posturePolicies": [
           {
-            "controlID": "^C-0013$"
-          },
-          {
             "controlID": "^C-0211$"
           }
         ],
-        "reason": "Kyverno mutate policy \"add-security-context\" injects runAsNonRoot, runAsUser, runAsGroup and fsGroupChangePolicy at pod admission. The Deployment spec does not contain them and Kubescape scans the stored spec, not the live pod. These two controls remain cluster-wide because narrowing them is blocked on evidence rather than on expressiveness: C-0013 has a measured one-workload gap in flux-system (tofu-controller, pending its removal in #3480), and C-0211's residual population is every scanned workload the mutation does not reach, sized at 35 (#3217)."
+        "reason": "Kyverno mutate policy \"add-security-context\" injects runAsNonRoot, runAsUser, runAsGroup and fsGroupChangePolicy at pod admission. The Deployment spec does not contain them and Kubescape scans the stored spec, not the live pod. This control remains cluster-wide because narrowing it is blocked on evidence rather than on expressiveness: C-0211's residual population is every scanned workload the mutation does not reach, sized at 34 (35 in the 2026-09-02 baseline, before tofu-controller removal in #3480; #3217)."
       },
       {
         "name": "readonly-rootfs-pending",

@@ -174,9 +174,14 @@ f="${tmp}/id-embedded-punct.yaml"
 yq '.spec.posture[0].controlID = "C-0211-extra"' "${REAL}" >"${f}"
 expect 'a control id with a trailing segment is exit 2' 2 "${f}"
 
-# The negative control: the fix must not start rejecting well-formed ids.
+# The negative control: the fix must not start rejecting well-formed ids. It must
+# name a control the REAL file still SUPPRESSES, because this guard also requires
+# every posture id to appear in the fail-open warning block. A well-formed id this
+# file no longer documents would fail for the WRONG reason and read as a regex
+# regression. Sharing the base id the corrupted fixtures above mutate leaves
+# well-formedness as the only variable between them.
 f="${tmp}/id-well-formed.yaml"
-yq '.spec.posture[0].controlID = "C-0013"' "${REAL}" >"${f}"
+yq '.spec.posture[0].controlID = "C-0211"' "${REAL}" >"${f}"
 expect 'a well-formed control id is still accepted' 0 "${f}"
 
 if [ "${failures}" -gt 0 ]; then
