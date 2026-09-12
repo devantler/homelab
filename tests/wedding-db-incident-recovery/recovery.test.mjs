@@ -9,6 +9,8 @@ import {
   buildResumePatch,
   buildSchemaCleanupSQL,
   buildSuspendPatch,
+  hasPrelossWitness,
+  recoveryRefusalMessage,
   recoveryOwner,
   recoveryOwnerAttempt,
   recoverySource,
@@ -19,6 +21,24 @@ const CURRENT_UID='afea05ff-7daa-4d80-99a6-f2d696cbc3f1';
 const SOURCE_UID='9cd2ba9b-c7bf-43e2-bd2d-a5c7c139fafb';
 const BACKUP_UID='549fe940-b119-4010-bdc8-fa8e6ebc93ae';
 const CONTROLLER_UID='48c6521a-483a-4de9-895a-bae1a61ea25e';
+
+test('pre-loss reconciliation witness matches the live Flux history exactly',()=>{
+  const history=[{
+    lastReconciled:'2026-09-09T01:57:41Z',
+    lastReconciledStatus:'ReconciliationSucceeded',
+    digest:'sha256:022128434868723705c489546f68ba344a9cbe9e5c2b930a404d8aa2122ad9c7',
+    metadata:{originRevision:'v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9'},
+  }];
+  assert.equal(hasPrelossWitness({status:{history}}),true);
+  history[0].digest='sha256:022128434868723705c489546f68ba344e9cbe9e5c2b930a404d8aa2122ad9c7';
+  assert.equal(hasPrelossWitness({status:{history}}),false);
+});
+
+test('verified recovery failures disclose only an allow-listed phase',()=>{
+  assert.equal(recoveryRefusalMessage(), 'Wedding database incident recovery refused.\n');
+  assert.equal(recoveryRefusalMessage({verified:true,phase:'source-state'}), 'Wedding database incident recovery refused (phase: source-state).\n');
+  assert.equal(recoveryRefusalMessage({verified:true,phase:'subprocess stderr'}), 'Wedding database incident recovery refused.\n');
+});
 
 function fixture(){
   return {
