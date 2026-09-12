@@ -822,9 +822,13 @@ A deploy fails to start with one of:
 `refresh-flux-ghcr-auth.sh` fences its transaction with a `Lease` and by suspending
 the `infrastructure` and `flux-system` Kustomizations. Those fences are released
 together at exit. A hard kill releases an arbitrary prefix and leaves the rest
-held — and nothing reclaims them automatically, because Talos machine-config
-writes expose no fencing token, so a surviving process could still write after a
-timeout takeover. Recovery is deliberately a human step.
+held. Protected deploy and heal jobs run `--recover-fences`: it releases policy
+fences and then the Lease only when every holder identifies a GitHub Actions run
+attempt that is confirmed terminal, the Lease heartbeat has stopped, no node
+fence is held, and every CAS-guarded patch still matches the reported state.
+Node fences remain a manual or full-bridge recovery because Talos machine-config
+writes expose no fencing token and need the bridge's revision and scheduling
+proofs.
 
 A held policy fence is the more serious of the two: the deploy fails loudly, but
 the suspended Kustomization silently stops GitOps reconciliation for that layer
@@ -862,7 +866,11 @@ fences legitimately.
 - An identity with no run reference predates that recording, or came from a local
   run. Establish liveness another way before continuing.
 
-**3. Release.** Run the command the report printed for each dead fence. Each is
+**3. Release.** For terminal GitHub-run policy fences plus the Lease, run
+`./scripts/refresh-flux-ghcr-auth.sh --recover-fences`; it proves all holders
+before its first mutation and releases child, parent, then Lease. For a local or
+legacy holder that the API cannot prove terminal, use the commands from
+`--fences` only after establishing the process is dead. Each command is
 CAS-guarded on the holder and the resource's current state, so it fails safely if
 anything changed since the report.
 
