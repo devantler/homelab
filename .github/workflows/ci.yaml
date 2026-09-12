@@ -401,6 +401,9 @@ jobs:
               - 'scripts/tests/test-stranded-volume-attach-alert.sh'
               - 'scripts/tests/test-coroot-alert-autosuppressor.sh'
               - 'scripts/tests/test-velero-maintenance-oom-alert.sh'
+              # That test also asserts the alerting runbook points at the alert's
+              # manifest, so a runbook-only edit must still run it.
+              - 'docs/dr/alerting.md'
               # The Job manifest, the Secret it imports and this test are one
               # contract: the credential is only out of the environment while all
               # three agree.

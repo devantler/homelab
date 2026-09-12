@@ -114,7 +114,7 @@ spec:
                     | [.state.terminated, .lastState.terminated][]
                     | select(. != null and .reason == "OOMKilled" and .finishedAt != null)
                     | (.finishedAt | fromdateiso8601) as $finished
-                    | select($finished >= $cutoff)
+                    | select($finished > $cutoff)
                     | "• `velero/\($pod.metadata.name)` — repository `\($repo)`, OOMKilled at \(.finishedAt) (exit \(.exitCode // "unknown"))"
                   ' /tmp/body)
 

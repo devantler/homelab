@@ -88,6 +88,17 @@ pod() { # name repo reason exit-code seconds-ago
       }]}}'
 }
 
+restarted_pod() { # name repo reason exit-code seconds-ago — running again after a terminated attempt
+  local name=$1 repo=$2 reason=$3 exit_code=$4 ago=$5
+  jq -cn --arg name "$name" --arg repo "$repo" --arg reason "$reason" \
+    --argjson exit_code "$exit_code" --argjson finished "$((now_epoch - ago))" '
+      {metadata:{name:$name,labels:{"velero.io/repo-name":$repo}},status:{containerStatuses:[{
+        name:"velero-repo-maintenance-container",
+        state:{running:{startedAt:($finished|todateiso8601)}},
+        lastState:{terminated:{reason:$reason,exitCode:$exit_code,finishedAt:($finished|todateiso8601)}}
+      }]}}'
+}
+
 setup_scenario() {
   local name=$1 webhook=$2
   local dir="${work_root}/${name}"
@@ -168,6 +179,28 @@ pod old-oom observability-default-kopia OOMKilled 137 10800 | jq -sc '{kind:"Pod
 run_scenario "$dir" || fail "old scenario failed: $(cat "${dir}/stderr")"
 [ ! -f "${dir}/delivered" ] || fail 'an OOMKill outside the lookback window alerted'
 pass 'an expired OOMKill ages out of the alert window'
+
+# The lookback is exclusive at its boundary: a 30-minute schedule with a two-hour
+# window must alert on at most four ticks, so an event exactly LOOKBACK_SECONDS
+# old has already aged out. One second younger must still alert, so the boundary
+# is not over-tightened.
+dir="$(setup_scenario at-cutoff "$real_webhook")"
+pod at-cutoff-oom observability-default-kopia OOMKilled 137 7200 | jq -sc '{kind:"PodList",items:.}' >"${dir}/api.body"
+run_scenario "$dir" || fail "at-cutoff scenario failed: $(cat "${dir}/stderr")"
+[ ! -f "${dir}/delivered" ] || fail 'an OOMKill exactly at the lookback cutoff alerted a fifth time'
+dir="$(setup_scenario inside-cutoff "$real_webhook")"
+pod inside-cutoff-oom observability-default-kopia OOMKilled 137 7199 | jq -sc '{kind:"PodList",items:.}' >"${dir}/api.body"
+run_scenario "$dir" || fail "inside-cutoff scenario failed: $(cat "${dir}/stderr")"
+[ -f "${dir}/delivered" ] || fail 'an OOMKill one second inside the lookback did not alert'
+pass 'the lookback boundary is exclusive, and one second inside still alerts'
+
+# A container restarted in place after an OOMKill reports it only in lastState.
+dir="$(setup_scenario restarted "$real_webhook")"
+restarted_pod restarted-oom observability-default-kopia OOMKilled 137 600 | jq -sc '{kind:"PodList",items:.}' >"${dir}/api.body"
+run_scenario "$dir" || fail "restarted scenario failed: $(cat "${dir}/stderr")"
+[ -f "${dir}/delivered" ] || fail 'an OOMKill recorded only in lastState produced no alert'
+grep -Fq restarted-oom <<<"$(jq -r .text "${dir}/tmp/payload.json")" || fail 'lastState alert does not name its pod'
+pass 'an OOMKill recorded only in lastState still alerts'
 
 dir="$(setup_scenario malformed "$real_webhook")"
 printf '%s' '{"items":{}}' >"${dir}/api.body"
