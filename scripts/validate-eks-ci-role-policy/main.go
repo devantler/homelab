@@ -1894,7 +1894,47 @@ const (
 // The new fingerprints below were read from this validator's complete rendered
 // surface. Restoring either predecessor value makes the same focused test fail,
 // so both checks remain live.
-const expectedRenderedSurfaceSHA = "2a3498e2fdcd83a48433d7821c382fef70115fc3b87e36ac508afcac5cbdc0ef"
+//
+// Moved again by the descheduler C-0211 baseline context (#3239). The workload
+// sits in kube-system, which add-security-context excludes, so its stored
+// template is supplied through the chart's own values instead. A HelmRelease is
+// a controller-RBAC emitter, so a pure VALUES change moves this aggregate even
+// though nothing is granted.
+//
+// Rendering all five authorization roots on this branch and on main 0fd0ee0f
+// preserves the complete document identity set in both directions: 86
+// grant-bearing identities (ClusterRole, Role, ClusterRoleBinding, RoleBinding,
+// ServiceAccount) identical either way, the ClusterRole/Role rule bodies
+// identical under digest
+// 6a52babc727cc081fd2505ccf16d8617776edd2bcce6cd25aac733df9aa147e3, and 560
+// documents over 63 kinds unchanged. Four of the five roots render
+// byte-identically; infrastructure/controllers grows by 112 bytes. The complete
+// hunk list is ONE hunk of four added lines inside the descheduler HelmRelease's
+// values:
+//
+//	podSecurityContext.fsGroupChangePolicy: OnRootMismatch
+//	securityContext.seLinuxOptions: {}
+//
+// It adds no Role, ClusterRole, binding, ServiceAccount, subject, verb,
+// wildcard, AWS identity, or permission. Injecting one synthetic ClusterRole
+// into the rendered surface makes both independent extractions report the
+// difference, so the identical result above is a finding rather than a blind
+// read. A first pass of the structural extraction counted 171 per side; 85 of
+// those were document-separator artifacts rather than identities, symmetric on
+// both sides. The filtered count of 86 is the real one.
+//
+// RENDERER PROVENANCE, and unlike the #3722 entry above this one claims no local
+// reproduction: this host renders with kubectl v1.36.1 and kustomize v5.8.1,
+// which this validator REJECTS as unapproved, so no local digest was produced
+// and none could be. The value below was read from CI's own failure on run
+// 34695951314, which renders under the approved SHA256-verified toolchain. The
+// conservation evidence above is renderer-independent — it compares two trees
+// under one renderer — so it stands on its own; only the digest depends on CI.
+//
+// The previous aggregate remains recorded here:
+//
+//	2a3498e2fdcd83a48433d7821c382fef70115fc3b87e36ac508afcac5cbdc0ef
+const expectedRenderedSurfaceSHA = "64fa70ceb63e0e967b8218a55e0693f97542137b48ff463ad381afa39d796d9e"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
