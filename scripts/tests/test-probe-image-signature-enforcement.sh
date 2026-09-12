@@ -314,9 +314,31 @@ out="$("${script}" --confirm --node "${node}" \
 rc=$?
 set -e
 [[ ${rc} -eq 3 ]] || fail "unmatched ref should exit 3, got ${rc}"
-require_text "${out}" 'matches NO declared rule' 'unmatched ref'
+require_text "${out}" 'matches NO running rule' 'unmatched ref'
 refute_text "${out}" 'FAIL:' 'unmatched ref'
 check 'an unsigned ref matching no rule is INCONCLUSIVE, never FAIL'
+
+# The SIGNED positive control must match a running rule too, and this is the case
+# that breaks the probe's argument if it is missing (CodeRabbit found it on review).
+# An unmatched signed ref pulls successfully WITHOUT being verified at all, so its
+# success stops excluding the failure mode the control exists for — a verifier that
+# refuses every rule-MATCHING image. Without this gate the probe pairs a
+# verification-shaped refusal with an unrelated successful pull and reports PASS: a
+# false all-clear on exactly the broken state it was built to detect. Neither ref may
+# be pulled in that situation.
+reset_fixtures
+stage_pull "${unsigned}" 1 'image verification failed: no valid signature found'
+set +e
+out="$("${script}" --confirm --node "${node}" \
+  --unsigned-image "${unsigned}" --signed-image 'ghcr.io/other-org/signed-thing:v1' 2>&1)"
+rc=$?
+set -e
+[[ ${rc} -eq 3 ]] || fail "unmatched SIGNED control should exit 3, got ${rc}: ${out}"
+require_text "${out}" 'signed positive control' 'unmatched signed control'
+require_text "${out}" 'matches NO running rule' 'unmatched signed control'
+refute_text "${out}" 'PASS:' 'unmatched signed control'
+[[ ! -e "${fixtures}/pulled.txt" ]] || fail 'probe pulled despite an unmatched signed control'
+check 'an unmatched SIGNED positive control is INCONCLUSIVE and nothing is pulled'
 
 # --- Cache guard ------------------------------------------------------------
 # The false-PASS case: a cached ref is never re-pulled, so verification never

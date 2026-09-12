@@ -230,25 +230,47 @@ patterns="$(printf '%s' "${rules_json}" |
 
 [[ -n "${patterns}" ]] ||
   fail_inconclusive "node ${node} holds NO running materialised verification rules — nothing would be verified there, so neither a refusal nor a successful pull would prove anything"
-matched_pattern=''
-while IFS= read -r pattern; do
-  [[ -n "${pattern}" ]] || continue
-  # The rule patterns are containerd globs. `case` glob-matches with the same
-  # semantics, and the pattern is deliberately UNQUOTED here so it is treated as
-  # a glob rather than a literal.
-  # shellcheck disable=SC2254
-  case "${unsigned_image}" in
-    ${pattern})
-      matched_pattern="${pattern}"
-      break
-      ;;
-  esac
-done <<<"${patterns}"
 
-[[ -n "${matched_pattern}" ]] ||
-  fail_inconclusive "the unsigned ref '${unsigned_image}' matches NO declared rule on node ${node} — an unmatched image is allowed by design, so refusing it is not what this probe would be observing"
+# BOTH refs must match a running rule, and the positive control's match is the
+# load-bearing one people forget (CodeRabbit caught this on review).
+#
+# For the UNSIGNED ref the reason is obvious: an unmatched image is allowed
+# through by design, so refusing it is not what this probe observes.
+#
+# For the SIGNED ref it is subtler and it breaks the probe's whole argument. An
+# unmatched signed ref pulls successfully WITHOUT ANY VERIFICATION HAVING
+# HAPPENED. Its success then says nothing about the verifier, so it no longer
+# excludes the failure mode the positive control exists for — a verifier that
+# refuses every rule-MATCHING image. The probe would combine a
+# verification-shaped refusal with an unrelated successful pull and report
+# PASS, which is a false all-clear on exactly the broken state it was built to
+# detect. Both refs are therefore matched before either is pulled.
+match_rule() {
+  local ref="$1" pattern
+  while IFS= read -r pattern; do
+    [[ -n "${pattern}" ]] || continue
+    # The rule patterns are containerd globs. `case` glob-matches with the same
+    # semantics, and the pattern is deliberately UNQUOTED here so it is treated
+    # as a glob rather than a literal.
+    # shellcheck disable=SC2254
+    case "${ref}" in
+      ${pattern})
+        printf '%s' "${pattern}"
+        return 0
+        ;;
+    esac
+  done <<<"${patterns}"
+  return 1
+}
 
-printf 'probe: unsigned ref matches rule pattern %s on node %s\n' "${matched_pattern}" "${node}"
+matched_pattern="$(match_rule "${unsigned_image}")" ||
+  fail_inconclusive "the unsigned ref '${unsigned_image}' matches NO running rule on node ${node} — an unmatched image is allowed by design, so refusing it is not what this probe would be observing"
+
+signed_matched_pattern="$(match_rule "${signed_image}")" ||
+  fail_inconclusive "the signed positive control '${signed_image}' matches NO running rule on node ${node} — it would pull without being verified at all, so its success could not exclude a verifier that refuses every rule-matching image, and a PASS would be unfounded"
+
+printf 'probe: on node %s the unsigned ref matches rule %s and the signed control matches rule %s\n' \
+  "${node}" "${matched_pattern}" "${signed_matched_pattern}"
 
 # ---------------------------------------------------------------------------
 # Cache guard. See the header: a cached ref is never re-pulled, so probing one
