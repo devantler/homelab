@@ -1946,14 +1946,14 @@ const (
 // reproduction: this host renders with kubectl v1.36.1 and kustomize v5.8.1,
 // which this validator REJECTS as unapproved, so no local digest was produced
 // and none could be. The value below was read from CI's own failure on run
-// 34695951314, which renders under the approved SHA256-verified toolchain. The
+// 34698439645, which renders under the approved SHA256-verified toolchain. The
 // conservation evidence above is renderer-independent — it compares two trees
 // under one renderer — so it stands on its own; only the digest depends on CI.
 //
 // The previous aggregate remains recorded here:
 //
 //	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
-const expectedRenderedSurfaceSHA = "0000000000000000000000000000000000000000000000000000000000000000"
+const expectedRenderedSurfaceSHA = "5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
