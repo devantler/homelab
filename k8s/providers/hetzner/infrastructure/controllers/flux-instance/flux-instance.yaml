@@ -40,6 +40,13 @@ spec:
           - op: replace
             path: /spec/replicas
             value: 2
+          - op: add
+            path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+            value:
+              - labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: kustomize-controller
+                topologyKey: kubernetes.io/hostname
       # Run kustomize-/helm-/notification-controller active/standby (HA) for
       # node-failure resilience: each binary runs --enable-leader-election and
       # holds a coordination.k8s.io Lease, so a 2nd replica is a warm standby (one
@@ -81,6 +88,13 @@ spec:
           - op: replace
             path: /spec/replicas
             value: 2
+          - op: add
+            path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+            value:
+              - labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: helm-controller
+                topologyKey: kubernetes.io/hostname
       - target:
           kind: Deployment
           name: notification-controller
@@ -88,18 +102,25 @@ spec:
           - op: replace
             path: /spec/replicas
             value: 2
-      # Spread the four Flux controllers across worker nodes. They all carry
-      # app.kubernetes.io/part-of=flux, so a per-controller topology spread
-      # keyed on that label distributes the set (skew <= 1) — and, combined with
-      # the replicas: 2 patch above, keeps each controller's active and standby
-      # pods on different nodes instead of letting the scheduler stack them.
+          - op: add
+            path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+            value:
+              - labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: notification-controller
+                topologyKey: kubernetes.io/hostname
+      # Spread the four Flux controllers across worker nodes. The three
+      # replicated controller patches above require each active/standby pair to
+      # use different hostnames. This additional aggregate spread distributes
+      # the whole controller set with skew <= 1.
       # On 2026-05-28 kustomize-controller landed on prod-worker-2 when that
       # node's Cilium ClusterIP datapath degraded after an OOMKill; it then
       # crash-looped on "dial tcp 10.96.0.1:443: i/o timeout" and GitOps
       # reconciliation stalled — so the fix for the underlying OOM could not be
       # applied (a deadlock GitOps cannot self-heal from). Keeping the
       # controllers spread means a single bad worker cannot decapitate
-      # reconciliation. Soft (ScheduleAnyway) so it never blocks scheduling.
+      # reconciliation. The aggregate rule is soft (ScheduleAnyway); the
+      # same-controller anti-affinity above is the required HA guarantee.
       - target:
           kind: Deployment
           labelSelector: app.kubernetes.io/part-of=flux

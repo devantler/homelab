@@ -132,6 +132,11 @@ test('both Flux fences replace every pre-suspension controller before the applic
   assert.equal(instance.match(/\n          name: kustomize-controller\n/g)?.length,1);
   assert.doesNotMatch(instance,/name: (?:kustomize-controller|helm-controller|notification-controller)\n\s+namespace:/);
   assert.match(instance,/name: kustomize-controller\n        patch: \|[\s\S]*?value: --requeue-dependency=5s[\s\S]*?path: \/spec\/replicas[\s\S]*?value: 2/);
+  assert.equal(instance.match(/path: \/spec\/template\/spec\/affinity\/podAntiAffinity\/requiredDuringSchedulingIgnoredDuringExecution/g)?.length,3);
+  for(const controller of ['kustomize-controller','helm-controller','notification-controller']){
+    const patch=instance.slice(instance.indexOf(`          name: ${controller}`),instance.indexOf('\n      - target:',instance.indexOf(`          name: ${controller}`)+1));
+    assert.match(patch,new RegExp(`requiredDuringSchedulingIgnoredDuringExecution[\\s\\S]*app\\.kubernetes\\.io/name: ${controller}[\\s\\S]*topologyKey: kubernetes\\.io/hostname`));
+  }
   const suspension=source.slice(source.indexOf('function suspendApplication'),source.indexOf('function resumeApplication'));
   assert.match(suspension,/acquireFence\(PARENT_NAMESPACE[\s\S]*acquireFence\(NAMESPACE[\s\S]*restartKustomizeController\(config\)[\s\S]*scale','deployment'/);
   assert.match(source,/rollout','status','deployment\.apps\/'\+FLUX_CONTROLLER/);
