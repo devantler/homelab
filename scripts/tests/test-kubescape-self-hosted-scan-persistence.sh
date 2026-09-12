@@ -34,6 +34,15 @@ if ((major < 4 || (major == 4 && minor == 0 && patch < 12))); then
   fail "Kubescape scanner ${scanner_tag} predates v4.0.12 and can silently drop self-hosted posture results"
 fi
 
+# Kubescape v4.0.12 ships CEL admission support with the v0.13 policy bundle,
+# which does not contain the ValidatingAdmissionPolicy for control C-0262. A
+# full scheduled scan therefore aborts after discovery with "no
+# ValidatingAdmissionPolicy for control C-0262" and persists no posture data.
+# v4.0.13 bumps the embedded library to v0.14 and includes that policy.
+if ((major < 4 || (major == 4 && minor == 0 && patch < 13))); then
+  fail "Kubescape scanner ${scanner_tag} predates v4.0.13 and can abort on the incomplete embedded CEL policy bundle"
+fi
+
 # kubevuln v0.3.159 swallows an exhausted conflict retry while updating a
 # VulnerabilityManifestSummary: it logs the original AlreadyExists result and
 # returns success. kubescape/kubevuln#745 fixed both error reporting and

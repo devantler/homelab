@@ -1953,7 +1953,25 @@ const (
 // The previous aggregate remains recorded here:
 //
 //	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
-const expectedRenderedSurfaceSHA = "5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65"
+
+// Moved again by the Kubescape posture-persistence repair. Exactly one existing
+// document changes: the kubescape/kubescape HelmRelease advances the scanner
+// image from v4.0.12 to v4.0.14. The newer image contains the v0.14 embedded CEL
+// policy bundle required by control C-0262 and fixes concurrent CEL parameter
+// lookup; the HelmRelease values and rendered authorization objects are
+// otherwise unchanged.
+//
+// CONSERVATION, read from this validator under the SHA256-verified kubectl
+// v1.36.2 renderer: exactly this aggregate changed. It reported ZERO
+// `unapproved rendered <identity>`, ZERO `missing rendered authorization
+// resource` and ZERO `duplicate rendered`; every pinned per-resource identity
+// still passes. No identity, binding, ServiceAccount, verb, wildcard, AWS
+// identity or permission change is introduced. The kubescape HelmRelease's
+// unresolved-substitution fingerprint changes with the reviewed scanner tag;
+// other substitutions are unchanged diagnostics.
+//
+// Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
+const expectedRenderedSurfaceSHA = "413036a9623179f80532918e40d6988b89ec730bddcd9ae1b02b2c03d7e9a958"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
