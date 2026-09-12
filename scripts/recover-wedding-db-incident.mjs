@@ -523,7 +523,7 @@ function resumeApplication(config){
   try{
     const restored=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
     const deployment=object('deployments.apps',LIVE_DEPLOYMENT);
-    check(restored.metadata.uid===LIVE_KUSTOMIZATION_UID&&restored.spec?.suspend===false);
+    check(restored.metadata.uid===LIVE_KUSTOMIZATION_UID&&restored.spec?.suspend!==true);
     check(!restored.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!restored.metadata?.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
     check(deployment.spec?.replicas===2&&deployment.status?.availableReplicas>=2);
   }catch{failed=true;}

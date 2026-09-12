@@ -139,6 +139,15 @@ test('both Flux fences replace every pre-suspension controller before the applic
   assert.match(source,/history\?\.some\(item=>item\.lastReconciled===PRELOSS_TARGET_TIME[\s\S]*item\.lastReconciledStatus==='ReconciliationSucceeded'/);
 });
 
+test('cleanup releases the parent after a parent-only fence acquisition',async()=>{
+  const fs=await import('node:fs/promises');
+  const source=await fs.readFile(new URL('../../scripts/recover-wedding-db-incident.mjs',import.meta.url),'utf8');
+  const resume=source.slice(source.indexOf('function resumeApplication'),source.indexOf('function createRecovery'));
+  assert.match(resume,/if\(!childOwner\)check\(child\.spec\?\.suspend!==true/);
+  assert.match(resume,/restored\.metadata\.uid===LIVE_KUSTOMIZATION_UID&&restored\.spec\?\.suspend!==true/);
+  assert.match(resume,/if\(parentOwner&&childReleased&&!failed\).*releaseFence\(PARENT_NAMESPACE/s);
+});
+
 test('current and restored backups are distinct, run-owned plugin backups',()=>{
   const before=buildBackup({run:'34710000000',attempt:'1',phase:'before'});
   const after=buildBackup({run:'34710000000',attempt:'1',phase:'after'});
