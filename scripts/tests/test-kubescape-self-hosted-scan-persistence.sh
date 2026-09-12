@@ -43,6 +43,13 @@ if ((major < 4 || (major == 4 && minor == 0 && patch < 13))); then
   fail "Kubescape scanner ${scanner_tag} predates v4.0.13 and can abort on the incomplete embedded CEL policy bundle"
 fi
 
+# v4.0.13 still races on concurrent CEL parameter lookups during a scan; v4.0.14
+# is the first scanner carrying that fix. No cluster-level test exercises the
+# race, so this guard is what stops a downgrade from reintroducing it.
+if ((major < 4 || (major == 4 && minor == 0 && patch < 14))); then
+  fail "Kubescape scanner ${scanner_tag} predates v4.0.14 and can race on concurrent CEL parameter lookups"
+fi
+
 # kubevuln v0.3.159 swallows an exhausted conflict retry while updating a
 # VulnerabilityManifestSummary: it logs the original AlreadyExists result and
 # returns success. kubescape/kubevuln#745 fixed both error reporting and
