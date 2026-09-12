@@ -33,6 +33,10 @@ export function fixtures() {
     destinationPath: 's3://platform-backups/cnpg/wedding-db', endpointURL: opts.endpoint,
     s3Credentials: Object.fromEntries([['accessKeyId','ACCESS_KEY_ID'],['secretAccessKey','SECRET_ACCESS_KEY'],['region','REGION']].map(([key, value]) => [key, { name: 'wedding-db-backup-r2', key: value }]))
   };
+  docs.cluster.spec.plugins = [{
+    name: 'barman-cloud.cloudnative-pg.io', enabled: true, isWALArchiver: true,
+    parameters: { barmanObjectName: 'wedding-db', serverName: 'wedding-db-20260909' }
+  }];
   docs.bootstrapSecret.type = docs.projectedSecret.type = 'Opaque';
   docs.bootstrapSecret.data = { access_key_id: enc(id), secret_access_key: enc(secret) };
   docs.projectedSecret.data = { ACCESS_KEY_ID: enc(id), SECRET_ACCESS_KEY: enc(secret), REGION: enc('auto') };

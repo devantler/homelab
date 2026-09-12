@@ -1870,7 +1870,31 @@ const (
 // Restoring the superseded value fails with exactly this fingerprint, so the
 // baseline is not vacuous.
 // Previous aggregate: 1b17b64243f850afd2acc2b8af2fa5ed270e3a88d42db80437d2de40d7861a12.
-const expectedRenderedSurfaceSHA = "36049e7ea4817e1d3006e504eea95495341d2c0acbd3ffa5990981b4bf0e4335"
+//
+// Moved again by the Wedding archive-incarnation repair (#3722). Rendering all
+// five authorization roots on this branch and on main de14c1ba preserves the
+// complete document identity set in both directions. Exactly ONE existing
+// document changes:
+//
+//	kustomize.toolkit.fluxcd.io/v1  Kustomization  wedding-app/wedding-app
+//
+// Its only rendered delta is a JSON patch that adds the fixed
+// `spec.plugins[0].parameters.serverName` value to the tenant's CNPG Cluster.
+// That isolates the new PostgreSQL system ID from its predecessor's retained
+// Barman archive. It adds no Role, ClusterRole, binding, ServiceAccount, subject,
+// verb, wildcard, AWS identity, or permission. The validator's error set reports
+// exactly the one per-resource mismatch and this aggregate mismatch, with zero
+// missing or duplicate resources; unresolved Flux substitutions are the usual
+// diagnostics emitted alongside a mismatch.
+//
+// The previous aggregate remains recorded here:
+//
+//	36049e7ea4817e1d3006e504eea95495341d2c0acbd3ffa5990981b4bf0e4335
+//
+// The new fingerprints below were read from this validator's complete rendered
+// surface. Restoring either predecessor value makes the same focused test fail,
+// so both checks remain live.
+const expectedRenderedSurfaceSHA = "2a3498e2fdcd83a48433d7821c382fef70115fc3b87e36ac508afcac5cbdc0ef"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
@@ -2087,7 +2111,7 @@ var expectedRenderedHashes = map[resourceIdentity]string{
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "flux-system", name: "infrastructure-controllers"}: "9d9b62d3221442d6355d16a34d31c198619fb3b3728df960fd67222a531ece7b",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "github-config", name: "github-config"}:            "8e9f72b0f4f982d050aff0b97d246c68b538cbc397cdd45d031c95cfae981e7c",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "unifi", name: "unifi"}:                            "33a579299700de2467631854bac4982d3e14caa3bad8cbcd2613ac180b30af32",
-	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "8af27d4845565c57b9ebc618f186669f18ada89e070cf4e6514924717a2532f8",
+	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "3710185a3d14afaeaa032447421850f6a8ab01e1ae5dbbf58819783cc61154e8",
 }
 
 // fingerprint returns the SHA-256 identity used for byte-exact source checks.
