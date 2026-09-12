@@ -201,14 +201,18 @@ test('manual recovery is serialized with production deployments and discloses no
   assert.match(workflow,/workflow_dispatch:\n\npermissions: \{\}/);
   assert.match(workflow,/group: prod-deploy\n  cancel-in-progress: false\n  queue: max/);
   assert.match(workflow,/timeout-minutes: 180/);
-  assert.match(workflow,/needs: recover\n    if: \$\{\{ always\(\) \}\}/);
+  assert.match(workflow,/outputs:\n      source_sha: \$\{\{ steps\.recovery_source\.outputs\.sha \}\}/);
+  assert.match(workflow,/needs: recover\n    if: \$\{\{ always\(\) && needs\.recover\.outputs\.source_sha != '' \}\}/);
   assert.match(workflow,/timeout-minutes: 60/);
   assert.match(workflow,/node scripts\/recover-wedding-db-incident\.mjs --cleanup/);
   assert.equal(workflow.match(/run: \.\/scripts\/use-prod-stable-api-endpoint\.sh/g)?.length,2);
   assert.equal(workflow.match(/HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/g)?.length,2);
   assert.match(workflow,/environment: prod/);
   assert.match(workflow,/persist-credentials: false/);
-  assert.equal(workflow.match(/ref: main/g)?.length,2);
+  assert.equal(workflow.match(/ref: main/g)?.length,1);
+  assert.match(workflow,/ref: \$\{\{ needs\.recover\.outputs\.source_sha \}\}/);
+  assert.match(workflow,/id: recovery_source/);
+  assert.match(workflow,/printf 'sha=%s\\n' "\$GITHUB_SHA" >>"\$GITHUB_OUTPUT"/);
   assert.equal(workflow.match(/node scripts\/recover-wedding-db-incident\.mjs --verify-source/g)?.length,2);
   for(const job of workflow.split(/\n  [a-z-]+:\n/).slice(1)){
     assert.ok(job.indexOf('node scripts/recover-wedding-db-incident.mjs --verify-source')<job.indexOf('KUBE_CONFIG:'));

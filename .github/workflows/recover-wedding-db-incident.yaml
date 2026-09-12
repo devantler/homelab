@@ -20,6 +20,8 @@ jobs:
     environment: prod
     permissions:
       contents: read
+    outputs:
+      source_sha: ${{ steps.recovery_source.outputs.sha }}
     steps:
       - name: Check out the exact recovery source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,7 +30,12 @@ jobs:
           ref: main
 
       - name: Verify the exact main recovery source
-        run: node scripts/recover-wedding-db-incident.mjs --verify-source
+        id: recovery_source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/recover-wedding-db-incident.mjs --verify-source
+          printf 'sha=%s\n' "$GITHUB_SHA" >>"$GITHUB_OUTPUT"
 
       - name: Restore production kubeconfig
         shell: bash
@@ -54,7 +61,7 @@ jobs:
   restore-application:
     name: Restore Wedding application state
     needs: recover
-    if: ${{ always() }}
+    if: ${{ always() && needs.recover.outputs.source_sha != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: prod
@@ -65,7 +72,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: main
+          ref: ${{ needs.recover.outputs.source_sha }}
 
       - name: Verify the exact main recovery source
         run: node scripts/recover-wedding-db-incident.mjs --verify-source
