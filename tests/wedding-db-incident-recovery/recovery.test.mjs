@@ -124,6 +124,10 @@ test('controller handoff restart is atomic and bound to this incident',()=>{
 test('both Flux fences replace every pre-suspension controller before the application drains',async()=>{
   const fs=await import('node:fs/promises');
   const source=await fs.readFile(new URL('../../scripts/recover-wedding-db-incident.mjs',import.meta.url),'utf8');
+  const instance=await fs.readFile(new URL('../../k8s/providers/hetzner/infrastructure/controllers/flux-instance/flux-instance.yaml',import.meta.url),'utf8');
+  assert.match(source,/const FLUX_CONTROLLER_REPLICAS=2;/);
+  assert.equal(instance.match(/\n          name: kustomize-controller\n/g)?.length,1);
+  assert.match(instance,/name: kustomize-controller\n          namespace: flux-system\n        patch: \|[\s\S]*?value: --requeue-dependency=5s[\s\S]*?path: \/spec\/replicas[\s\S]*?value: 2/);
   const suspension=source.slice(source.indexOf('function suspendApplication'),source.indexOf('function resumeApplication'));
   assert.match(suspension,/acquireFence\(PARENT_NAMESPACE[\s\S]*acquireFence\(NAMESPACE[\s\S]*restartKustomizeController\(config\)[\s\S]*scale','deployment'/);
   assert.match(source,/rollout','status','deployment\.apps\/'\+FLUX_CONTROLLER/);

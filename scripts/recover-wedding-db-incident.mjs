@@ -9,6 +9,7 @@ const PARENT_KUSTOMIZATION='apps';
 const PARENT_KUSTOMIZATION_UID='7a4f35ea-01c8-460e-aefe-6fdf6d10eb48';
 const FLUX_CONTROLLER='kustomize-controller';
 const FLUX_CONTROLLER_UID='48c6521a-483a-4de9-895a-bae1a61ea25e';
+const FLUX_CONTROLLER_REPLICAS=2;
 const FLUX_CONTROLLER_RESTART_PATH='/spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt';
 const LIVE_CLUSTER='wedding-db';
 const LIVE_DEPLOYMENT='wedding-app';
@@ -435,8 +436,8 @@ function assertControllerReady(controller,{restartToken}={}){
   check(controller.metadata?.name===FLUX_CONTROLLER&&controller.metadata.namespace===PARENT_NAMESPACE);
   check(controller.metadata.uid===FLUX_CONTROLLER_UID&&controller.metadata.creationTimestamp==='2026-05-23T00:41:46Z'&&!controller.metadata.deletionTimestamp);
   check(typeof controller.metadata.resourceVersion==='string'&&Number.isSafeInteger(controller.metadata.generation));
-  check(controller.spec?.replicas===1&&controller.spec.selector?.matchLabels?.app===FLUX_CONTROLLER);
-  check(controller.status?.observedGeneration===controller.metadata.generation&&controller.status.updatedReplicas===1&&controller.status.readyReplicas===1&&controller.status.availableReplicas===1);
+  check(controller.spec?.replicas===FLUX_CONTROLLER_REPLICAS&&controller.spec.selector?.matchLabels?.app===FLUX_CONTROLLER);
+  check(controller.status?.observedGeneration===controller.metadata.generation&&controller.status.updatedReplicas===FLUX_CONTROLLER_REPLICAS&&controller.status.readyReplicas===FLUX_CONTROLLER_REPLICAS&&controller.status.availableReplicas===FLUX_CONTROLLER_REPLICAS);
   check(controller.spec.template?.metadata?.annotations&&typeof controller.spec.template.metadata.annotations==='object');
   if(restartToken)check(controller.spec.template.metadata.annotations['kubectl.kubernetes.io/restartedAt']===restartToken);
 }
@@ -451,7 +452,7 @@ function restartKustomizeController(config){
   const beforeController=objectAt(PARENT_NAMESPACE,'deployments.apps',FLUX_CONTROLLER);
   assertControllerReady(beforeController);
   const beforePods=listAt(PARENT_NAMESPACE,'pods','app='+FLUX_CONTROLLER);
-  assertReadyControllerPods(beforePods,1);
+  assertReadyControllerPods(beforePods,FLUX_CONTROLLER_REPLICAS);
   const oldUids=new Set(beforePods.map(pod=>pod.metadata.uid));
   const restartToken=`wedding-db-recovery-${integer(config.run)}-${integer(config.attempt)}`;
   const patch=buildControllerRestartPatch({
@@ -474,7 +475,7 @@ function restartKustomizeController(config){
     const current=pods.filter(pod=>!pod.metadata?.deletionTimestamp);
     if([...oldUids].every(oldUid=>!pods.some(pod=>pod.metadata?.uid===oldUid))){
       assertControllerReady(controller,{restartToken});
-      assertReadyControllerPods(current,1);
+      assertReadyControllerPods(current,FLUX_CONTROLLER_REPLICAS);
       return;
     }
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);

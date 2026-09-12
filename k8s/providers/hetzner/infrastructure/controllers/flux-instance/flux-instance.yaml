@@ -38,6 +38,9 @@ spec:
           - op: add
             path: /spec/template/spec/containers/0/args/-
             value: --requeue-dependency=5s
+          - op: replace
+            path: /spec/replicas
+            value: 2
       # Run kustomize-/helm-/notification-controller active/standby (HA) for
       # node-failure resilience: each binary runs --enable-leader-election and
       # holds a coordination.k8s.io Lease, so a 2nd replica is a warm standby (one
@@ -59,21 +62,16 @@ spec:
       # source-controller. That did NOT work: raw `kustomize build` honours patch
       # order and yields 1, but flux-operator resolves the overlapping label- and
       # name-targeted patches the other way, so source-controller stayed at 2
-      # (verified live via a forced FluxInstance reconcile). The robust fix is to
-      # match each HA controller BY NAME and leave source-controller matched by no
-      # replicas patch at all, so it keeps the base manifest's single replica with
-      # zero ambiguity. (topologySpread + ndots below still target the whole
-      # part-of=flux set by label — those don't conflict and are safe at 1
-      # replica.) flux-operator itself stays single-replica: its chart exposes no
-      # replicas/leaderElection (0.50.0), so it relies on reschedule.
-      - target:
-          kind: Deployment
-          name: kustomize-controller
-          namespace: flux-system
-        patch: |
-          - op: replace
-            path: /spec/replicas
-            value: 2
+      # (verified live via a forced FluxInstance reconcile). A controller must
+      # also have exactly one name-targeted patch: flux-operator only applied the
+      # first of two duplicate kustomize-controller targets, which silently left
+      # it at one replica. The robust fix is therefore one patch per HA controller
+      # and no source-controller replicas patch, so source-controller keeps the
+      # base manifest's single replica with zero ambiguity. (topologySpread + ndots
+      # below still target the whole part-of=flux set by label — those don't
+      # conflict and are safe at 1 replica.) flux-operator itself stays
+      # single-replica: its chart exposes no replicas/leaderElection (0.50.0), so
+      # it relies on reschedule.
       - target:
           kind: Deployment
           name: helm-controller
