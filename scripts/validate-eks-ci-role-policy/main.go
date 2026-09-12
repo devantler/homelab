@@ -1953,7 +1953,24 @@ const (
 // The previous aggregate remains recorded here:
 //
 //	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
-const expectedRenderedSurfaceSHA = "5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65"
+
+// Moved again by the trusted tenant semantic-version rollout (#3677). Exactly
+// two existing source objects change: the ascoachingogvaner and wedding-app
+// OCIRepositories replace one fixed ref.tag with ref.semver >=1.0.0. Their
+// Cosign verification provider, issuer and platform-bounded workflow subjects
+// remain unchanged, and the rendered guard rejects restoring a tag or digest.
+//
+// CONSERVATION, read from this validator under the SHA256-verified kubectl
+// v1.36.2 renderer: exactly this aggregate changed. It reported ZERO
+// `unapproved rendered <identity>`, ZERO `missing rendered authorization
+// resource` and ZERO `duplicate rendered`; every pinned per-resource identity
+// still passes. No Role, ClusterRole, binding, ServiceAccount, subject, verb,
+// wildcard, AWS identity or permission changes. The unresolved Flux
+// substitutions are the normal diagnostics emitted alongside an aggregate
+// mismatch.
+//
+// Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
+const expectedRenderedSurfaceSHA = "814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
