@@ -1970,7 +1970,43 @@ const (
 // mismatch.
 //
 // Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
-const expectedRenderedSurfaceSHA = "814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1"
+//
+// Moved again by the snapshot-controller C-0211 baseline context (#3239). The
+// workload sits in kube-system, which add-security-context excludes, so its
+// stored template is supplied through the chart's own values. A HelmRelease is a
+// controller-RBAC emitter, so a pure VALUES change moves this aggregate even
+// though nothing is granted.
+//
+// CONSERVATION, rendered for all five authorization roots on this branch and on
+// main 491d5ef4 under one renderer: the 86 grant-bearing identities
+// (ClusterRole, Role, ClusterRoleBinding, RoleBinding, ServiceAccount) are
+// identical in both directions, the ClusterRole/Role rule bodies are identical
+// under digest
+// 11656de3ed0f1303187fe75f1d8c8e3e1c9f7d12f95e036f91ec685990d1f2e5, and the
+// binding roleRef/subject bodies are identical under digest
+// 73436c4be4cc0e421dd50f76c945abdd945ca5b905dfcd7582a268128da1ade0. Four of the
+// five roots render byte-identically; infrastructure/controllers grows by 120
+// bytes, and its complete hunk list is ONE hunk of four added lines inside the
+// snapshot-controller HelmRelease's controller values:
+//
+//	podSecurityContext.fsGroupChangePolicy: OnRootMismatch
+//	securityContext.seLinuxOptions: {}
+//
+// It adds no Role, ClusterRole, binding, ServiceAccount, subject, verb,
+// wildcard, AWS identity, or permission. Appending one synthetic wildcard
+// ClusterRole to the branch render makes both the identity and the rule-body
+// comparisons report a difference, so the identical result is a finding rather
+// than a blind read.
+//
+// RENDERER PROVENANCE: the value below was read from CI's own failure on run
+// 34716590753 at b8ebb7db, which renders under the approved SHA256-verified
+// toolchain and reported ZERO missing and ZERO duplicate rendered resources; its
+// single unapproved entry was this aggregate. This host's kubectl/kustomize are
+// not approved renderers, so no local digest is claimed. The conservation
+// evidence above compares two trees under one renderer and stands on its own.
+//
+// Previous aggregate: 814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1.
+const expectedRenderedSurfaceSHA = "ce959e8ffe85ae2ea734d9c0798c2834fa29fa93c72155dae95f73ac636e489d"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
