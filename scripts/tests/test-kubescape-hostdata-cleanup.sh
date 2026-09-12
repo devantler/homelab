@@ -34,7 +34,16 @@ for file in "$manifest" "$role" "$binding" "$service_account"; do
 done
 
 readonly container='.spec.jobTemplate.spec.template.spec.containers[] | select(.name == "cleanup")'
-script_body="$(yq eval -r "${container}.command[2]" "$manifest")"
+dollar='$'
+escaped_inventory_path="file=\"/tmp/${dollar}${dollar}{resource%%.*}.names\""
+readonly dollar escaped_inventory_path
+[ "$(grep -Foc "$escaped_inventory_path" "$manifest")" = '2' ] ||
+  fail 'per-resource inventory paths are not escaped from Flux post-build substitution'
+
+# Flux documents `$${var}` as the way to preserve `${var}` in an embedded
+# script. Apply that one escape transformation before executing the extracted
+# command so this test exercises the script Flux delivers to the cluster.
+script_body="$(yq eval -r "${container}.command[2]" "$manifest" | sed 's/\$\${/${/g')"
 if [ -z "$script_body" ] || [ "$script_body" = 'null' ]; then
   fail 'cleanup script is absent'
 fi

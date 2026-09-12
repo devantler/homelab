@@ -107,7 +107,7 @@ spec:
                     exit 1
                   fi
                   for resource in $resources; do
-                    file="/tmp/${resource%%.*}.names"
+                    file="/tmp/$${resource%%.*}.names"
                     if ! kc get "$resource" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' > "$file"; then
                       echo "ERROR: failed to list $resource; refusing cleanup"
                       exit 1
@@ -118,7 +118,7 @@ spec:
                   candidates=0
                   removed=0
                   for resource in $resources; do
-                    file="/tmp/${resource%%.*}.names"
+                    file="/tmp/$${resource%%.*}.names"
                     while IFS= read -r record; do
                       [ -n "$record" ] || continue
                       if grep -Fqx "$record" /tmp/nodes; then
