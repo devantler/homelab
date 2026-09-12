@@ -8,6 +8,7 @@ const LIVE_CLUSTER='wedding-db';
 const LIVE_DEPLOYMENT='wedding-app';
 const LIVE_KUSTOMIZATION='wedding-app';
 const SOURCE_STORE='wedding-db';
+const SOURCE_STORE_UID='9cd2ba9b-c7bf-43e2-bd2d-a5c7c139fafb';
 const SOURCE_SECRET='wedding-db-backup-r2';
 const CURRENT_CLUSTER_UID='afea05ff-7daa-4d80-99a6-f2d696cbc3f1';
 const PRELOSS_BACKUP='wedding-db-daily-20260908030000';
@@ -43,6 +44,7 @@ export function recoverySource({cluster,store,backup}){
   check(plugins[0].parameters?.barmanObjectName===SOURCE_STORE&&plugins[0].parameters.serverName==='wedding-db-20260909');
 
   exactObject(store,{apiVersion:'barmancloud.cnpg.io/v1',kind:'ObjectStore',name:SOURCE_STORE});
+  check(store.metadata.uid===SOURCE_STORE_UID&&store.metadata.creationTimestamp==='2026-06-16T20:39:55Z');
   const configuration=store.spec?.configuration;
   check(configuration?.destinationPath==='s3://platform-backups/cnpg/wedding-db');
   const endpoint=configuration.endpointURL;
@@ -310,10 +312,20 @@ function createRecovery(config,source){
 }
 
 function cleanupRecovery(config,recovery){
-  const name=recoveryName(config.run,config.attempt);check(recovery.name===name);
-  kubectl(['--namespace',NAMESPACE,'delete','cluster.postgresql.cnpg.io',name,'--wait=true','--timeout=10m'],{timeout:630000});
+  const name=recoveryName(config.run,config.attempt),owned=labels(config.run,config.attempt);
+  if(recovery)check(recovery.name===name);
+  const cluster=optionalObject('clusters.postgresql.cnpg.io',name);
+  if(cluster){
+    for(const [key,value] of Object.entries(owned))check(cluster.metadata?.labels?.[key]===value);
+    if(recovery?.uid)check(cluster.metadata.uid===recovery.uid);
+    kubectl(['--namespace',NAMESPACE,'delete','cluster.postgresql.cnpg.io',name,'--wait=true','--timeout=10m'],{timeout:630000});
+  }
   for(const claim of list('persistentvolumeclaims','cnpg.io/cluster='+name))kubectl(['--namespace',NAMESPACE,'delete','persistentvolumeclaim',claim.metadata.name,'--wait=true','--timeout=5m'],{timeout:330000});
-  kubectl(['--namespace',NAMESPACE,'delete','ciliumnetworkpolicy.cilium.io',name,'--wait=true','--timeout=2m'],{timeout:150000});
+  const policy=optionalObject('ciliumnetworkpolicies.cilium.io',name);
+  if(policy){
+    for(const [key,value] of Object.entries(owned))check(policy.metadata?.labels?.[key]===value);
+    kubectl(['--namespace',NAMESPACE,'delete','ciliumnetworkpolicy.cilium.io',name,'--wait=true','--timeout=2m'],{timeout:150000});
+  }
   check(!optionalObject('clusters.postgresql.cnpg.io',name)&&list('persistentvolumeclaims','cnpg.io/cluster='+name).length===0&&!optionalObject('ciliumnetworkpolicies.cilium.io',name));
 }
 
@@ -331,15 +343,17 @@ function recordProof({config,source,recovery,before,after,recovered,liveBefore,m
 function run(){
   const config=verifyCandidate(),source=sourceState();
   const before=backup(config,'before',source);
-  const recovery=createRecovery(config,source);
-  const recoveredInventory=inventory(recovery.primary,source.database,{requireMeaningful:true});
-  const recovered=validateCoreInventory(recoveredInventory.value,{requireMeaningful:true});
-  const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
-  const liveInventory=inventory(livePrimary,source.database,{requireMeaningful:false});
-  const liveBefore=validateCoreInventory(liveInventory.value,{requireMeaningful:false});
-  check(recovered.guestPairs===liveBefore.guestPairs&&recovered.guests===liveBefore.guests);
-  let merge,error,resumeError,suspensionAttempted=false;
+  let recovery,recoveredInventory,recovered,liveBefore,merge,error,resumeError,cleanupError;
+  let recoveryAttempted=false,suspensionAttempted=false;
   try{
+    recoveryAttempted=true;
+    recovery=createRecovery(config,source);
+    recoveredInventory=inventory(recovery.primary,source.database,{requireMeaningful:true});
+    recovered=validateCoreInventory(recoveredInventory.value,{requireMeaningful:true});
+    const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
+    const liveInventory=inventory(livePrimary,source.database,{requireMeaningful:false});
+    liveBefore=validateCoreInventory(liveInventory.value,{requireMeaningful:false});
+    check(recovered.guestPairs===liveBefore.guestPairs&&recovered.guests===liveBefore.guests);
     suspensionAttempted=true;suspendApplication();
     check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===source.currentClusterUid);
     const schema=loadRecovered(livePrimary,source.database,recoveredInventory.value,config);
@@ -349,10 +363,10 @@ function run(){
     check(merge.finalMeaningfulGuestAnswers>=recovered.meaningfulGuests&&merge.finalRoomBookings>=recovered.roomBookings);
   }catch(candidate){error=candidate;}
   if(suspensionAttempted){try{resumeApplication();}catch(candidate){resumeError=candidate;}}
-  if(error||resumeError)throw Error('refused');
+  if(recoveryAttempted){try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}}
+  if(error||resumeError||cleanupError)throw Error('refused');
   const after=backup(config,'after',source);
   recordProof({config,source,recovery,before,after,recovered,liveBefore,merge});
-  cleanupRecovery(config,recovery);
   return {restored:true,currentClusterUid:source.currentClusterUid,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,beforeBackupUid:before.uid,afterBackupUid:after.uid,recovered,liveBefore,merge,cleanup:true};
 }
 

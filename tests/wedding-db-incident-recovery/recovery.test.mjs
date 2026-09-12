@@ -21,7 +21,7 @@ function fixture(){
     },status:{observedGeneration:6,phase:'Cluster in healthy state',currentPrimary:'wedding-db-1',readyInstances:3,conditions:[
       {type:'Ready',status:'True'},{type:'ContinuousArchiving',status:'True'},
     ]}},
-    store:{apiVersion:'barmancloud.cnpg.io/v1',kind:'ObjectStore',metadata:{name:'wedding-db',namespace:'wedding-app',uid:SOURCE_UID},spec:{configuration:{
+    store:{apiVersion:'barmancloud.cnpg.io/v1',kind:'ObjectStore',metadata:{name:'wedding-db',namespace:'wedding-app',uid:SOURCE_UID,creationTimestamp:'2026-06-16T20:39:55Z'},spec:{configuration:{
       destinationPath:'s3://platform-backups/cnpg/wedding-db',endpointURL:'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com',
       s3Credentials:{accessKeyId:{name:'wedding-db-backup-r2',key:'ACCESS_KEY_ID'},secretAccessKey:{name:'wedding-db-backup-r2',key:'SECRET_ACCESS_KEY'},region:{name:'wedding-db-backup-r2',key:'REGION'}},
     }}},
@@ -44,6 +44,8 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
     value=>{value.cluster.spec.bootstrap={recovery:{source:'old'}};},
     value=>{value.cluster.spec.plugins[0].parameters.serverName='wedding-db';},
     value=>{value.cluster.status.conditions[1].status='False';},
+    value=>{value.store.metadata.uid='33333333-3333-3333-3333-333333333333';},
+    value=>{value.store.metadata.creationTimestamp='2026-06-17T20:39:55Z';},
     value=>{value.store.spec.configuration.destinationPath='s3://other/path';},
     value=>{value.backup.metadata.uid='22222222-2222-2222-2222-222222222222';},
     value=>{value.backup.status.pluginMetadata.clusterUID=CURRENT_UID;},
