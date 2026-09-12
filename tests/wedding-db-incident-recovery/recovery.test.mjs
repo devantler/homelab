@@ -35,9 +35,22 @@ test('pre-loss reconciliation witness matches the live Flux history exactly',()=
   assert.equal(hasPrelossWitness({status:{history}}),false);
 });
 
-test('verified recovery failures disclose only an allow-listed phase',()=>{
+test('verified recovery failures disclose only allow-listed diagnostics',()=>{
   assert.equal(recoveryRefusalMessage(), 'Wedding database incident recovery refused.\n');
   assert.equal(recoveryRefusalMessage({verified:true,phase:'source-state'}), 'Wedding database incident recovery refused (phase: source-state).\n');
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'recovered-core-inventory'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge; checkpoint: recovered-core-inventory).\n',
+  );
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'subprocess stderr'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge).\n',
+  );
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'after-backup',checkpoint:'merge-postcondition'}),
+    'Wedding database incident recovery refused (phase: after-backup).\n',
+  );
+  assert.equal(recoveryRefusalMessage({phase:'restore-and-merge',checkpoint:'recovered-core-inventory'}), 'Wedding database incident recovery refused.\n');
   assert.equal(recoveryRefusalMessage({verified:true,phase:'subprocess stderr'}), 'Wedding database incident recovery refused.\n');
 });
 

@@ -34,16 +34,26 @@ const RECOVERY_RECONCILE_ANNOTATION='kustomize.toolkit.fluxcd.io/reconcile';
 const RECOVERY_OWNER_PATH='/metadata/annotations/devantler.tech~1wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_PATH='/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile';
 const RECOVERY_REFUSAL_PHASES=new Set(['source-state','before-backup','restore-and-merge','after-backup','proof','cleanup']);
+const RECOVERY_REFUSAL_CHECKPOINTS=new Set([
+  'create-recovery','recovered-inventory-query','recovered-replay-time','recovered-core-inventory',
+  'live-inventory-query','live-core-inventory','core-cardinality','suspend-application',
+  'live-cluster-identity','live-primary','stage-recovered-data','application-fences',
+  'merge-recovered-data','merge-shape','merge-postcondition','drop-staging-schema',
+  'resume-application','cleanup-recovery',
+]);
 let recoveryInvocationVerified=false;
 let recoveryPhase='invocation';
+let recoveryCheckpoint;
 const check=value=>{if(!value)throw Error('refused');return value;};
 const integer=value=>{check(typeof value==='string'&&/^[1-9][0-9]*$/.test(value));return value;};
 const uid=value=>{check(typeof value==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value));return value;};
 const timestamp=value=>{check(typeof value==='string'&&!Number.isNaN(Date.parse(value)));return value;};
 const condition=(value,type)=>value.status?.conditions?.some(item=>item.type===type&&item.status==='True');
 
-export function recoveryRefusalMessage({verified=false,phase='invocation'}={}){
-  return verified&&RECOVERY_REFUSAL_PHASES.has(phase)?`Wedding database incident recovery refused (phase: ${phase}).\n`:'Wedding database incident recovery refused.\n';
+export function recoveryRefusalMessage({verified=false,phase='invocation',checkpoint}={}){
+  if(!verified||!RECOVERY_REFUSAL_PHASES.has(phase))return 'Wedding database incident recovery refused.\n';
+  const detail=phase==='restore-and-merge'&&RECOVERY_REFUSAL_CHECKPOINTS.has(checkpoint)?`; checkpoint: ${checkpoint}`:'';
+  return `Wedding database incident recovery refused (phase: ${phase}${detail}).\n`;
 }
 
 export function hasPrelossWitness(kustomization){
@@ -605,32 +615,50 @@ function run(){
   const source=sourceState();recoveryPhase='before-backup';
   const before=backup(config,'before',source);
   recoveryPhase='restore-and-merge';
-  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,schemaCleanupError,resumeError,cleanupError;
+  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,errorCheckpoint,schemaCleanupError,resumeError,cleanupError;
   try{
+    recoveryCheckpoint='create-recovery';
     recovery=createRecovery(config,source);
+    recoveryCheckpoint='recovered-inventory-query';
     recoveredInventory=inventory(recovery.primary,source.database,{requireMeaningful:true});
+    recoveryCheckpoint='recovered-replay-time';
     recoveryReplayTimestamp=validateRecoveryReplayTimestamp(recoveredInventory.value.recoveryReplayTimestamp,{replacementCreatedAt:source.replacementCreatedAt});
+    recoveryCheckpoint='recovered-core-inventory';
     recovered=validateCoreInventory(recoveredInventory.value,{requireMeaningful:true});
+    recoveryCheckpoint='live-inventory-query';
     const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     const liveInventory=inventory(livePrimary,source.database,{requireMeaningful:false});
+    recoveryCheckpoint='live-core-inventory';
     liveBefore=validateCoreInventory(liveInventory.value,{requireMeaningful:false});
+    recoveryCheckpoint='core-cardinality';
     check(recovered.guestPairs===liveBefore.guestPairs&&recovered.guests===liveBefore.guests);
+    recoveryCheckpoint='suspend-application';
     suspendApplication(config);
+    recoveryCheckpoint='live-cluster-identity';
     check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===source.currentClusterUid);
+    recoveryCheckpoint='live-primary';
     mergePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     check(/^wedding-db-[1-9][0-9]*$/.test(mergePrimary));
+    recoveryCheckpoint='stage-recovered-data';
     const schema=loadRecovered(mergePrimary,source.database,recoveredInventory.value,config);
+    recoveryCheckpoint='application-fences';
     proveApplicationFences(config);check(list('pods','app.kubernetes.io/name=wedding-app').length===0);
+    recoveryCheckpoint='merge-recovered-data';
     const output=psql(mergePrimary,source.database,buildMergeSQL(schema));
     merge=JSON.parse(output.toString('utf8').trim());
+    recoveryCheckpoint='merge-shape';
     for(const key of ['restoredGuestAnswers','restoredRoomBookings','finalMeaningfulGuestAnswers','finalRoomBookings'])check(Number.isSafeInteger(merge[key])&&merge[key]>=0);
+    recoveryCheckpoint='merge-postcondition';
     check(merge.finalMeaningfulGuestAnswers>=recovered.meaningfulGuests&&merge.finalRoomBookings>=recovered.roomBookings);
-  }catch(candidate){error=candidate;}
+  }catch(candidate){error=candidate;errorCheckpoint=recoveryCheckpoint;}
   if(error&&mergePrimary){try{dropStagingSchema(mergePrimary,source.database,config);}catch(candidate){schemaCleanupError=candidate;}}
   try{resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}
-  if(error||schemaCleanupError||resumeError||cleanupError)throw Error('refused');
-  recoveryPhase='after-backup';
+  if(error||schemaCleanupError||resumeError||cleanupError){
+    recoveryCheckpoint=schemaCleanupError?'drop-staging-schema':resumeError?'resume-application':cleanupError?'cleanup-recovery':errorCheckpoint;
+    throw Error('refused');
+  }
+  recoveryCheckpoint=undefined;recoveryPhase='after-backup';
   const after=backup(config,'after',source);
   recoveryPhase='proof';
   recordProof({config,source,recovery,before,after,recovered,recoveryReplayTimestamp,liveBefore,merge});
@@ -666,5 +694,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
     check(process.argv.length===2||(process.argv.length===3&&['--cleanup','--verify-source'].includes(process.argv[2])));
     const result=process.argv[2]==='--verify-source'?(verifyCandidate(),{sourceVerified:true}):process.argv[2]==='--cleanup'?runCleanup():run();
     process.stdout.write(JSON.stringify(result)+'\n');
-  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase}));process.exitCode=2;}
+  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase,checkpoint:recoveryCheckpoint}));process.exitCode=2;}
 }
