@@ -25,6 +25,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: main
+
+      - name: Verify the exact main recovery source
+        run: node scripts/recover-wedding-db-incident.mjs --verify-source
 
       - name: Restore production kubeconfig
         shell: bash
@@ -61,6 +65,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: main
+
+      - name: Verify the exact main recovery source
+        run: node scripts/recover-wedding-db-incident.mjs --verify-source
 
       - name: Restore production kubeconfig
         shell: bash

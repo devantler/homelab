@@ -24,7 +24,10 @@ const CURRENT_CLUSTER_UID='afea05ff-7daa-4d80-99a6-f2d696cbc3f1';
 const PRELOSS_BACKUP='wedding-db-daily-20260908030000';
 const PRELOSS_BACKUP_UID='549fe940-b119-4010-bdc8-fa8e6ebc93ae';
 const PRELOSS_CLUSTER_UID='6b6d4879-e437-4ea5-a0cb-257de8edad00';
-const RECOVERY_MODE='full archive from backup 20260908T030001';
+const PRELOSS_TARGET_TIME='2026-09-09T01:57:41Z';
+const PRELOSS_TARGET_TIMELINE='162';
+const PRELOSS_RECONCILIATION_DIGEST='sha256:022128434868723705c489546f68ba344e9cbe9e5c2b930a404d8aa2122ad9c7';
+const RECOVERY_MODE='point in time 2026-09-09T01:57:41Z from backup 20260908T030001 on timeline 162';
 const PROOF='wedding-db-data-recovery-proof';
 const RECOVERY_OWNER_ANNOTATION='devantler.tech/wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_ANNOTATION='kustomize.toolkit.fluxcd.io/reconcile';
@@ -73,12 +76,13 @@ export function recoverySource({cluster,store,backup}){
   check(backup.status?.phase==='completed'&&backup.status.backupId==='20260908T030001'&&backup.status.majorVersion===18);
   check(backup.status.pluginMetadata?.clusterUID===PRELOSS_CLUSTER_UID&&backup.status.pluginMetadata.timeline==='162');
   check(backup.status.startedAt&&backup.status.stoppedAt&&!backup.status.error);
+  check(Date.parse(PRELOSS_TARGET_TIME)>Date.parse(backup.status.stoppedAt)&&Date.parse(PRELOSS_TARGET_TIME)<Date.parse(cluster.metadata.creationTimestamp));
 
   const imageName=cluster.spec.imageName;
   check(typeof imageName==='string'&&/^ghcr\.io\/cloudnative-pg\/postgresql:18\.[0-9]+-[a-z0-9-]+$/.test(imageName));
   check(cluster.spec.storage?.storageClass==='longhorn-wffc');
   check(/^[1-9][0-9]*(?:Mi|Gi|Ti)$/.test(cluster.spec.storage?.size));
-  return {currentClusterUid:cluster.metadata.uid,sourceUid:store.metadata.uid,prelossBackupUid:backup.metadata.uid,database:'wedding',imageName,storageClass:'longhorn-wffc',size:cluster.spec.storage.size,endpoint,prelossBackupId:backup.status.backupId};
+  return {currentClusterUid:cluster.metadata.uid,sourceUid:store.metadata.uid,prelossBackupUid:backup.metadata.uid,database:'wedding',imageName,storageClass:'longhorn-wffc',size:cluster.spec.storage.size,endpoint,prelossBackupId:backup.status.backupId,prelossTargetTime:PRELOSS_TARGET_TIME,prelossTargetTimeline:PRELOSS_TARGET_TIMELINE};
 }
 
 function labels(run,attempt){
@@ -136,16 +140,17 @@ export function buildControllerRestartPatch({resourceVersion,deploymentUid,annot
   ];
 }
 
-export function buildRecoveryResources({run,attempt,endpoint,imageName,storageClass,prelossBackupId}){
+export function buildRecoveryResources({run,attempt,endpoint,imageName,storageClass,prelossBackupId,prelossTargetTime,prelossTargetTimeline}){
   check(storageClass==='longhorn-wffc');
   check(typeof imageName==='string'&&/^ghcr\.io\/cloudnative-pg\/postgresql:18\.[0-9]+-[a-z0-9-]+$/.test(imageName));
   check(prelossBackupId==='20260908T030001');
+  check(prelossTargetTime===PRELOSS_TARGET_TIME&&prelossTargetTimeline===PRELOSS_TARGET_TIMELINE);
   const name=recoveryName(run,attempt),owned=labels(run,attempt),hostname=endpointHost(endpoint);
   const cluster={apiVersion:'postgresql.cnpg.io/v1',kind:'Cluster',metadata:{name,namespace:NAMESPACE,labels:owned},spec:{
     instances:1,imageName,enableSuperuserAccess:false,enablePDB:false,
     storage:{size:'2Gi',storageClass},
     resources:{requests:{cpu:'50m',memory:'256Mi'},limits:{cpu:'1',memory:'1Gi'}},
-    bootstrap:{recovery:{source:'wedding-db-preloss',recoveryTarget:{backupID:prelossBackupId}}},
+    bootstrap:{recovery:{source:'wedding-db-preloss',recoveryTarget:{backupID:prelossBackupId,targetTime:prelossTargetTime,targetTLI:prelossTargetTimeline}}},
     externalClusters:[{name:'wedding-db-preloss',plugin:{name:'barman-cloud.cloudnative-pg.io',parameters:{barmanObjectName:SOURCE_STORE,serverName:'wedding-db'}}}],
   }};
   const policy={apiVersion:'cilium.io/v2',kind:'CiliumNetworkPolicy',metadata:{name,namespace:NAMESPACE,labels:owned},spec:{endpointSelector:{matchLabels:{'cnpg.io/cluster':name}},egress:[
@@ -301,6 +306,7 @@ function sourceState(){
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.metadata.creationTimestamp==='2026-05-23T01:52:44Z');
   check(kustomization.spec?.force===false&&kustomization.spec.suspend!==true&&condition(kustomization,'Ready'));
+  check(kustomization.status?.history?.some(item=>item.lastReconciled===PRELOSS_TARGET_TIME&&item.lastReconciledStatus==='ReconciliationSucceeded'&&item.digest===PRELOSS_RECONCILIATION_DIGEST&&item.metadata?.originRevision==='v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9'));
   const appPolicy=object('ciliumnetworkpolicies.cilium.io','app');
   check(appPolicy.metadata.uid===LIVE_APP_POLICY_UID&&appPolicy.metadata.creationTimestamp==='2026-06-16T18:14:37Z');
   check(appPolicy.spec?.endpointSelector&&Object.keys(appPolicy.spec.endpointSelector).length===0);
@@ -532,7 +538,8 @@ function createRecovery(config,source){
   kubectl(['create','--filename=-'],{input:Buffer.from(JSON.stringify({apiVersion:'v1',kind:'List',items:[resources.policy,resources.cluster]}))});
   kubectl(['--namespace',NAMESPACE,'wait','cluster.postgresql.cnpg.io/'+name,'--for=condition=Ready','--timeout=30m'],{timeout:1830000});
   const cluster=object('clusters.postgresql.cnpg.io',name);check(cluster.status?.readyInstances===1&&cluster.status.currentPrimary&&condition(cluster,'Ready'));
-  check(cluster.spec?.bootstrap?.recovery?.recoveryTarget?.backupID===source.prelossBackupId&&!cluster.spec.plugins);
+  const target=cluster.spec?.bootstrap?.recovery?.recoveryTarget;
+  check(target?.backupID===source.prelossBackupId&&target.targetTime===source.prelossTargetTime&&target.targetTLI===source.prelossTargetTimeline&&!target.exclusive&&!cluster.spec.plugins);
   return {name,uid:uid(cluster.metadata.uid),primary:cluster.status.currentPrimary};
 }
 
@@ -565,7 +572,7 @@ function cleanupRecovery(config,recovery){
 
 function recordProof({config,source,recovery,before,after,recovered,liveBefore,merge}){
   const manifest={apiVersion:'v1',kind:'ConfigMap',metadata:{name:PROOF,namespace:NAMESPACE,labels:{'app.kubernetes.io/name':'wedding-db','app.kubernetes.io/managed-by':'github-actions'}},data:{
-    version:'1',recoveryMode:RECOVERY_MODE,replacementCreatedAt:'2026-09-09T01:58:14Z',currentClusterUid:source.currentClusterUid,prelossClusterUid:PRELOSS_CLUSTER_UID,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,
+    version:'2',recoveryMode:RECOVERY_MODE,recoveryTargetTime:source.prelossTargetTime,recoveryTargetTimeline:source.prelossTargetTimeline,replacementCreatedAt:'2026-09-09T01:58:14Z',currentClusterUid:source.currentClusterUid,prelossClusterUid:PRELOSS_CLUSTER_UID,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,
     beforeBackupUid:before.uid,afterBackupUid:after.uid,recoveredGuests:String(recovered.guests),recoveredMeaningfulGuests:String(recovered.meaningfulGuests),recoveredRoomBookings:String(recovered.roomBookings),
     liveBeforeMeaningfulGuests:String(liveBefore.meaningfulGuests),liveBeforeRoomBookings:String(liveBefore.roomBookings),restoredGuestAnswers:String(merge.restoredGuestAnswers),restoredRoomBookings:String(merge.restoredRoomBookings),
     finalMeaningfulGuestAnswers:String(merge.finalMeaningfulGuestAnswers),finalRoomBookings:String(merge.finalRoomBookings),githubRun:config.run,githubAttempt:config.attempt,
@@ -632,7 +639,8 @@ function runCleanup(){
 
 if(process.argv[1]===fileURLToPath(import.meta.url)){
   try{
-    check(process.argv.length===2||(process.argv.length===3&&process.argv[2]==='--cleanup'));
-    process.stdout.write(JSON.stringify(process.argv[2]==='--cleanup'?runCleanup():run())+'\n');
+    check(process.argv.length===2||(process.argv.length===3&&['--cleanup','--verify-source'].includes(process.argv[2])));
+    const result=process.argv[2]==='--verify-source'?(verifyCandidate(),{sourceVerified:true}):process.argv[2]==='--cleanup'?runCleanup():run();
+    process.stdout.write(JSON.stringify(result)+'\n');
   }catch{process.stderr.write('Wedding database incident recovery refused.\n');process.exitCode=2;}
 }

@@ -44,6 +44,7 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
     currentClusterUid:CURRENT_UID,sourceUid:SOURCE_UID,prelossBackupUid:BACKUP_UID,
     database:'wedding',imageName:'ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie',storageClass:'longhorn-wffc',size:'1Gi',
     endpoint:'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com',prelossBackupId:'20260908T030001',
+    prelossTargetTime:'2026-09-09T01:57:41Z',prelossTargetTimeline:'162',
   });
   for(const change of [
     value=>{value.cluster.metadata.uid='11111111-1111-1111-1111-111111111111';},
@@ -63,11 +64,13 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
   }
 });
 
-test('recovery cluster replays the complete predecessor archive from the exact base',()=>{
+test('recovery cluster reaches the witnessed pre-loss point from the exact base',()=>{
   const source=recoverySource(fixture());
   const {cluster,policy}=buildRecoveryResources({run:'34710000000',attempt:'1',...source});
   assert.equal(cluster.metadata.name,'wedding-db-preloss-34710000000-1');
-  assert.deepEqual(cluster.spec.bootstrap,{recovery:{source:'wedding-db-preloss',recoveryTarget:{backupID:'20260908T030001'}}});
+  assert.deepEqual(cluster.spec.bootstrap,{recovery:{source:'wedding-db-preloss',recoveryTarget:{
+    backupID:'20260908T030001',targetTime:'2026-09-09T01:57:41Z',targetTLI:'162',
+  }}});
   assert.deepEqual(cluster.spec.externalClusters,[{name:'wedding-db-preloss',plugin:{name:'barman-cloud.cloudnative-pg.io',parameters:{barmanObjectName:'wedding-db',serverName:'wedding-db'}}}]);
   assert.equal(cluster.spec.plugins,undefined);
   assert.equal(cluster.spec.instances,1);
@@ -132,6 +135,7 @@ test('both Flux fences replace every pre-suspension controller before the applic
   assert.match(suspension,/acquireFence\(PARENT_NAMESPACE[\s\S]*acquireFence\(NAMESPACE[\s\S]*restartKustomizeController\(config\)[\s\S]*scale','deployment'/);
   assert.match(source,/rollout','status','deployment\.apps\/'\+FLUX_CONTROLLER/);
   assert.match(source,/every\(oldUid=>!pods\.some\(pod=>pod\.metadata\?\.uid===oldUid\)\)/);
+  assert.match(source,/history\?\.some\(item=>item\.lastReconciled===PRELOSS_TARGET_TIME[\s\S]*item\.lastReconciledStatus==='ReconciliationSucceeded'/);
 });
 
 test('current and restored backups are distinct, run-owned plugin backups',()=>{
@@ -203,6 +207,12 @@ test('manual recovery is serialized with production deployments and discloses no
   assert.equal(workflow.match(/HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/g)?.length,2);
   assert.match(workflow,/environment: prod/);
   assert.match(workflow,/persist-credentials: false/);
+  assert.equal(workflow.match(/ref: main/g)?.length,2);
+  assert.equal(workflow.match(/node scripts\/recover-wedding-db-incident\.mjs --verify-source/g)?.length,2);
+  for(const job of workflow.split(/\n  [a-z-]+:\n/).slice(1)){
+    assert.ok(job.indexOf('node scripts/recover-wedding-db-incident.mjs --verify-source')<job.indexOf('KUBE_CONFIG:'));
+    assert.ok(job.indexOf('node scripts/recover-wedding-db-incident.mjs --verify-source')<job.indexOf('HCLOUD_TOKEN:'));
+  }
   assert.doesNotMatch(workflow,/pull_request|schedule:|inputs:/);
 });
 
