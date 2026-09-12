@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Derive per-consumer cosign subjects from the generated approved revision set.
+# Derive bounded-consumer cosign subjects from the generated approved revision set and keep
+# trusted tenant release streams on the immutable shared-workflow commit pattern.
 # Validate every input and staged result before replacing any consumer manifest.
 # Generic multi-consumer subjects remain unchanged. Unchanged output preserves bytes.
 set -euo pipefail
@@ -31,9 +32,12 @@ for consumer in "${EXPECTED_CONSUMERS[@]}"; do
     refuse "$consumer: source manifest must be a writable regular file, not a symlink"
   fi
 
-  pair="$signer"
-  [ "$signer" = "$pin" ] || pair="($signer|$pin)"
-  subject="${SUBJECT_PREFIX}${workflow#publish-}"'\.yaml@'"$pair"'$'
+  desired_ref="$PATTERN_REF"
+  if ! is_trusted_release_stream_consumer "$consumer"; then
+    desired_ref="$signer"
+    [ "$signer" = "$pin" ] || desired_ref="($signer|$pin)"
+  fi
+  subject="${SUBJECT_PREFIX}${workflow#publish-}"'\.yaml@'"$desired_ref"'$'
   mkdir -p "$STAGED/$(dirname "$file")"
   # Select the actual OCIRepository document; unrelated documents remain unchanged.
   # shellcheck disable=SC2016

@@ -79,18 +79,31 @@ expect_atomic_refusal() {
 fixture
 if guard >"$WORK/guard.log" 2>&1; then fail 'pattern-form fixture unexpectedly passes enforcement'; fi
 grep -Fq 'pattern form' "$WORK/guard.log" || fail 'baseline refusal was not caused by the broad matcher'
-write_matchers >"$WORK/writer.log" 2>&1 || { cat "$WORK/writer.log" >&2; fail 'writer must narrow every registered consumer'; }
+write_matchers >"$WORK/writer.log" 2>&1 || { cat "$WORK/writer.log" >&2; fail 'writer must converge every registered consumer'; }
 guard >"$WORK/guard.log" 2>&1 || { cat "$WORK/guard.log" >&2; fail 'rewritten tree does not pass enforcement'; }
 [ "$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/github-config/oci-repository.yaml")" = \
   '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-manifests\.yaml@(1111111111111111111111111111111111111111|2222222222222222222222222222222222222222)$' ] || fail 'github-config did not receive its own exact pair'
 [ "$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/ascoachingogvaner/oci-repository.yaml")" = \
-  '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-app\.yaml@(3333333333333333333333333333333333333333|2222222222222222222222222222222222222222)$' ] || fail 'consumer pairs crossed'
+  '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-app\.yaml@[0-9a-f]{40}$' ] || fail 'ascoachingogvaner release stream was pinned to a workflow revision set'
 [ "$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/aws/oci-repository.yaml")" = \
   '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-manifests\.yaml@1111111111111111111111111111111111111111$' ] || fail 'equal revisions were not deduplicated'
+[ "$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/wedding-app/oci-repository.yaml")" = \
+  '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-app\.yaml@[0-9a-f]{40}$' ] || fail 'wedding-app release stream was pinned to a workflow revision set'
 [ "$(yq -r '.spec.interval' "$TREE/k8s/bases/apps/aws/oci-repository.yaml")" = 5m ] || fail 'unrelated YAML changed'
 grep -Fq '# Preserve this consumer comment.' "$TREE/k8s/bases/apps/aws/oci-repository.yaml" || fail 'consumer comment was lost'
 for file in "${GENERIC_FILES[@]}"; do cmp -s "$ROOT/$file" "$TREE/$file" || fail "generic subject $file changed"; done
 printf 'ok: exact consumer pairs, deduplication, unrelated fields and generic subjects\n'
+
+# Trusted application release streams advance without a platform-side signer repin. A
+# concrete revision pair on either stream reintroduces that approval gate and must fail
+# enforcement even though it still verifies the currently deployed artifact.
+SUBJECT="^https://github\\.com/devantler-tech/actions/\\.github/workflows/publish-app\\.yaml@($A|$B)\$" \
+  yq -i '.spec.verify.matchOIDCIdentity[0].subject = strenv(SUBJECT)' "$TREE/k8s/bases/apps/wedding-app/oci-repository.yaml"
+if guard >"$WORK/guard.log" 2>&1; then fail 'a trusted release stream pinned to a revision pair passed enforcement'; fi
+grep -Fq 'trusted release stream' "$WORK/guard.log" || fail 'release-stream refusal did not name the boundary'
+write_matchers >"$WORK/writer.log" 2>&1 || fail 'writer did not restore the trusted release-stream boundary'
+guard >"$WORK/guard.log" 2>&1 || fail 'restored release-stream boundary did not pass enforcement'
+printf 'ok: trusted release streams refuse per-revision approval gates\n'
 
 before="$(snapshot)"
 write_matchers >"$WORK/writer.log" 2>&1
@@ -102,9 +115,13 @@ awk -F '\t' -v OFS='\t' -v pin="$D" 'NR > 1 {$6=pin} {print}' "$SET" >"$WORK/mov
 mv "$WORK/moved.tsv" "$SET"
 if guard >"$WORK/guard.log" 2>&1; then fail 'old matcher unexpectedly accepts a moved set'; fi
 grep -Fq 'not the generated pair' "$WORK/guard.log" || fail 'moved-set refusal had the wrong cause'
+ascoaching_before="$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/ascoachingogvaner/oci-repository.yaml")"
+wedding_before="$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/wedding-app/oci-repository.yaml")"
 write_matchers >"$WORK/writer.log" 2>&1
 guard >"$WORK/guard.log" 2>&1 || fail 'pin bump did not converge to a guard-clean tree'
-printf 'ok: a pin bump rewrites already narrowed matchers before enforcement\n'
+[ "$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/ascoachingogvaner/oci-repository.yaml")" = "$ascoaching_before" ] || fail 'a pin bump rewrote the ascoachingogvaner release stream'
+[ "$(yq -r '.spec.verify.matchOIDCIdentity[0].subject' "$TREE/k8s/bases/apps/wedding-app/oci-repository.yaml")" = "$wedding_before" ] || fail 'a pin bump rewrote the wedding-app release stream'
+printf 'ok: a pin bump rewrites bounded consumers and leaves trusted release streams unchanged\n'
 
 fixture
 sed '$d' "$SET" >"$WORK/incomplete.tsv"

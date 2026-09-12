@@ -24,6 +24,16 @@ readonly GENERIC_SUBJECT_FILES=(
   'talos/cluster/verify-first-party-images.yaml'
 )
 
+# Application tenants are trusted to release independently inside the platform-owned
+# boundary: exact GitHub OIDC issuer, exact shared workflow path, and an immutable 40-hex
+# workflow commit. Pinning these streams to the currently observed workflow revisions would
+# make every ordinary tenant release wait for a platform change. Infrastructure/configuration
+# consumers remain tied to their generated revision sets below.
+readonly TRUSTED_RELEASE_STREAM_CONSUMERS=(
+  'ascoachingogvaner'
+  'wedding-app'
+)
+
 readonly SUBJECT_PREFIX='^https://github\.com/devantler-tech/actions/\.github/workflows/publish-'
 # Used by both callers after the shared discovery completes.
 # shellcheck disable=SC2034
@@ -51,6 +61,14 @@ lookup() {
   # `$1 "" == k ""` forces a STRING compare: awk compares two numeric-looking strings as
   # numbers, so `100` would match a key of `1e2`.
   printf '%s\n' "$1" | awk -F'\t' -v k="$2" '$1 "" == k "" { sub(/^[^\t]*\t/, ""); print; exit }'
+}
+
+is_trusted_release_stream_consumer() {
+  local candidate="$1" trusted
+  for trusted in "${TRUSTED_RELEASE_STREAM_CONSUMERS[@]}"; do
+    [ "$candidate" = "$trusted" ] && return 0
+  done
+  return 1
 }
 
 # consumer → "workflow<TAB>signer<TAB>pin"

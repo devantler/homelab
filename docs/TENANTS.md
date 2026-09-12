@@ -139,6 +139,11 @@ reusable workflow, which builds and pushes the image, pins its digest into
 **cosign-signs** both (keyless, via GitHub OIDC). The platform's `OCIRepository`
 (§5) **verifies** that signature against the `publish-app.yaml` identity, so only
 artifacts produced by that trusted workflow are ever reconciled onto the cluster.
+Application tenants may advance that workflow at any immutable 40-hex commit without a
+platform-side revision update. The platform owns the trust boundary around the exact GitHub
+OIDC issuer, organization, reusable-workflow path, package source, namespace, RBAC, network
+policy, and admission policy. A tenant that needs authority outside those bounds requires a
+reviewed platform change; an ordinary release inside them does not.
 
 > Tags come from `release.yaml` → semantic-release: merge Conventional-Commit
 > PRs to `main` and a `vX.Y.Z` tag (and thus a publish) follows automatically.
