@@ -1979,12 +1979,16 @@ const (
 // permission change is introduced. The kubescape HelmRelease's
 // unresolved-substitution fingerprint changes with the reviewed scanner tag.
 //
-// PENDING CI DERIVATION: this host's renderer is unapproved, so the value below
-// is the #3677 base and must be replaced with the aggregate CI reports for the
-// merged tree before this change can merge.
+// RENDERER PROVENANCE: this host's renderer is unapproved, so the value below
+// was read from CI's own failure on run 34713884735 for the merged tree, which
+// renders under the approved SHA256-verified toolchain. That run reported the
+// aggregate mismatch as its only authorization error: ZERO `unapproved rendered
+// <identity>`, ZERO `missing rendered authorization resource` and ZERO
+// `duplicate rendered`; the unresolved Flux substitutions it listed are the
+// normal diagnostics.
 //
 // Previous aggregate: 814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1.
-const expectedRenderedSurfaceSHA = "814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1"
+const expectedRenderedSurfaceSHA = "a5304bbb0e665bca51b817bc5e3c5e083e4e2df32bfc298a05cebb2bb35b9baa"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
