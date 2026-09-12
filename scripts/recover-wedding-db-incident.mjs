@@ -86,6 +86,13 @@ function recoveryName(run,attempt){
 
 export function recoveryOwner(run,attempt){return integer(run)+'/'+integer(attempt);}
 
+export function recoveryOwnerAttempt(run,currentAttempt,owner){
+  integer(run);integer(currentAttempt);
+  const match=new RegExp('^'+run+'/([1-9][0-9]*)$').exec(owner);
+  check(match&&BigInt(match[1])<=BigInt(currentAttempt));
+  return match[1];
+}
+
 export function buildSuspendPatch({resourceVersion,kustomizationUid,owner}){
   integer(resourceVersion);check(kustomizationUid===LIVE_KUSTOMIZATION_UID&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
   return [
@@ -231,7 +238,7 @@ function optionalObject(resource,name){
 
 function list(resource,selector){
   const value=JSON.parse(kubectl(['--namespace',NAMESPACE,'get',resource,'--selector',selector,'--output=json','--request-timeout=20s']).toString('utf8'));
-  check(value?.apiVersion==='v1'&&Array.isArray(value.items)&&value.items.length<=32);return value.items;
+  check(typeof value?.apiVersion==='string'&&Array.isArray(value.items)&&value.items.length<=32);return value.items;
 }
 
 function verifyCandidate(){
@@ -323,6 +330,10 @@ function loadRecovered(primary,database,recovered,config){
   return schema;
 }
 
+function dropStagingSchema(primary,database,config){
+  psql(primary,database,`DROP SCHEMA IF EXISTS ${schemaName(config.run,config.attempt)} CASCADE;`);
+}
+
 function suspendApplication(config){
   const owner=recoveryOwner(config.run,config.attempt);
   const current=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
@@ -349,10 +360,11 @@ function suspendApplication(config){
 }
 
 function resumeApplication(config){
-  const owner=recoveryOwner(config.run,config.attempt);
   const current=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   if(!current.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION])return false;
-  check(current.metadata.uid===LIVE_KUSTOMIZATION_UID&&current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]===owner);
+  const owner=current.metadata.annotations[RECOVERY_OWNER_ANNOTATION];
+  recoveryOwnerAttempt(config.run,config.attempt,owner);
+  check(current.metadata.uid===LIVE_KUSTOMIZATION_UID);
   check(current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled'&&current.spec?.suspend===true);
   check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===CURRENT_CLUSTER_UID);
   let failed=false;
@@ -382,21 +394,30 @@ function createRecovery(config,source){
 }
 
 function cleanupRecovery(config,recovery){
-  const name=recoveryName(config.run,config.attempt),owned=labels(config.run,config.attempt);
-  if(recovery)check(recovery.name===name);
-  const cluster=optionalObject('clusters.postgresql.cnpg.io',name);
-  if(cluster){
-    for(const [key,value] of Object.entries(owned))check(cluster.metadata?.labels?.[key]===value);
-    if(recovery?.uid)check(cluster.metadata.uid===recovery.uid);
-    kubectl(['--namespace',NAMESPACE,'delete','cluster.postgresql.cnpg.io',name,'--wait=true','--timeout=10m'],{timeout:630000});
+  const attempts=new Set([config.attempt]);
+  const selector='app.kubernetes.io/name=wedding-db-incident-recovery,app.kubernetes.io/managed-by=github-actions,devantler.tech/github-run='+config.run;
+  const collect=item=>{
+    const attempt=recoveryOwnerAttempt(config.run,config.attempt,config.run+'/'+integer(item.metadata?.labels?.['devantler.tech/github-attempt']));
+    check(item.metadata?.name===recoveryName(config.run,attempt));
+    for(const [key,value] of Object.entries(labels(config.run,attempt)))check(item.metadata.labels[key]===value);
+    attempts.add(attempt);
+  };
+  const clusters=list('clusters.postgresql.cnpg.io',selector);for(const cluster of clusters)collect(cluster);
+  const policies=list('ciliumnetworkpolicies.cilium.io',selector);for(const policy of policies)collect(policy);
+  for(const claim of list('persistentvolumeclaims','cnpg.io/cluster')){
+    const clusterName=claim.metadata?.labels?.['cnpg.io/cluster'];
+    const match=new RegExp('^wedding-db-preloss-'+config.run+'-([1-9][0-9]*)$').exec(clusterName);
+    if(match)attempts.add(recoveryOwnerAttempt(config.run,config.attempt,config.run+'/'+match[1]));
   }
-  for(const claim of list('persistentvolumeclaims','cnpg.io/cluster='+name))kubectl(['--namespace',NAMESPACE,'delete','persistentvolumeclaim',claim.metadata.name,'--wait=true','--timeout=5m'],{timeout:330000});
-  const policy=optionalObject('ciliumnetworkpolicies.cilium.io',name);
-  if(policy){
-    for(const [key,value] of Object.entries(owned))check(policy.metadata?.labels?.[key]===value);
-    kubectl(['--namespace',NAMESPACE,'delete','ciliumnetworkpolicy.cilium.io',name,'--wait=true','--timeout=2m'],{timeout:150000});
-  }
-  check(!optionalObject('clusters.postgresql.cnpg.io',name)&&list('persistentvolumeclaims','cnpg.io/cluster='+name).length===0&&!optionalObject('ciliumnetworkpolicies.cilium.io',name));
+  const names=[...attempts].map(attempt=>recoveryName(config.run,attempt));
+  if(recovery){check(names.includes(recovery.name));const found=clusters.find(cluster=>cluster.metadata.name===recovery.name);if(found)check(found.metadata.uid===recovery.uid);}
+  const clusterNames=clusters.map(cluster=>cluster.metadata.name);
+  if(clusterNames.length)kubectl(['--namespace',NAMESPACE,'delete','cluster.postgresql.cnpg.io',...clusterNames,'--wait=true','--timeout=10m'],{timeout:630000});
+  const claims=list('persistentvolumeclaims','cnpg.io/cluster').filter(claim=>names.includes(claim.metadata?.labels?.['cnpg.io/cluster']));
+  if(claims.length)kubectl(['--namespace',NAMESPACE,'delete','persistentvolumeclaim',...claims.map(claim=>claim.metadata.name),'--wait=true','--timeout=10m'],{timeout:630000});
+  const policyNames=policies.map(policy=>policy.metadata.name);
+  if(policyNames.length)kubectl(['--namespace',NAMESPACE,'delete','ciliumnetworkpolicy.cilium.io',...policyNames,'--wait=true','--timeout=2m'],{timeout:150000});
+  for(const name of names)check(!optionalObject('clusters.postgresql.cnpg.io',name)&&list('persistentvolumeclaims','cnpg.io/cluster='+name).length===0&&!optionalObject('ciliumnetworkpolicies.cilium.io',name));
 }
 
 function recordProof({config,source,recovery,before,after,recovered,liveBefore,merge}){
@@ -413,7 +434,7 @@ function recordProof({config,source,recovery,before,after,recovered,liveBefore,m
 function run(){
   const config=verifyCandidate(),source=sourceState();
   const before=backup(config,'before',source);
-  let recovery,recoveredInventory,recovered,liveBefore,merge,error,resumeError,cleanupError;
+  let recovery,recoveredInventory,recovered,liveBefore,merge,mergePrimary,error,schemaCleanupError,resumeError,cleanupError;
   try{
     recovery=createRecovery(config,source);
     recoveredInventory=inventory(recovery.primary,source.database,{requireMeaningful:true});
@@ -424,7 +445,7 @@ function run(){
     check(recovered.guestPairs===liveBefore.guestPairs&&recovered.guests===liveBefore.guests);
     suspendApplication(config);
     check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===source.currentClusterUid);
-    const mergePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
+    mergePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     check(/^wedding-db-[1-9][0-9]*$/.test(mergePrimary));
     const schema=loadRecovered(mergePrimary,source.database,recoveredInventory.value,config);
     const output=psql(mergePrimary,source.database,buildMergeSQL(schema));
@@ -432,9 +453,10 @@ function run(){
     for(const key of ['restoredGuestAnswers','restoredRoomBookings','finalMeaningfulGuestAnswers','finalRoomBookings'])check(Number.isSafeInteger(merge[key])&&merge[key]>=0);
     check(merge.finalMeaningfulGuestAnswers>=recovered.meaningfulGuests&&merge.finalRoomBookings>=recovered.roomBookings);
   }catch(candidate){error=candidate;}
+  if(error&&mergePrimary){try{dropStagingSchema(mergePrimary,source.database,config);}catch(candidate){schemaCleanupError=candidate;}}
   try{resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}
-  if(error||resumeError||cleanupError)throw Error('refused');
+  if(error||schemaCleanupError||resumeError||cleanupError)throw Error('refused');
   const after=backup(config,'after',source);
   recordProof({config,source,recovery,before,after,recovered,liveBefore,merge});
   return {restored:true,currentClusterUid:source.currentClusterUid,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,beforeBackupUid:before.uid,afterBackupUid:after.uid,recovered,liveBefore,merge,cleanup:true};
@@ -442,10 +464,21 @@ function run(){
 
 function runCleanup(){
   const config=verifyCandidate();
-  let resumeError,cleanupError,resumed=false;
+  let schemaCleanupError,resumeError,cleanupError,resumed=false;
+  const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
+  const owner=kustomization.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION];
+  if(owner){
+    const attempt=recoveryOwnerAttempt(config.run,config.attempt,owner);
+    try{
+      check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.spec?.suspend===true&&kustomization.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
+      const cluster=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER);check(cluster.metadata.uid===CURRENT_CLUSTER_UID);
+      const primary=cluster.status?.currentPrimary;check(/^wedding-db-[1-9][0-9]*$/.test(primary));
+      dropStagingSchema(primary,'wedding',{run:config.run,attempt});
+    }catch(candidate){schemaCleanupError=candidate;}
+  }
   try{resumed=resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config);}catch(candidate){cleanupError=candidate;}
-  if(resumeError||cleanupError)throw Error('refused');
+  if(schemaCleanupError||resumeError||cleanupError)throw Error('refused');
   return {cleanup:true,resumed};
 }
 

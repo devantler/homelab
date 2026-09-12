@@ -8,6 +8,7 @@ import {
   buildResumePatch,
   buildSuspendPatch,
   recoveryOwner,
+  recoveryOwnerAttempt,
   recoverySource,
   validateCoreInventory,
 } from '../../scripts/recover-wedding-db-incident.mjs';
@@ -77,6 +78,9 @@ test('application suspension ownership is bound to one workflow attempt',()=>{
   const owner=recoveryOwner('34710000000','1');
   assert.equal(owner,'34710000000/1');
   assert.throws(()=>recoveryOwner('34710000000','0'),/refused/);
+  assert.equal(recoveryOwnerAttempt('34710000000','2',owner),'1');
+  assert.throws(()=>recoveryOwnerAttempt('34710000000','1','34710000000/2'),/refused/);
+  assert.throws(()=>recoveryOwnerAttempt('34710000000','2','34710000001/1'),/refused/);
   assert.deepEqual(buildSuspendPatch({resourceVersion:'279780874',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),[
     {op:'test',path:'/metadata/resourceVersion',value:'279780874'},
     {op:'test',path:'/metadata/uid',value:'be31651e-fe0d-4826-9ffb-d41716a66720'},
@@ -145,7 +149,7 @@ test('manual recovery is serialized with production deployments and discloses no
   assert.match(workflow,/group: prod-deploy\n  cancel-in-progress: false\n  queue: max/);
   assert.match(workflow,/timeout-minutes: 180/);
   assert.match(workflow,/needs: recover\n    if: \$\{\{ always\(\) \}\}/);
-  assert.match(workflow,/timeout-minutes: 20/);
+  assert.match(workflow,/timeout-minutes: 60/);
   assert.match(workflow,/node scripts\/recover-wedding-db-incident\.mjs --cleanup/);
   assert.equal(workflow.match(/run: \.\/scripts\/use-prod-stable-api-endpoint\.sh/g)?.length,2);
   assert.equal(workflow.match(/HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/g)?.length,2);

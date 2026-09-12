@@ -52,7 +52,7 @@ jobs:
     needs: recover
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     environment: prod
     permissions:
       contents: read
