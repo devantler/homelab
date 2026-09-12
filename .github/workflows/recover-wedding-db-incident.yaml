@@ -38,6 +38,12 @@ jobs:
           printf '%s' "$KUBE_CONFIG" >~/.kube/config
           chmod 600 ~/.kube/config
 
+      - name: Select stable production API endpoint
+        shell: bash
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+        run: ./scripts/use-prod-stable-api-endpoint.sh
+
       - name: Preserve, recover, merge, and prove Wedding data
         run: node scripts/recover-wedding-db-incident.mjs
 
@@ -67,6 +73,12 @@ jobs:
           mkdir -p ~/.kube
           printf '%s' "$KUBE_CONFIG" >~/.kube/config
           chmod 600 ~/.kube/config
+
+      - name: Select stable production API endpoint
+        shell: bash
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+        run: ./scripts/use-prod-stable-api-endpoint.sh
 
       - name: Restore only state owned by this recovery run
         run: node scripts/recover-wedding-db-incident.mjs --cleanup

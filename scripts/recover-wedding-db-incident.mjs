@@ -8,6 +8,8 @@ const LIVE_CLUSTER='wedding-db';
 const LIVE_DEPLOYMENT='wedding-app';
 const LIVE_KUSTOMIZATION='wedding-app';
 const LIVE_KUSTOMIZATION_UID='be31651e-fe0d-4826-9ffb-d41716a66720';
+const LIVE_APP_POLICY_UID='60848dbb-144f-41e0-a47f-f602e8271d04';
+const LIVE_DNS_POLICY_UID='89789584-31f8-407b-99e0-b8f4f2c23c11';
 const SOURCE_STORE='wedding-db';
 const SOURCE_STORE_UID='9cd2ba9b-c7bf-43e2-bd2d-a5c7c139fafb';
 const SOURCE_SECRET='wedding-db-backup-r2';
@@ -121,7 +123,6 @@ export function buildRecoveryResources({run,attempt,endpoint,imageName,storageCl
     externalClusters:[{name:'wedding-db-preloss',plugin:{name:'barman-cloud.cloudnative-pg.io',parameters:{barmanObjectName:SOURCE_STORE,serverName:'wedding-db'}}}],
   }};
   const policy={apiVersion:'cilium.io/v2',kind:'CiliumNetworkPolicy',metadata:{name,namespace:NAMESPACE,labels:owned},spec:{endpointSelector:{matchLabels:{'cnpg.io/cluster':name}},egress:[
-    {toEndpoints:[{matchLabels:{'io.kubernetes.pod.namespace':'kube-system','k8s-app':'kube-dns'}}],toPorts:[{ports:[{port:'53',protocol:'UDP'},{port:'53',protocol:'TCP'}],rules:{dns:[{matchPattern:'*'}]}}]},
     {toEntities:['kube-apiserver']},
     {toFQDNs:[{matchName:hostname}],toPorts:[{ports:[{port:'443',protocol:'TCP'}]}]},
   ]}};
@@ -239,7 +240,7 @@ function verifyCandidate(){
   const workspace=realpathSync(process.env.GITHUB_WORKSPACE);check(workspace===process.env.GITHUB_WORKSPACE);
   const head=spawnSync('git',['--no-replace-objects','-C',workspace,'rev-parse','HEAD'],{encoding:'utf8',env:{PATH:process.env.PATH,GIT_NO_REPLACE_OBJECTS:'1'},maxBuffer:1024});
   check(!head.error&&head.status===0&&head.stdout===process.env.GITHUB_SHA+'\n');
-  for(const relative of ['scripts/recover-wedding-db-incident.mjs','.github/workflows/recover-wedding-db-incident.yaml','k8s/bases/apps/wedding-app/flux-kustomization.yaml']){
+  for(const relative of ['scripts/recover-wedding-db-incident.mjs','scripts/use-prod-stable-api-endpoint.sh','.github/workflows/recover-wedding-db-incident.yaml','k8s/bases/apps/wedding-app/flux-kustomization.yaml']){
     const filename=path.join(workspace,relative),stat=lstatSync(filename);check(stat.isFile()&&!stat.isSymbolicLink()&&stat.size>0&&stat.size<=524288&&realpathSync(filename)===filename);
     const local=readFileSync(filename),source=spawnSync('git',['--no-replace-objects','-C',workspace,'show',process.env.GITHUB_SHA+':'+relative],{env:{PATH:process.env.PATH,GIT_NO_REPLACE_OBJECTS:'1'},maxBuffer:524288});
     check(!source.error&&source.status===0&&local.equals(source.stdout));local.fill(0);source.stdout.fill(0);
@@ -254,6 +255,15 @@ function sourceState(){
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.metadata.creationTimestamp==='2026-05-23T01:52:44Z');
   check(kustomization.spec?.force===false&&kustomization.spec.suspend!==true&&condition(kustomization,'Ready'));
+  const appPolicy=object('ciliumnetworkpolicies.cilium.io','app');
+  check(appPolicy.metadata.uid===LIVE_APP_POLICY_UID&&appPolicy.metadata.creationTimestamp==='2026-06-16T18:14:37Z');
+  check(appPolicy.spec?.endpointSelector&&Object.keys(appPolicy.spec.endpointSelector).length===0);
+  check(appPolicy.spec.egress?.some(rule=>rule.toFQDNs?.some(target=>target.matchPattern==='*.r2.cloudflarestorage.com')&&rule.toPorts?.some(item=>item.ports?.some(port=>port.port==='443'&&port.protocol==='TCP'))));
+  check(appPolicy.spec.egress?.some(rule=>rule.toPorts?.some(item=>item.rules?.dns?.some(dns=>dns.matchPattern==='*'))));
+  const dnsPolicy=object('ciliumnetworkpolicies.cilium.io','allow-dns');
+  check(dnsPolicy.metadata.uid===LIVE_DNS_POLICY_UID&&dnsPolicy.metadata.creationTimestamp==='2026-05-23T01:52:43Z');
+  check(dnsPolicy.spec?.endpointSelector&&Object.keys(dnsPolicy.spec.endpointSelector).length===0);
+  check(dnsPolicy.spec.egress?.some(rule=>rule.toPorts?.some(item=>item.ports?.some(port=>port.port==='53'&&(port.protocol==='UDP'||port.protocol==='TCP')))));
   return recoverySource({cluster:object('clusters.postgresql.cnpg.io',LIVE_CLUSTER),store:object('objectstores.barmancloud.cnpg.io',SOURCE_STORE),backup:object('backups.postgresql.cnpg.io',PRELOSS_BACKUP)});
 }
 
@@ -331,7 +341,7 @@ function suspendApplication(config){
     const fence=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
     check(fence.metadata.uid===LIVE_KUSTOMIZATION_UID&&fence.spec?.suspend===true);
     check(fence.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]===owner&&fence.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
-    if((deployment.status?.replicas??0)===0&&list('pods','app.kubernetes.io/name=wedding-app').filter(pod=>!pod.metadata.deletionTimestamp).length===0)stable+=1;else stable=0;
+    if((deployment.status?.replicas??0)===0&&list('pods','app.kubernetes.io/name=wedding-app').length===0)stable+=1;else stable=0;
     if(stable>=2)return;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
   }

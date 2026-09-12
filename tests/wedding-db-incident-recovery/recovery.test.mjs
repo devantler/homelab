@@ -70,6 +70,7 @@ test('recovery cluster replays the complete predecessor archive from the exact b
   assert.equal(cluster.spec.enablePDB,false);
   assert.deepEqual(policy.spec.endpointSelector.matchLabels,{'cnpg.io/cluster':cluster.metadata.name});
   assert.deepEqual(policy.spec.egress.find(item=>item.toFQDNs).toFQDNs,[{matchName:'0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com'}]);
+  assert.equal(policy.spec.egress.some(item=>item.toEndpoints),false);
 });
 
 test('application suspension ownership is bound to one workflow attempt',()=>{
@@ -146,6 +147,8 @@ test('manual recovery is serialized with production deployments and discloses no
   assert.match(workflow,/needs: recover\n    if: \$\{\{ always\(\) \}\}/);
   assert.match(workflow,/timeout-minutes: 20/);
   assert.match(workflow,/node scripts\/recover-wedding-db-incident\.mjs --cleanup/);
+  assert.equal(workflow.match(/run: \.\/scripts\/use-prod-stable-api-endpoint\.sh/g)?.length,2);
+  assert.equal(workflow.match(/HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/g)?.length,2);
   assert.match(workflow,/environment: prod/);
   assert.match(workflow,/persist-credentials: false/);
   assert.doesNotMatch(workflow,/pull_request|schedule:|inputs:/);
