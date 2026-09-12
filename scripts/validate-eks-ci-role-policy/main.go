@@ -1953,7 +1953,6 @@ const (
 // The previous aggregate remains recorded here:
 //
 //	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
-
 // Moved again by the trusted tenant semantic-version rollout (#3677). Exactly
 // two existing source objects change: the ascoachingogvaner and wedding-app
 // OCIRepositories replace one fixed ref.tag with ref.semver >=1.0.0. Their
@@ -1970,6 +1969,29 @@ const (
 // mismatch.
 //
 // Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
+// That rollout established aggregate:
+//
+//	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
+//
+// Moved again by the Wedding data-loss repair after rebasing onto #3677. The
+// only additional rendered identity change is the wedding-app Kustomization's
+// global `force` value moving from true to false, plus its explanatory comment.
+// The validator reported no unapproved, missing, or duplicate identity after
+// admitting that Kustomization hash and this aggregate. This removes
+// replacement authority and adds no Role, ClusterRole, binding,
+// ServiceAccount, subject, verb, wildcard, AWS identity, or permission.
+//
+// RENDERER PROVENANCE: reproduced locally with the official kubectl v1.36.2
+// Darwin arm64 binary (SHA256
+// 4408c85c83fd3a31adaa555bdf3c7a6c81f74b19449a9060ba31ab91926f023d),
+// whose embedded Kustomize is v5.8.1, matching CI's pinned versions. Previous
+// aggregate:
+//
+//	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
+//
+// That repair established aggregate:
+//
+//	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
 //
 // Moved again by the snapshot-controller C-0211 baseline context (#3239). The
 // workload sits in kube-system, which add-security-context excludes, so its
@@ -1998,15 +2020,19 @@ const (
 // comparisons report a difference, so the identical result is a finding rather
 // than a blind read.
 //
-// RENDERER PROVENANCE: the value below was read from CI's own failure on run
-// 34716590753 at b8ebb7db, which renders under the approved SHA256-verified
-// toolchain and reported ZERO missing and ZERO duplicate rendered resources; its
-// single unapproved entry was this aggregate. This host's kubectl/kustomize are
-// not approved renderers, so no local digest is claimed. The conservation
-// evidence above compares two trees under one renderer and stands on its own.
+// The two changes touch disjoint objects: the Wedding repair edits the
+// wedding-app Flux Kustomization, while this context edits only the
+// snapshot-controller HelmRelease's controller values. Rebasing onto that
+// repair therefore leaves the conservation hunk list above unchanged.
 //
-// Previous aggregate: 814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1.
-const expectedRenderedSurfaceSHA = "ce959e8ffe85ae2ea734d9c0798c2834fa29fa93c72155dae95f73ac636e489d"
+// RENDERER PROVENANCE: PENDING CI on the merged tree. The constant below still
+// holds the previous aggregate, so CI's validator reports the merged tree's
+// aggregate as its single unapproved entry; that value replaces the constant in
+// the follow-up commit. This host's kubectl/kustomize are not approved
+// renderers, so no local digest is claimed.
+//
+// Previous aggregate: 8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e.
+const expectedRenderedSurfaceSHA = "8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
@@ -2223,7 +2249,7 @@ var expectedRenderedHashes = map[resourceIdentity]string{
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "flux-system", name: "infrastructure-controllers"}: "9d9b62d3221442d6355d16a34d31c198619fb3b3728df960fd67222a531ece7b",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "github-config", name: "github-config"}:            "8e9f72b0f4f982d050aff0b97d246c68b538cbc397cdd45d031c95cfae981e7c",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "unifi", name: "unifi"}:                            "33a579299700de2467631854bac4982d3e14caa3bad8cbcd2613ac180b30af32",
-	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "3710185a3d14afaeaa032447421850f6a8ab01e1ae5dbbf58819783cc61154e8",
+	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "eb6253380641dbfac9936b4a2c938524d4f4cc9352d45ab18e8fdfd9e59bf8a8",
 }
 
 // fingerprint returns the SHA-256 identity used for byte-exact source checks.

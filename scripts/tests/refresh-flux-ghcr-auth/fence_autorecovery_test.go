@@ -8,7 +8,8 @@ import (
 )
 
 // --recover-fences is the automated half of the fence model: it releases the
-// synchronization Lease when — and only when — the holder is PROVABLY dead.
+// policy fences and then the synchronization Lease when — and only when — every
+// holder is PROVABLY dead.
 //
 // Everything here is a statement about that proof. Expiry alone must never
 // release, because the script's own acquisition comment explains that an expired
@@ -26,6 +27,21 @@ func seedOrphanedLease(t *testing.T, f *fixture, holder string) {
 	if err := os.WriteFile(
 		filepath.Join(f.syncStateDir, "sync-lease-holder"), []byte(holder), 0o600); err != nil {
 		t.Fatalf("seed lease holder: %v", err)
+	}
+}
+
+func seedOrphanedPolicyFences(t *testing.T, f *fixture, holder string) {
+	t.Helper()
+	markers := map[string]string{
+		"flux-policy-handoff-owner":     holder,
+		"flux-policy-handoff-suspended": "",
+		"flux-policy-parent-owner":      holder,
+		"flux-policy-parent-suspended":  "",
+	}
+	for name, value := range markers {
+		if err := os.WriteFile(filepath.Join(f.syncStateDir, name), []byte(value), 0o600); err != nil {
+			t.Fatalf("seed policy fence %s: %v", name, err)
+		}
 	}
 }
 
@@ -83,36 +99,99 @@ func TestRecoverFencesRefusesWhileTheHolderRunIsNotTerminal(t *testing.T) {
 	}
 }
 
-// The Lease is the GLOBAL exclusion fence, so it is released last: clearing it
-// while a policy or node fence is still held lets a deploy start against a
-// half-recovered cluster. Automation refuses rather than reordering.
-//
-// The assertion that matters here is the third one. This refusal is reached
-// BEFORE any liveness proof is attempted, so a run that queried the API first
-// would be deciding the ordering question after paying for — and potentially
-// acting on — an answer it must not use.
-func TestRecoverFencesRefusesWhileAnotherFenceIsStillHeld(t *testing.T) {
+// A hard-killed deploy ordinarily leaves the child and parent policy fences as
+// well as the Lease. Recovery must prove every holder run is terminal before it
+// mutates anything, then release child, parent, and Lease in that order.
+func TestRecoverFencesReleasesTerminalPolicyFencesBeforeTheLease(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	seedOrphanedLease(t, f, deadHolderIdentity)
+	seedOrphanedPolicyFences(t, f, deadHolderIdentity)
+
+	result := f.runHelperPreservingClusterState(validConfig(), []string{"--recover-fences"},
+		map[string]string{"FAKE_EXPIRED_SYNC_LEASE": "true"})
+
+	requireSuccessResult(t, result)
+	for _, marker := range []string{
+		"flux-policy-handoff-owner", "flux-policy-handoff-suspended",
+		"flux-policy-parent-owner", "flux-policy-parent-suspended",
+	} {
+		if pathExists(filepath.Join(f.syncStateDir, marker)) {
+			t.Errorf("policy fence marker %s remains after recovery", marker)
+		}
+	}
+	if holder := leaseHolderNow(t, f); holder != "" {
+		t.Errorf("lease holder = %q, want it released last", holder)
+	}
+	operations := readLines(f.operationLog)
+	child := lineIndex(t, operations, "flux-policy-resume:infrastructure")
+	parent := lineIndex(t, operations, "flux-policy-parent-resume:flux-system")
+	if child >= parent {
+		t.Errorf("policy release order = %v, want child before parent", operations)
+	}
+}
+
+// A lost policy-fence CAS must leave the parent and global Lease held. That
+// preserves exclusion for a fresh report/retry instead of exposing a partially
+// recovered control plane to another deploy.
+func TestRecoverFencesKeepsLaterFencesWhenPolicyReleaseIsRefused(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	seedOrphanedLease(t, f, deadHolderIdentity)
+	seedOrphanedPolicyFences(t, f, deadHolderIdentity)
 
 	result := f.runHelperPreservingClusterState(validConfig(), []string{"--recover-fences"},
 		map[string]string{
-			"FAKE_EXPIRED_SYNC_LEASE":        "true",
-			"FAKE_FLUX_POLICY_HANDOFF_OWNED": "true",
+			"FAKE_EXPIRED_SYNC_LEASE":               "true",
+			"FAKE_FLUX_POLICY_HANDOFF_RELEASE_FAIL": "true",
 		})
 
 	if result.exitCode == 0 {
-		t.Fatalf("recovery succeeded with another fence held; stdout = %q", result.stdout)
+		t.Fatalf("recovery succeeded after a refused child release; stdout = %q", result.stdout)
+	}
+	if holder := leaseHolderNow(t, f); holder != deadHolderIdentity {
+		t.Errorf("lease holder = %q, want it retained", holder)
+	}
+	for _, marker := range []string{
+		"flux-policy-handoff-owner", "flux-policy-handoff-suspended",
+		"flux-policy-parent-owner", "flux-policy-parent-suspended",
+	} {
+		if !pathExists(filepath.Join(f.syncStateDir, marker)) {
+			t.Errorf("policy fence marker %s was removed after the refused first release", marker)
+		}
+	}
+}
+
+// Node recovery has additional Talos and scheduling proofs, so this lightweight
+// preflight must still refuse before querying liveness or releasing the Lease.
+func TestRecoverFencesRefusesWhileANodeFenceIsStillHeld(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	seedOrphanedLease(t, f, deadHolderIdentity)
+	for name, value := range map[string]string{
+		"cordon-owner-prod-worker-1": deadHolderIdentity,
+		"cordon-phase-prod-worker-1": "claimed",
+		"cordoned-prod-worker-1":     "",
+	} {
+		if err := os.WriteFile(filepath.Join(f.syncStateDir, name), []byte(value), 0o600); err != nil {
+			t.Fatalf("seed node fence %s: %v", name, err)
+		}
+	}
+
+	result := f.runHelperPreservingClusterState(validConfig(), []string{"--recover-fences"},
+		map[string]string{"FAKE_EXPIRED_SYNC_LEASE": "true"})
+
+	if result.exitCode == 0 {
+		t.Fatalf("recovery succeeded with a node fence held; stdout = %q", result.stdout)
 	}
 	if holder := leaseHolderNow(t, f); holder != deadHolderIdentity {
 		t.Errorf("lease holder = %q, want it untouched", holder)
 	}
 	if _, err := os.Stat(f.ghCalled); err == nil {
-		t.Error("liveness query was made before the ordering refusal; it should not have been")
+		t.Error("liveness query was made before the node-fence refusal")
 	}
-	if output := result.stdout + result.stderr; !strings.Contains(output, "other fence(s) are held") {
-		t.Errorf("refusal does not name the ordering rule it enforced; output = %q", output)
+	if output := result.stdout + result.stderr; !strings.Contains(output, "node fence") {
+		t.Errorf("refusal does not name the node-fence boundary; output = %q", output)
 	}
 }
 

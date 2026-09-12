@@ -30,7 +30,6 @@ spec:
       - target:
           kind: Deployment
           name: kustomize-controller
-          namespace: flux-system
         patch: |
           - op: test
             path: /spec/template/spec/containers/0/name
@@ -38,6 +37,18 @@ spec:
           - op: add
             path: /spec/template/spec/containers/0/args/-
             value: --requeue-dependency=5s
+          - op: replace
+            path: /spec/replicas
+            value: 2
+          - op: add
+            path: /spec/template/spec/affinity
+            value:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app: kustomize-controller
+                    topologyKey: kubernetes.io/hostname
       # Run kustomize-/helm-/notification-controller active/standby (HA) for
       # node-failure resilience: each binary runs --enable-leader-election and
       # holds a coordination.k8s.io Lease, so a 2nd replica is a warm standby (one
@@ -59,49 +70,63 @@ spec:
       # source-controller. That did NOT work: raw `kustomize build` honours patch
       # order and yields 1, but flux-operator resolves the overlapping label- and
       # name-targeted patches the other way, so source-controller stayed at 2
-      # (verified live via a forced FluxInstance reconcile). The robust fix is to
-      # match each HA controller BY NAME and leave source-controller matched by no
-      # replicas patch at all, so it keeps the base manifest's single replica with
-      # zero ambiguity. (topologySpread + ndots below still target the whole
-      # part-of=flux set by label — those don't conflict and are safe at 1
-      # replica.) flux-operator itself stays single-replica: its chart exposes no
-      # replicas/leaderElection (0.50.0), so it relies on reschedule.
-      - target:
-          kind: Deployment
-          name: kustomize-controller
-          namespace: flux-system
-        patch: |
-          - op: replace
-            path: /spec/replicas
-            value: 2
+      # (verified live via a forced FluxInstance reconcile). A controller must
+      # also have exactly one name-targeted patch: flux-operator only applied the
+      # first of two duplicate kustomize-controller targets, which silently left
+      # it at one replica. Deployment patch targets must also omit `namespace`:
+      # flux-operator applies component patches before the namespace transformer,
+      # so a namespaced Deployment selector silently matches nothing. The robust
+      # fix is therefore one unnamespaced patch per HA controller and no
+      # source-controller replicas patch, so source-controller keeps the base
+      # manifest's single replica with zero ambiguity. (topologySpread + ndots
+      # below still target the whole part-of=flux set by label — those don't
+      # conflict and are safe at 1 replica.) flux-operator itself stays
+      # single-replica: its chart exposes no replicas/leaderElection (0.50.0), so
+      # it relies on reschedule.
       - target:
           kind: Deployment
           name: helm-controller
-          namespace: flux-system
         patch: |
           - op: replace
             path: /spec/replicas
             value: 2
+          - op: add
+            path: /spec/template/spec/affinity
+            value:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app: helm-controller
+                    topologyKey: kubernetes.io/hostname
       - target:
           kind: Deployment
           name: notification-controller
-          namespace: flux-system
         patch: |
           - op: replace
             path: /spec/replicas
             value: 2
-      # Spread the four Flux controllers across worker nodes. They all carry
-      # app.kubernetes.io/part-of=flux, so a per-controller topology spread
-      # keyed on that label distributes the set (skew <= 1) — and, combined with
-      # the replicas: 2 patch above, keeps each controller's active and standby
-      # pods on different nodes instead of letting the scheduler stack them.
+          - op: add
+            path: /spec/template/spec/affinity
+            value:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app: notification-controller
+                    topologyKey: kubernetes.io/hostname
+      # Spread the four Flux controllers across worker nodes. The three
+      # replicated controller patches above require each active/standby pair to
+      # use different hostnames. This additional aggregate spread distributes
+      # the whole controller set with skew <= 1.
       # On 2026-05-28 kustomize-controller landed on prod-worker-2 when that
       # node's Cilium ClusterIP datapath degraded after an OOMKill; it then
       # crash-looped on "dial tcp 10.96.0.1:443: i/o timeout" and GitOps
       # reconciliation stalled — so the fix for the underlying OOM could not be
       # applied (a deadlock GitOps cannot self-heal from). Keeping the
       # controllers spread means a single bad worker cannot decapitate
-      # reconciliation. Soft (ScheduleAnyway) so it never blocks scheduling.
+      # reconciliation. The aggregate rule is soft (ScheduleAnyway); the
+      # same-controller anti-affinity above is the required HA guarantee.
       - target:
           kind: Deployment
           labelSelector: app.kubernetes.io/part-of=flux
