@@ -14,6 +14,7 @@ fail() {
 
 command -v yq >/dev/null 2>&1 || fail 'yq v4 is required to inspect the Kubescape HelmRelease'
 command -v helm >/dev/null 2>&1 || fail 'helm is required to render the pinned Kubescape chart'
+command -v kubectl >/dev/null 2>&1 || fail 'kubectl is required to exercise the Flux Helm post-renderer'
 
 scanner_tag="$(yq -er '.spec.values.kubescape.image.tag | select(tag == "!!str")' "${helm_release}")" ||
   fail 'the Kubescape scanner image tag is missing or is not a string'
@@ -33,6 +34,13 @@ if ((major < 4 || (major == 4 && minor == 0 && patch < 12))); then
   fail "Kubescape scanner ${scanner_tag} predates v4.0.12 and can silently drop self-hosted posture results"
 fi
 
+# kubevuln v0.3.159 swallows an exhausted conflict retry while updating a
+# VulnerabilityManifestSummary: it logs the original AlreadyExists result and
+# returns success. kubescape/kubevuln#745 fixed both error reporting and
+# propagation, first released in v0.3.404. Chart 1.40.4 selects v0.3.430;
+# verify the rendered image below so a later chart cannot regress silently.
+readonly kubevuln_tag='v0.3.430'
+
 keep_local="$(yq -er '
   .spec.values.kubescapeScheduler.requestBody.commands[] |
   select(.CommandName == "kubescapeScan") |
@@ -51,7 +59,7 @@ readonly offline
 
 # The scanner's API-server persistence handler stores detailed
 # WorkloadConfigurationScan objects only when clusterData.continuousPostureScan
-# is true. Chart 1.40.3 derives that flag from this capability.
+# is true. Chart 1.40.4 derives that flag from this capability.
 continuous_scan="$(yq -er '.spec.values.capabilities.continuousScan' "${helm_release}")" ||
   fail 'capabilities.continuousScan is missing'
 readonly continuous_scan
@@ -85,14 +93,14 @@ readonly continuous_namespace_count
 # instant. Both scans are high-volume writers to one SQLite-backed storage API;
 # keep their authored windows separated so detailed posture writes do not lose
 # the single-writer lock to vulnerability results. These value paths and their
-# CronJob mapping were verified against immutable chart 1.40.3; fail on a chart
+# CronJob mapping were verified against immutable chart 1.40.4; fail on a chart
 # bump so the new chart must be rendered and this contract deliberately renewed.
 chart_version="$(yq -er '
   .spec.chart.spec.version |
   select(tag == "!!str" and length > 0)
 ' "${helm_release}")" || fail 'the Kubescape chart version must be an exact string'
 readonly chart_version
-[[ "${chart_version}" == "1.40.3" ]] ||
+[[ "${chart_version}" == "1.40.4" ]] ||
   fail 'the Kubescape chart changed; revalidate both rendered scheduler CronJobs before updating this guard'
 
 posture_schedule="$(yq -er '
@@ -119,7 +127,7 @@ readonly vulnerability_schedule
 # render additionally proves that the reviewed chart maps each authored value to
 # the intended CronJob. Pin the archive bytes so a republished tag fails closed.
 readonly chart_repository='https://kubescape.github.io/helm-charts/'
-readonly chart_archive_sha256='2a0ffaa69068218f03a44139ac77c81905350208413c14ba697e9514f204af07'
+readonly chart_archive_sha256='9c9dad697b13d085ed1c6cbb166d9ade239305aa2e8b5999840d455fc91a10ea'
 chart_dir="$(mktemp -d "${TMPDIR:-/tmp}/kubescape-chart.XXXXXX")" ||
   fail 'could not create a temporary directory for the Kubescape chart'
 readonly chart_dir
@@ -149,6 +157,44 @@ yq '.spec.values' "${helm_release}" >"${chart_values}"
 helm template kubescape "${chart_archive}" \
   --namespace kubescape \
   --values "${chart_values}" >"${rendered_chart}" || fail 'the pinned Kubescape chart did not render'
+
+# Chart 1.40.4 removed the node-agent's existing read-only profile rule while
+# node-agent still lists ApplicationProfiles during its storage readiness gate.
+# Exercise the platform post-renderer against a synthetic copy with that rule
+# removed so a future chart refactor cannot silently reintroduce the startup
+# failure observed during the 1.40.4 production rollout.
+readonly regressed_chart="${chart_dir}/rendered-without-node-agent-profile-read.yaml"
+yq ea '
+  (select(.kind == "ClusterRole" and .metadata.name == "node-agent").rules) |=
+    map(select(
+      (.apiGroups[0] // "") != "spdx.softwarecomposition.kubescape.io" or
+      ((.resources // []) | sort | join(",")) != "applicationprofiles,networkneighborhoods"
+    ))
+' "${rendered_chart}" >"${regressed_chart}" || fail 'could not construct the chart RBAC regression fixture'
+
+readonly postrenderer_kustomization="${chart_dir}/kustomization.yaml"
+HELM_RELEASE="${helm_release}" yq -n '
+  .apiVersion = "kustomize.config.k8s.io/v1beta1" |
+  .kind = "Kustomization" |
+  .resources = ["rendered-without-node-agent-profile-read.yaml"] |
+  .patches = (load(strenv(HELM_RELEASE)).spec.postRenderers[0].kustomize.patches // [])
+' >"${postrenderer_kustomization}" || fail 'could not construct the Flux post-renderer fixture'
+
+readonly postrendered_chart="${chart_dir}/postrendered.yaml"
+kubectl kustomize "${chart_dir}" >"${postrendered_chart}" || fail 'the Flux Helm post-renderer did not apply'
+
+node_agent_profile_reader_count="$(yq ea -er '
+  select(.kind == "ClusterRole" and .metadata.name == "node-agent") |
+  [.rules[] | select(
+    .apiGroups[0] == "spdx.softwarecomposition.kubescape.io" and
+    (.apiGroups | length) == 1 and
+    (.resources | sort | join(",")) == "applicationprofiles,networkneighborhoods" and
+    (.verbs | sort | join(",")) == "get,list,watch"
+  )] | length
+' "${postrendered_chart}")" || fail 'the post-rendered node-agent ClusterRole is missing'
+readonly node_agent_profile_reader_count
+[[ "${node_agent_profile_reader_count}" == "1" ]] ||
+  fail 'the Helm post-renderer must restore exactly the node-agent profile read rule removed by chart 1.40.4'
 
 rendered_posture_schedule="$(yq ea -er '
   select(.kind == "CronJob" and .metadata.name == "kubescape-scheduler") |
@@ -191,6 +237,17 @@ rendered_storage_image="$(yq ea -er '
 readonly rendered_storage_image
 [[ "${rendered_storage_image}" == "${storage_repository}:${storage_tag}" ]] ||
   fail 'the rendered Kubescape storage Deployment does not use the signed compatibility digest'
+
+rendered_kubevuln_image="$(yq ea -er '
+  select(.kind == "Deployment" and .metadata.name == "kubevuln") |
+  .spec.template.spec.containers[] |
+  select(.name == "kubevuln") |
+  .image |
+  select(tag == "!!str")
+' "${rendered_chart}")" || fail 'the rendered kubevuln image is missing'
+readonly rendered_kubevuln_image
+[[ "${rendered_kubevuln_image}" == "quay.io/kubescape/kubevuln:${kubevuln_tag}" ]] ||
+  fail 'the rendered kubevuln Deployment does not use the conflict-safe image'
 
 # Registry blob pulls can redirect from their API hosts to separate CDN hosts.
 # If a redirect host is blocked, kubevuln retries timeouts for hours and keeps

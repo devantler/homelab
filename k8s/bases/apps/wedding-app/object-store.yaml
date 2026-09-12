@@ -1,16 +1,8 @@
-# Barman Cloud Plugin ObjectStore for the wedding-db tenant database — the
-# plugin-based replacement for the in-tree spec.backup.barmanObjectStore that the
-# wedding-app repo's Cluster previously used (deprecated in CNPG 1.26, removed in
-# 1.30; plugin installed in infrastructure/controllers/plugin-barman-cloud).
-#
-# PLATFORM-side (registration dir, reconciled by flux-system): the R2 destination
-# and the shared-bucket credentials are platform-owned, so they live here next to
-# the external-secret-db-backup.yaml that provisions `wedding-db-backup-r2` — the
-# tenant's own (namespaced) SecretStore cannot reach infrastructure/backup/r2, and
-# barmancloud.cnpg.io is outside the tenant's cnpg-tenant-edit RBAC anyway. The
-# tenant's Cluster (wedding-app repo deploy/cluster.yaml) opts in by referencing
-# this ObjectStore by name via spec.plugins. r2_* are Flux-substituted from
-# variables-base. Same R2 store + creds + retention as the old inline block.
+# Active Barman Cloud Plugin ObjectStore for the wedding-db tenant database.
+# It stays on the shared platform archive during the dedicated-store staging
+# phase. The Cluster continues to reference this object as `wedding-db`, so WAL
+# and base-backup continuity are unchanged until the existing catalog has been
+# mirrored and a later reviewed cutover changes that reference.
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
