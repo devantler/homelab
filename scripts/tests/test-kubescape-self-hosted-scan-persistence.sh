@@ -85,14 +85,14 @@ readonly continuous_namespace_count
 # instant. Both scans are high-volume writers to one SQLite-backed storage API;
 # keep their authored windows separated so detailed posture writes do not lose
 # the single-writer lock to vulnerability results. These value paths and their
-# CronJob mapping were verified against immutable chart 1.40.3; fail on a chart
+# CronJob mapping were verified against immutable chart 1.40.4; fail on a chart
 # bump so the new chart must be rendered and this contract deliberately renewed.
 chart_version="$(yq -er '
   .spec.chart.spec.version |
   select(tag == "!!str" and length > 0)
 ' "${helm_release}")" || fail 'the Kubescape chart version must be an exact string'
 readonly chart_version
-[[ "${chart_version}" == "1.40.3" ]] ||
+[[ "${chart_version}" == "1.40.4" ]] ||
   fail 'the Kubescape chart changed; revalidate both rendered scheduler CronJobs before updating this guard'
 
 posture_schedule="$(yq -er '
@@ -119,7 +119,7 @@ readonly vulnerability_schedule
 # render additionally proves that the reviewed chart maps each authored value to
 # the intended CronJob. Pin the archive bytes so a republished tag fails closed.
 readonly chart_repository='https://kubescape.github.io/helm-charts/'
-readonly chart_archive_sha256='2a0ffaa69068218f03a44139ac77c81905350208413c14ba697e9514f204af07'
+readonly chart_archive_sha256='9c9dad697b13d085ed1c6cbb166d9ade239305aa2e8b5999840d455fc91a10ea'
 chart_dir="$(mktemp -d "${TMPDIR:-/tmp}/kubescape-chart.XXXXXX")" ||
   fail 'could not create a temporary directory for the Kubescape chart'
 readonly chart_dir
