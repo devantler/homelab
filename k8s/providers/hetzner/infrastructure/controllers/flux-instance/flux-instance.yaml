@@ -30,7 +30,6 @@ spec:
       - target:
           kind: Deployment
           name: kustomize-controller
-          namespace: flux-system
         patch: |
           - op: test
             path: /spec/template/spec/containers/0/name
@@ -65,9 +64,12 @@ spec:
       # (verified live via a forced FluxInstance reconcile). A controller must
       # also have exactly one name-targeted patch: flux-operator only applied the
       # first of two duplicate kustomize-controller targets, which silently left
-      # it at one replica. The robust fix is therefore one patch per HA controller
-      # and no source-controller replicas patch, so source-controller keeps the
-      # base manifest's single replica with zero ambiguity. (topologySpread + ndots
+      # it at one replica. Deployment patch targets must also omit `namespace`:
+      # flux-operator applies component patches before the namespace transformer,
+      # so a namespaced Deployment selector silently matches nothing. The robust
+      # fix is therefore one unnamespaced patch per HA controller and no
+      # source-controller replicas patch, so source-controller keeps the base
+      # manifest's single replica with zero ambiguity. (topologySpread + ndots
       # below still target the whole part-of=flux set by label — those don't
       # conflict and are safe at 1 replica.) flux-operator itself stays
       # single-replica: its chart exposes no replicas/leaderElection (0.50.0), so
@@ -75,7 +77,6 @@ spec:
       - target:
           kind: Deployment
           name: helm-controller
-          namespace: flux-system
         patch: |
           - op: replace
             path: /spec/replicas
@@ -83,7 +84,6 @@ spec:
       - target:
           kind: Deployment
           name: notification-controller
-          namespace: flux-system
         patch: |
           - op: replace
             path: /spec/replicas
