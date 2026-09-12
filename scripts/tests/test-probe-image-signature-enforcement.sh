@@ -40,7 +40,10 @@ mkdir -p "${fake_bin}" "${fixtures}"
 readonly node='10.0.0.1'
 readonly owner='security.ImageVerificationConfigController'
 readonly unsigned='ghcr.io/devantler-tech/probe-throwaway-unsigned:t1'
-readonly signed='ghcr.io/devantler-tech/ksail:v1.2.3'
+# The positive control must select the SAME first-match rule as the unsigned ref,
+# so the default is a throwaway under the same catch-all rule — not a production
+# image under a different, more specific rule.
+readonly signed='ghcr.io/devantler-tech/probe-throwaway-signed:t1'
 
 cases_run=0
 
@@ -145,21 +148,23 @@ export FAKE_FIXTURES="${fixtures}"
 export PATH="${fake_bin}:${PATH}"
 export TALOSCTL="${fake_bin}/talosctl"
 
+# Talos assigns rule ids 0000, 0001, ... in declaration order and evaluates the
+# first match, so each fixture rule carries an explicit id (default 0000).
 rule_obj() {
-  local pattern="$1" phase="$2" rule_owner="$3"
+  local pattern="$1" phase="$2" rule_owner="$3" id="${4:-0000}"
   cat <<EOF
-{"metadata":{"id":"${pattern}","namespace":"security","owner":"${rule_owner}","phase":"${phase}","type":"ImageVerificationRules.security.talos.dev","version":1},"node":"fixture","spec":{"imagePattern":"${pattern}"}}
+{"metadata":{"id":"${id}","namespace":"security","owner":"${rule_owner}","phase":"${phase}","type":"ImageVerificationRules.security.talos.dev","version":1},"node":"fixture","spec":{"imagePattern":"${pattern}"}}
 EOF
 }
 
 reset_fixtures() {
   rm -rf "${fixtures}"
   mkdir -p "${fixtures}"
-  # The realistic default: the catch-all rule is running and owned, so the
-  # throwaway ref under ghcr.io/devantler-tech/ matches.
+  # The realistic default, in declaration order: the specific ksail rule first,
+  # then the catch-all, under which both throwaway refs fall.
   {
-    rule_obj 'ghcr.io/devantler-tech/ksail*' 'running' "${owner}"
-    rule_obj 'ghcr.io/devantler-tech/*' 'running' "${owner}"
+    rule_obj 'ghcr.io/devantler-tech/ksail*' 'running' "${owner}" '0000'
+    rule_obj 'ghcr.io/devantler-tech/*' 'running' "${owner}" '0001'
   } >"${fixtures}/rules.json"
   : >"${fixtures}/imagelist.txt"
 }
@@ -363,17 +368,60 @@ check 'a rule pattern that names a tag does not govern the ref (INCONCLUSIVE, no
 
 # The converse: an exact-repository pattern with no wildcard DOES govern a tagged
 # ref on the node, so the probe must treat it as matched rather than skip the test.
+# Both controls live in that one repository, so they select the same rule.
+reset_fixtures
+repo_unsigned='ghcr.io/devantler-tech/probe-throwaway:unsigned-t1'
+repo_signed='ghcr.io/devantler-tech/probe-throwaway:signed-t1'
+rule_obj 'ghcr.io/devantler-tech/probe-throwaway' 'running' "${owner}" '0000' >"${fixtures}/rules.json"
+stage_pull "${repo_unsigned}" 1 'image verification failed: no valid signature found'
+stage_pull "${repo_signed}" 0 ''
+set +e
+out="$("${script}" --confirm --node "${node}" \
+  --unsigned-image "${repo_unsigned}" --signed-image "${repo_signed}" 2>&1)"
+rc=$?
+set -e
+[[ ${rc} -eq 0 ]] || fail "exact-repository rule should reach PASS, got ${rc}: ${out}"
+require_text "${out}" 'PASS:' 'exact-repository rule'
+check 'an exact-repository rule governs the tagged ref, as it does on the node'
+
+# --- Both controls must exercise the SAME rule ------------------------------
+# A signed ref under a different first-match rule cannot exclude a rule that
+# rejects every image it governs: the catch-all could refuse everything while
+# the ksail rule still works, and the probe would report PASS. So two different
+# rules is INCONCLUSIVE, before anything is pulled.
+reset_fixtures
+stage_pull "${unsigned}" 1 'image verification failed: no valid signature found'
+stage_pull 'ghcr.io/devantler-tech/ksail:v1.2.3' 0 ''
+set +e
+out="$("${script}" --confirm --node "${node}" \
+  --unsigned-image "${unsigned}" --signed-image 'ghcr.io/devantler-tech/ksail:v1.2.3' 2>&1)"
+rc=$?
+set -e
+[[ ${rc} -eq 3 ]] || fail "controls under different rules should exit 3, got ${rc}: ${out}"
+require_text "${out}" 'different rules' 'controls under different rules'
+refute_text "${out}" 'PASS:' 'controls under different rules'
+[[ ! -e "${fixtures}/pulled.txt" ]] || fail 'probe pulled despite controls under different rules'
+check 'controls selecting different first-match rules are INCONCLUSIVE and nothing is pulled'
+
+# First match follows DECLARATION order (the rule id), not the order resources
+# happen to arrive in. Here the stream lists the catch-all first, but ksail* is
+# declared first, so it is the rule that governs the ksail-prefixed throwaway —
+# and the two controls therefore select different rules.
 reset_fixtures
 {
-  rule_obj "${unsigned%:*}" 'running' "${owner}"
-  rule_obj 'ghcr.io/devantler-tech/ksail*' 'running' "${owner}"
+  rule_obj 'ghcr.io/devantler-tech/*' 'running' "${owner}" '0001'
+  rule_obj 'ghcr.io/devantler-tech/ksail*' 'running' "${owner}" '0000'
 } >"${fixtures}/rules.json"
-stage_pull "${unsigned}" 1 'image verification failed: no valid signature found'
+stage_pull 'ghcr.io/devantler-tech/ksail-probe-unsigned:t1' 1 'image verification failed: no valid signature found'
 stage_pull "${signed}" 0 ''
-run_probe
-[[ ${probe_rc} -eq 0 ]] || fail "exact-repository rule should reach PASS, got ${probe_rc}: ${probe_out}"
-require_text "${probe_out}" 'PASS:' 'exact-repository rule'
-check 'an exact-repository rule governs the tagged ref, as it does on the node'
+set +e
+out="$("${script}" --confirm --node "${node}" \
+  --unsigned-image 'ghcr.io/devantler-tech/ksail-probe-unsigned:t1' --signed-image "${signed}" 2>&1)"
+rc=$?
+set -e
+[[ ${rc} -eq 3 ]] || fail "rules out of stream order should resolve by id and exit 3, got ${rc}: ${out}"
+require_text "${out}" 'different rules' 'rules out of stream order'
+check 'first match follows rule id order, not resource stream order'
 
 # --- Cache guard ------------------------------------------------------------
 # The false-PASS case: a cached ref is never re-pulled, so verification never
@@ -479,8 +527,10 @@ require_text "${probe_out}" 'refused matched unsigned ref' 'pass path'
 check 'unsigned refused for a verification reason + signed accepted is PASS'
 
 # --- Cleanup --------------------------------------------------------------
-# The probe must leave the node as it found it, and must remove ONLY what it
-# pulled — never an image the node already had.
+# The probe removes ONLY the unsigned throwaway it pulled — never an image the
+# node already had, and never the signed control. The node stays schedulable
+# during the probe, so removing a signed image could delete one a pod has just
+# started using; a verified signed image left in the cache is harmless.
 reset_fixtures
 stage_pull "${unsigned}" 1 'image verification failed: no valid signature found'
 stage_pull "${signed}" 0 ''
@@ -488,10 +538,10 @@ run_probe
 [[ ${probe_rc} -eq 0 ]] || fail "cleanup case should PASS, got ${probe_rc}"
 [[ -e "${fixtures}/removed.txt" ]] || fail 'probe removed nothing on the PASS path'
 require_text "$(cat "${fixtures}/removed.txt")" "${unsigned}" 'cleanup'
-require_text "$(cat "${fixtures}/removed.txt")" "${signed}" 'cleanup'
+refute_text "$(cat "${fixtures}/removed.txt")" "${signed}" 'cleanup'
 removed_count="$(grep -c . "${fixtures}/removed.txt")"
-[[ "${removed_count}" -eq 2 ]] || fail "expected exactly 2 removals, got ${removed_count}"
-check 'by default every pulled ref is removed, and only those'
+[[ "${removed_count}" -eq 1 ]] || fail "expected exactly 1 removal (the unsigned ref), got ${removed_count}"
+check 'by default only the unsigned throwaway is removed, never the signed control'
 
 # --keep leaves them, so an operator can inspect the node afterwards.
 reset_fixtures

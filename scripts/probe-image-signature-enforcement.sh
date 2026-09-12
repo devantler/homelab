@@ -68,13 +68,16 @@ Required:
   --unsigned-image <ref>  A deliberately unsigned THROWAWAY ref that MATCHES a
                           declared verification rule. Never a production
                           workload. The probe asserts the match itself.
-  --signed-image <ref>    A correctly signed ref that MATCHES a declared rule,
-                          used as the positive control.
+  --signed-image <ref>    A correctly signed ref, used as the positive control,
+                          that the SAME first-match rule governs as the
+                          unsigned ref. Prefer a dedicated signed throwaway.
+                          It is never removed afterwards.
 
 Optional:
-  --keep                  Leave anything this probe pulled in the node's content
-                          store. By default every ref the probe pulled is
-                          removed again, so the node is left as it was found.
+  --keep                  Leave the unsigned ref in the node's content store if
+                          it was pulled. By default it is removed again. The
+                          signed control is always left in place: removing it
+                          could race a pod that has started using it.
 
 Environment overrides: TALOSCTL
 
@@ -219,13 +222,19 @@ rules_json="$("${talosctl_bin}" -n "${node}" get "${rules_type}" -o json 2>/dev/
 # "running" actually decide anything, so a rule in any other phase is excluded:
 # matching the probe ref against a rule that decides nothing would make the
 # probe claim to be testing a control that is not in the path.
+#
+# Talos assigns rule ids 0000, 0001, ... in declaration order and applies the
+# FIRST matching rule, so the patterns are emitted in id order — the same order
+# scripts/validate-image-verifier-liveness.sh compares against the declaration.
+# Resource stream order is not declaration order, and matching in stream order
+# would name the wrong governing rule.
 patterns="$(printf '%s' "${rules_json}" |
   jq -s -r --arg owner "${rules_owner}" '
     [ .[]?
       | select((.metadata?.owner // "") == $owner)
       | select((.metadata?.phase // "") == "running")
-      | .spec?.imagePattern // empty
-    ] | .[]' 2>/dev/null)" ||
+      | select((.spec?.imagePattern // "") != "")
+    ] | sort_by(.metadata.id // "") | .[] | .spec.imagePattern' 2>/dev/null)" ||
   fail_inconclusive "could not parse verification rules from node ${node}"
 
 [[ -n "${patterns}" ]] ||
@@ -287,6 +296,14 @@ matched_pattern="$(match_rule "${unsigned_image}")" ||
 signed_matched_pattern="$(match_rule "${signed_image}")" ||
   fail_inconclusive "the signed positive control '${signed_image}' matches NO running rule on node ${node} — it would pull without being verified at all, so its success could not exclude a verifier that refuses every rule-matching image, and a PASS would be unfounded"
 
+# The positive control only excludes a verifier that refuses everything if it is
+# judged by the SAME rule. A signed ref governed by a different rule proves that
+# rule works and says nothing about the unsigned ref's rule, which could refuse
+# every image it governs — and the probe would then report PASS on exactly that
+# broken rule. Different rules is therefore INCONCLUSIVE, before anything is pulled.
+[[ "${matched_pattern}" == "${signed_matched_pattern}" ]] ||
+  fail_inconclusive "the unsigned ref and the signed control select different rules on node ${node} ('${matched_pattern}' and '${signed_matched_pattern}') — a signed pull under another rule cannot exclude a rule that refuses every image it governs, so a PASS would be unfounded. Use a signed control governed by the same rule"
+
 printf 'probe: on node %s the unsigned ref matches rule %s and the signed control matches rule %s\n' \
   "${node}" "${matched_pattern}" "${signed_matched_pattern}"
 
@@ -314,8 +331,8 @@ printf 'probe: both refs confirmed absent from node %s content store\n' "${node}
 
 # ---------------------------------------------------------------------------
 # Cleanup. Registered only once a pull has actually been attempted, and it
-# removes ONLY refs this probe pulled, so a failure cannot delete an image the
-# node already had. Best-effort by design: a cleanup error must not overwrite
+# removes ONLY the unsigned throwaway this probe pulled, so a failure cannot
+# delete an image the node already had or the signed control a pod may now use. Best-effort by design: a cleanup error must not overwrite
 # the probe's verdict, which is the whole point of the run.
 # ---------------------------------------------------------------------------
 pulled_refs=()
@@ -442,7 +459,10 @@ printf 'probe: unsigned ref REFUSED for a verification reason (expected)\n'
 printf '\nprobe: POSITIVE control — pulling signed ref %s\n' "${signed_image}"
 signed_output=''
 signed_rc=0
-pulled_refs+=("${signed_image}")
+# Deliberately NOT recorded for cleanup. The node stays schedulable during the
+# probe, so removing a signed image could delete one a pod has just started
+# using; a verified signed image left in the cache is harmless. Only the unsigned
+# throwaway is ever removed.
 signed_output="$(pull_ref "${signed_image}")" || signed_rc=$?
 
 if ((signed_rc != 0)); then
