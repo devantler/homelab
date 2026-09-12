@@ -237,6 +237,27 @@ set -e
 require_text "${out}" 'no tag or digest' 'untagged ref'
 check 'rejects a ref with neither tag nor digest'
 
+# A value beginning with '-' is read by talosctl as a FLAG, not an operand, so a
+# stray leading dash from the workflow_dispatch form would surface as a
+# confusing tool error rather than a clear one. Pinned for the node as well as
+# for both refs, since all three are passed to talosctl as operands.
+for bad_arg_case in node unsigned signed; do
+  reset_fixtures
+  case "${bad_arg_case}" in
+    node) args=(--node '-n' --unsigned-image "${unsigned}" --signed-image "${signed}") ;;
+    unsigned) args=(--node "${node}" --unsigned-image '--nodes' --signed-image "${signed}") ;;
+    signed) args=(--node "${node}" --unsigned-image "${unsigned}" --signed-image '-x') ;;
+  esac
+  set +e
+  out="$("${script}" --confirm "${args[@]}" 2>&1)"
+  rc=$?
+  set -e
+  [[ ${rc} -eq 2 ]] || fail "leading-dash ${bad_arg_case} should exit 2, got ${rc}"
+  require_text "${out}" "begins with '-'" "leading-dash ${bad_arg_case}"
+  [[ ! -e "${fixtures}/pulled.txt" ]] || fail "leading-dash ${bad_arg_case} reached the node"
+done
+check 'rejects a leading-dash node or ref that talosctl would read as a flag'
+
 # --- Node and query failures are INCONCLUSIVE, never PASS or FAIL -----------
 reset_fixtures
 : >"${fixtures}/unreachable"

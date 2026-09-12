@@ -160,6 +160,20 @@ fi
 [[ "${unsigned_image}" != "${signed_image}" ]] ||
   fail_usage 'the unsigned and signed refs are identical — the controls would not distinguish anything'
 
+# A value beginning with `-` is parsed by talosctl as a FLAG rather than as the
+# operand it was meant to be (verified: `talosctl image pull --bogus-flag`
+# answers "unknown flag"). This crosses no privilege boundary — these are CLI
+# arguments, so whoever sets them can already run talosctl directly — but it
+# turns a typo into a confusing tool error instead of a clear one, and on the
+# `workflow_dispatch` path the value arrives from a form field where a stray
+# leading dash is easy to introduce. Rejected explicitly so the message names
+# the actual problem.
+for value in "${node}" "${unsigned_image}" "${signed_image}"; do
+  case "${value}" in
+    -*) fail_usage "'${value}' begins with '-', which talosctl would read as a flag rather than a value" ;;
+  esac
+done
+
 # A ref carrying no tag or digest would let containerd resolve `:latest`, so the
 # probe would not be pulling the artifact it was asked about.
 for ref in "${unsigned_image}" "${signed_image}"; do
@@ -313,6 +327,16 @@ trap cleanup EXIT
 # verification. Anything else — an unknown tag, an auth denial, a registry
 # outage — produces a failed pull for reasons this probe is not testing, and
 # counting those as a refusal would manufacture a PASS out of a typo.
+#
+# LIMITATION, stated because it bounds what a PASS means. This is the one place
+# where text the probe does not control decides a verdict: the refusal reason is
+# produced by the node, and part of it can originate from the registry serving
+# the ref. A registry that returned prose resembling a verification failure
+# could therefore make an unrelated refusal read as a signature refusal. The
+# positive control is what keeps that from being a plausible false PASS on its
+# own — a crafted negative AND a genuinely succeeding signed pull are both
+# required — but a PASS here is evidence about a cooperating registry, not proof
+# against a hostile one. Supply refs from a registry you trust.
 is_verification_refusal() {
   printf '%s' "$1" | grep -qiE 'verif|signature|cosign|sigstore|not signed|unsigned|trust'
 }
