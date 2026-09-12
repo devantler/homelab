@@ -1995,11 +1995,13 @@ const (
 // list on pods in the velero namespace; it cannot read Secrets, mutate
 // workloads or cross namespace boundaries. The CronJob's mounted Slack
 // webhook remains out of its environment and command line.
-// Rebased onto the Wedding data-loss repair above; the aggregate is re-derived
-// from CI for the merged tree. Previous aggregate:
+// Rebased onto the Wedding data-loss repair above. The aggregate for the merged
+// tree was taken from CI (job 103636664367 at c20eb5db), which reported this
+// aggregate as the only unapproved item: ZERO unapproved rendered resources,
+// ZERO missing and ZERO duplicate identities. Previous aggregate:
 //
 //	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
-const expectedRenderedSurfaceSHA = "8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e"
+const expectedRenderedSurfaceSHA = "f6ccd29bddfc08976c91b439b28d7cdf8d602a54540ad997cf21a80e178ab5a9"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
