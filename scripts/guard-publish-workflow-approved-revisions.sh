@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # guard-publish-workflow-approved-revisions.sh — assert that each per-consumer cosign matcher
-# for the shared devantler-tech/actions publish workflows pins EXACTLY the revision pair the
-# generated approved set names for that consumer (#3551, second child of #3308).
+# for the shared devantler-tech/actions publish workflows stays inside its declared trust
+# boundary: trusted tenant release streams accept any immutable shared-workflow commit, while
+# infrastructure/configuration consumers pin exactly the generated revision pair.
 #
 # WHY A SECOND GUARD
 # guard-shared-publish-workflow-pin.sh proves every matcher pins a FIXED revision — the pattern
@@ -9,15 +10,15 @@
 # says nothing about set MEMBERSHIP: a matcher narrowed to a revision nobody approved, or a
 # regeneration that moved the set while a matcher stayed behind, passes it. This guard reads
 # scripts/publish-workflow-approved-revisions.tsv (written by
-# generate-publish-workflow-approved-revisions.sh, #3550) and checks that each consumer's
-# matcher names that consumer's pair and nothing else. An out-of-set revision is refused in
-# every mode — that is #3308's AC4.
+# generate-publish-workflow-approved-revisions.sh, #3550). Bounded consumers must name their
+# generated pair and nothing else. Trusted release streams must name the immutable commit
+# pattern and nothing broader, which preserves the issuer/workflow boundary without a release
+# approval gate.
 #
 # ENFORCEMENT
-# CI and scheduled regeneration set APPROVED_REVISIONS_ENFORCE=1, which refuses
-# the broad pattern form. Unset or 0 retains compatibility for inspection and
-# fixtures; already narrowed matchers must equal the approved pair in either mode.
-# write-publish-workflow-matchers.sh derives the four subjects from the set.
+# CI and scheduled regeneration set APPROVED_REVISIONS_ENFORCE=1, which refuses the pattern
+# form for bounded infrastructure/configuration consumers. Trusted release streams require
+# that form in every mode so tenant releases never create a platform-side repin.
 #
 # SCOPE — GENERIC SUBJECTS ARE EXCLUDED BY NAME
 # Three subjects name the shared workflows without belonging to one consumer: the Kyverno
@@ -35,20 +36,27 @@
 # SEAMS (tests substitute these; production leaves them unset)
 #   APPROVED_REVISIONS_FILE      the generated set (default scripts/publish-workflow-approved-revisions.tsv)
 #   PUBLISH_CONSUMER_ROOT        scan root for consumer manifests (default: the repository root)
-#   APPROVED_REVISIONS_ENFORCE   `1` refuses the pattern form on per-consumer subjects (default: off)
+#   APPROVED_REVISIONS_ENFORCE   `1` refuses pattern form on bounded consumers (default: off)
 set -euo pipefail
 
 GUARD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/publish-workflow-approved-revisions.lib.sh
 source "$GUARD_DIR/publish-workflow-approved-revisions.lib.sh"
 
-# ── 3. Each registered consumer: its matcher equals its generated pair ───────────────────
+# ── 3. Each registered consumer: its matcher equals its declared boundary ────────────────
 for consumer in "${EXPECTED_CONSUMERS[@]}"; do
   record="$(lookup "$observed" "$consumer")"
   [ -n "$record" ] || refuse "no OCIRepository under $SCAN_ROOT is attributed to registered consumer $consumer; the scan, not the tree, is the likely cause"
   IFS=$'\t' read -r file workflow ref <<<"$record"
   IFS=$'\t' read -r set_workflow signer pin <<<"$(lookup "$approved" "$consumer")"
   [ "$workflow" = "$set_workflow" ] || refuse "$consumer: $file names $workflow but the approved set names $set_workflow"
+
+  if is_trusted_release_stream_consumer "$consumer"; then
+    [ "$ref" = "$PATTERN_REF" ] ||
+      refuse "$consumer: trusted release stream $file pins '@$ref'; use the immutable shared-workflow pattern '@$PATTERN_REF' so tenant releases do not require platform approval"
+    printf 'ok %s %s %s form=trusted-release-stream\n' "$consumer" "$workflow" "$file"
+    continue
+  fi
 
   if [ "$signer" = "$pin" ]; then
     accepted="$signer or ($signer)"

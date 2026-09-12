@@ -16,9 +16,7 @@ spec:
   verify:
     provider: cosign
     matchOIDCIdentity:
-      # Generated from scripts/publish-workflow-approved-revisions.tsv by
-      # scripts/write-publish-workflow-matchers.sh. Accept the deployed artifact
-      # signer and this consumer's current publish-workflow pin in one identity.
-      # Regeneration updates the pair and the approved set in the same PR.
+      # Trust immutable revisions of the platform-owned shared workflow. The tenant may
+      # release independently; platform policy, RBAC, and network boundaries govern it.
       - issuer: '^https://token\.actions\.githubusercontent\.com$'
-        subject: '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-app\.yaml@(6ae5d87b342984cdaf34740e60366b9d570d8fc5|883d891a0e6a2c9420d2b60aea9d5f47c20ce803)$'
+        subject: '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-app\.yaml@[0-9a-f]{40}$'
