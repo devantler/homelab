@@ -1953,9 +1953,8 @@ const (
 // The previous aggregate remains recorded here:
 //
 //	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
-
-// Moved by the trusted tenant semantic-version rollout (#3677). Exactly two
-// existing source objects change: the ascoachingogvaner and wedding-app
+// Moved again by the trusted tenant semantic-version rollout (#3677). Exactly
+// two existing source objects change: the ascoachingogvaner and wedding-app
 // OCIRepositories replace one fixed ref.tag with ref.semver >=1.0.0. Their
 // Cosign verification provider, issuer and platform-bounded workflow subjects
 // remain unchanged, and the rendered guard rejects restoring a tag or digest.
@@ -1963,8 +1962,29 @@ const (
 //
 //	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
 //
+// Moved again by the Wedding data-loss repair after rebasing onto #3677. The
+// only additional rendered identity change is the wedding-app Kustomization's
+// global `force` value moving from true to false, plus its explanatory comment.
+// The validator reported no unapproved, missing, or duplicate identity after
+// admitting that Kustomization hash and this aggregate. This removes
+// replacement authority and adds no Role, ClusterRole, binding,
+// ServiceAccount, subject, verb, wildcard, AWS identity, or permission.
+//
+// RENDERER PROVENANCE: reproduced locally with the official kubectl v1.36.2
+// Darwin arm64 binary (SHA256
+// 4408c85c83fd3a31adaa555bdf3c7a6c81f74b19449a9060ba31ab91926f023d),
+// whose embedded Kustomize is v5.8.1, matching CI's pinned versions. Previous
+// aggregate:
+//
+//	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
+//
+// That repair established aggregate:
+//
+//	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
+//
 // Moved again by the Kubescape posture-persistence repair, re-derived on top of
-// #3677 rather than on the older 5b85be73 base (see #3740). Exactly one
+// the Wedding data-loss repair (8756f2ad) rather than on the older 814debc4 or
+// 5b85be73 bases (see #3740). Exactly one
 // existing document changes relative to that base: the kubescape/kubescape
 // HelmRelease advances the scanner image from v4.0.12 to v4.0.14. The newer
 // image contains the v0.14 embedded CEL policy bundle required by control
@@ -1978,17 +1998,18 @@ const (
 // rebase. No identity, binding, ServiceAccount, verb, wildcard, AWS identity or
 // permission change is introduced. The kubescape HelmRelease's
 // unresolved-substitution fingerprint changes with the reviewed scanner tag.
+// The Wedding repair edits only the wedding-app Flux Kustomization, which is
+// disjoint from the kubescape HelmRelease, so the delta is unchanged by rebasing
+// onto it.
 //
-// RENDERER PROVENANCE: this host's renderer is unapproved, so the value below
-// was read from CI's own failure on run 34713884735 for the merged tree, which
-// renders under the approved SHA256-verified toolchain. That run reported the
-// aggregate mismatch as its only authorization error: ZERO `unapproved rendered
-// <identity>`, ZERO `missing rendered authorization resource` and ZERO
-// `duplicate rendered`; the unresolved Flux substitutions it listed are the
-// normal diagnostics.
+// RENDERER PROVENANCE: PENDING CI on the merged tree. The constant below still
+// holds the previous aggregate, so CI's validator reports the merged tree's
+// aggregate as its single unapproved entry; that value replaces the constant in
+// the follow-up commit. This host's renderer is unapproved, so no local digest
+// is claimed.
 //
-// Previous aggregate: 814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1.
-const expectedRenderedSurfaceSHA = "a5304bbb0e665bca51b817bc5e3c5e083e4e2df32bfc298a05cebb2bb35b9baa"
+// Previous aggregate: 8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e.
+const expectedRenderedSurfaceSHA = "8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
@@ -2205,7 +2226,7 @@ var expectedRenderedHashes = map[resourceIdentity]string{
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "flux-system", name: "infrastructure-controllers"}: "9d9b62d3221442d6355d16a34d31c198619fb3b3728df960fd67222a531ece7b",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "github-config", name: "github-config"}:            "8e9f72b0f4f982d050aff0b97d246c68b538cbc397cdd45d031c95cfae981e7c",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "unifi", name: "unifi"}:                            "33a579299700de2467631854bac4982d3e14caa3bad8cbcd2613ac180b30af32",
-	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "3710185a3d14afaeaa032447421850f6a8ab01e1ae5dbbf58819783cc61154e8",
+	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "eb6253380641dbfac9936b4a2c938524d4f4cc9352d45ab18e8fdfd9e59bf8a8",
 }
 
 // fingerprint returns the SHA-256 identity used for byte-exact source checks.
