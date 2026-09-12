@@ -404,6 +404,23 @@ run_probe
 refute_text "${probe_out}" 'PASS:' 'repository-echoing refusal'
 check 'a refusal that repeats only the unsigned repository is INCONCLUSIVE, never PASS'
 
+# Transport errors carry the same WORDS as a verifier refusal without being one:
+# a TLS failure "fails to verify" a certificate and an x509 error names a
+# "signature", yet neither says the image verifier rejected the unsigned image.
+# Paired with a signed pull that succeeds, a word-based classifier reports PASS.
+for transport_error in \
+  'tls: failed to verify certificate: x509: certificate signed by unknown authority' \
+  'x509: certificate signature is invalid' \
+  'remote error: tls: bad certificate (untrusted issuer)'; do
+  reset_fixtures
+  stage_pull "${unsigned}" 1 "${transport_error}"
+  stage_pull "${signed}" 0 ''
+  run_probe
+  [[ ${probe_rc} -eq 3 ]] || fail "transport error '${transport_error}' should exit 3, got ${probe_rc}: ${probe_out}"
+  refute_text "${probe_out}" 'PASS:' "transport error '${transport_error}'"
+done
+check 'a TLS or x509 error is INCONCLUSIVE even though it mentions verify, signature or trust'
+
 # --- Positive control is what makes the negative attributable --------------
 # A verifier refusing EVERYTHING produces the same negative result as a working
 # one. Without this case the probe would report PASS for a wholly broken node.

@@ -359,8 +359,20 @@ trap cleanup EXIT
 # own — a crafted negative AND a genuinely succeeding signed pull are both
 # required — but a PASS here is evidence about a cooperating registry, not proof
 # against a hostile one. Supply refs from a registry you trust.
+#
+# The match is an ALLOWLIST of verifier phrases, not a list of loose words. Words
+# like "verify", "signature" and "trust" also appear in TLS and x509 transport
+# errors ("failed to verify certificate", "certificate signature is invalid"),
+# which say nothing about the image verifier; paired with a signed pull that
+# succeeds, a word match reported PASS. So a transport diagnostic is rejected
+# outright, and anything else must name an image-signature decision. Wording the
+# allowlist does not recognise yields INCONCLUSIVE — the safe direction for a
+# probe whose job is never to report an unfounded PASS.
 is_verification_refusal() {
-  printf '%s' "$1" | grep -qiE 'verif|signature|cosign|sigstore|not signed|unsigned|trust'
+  if printf '%s' "$1" | grep -qiE 'x509|certificate|tls:'; then
+    return 1
+  fi
+  printf '%s' "$1" | grep -qiE 'image verification|signature verification|no valid signature|no matching signature|not signed|unsigned image|cosign|sigstore'
 }
 
 # Pull errors routinely REPEAT the ref, and the recommended negative-control name
