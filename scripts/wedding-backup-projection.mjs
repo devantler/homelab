@@ -6,6 +6,7 @@ export const targets = [
   ['seed','external-secrets.io/v1alpha1','PushSecret','pushsecrets.external-secrets.io','flux-system','seed-wedding-db-backup-r2','infrastructure'],
   ['projection','external-secrets.io/v1','ExternalSecret','externalsecrets.external-secrets.io','wedding-app','wedding-db-backup-r2-dedicated','apps'],
   ['active','barmancloud.cnpg.io/v1','ObjectStore','objectstores.barmancloud.cnpg.io','wedding-app','wedding-db','apps'],
+  ['staged','barmancloud.cnpg.io/v1','ObjectStore','objectstores.barmancloud.cnpg.io','wedding-app','wedding-db-dedicated','apps'],
   ['cluster','postgresql.cnpg.io/v1','Cluster','clusters.postgresql.cnpg.io','wedding-app','wedding-db',null],
   ['bootstrapSecret','v1','Secret','secrets','flux-system','wedding-db-backup-r2-bootstrap','bootstrap'],
   ['projectedSecret','v1','Secret','secrets','wedding-app','wedding-db-backup-r2-dedicated',null],
@@ -74,6 +75,9 @@ function validateControllers(d, options) {
   const active = d.active.spec.configuration;
   check(active?.destinationPath === 's3://platform-backups/cnpg/wedding-db');
   for (const [key, value] of [['accessKeyId','ACCESS_KEY_ID'],['secretAccessKey','SECRET_ACCESS_KEY'],['region','REGION']]) check(active.s3Credentials?.[key]?.name === 'wedding-db-backup-r2' && active.s3Credentials[key].key === value);
+  const staged = d.staged.spec.configuration;
+  check(staged?.destinationPath === 's3://wedding-db-backups/cnpg/wedding-db');
+  for (const [key, value] of [['accessKeyId','ACCESS_KEY_ID'],['secretAccessKey','SECRET_ACCESS_KEY'],['region','REGION']]) check(staged.s3Credentials?.[key]?.name === 'wedding-db-backup-r2-dedicated' && staged.s3Credentials[key].key === value);
   const plugins = d.cluster.spec?.plugins;
   check(Array.isArray(plugins));
   const barman = plugins.filter(plugin => plugin.name === 'barman-cloud.cloudnative-pg.io');

@@ -8,10 +8,12 @@ resources:
   # own CiliumNetworkPolicy (networkpolicy.yaml) and namespaced SecretStore now
   # live in the tenant repo's deploy/.
   - external-secret-db-backup.yaml
-  # The dedicated identity is staged separately; ObjectStore still uses the
-  # existing projection until the new credential and destination are verified.
+  # Stage the dedicated identity and destination beside the active shared
+  # archive. The Cluster still references object-store.yaml until the existing
+  # catalog has been mirrored and the cutover gate has passed.
   - external-secret-db-backup-dedicated.yaml
   - object-store.yaml
+  - object-store-dedicated.yaml
   - external-secret-ghcr-auth.yaml
   - namespace.yaml
   - network-policy.yaml

@@ -53,3 +53,18 @@ patches:
       metadata:
         name: velero-r2-credentials
         namespace: velero
+  # Wedding is a production-only tenant and is not rendered by the Docker apps
+  # overlay. Prune its production credential seed here as well: an unused local
+  # source Secret and MinIO bucket would look like acceptance without ever
+  # exercising the Wedding ObjectStore or a CNPG workload.
+  - target:
+      kind: PushSecret
+      name: seed-wedding-db-backup-r2
+      namespace: flux-system
+    patch: |
+      $patch: delete
+      apiVersion: external-secrets.io/v1alpha1
+      kind: PushSecret
+      metadata:
+        name: seed-wedding-db-backup-r2
+        namespace: flux-system
