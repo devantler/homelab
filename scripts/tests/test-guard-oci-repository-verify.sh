@@ -119,6 +119,29 @@ assert_renders() {
 root="$(fresh_root green)"
 expect_accepted 'a verified in-scope OCIRepository with one identity is accepted' "$root"
 
+# --- GREEN: trusted tenants may follow the platform-owned release boundary ---
+root="$(fresh_root trusted-stream)"
+repo_doc wedding-app 'oci://ghcr.io/devantler-tech/wedding-app/manifests' "$(good_verify)" >"$root/wedding.yaml"; add_resource "$root" wedding.yaml
+expect_accepted 'a trusted tenant using the governed semver stream is accepted' "$root"
+
+# --- RED: trusted tenant mobility must not silently regress to platform pins ---
+root="$(fresh_root trusted-stream-tag)"
+repo_doc wedding-app 'oci://ghcr.io/devantler-tech/wedding-app/manifests' "$(good_verify)" >"$root/wedding.yaml"; add_resource "$root" wedding.yaml
+yq -i '.spec.ref = {"tag": "v1.15.11"}' "$root/wedding.yaml"
+expect_refused 'a trusted tenant fixed tag is refused by name' "$root" 'OCIRepository wedding-app (oci://ghcr.io/devantler-tech/wedding-app/manifests) must follow the governed release stream with exactly spec.ref.semver: >=1.0.0'
+
+root="$(fresh_root trusted-stream-digest)"
+repo_doc ascoachingogvaner 'oci://ghcr.io/devantler-tech/ascoachingogvaner/manifests' "$(good_verify)" >"$root/ascoachingogvaner.yaml"; add_resource "$root" ascoachingogvaner.yaml
+yq -i '.spec.ref = {"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' "$root/ascoachingogvaner.yaml"
+expect_refused 'a trusted tenant digest pin is refused by name' "$root" 'OCIRepository ascoachingogvaner (oci://ghcr.io/devantler-tech/ascoachingogvaner/manifests) must follow the governed release stream with exactly spec.ref.semver: >=1.0.0'
+
+root="$(fresh_root templated-trusted-stream-tag)"
+# shellcheck disable=SC2016 # KRO placeholder is intentionally literal.
+repo_doc '${schema.spec.name}' 'oci://ghcr.io/devantler-tech/${schema.spec.name}/manifests' "$(good_verify)" >"$root/tenant-template.yaml"; add_resource "$root" tenant-template.yaml
+yq -i '.spec.ref = {"tag": "v1.0.0"}' "$root/tenant-template.yaml"
+# shellcheck disable=SC2016 # Expected diagnostic preserves the KRO placeholder.
+expect_refused 'a templated trusted tenant fixed tag is refused by name' "$root" 'OCIRepository ${schema.spec.name} (oci://ghcr.io/devantler-tech/${schema.spec.name}/manifests) must follow the governed release stream with exactly spec.ref.semver: >=1.0.0'
+
 # --- RED: no spec.verify at all (AC1) ---
 root="$(fresh_root noverify)"
 repo_doc bare 'oci://ghcr.io/devantler-tech/bare/manifests' '' >"$root/bare.yaml"; add_resource "$root" bare.yaml

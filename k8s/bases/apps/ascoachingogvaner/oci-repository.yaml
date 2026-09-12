@@ -9,7 +9,7 @@ metadata:
 spec:
   interval: 1m
   ref:
-    tag: 1.13.4
+    semver: ">=1.0.0"
   url: oci://ghcr.io/devantler-tech/ascoachingogvaner/manifests
   secretRef:
     name: ghcr-auth
