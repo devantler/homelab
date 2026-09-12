@@ -380,6 +380,30 @@ require_text "${probe_out}" 'does not read as a verification failure' 'non-verif
 refute_text "${probe_out}" 'PASS:' 'non-verification refusal'
 check 'a refusal unrelated to signatures is INCONCLUSIVE, never PASS'
 
+# The same unrelated refusal, but with the node ECHOING THE REF — which real pull
+# errors do. The recommended negative-control name contains "unsigned", so a
+# classifier that reads the whole diagnostic finds its own input and calls a
+# not-found a signature refusal: PASS without verification ever rejecting anything.
+# The ref must be removed before the reason is classified.
+reset_fixtures
+stage_pull "${unsigned}" 1 "failed to resolve reference \"${unsigned}\": not found"
+stage_pull "${signed}" 0 ''
+run_probe
+[[ ${probe_rc} -eq 3 ]] || fail "ref-echoing non-verification refusal should exit 3, got ${probe_rc}: ${probe_out}"
+require_text "${probe_out}" 'does not read as a verification failure' 'ref-echoing refusal'
+refute_text "${probe_out}" 'PASS:' 'ref-echoing refusal'
+check 'a refusal that merely repeats the unsigned ref is INCONCLUSIVE, never PASS'
+
+# The ref with its tag stripped must not count either: an authorization error
+# commonly names only the repository.
+reset_fixtures
+stage_pull "${unsigned}" 1 "denied: requested access to the resource ${unsigned%:*} is denied"
+stage_pull "${signed}" 0 ''
+run_probe
+[[ ${probe_rc} -eq 3 ]] || fail "repository-echoing refusal should exit 3, got ${probe_rc}: ${probe_out}"
+refute_text "${probe_out}" 'PASS:' 'repository-echoing refusal'
+check 'a refusal that repeats only the unsigned repository is INCONCLUSIVE, never PASS'
+
 # --- Positive control is what makes the negative attributable --------------
 # A verifier refusing EVERYTHING produces the same negative result as a working
 # one. Without this case the probe would report PASS for a wholly broken node.

@@ -61,10 +61,16 @@ on:
 permissions: {}
 
 concurrency:
-  # Never two probes at once: they would pull and remove the same refs on the
-  # same node and each would see the other's images as "already cached".
-  group: probe-image-signature-enforcement
+  # The probe pulls and removes images on a production node and reads its
+  # verification rules. Every other job that mutates production nodes — the
+  # merge-queue deploy, manual CD, heal, DR and the Wedding recovery — serializes
+  # on `prod-deploy`, and so must this: a concurrent deploy can reboot the node,
+  # rewrite its verification or registry configuration, or stage the same image,
+  # which would split the verdict across two node states and let cleanup remove a
+  # ref the deploy just pulled. The shared group also keeps two probes apart.
+  group: prod-deploy
   cancel-in-progress: false
+  queue: max
 
 jobs:
   probe-image-signature-enforcement:

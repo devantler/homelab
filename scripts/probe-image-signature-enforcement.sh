@@ -363,6 +363,27 @@ is_verification_refusal() {
   printf '%s' "$1" | grep -qiE 'verif|signature|cosign|sigstore|not signed|unsigned|trust'
 }
 
+# Pull errors routinely REPEAT the ref, and the recommended negative-control name
+# itself contains "unsigned" — so classifying the raw diagnostic finds the probe's
+# own input and turns a not-found or an authorization denial into a "signature
+# refusal", which then combines with a genuine signed pull into a false PASS.
+# Both refs, and each ref's repository without its tag or digest, are removed as
+# LITERAL text before classifying. Removing text can only make a match less likely,
+# so this fails towards INCONCLUSIVE, never towards PASS.
+without_probe_refs() {
+  local text="$1" ref repo last
+  for ref in "${unsigned_image}" "${signed_image}"; do
+    repo="${ref%@*}"
+    last="${repo##*/}"
+    if [[ "${last}" == *:* ]]; then
+      repo="${repo%:*}"
+    fi
+    text="${text//"${ref}"/}"
+    text="${text//"${repo}"/}"
+  done
+  printf '%s' "${text}"
+}
+
 # Records the ref as pulled and then pulls it. The recording deliberately lives
 # in the CALLER (see the call sites) rather than in here: this function's output
 # is captured with `$(...)`, which runs it in a SUBSHELL, so an array appended
@@ -383,7 +404,7 @@ if ((unsigned_rc == 0)); then
   fail_enforcement "node ${node} ACCEPTED the unsigned ref '${unsigned_image}' even though it matches rule '${matched_pattern}'. Signature verification is not refusing unsigned images at the pull layer."
 fi
 
-if ! is_verification_refusal "${unsigned_output}"; then
+if ! is_verification_refusal "$(without_probe_refs "${unsigned_output}")"; then
   fail_inconclusive "the unsigned ref was refused, but the node's reason does not read as a verification failure, so the refusal is not attributable to the signature. Node said: ${unsigned_output}"
 fi
 
