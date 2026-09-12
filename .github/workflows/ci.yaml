@@ -399,6 +399,7 @@ jobs:
               - 'scripts/tests/test-cnpg-degraded-alert.sh'
               - 'scripts/tests/test-stranded-volume-attach-alert.sh'
               - 'scripts/tests/test-coroot-alert-autosuppressor.sh'
+              - 'scripts/tests/test-velero-maintenance-oom-alert.sh'
               # The Job manifest, the Secret it imports and this test are one
               # contract: the credential is only out of the environment while all
               # three agree.
@@ -1194,6 +1195,12 @@ jobs:
         # Exercise the rendered script so the two known static-pod probe series
         # suppress, while one additional active upstream keeps the alert visible.
         run: bash scripts/tests/test-coroot-alert-autosuppressor.sh
+
+      - name: 💾 Validate the Velero maintenance OOM alert
+        if: needs.changes.outputs.k8s == 'true'
+        # Replays an OOMKilled attempt plus a later successful retry against the
+        # manifest's real script so BackupRepository readiness cannot mask it.
+        run: bash scripts/tests/test-velero-maintenance-oom-alert.sh
 
       - name: 🔑 Validate the MinIO bucket Job's credential handling
         if: needs.changes.outputs.k8s == 'true'

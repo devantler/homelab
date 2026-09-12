@@ -1,0 +1,16 @@
+# A retry can make a Velero BackupRepository healthy after an earlier
+# repository-maintenance pod was OOMKilled. The failed attempt remains visible
+# only in retained pod status, so this Role reads that single namespaced type.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: velero-maintenance-oom-alert
+  namespace: velero
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list

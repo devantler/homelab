@@ -99,6 +99,12 @@ stays quiet by design, exactly as the old Alertmanager did.
   webhook when one has been degraded past a 15-minute grace. It is deliberately
   independent of any Flux health gate, so relaxing that gate cannot silently
   remove this coverage.
+- **Velero maintenance OOMKills remain visible after a successful retry.**
+  `bases/infrastructure/controllers/coroot/cron-job-velero-maintenance-oom-alert.yaml`
+  checks retained repository-maintenance pod status every 30 minutes. It alerts
+  on an `OOMKilled` termination from the previous two hours even when a later
+  Job for the same repository succeeds and restores `BackupRepository` readiness.
+  Its cross-namespace Role is limited to `list` on pods in `velero`.
 - **A stranded volume attach alerts within about fifteen minutes.** On
   2026-07-01 one hcloud volume that stayed attached to a departed node took all
   prod delivery down for nine hours: the rescheduled `openbao-0` logged

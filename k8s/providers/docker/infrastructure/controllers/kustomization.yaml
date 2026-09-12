@@ -67,6 +67,8 @@ resources:
   # for the Tenant #1932 / WebApp #1933 RGDs — needed for the local-first pilot):
   #   - ../../../../bases/infrastructure/controllers/kro/
 components:
+  # Enable only with BOTH the Coroot and Velero controller bases above:
+  # - ../../../../bases/components/coroot-velero-maintenance-oom-alert
   # Platform-wide HelmRelease drift detection (mode: enabled) — see
   # bases/components/helmrelease-drift-detection.
   - ../../../../bases/components/helmrelease-drift-detection

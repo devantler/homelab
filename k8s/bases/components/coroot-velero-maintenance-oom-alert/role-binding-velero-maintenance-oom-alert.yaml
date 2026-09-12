@@ -1,0 +1,16 @@
+# Grants the observability detector read-only access to retained maintenance
+# pod status in velero. The cross-namespace subject is explicit and singular.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: velero-maintenance-oom-alert
+  namespace: velero
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: velero-maintenance-oom-alert
+subjects:
+  - kind: ServiceAccount
+    name: velero-maintenance-oom-alert
+    namespace: observability

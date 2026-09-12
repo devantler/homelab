@@ -1953,7 +1953,24 @@ const (
 // The previous aggregate remains recorded here:
 //
 //	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
-const expectedRenderedSurfaceSHA = "5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65"
+
+// Moved again by the Velero maintenance OOM alert (#3437). The authored delta
+// adds one observability ServiceAccount, one namespaced Role and RoleBinding,
+// the alert CronJob and its inert placeholder Secret. The Role grants only
+// list on pods in the velero namespace; it cannot read Secrets, mutate
+// workloads or cross namespace boundaries. The CronJob's mounted Slack
+// webhook remains out of its environment and command line.
+//
+// CONSERVATION, read from this validator under the SHA256-verified kubectl
+// v1.36.2 renderer: exactly this aggregate changed. It reported ZERO
+// `unapproved rendered <identity>`, ZERO `missing rendered authorization
+// resource` and ZERO `duplicate rendered`; every existing pinned per-resource
+// identity still passes. No existing subject, grant, binding, ServiceAccount,
+// wildcard, AWS identity or permission changes. The unresolved Flux
+// substitutions are unchanged diagnostics emitted alongside the aggregate.
+//
+// Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
+const expectedRenderedSurfaceSHA = "43a3ac6748ec8adce7f8ccc4e05dac3ee13c907707ef072a8493504c677ced86"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
