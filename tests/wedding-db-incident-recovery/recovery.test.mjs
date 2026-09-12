@@ -65,7 +65,7 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
     currentClusterUid:CURRENT_UID,sourceUid:SOURCE_UID,prelossBackupUid:BACKUP_UID,
     database:'wedding',imageName:'ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie',storageClass:'longhorn-wffc',size:'1Gi',
     endpoint:'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com',prelossBackupId:'20260908T030001',
-    prelossBackupStoppedAt:'2026-09-08T03:00:11Z',prelossTargetTime:'2026-09-09T01:57:41Z',prelossTargetTimeline:'162',
+    replacementCreatedAt:'2026-09-09T01:58:14Z',prelossTargetTime:'2026-09-09T01:57:41Z',prelossTargetTimeline:'162',
   });
   for(const change of [
     value=>{value.cluster.metadata.uid='11111111-1111-1111-1111-111111111111';},
@@ -101,12 +101,13 @@ test('recovery cluster replays the maximum available WAL from the exact base',()
   assert.equal(policy.spec.egress.some(item=>item.toEndpoints),false);
 });
 
-test('recovery proof accepts only a replay timestamp after the base and before deletion',()=>{
-  const bounds={backupStoppedAt:'2026-09-08T03:00:11Z',targetTime:'2026-09-09T01:57:41Z'};
+test('recovery proof accepts base-only or replay evidence before replacement',()=>{
+  const bounds={replacementCreatedAt:'2026-09-09T01:58:14Z'};
   assert.equal(validateRecoveryReplayTimestamp('2026-09-08T10:11:23.519651Z',bounds),'2026-09-08T10:11:23.519651Z');
-  assert.throws(()=>validateRecoveryReplayTimestamp('2026-09-08T02:59:59Z',bounds),/refused/);
-  assert.throws(()=>validateRecoveryReplayTimestamp('2026-09-09T01:57:41Z',bounds),/refused/);
-  assert.throws(()=>validateRecoveryReplayTimestamp(null,bounds),/refused/);
+  assert.equal(validateRecoveryReplayTimestamp('2026-09-08T02:59:59Z',bounds),'2026-09-08T02:59:59Z');
+  assert.equal(validateRecoveryReplayTimestamp(null,bounds),null);
+  assert.throws(()=>validateRecoveryReplayTimestamp('2026-09-09T01:58:14Z',bounds),/refused/);
+  assert.throws(()=>validateRecoveryReplayTimestamp(undefined,bounds),/refused/);
 });
 
 test('application suspension ownership is bound to one workflow attempt',()=>{
