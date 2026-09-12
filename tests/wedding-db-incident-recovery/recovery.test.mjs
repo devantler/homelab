@@ -130,9 +130,17 @@ test('application suspension ownership is bound to one workflow attempt',()=>{
   assert.equal(recoveryOwnerAttempt('34710000000','2',owner),'1');
   assert.throws(()=>recoveryOwnerAttempt('34710000000','1','34710000000/2'),/refused/);
   assert.throws(()=>recoveryOwnerAttempt('34710000000','2','34710000001/1'),/refused/);
-  assert.deepEqual(buildSuspendPatch({resourceVersion:'279780874',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),[
+  assert.deepEqual(buildSuspendPatch({resourceVersion:'279780874',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',annotationsPresent:true,owner}),[
     {op:'test',path:'/metadata/resourceVersion',value:'279780874'},
     {op:'test',path:'/metadata/uid',value:'be31651e-fe0d-4826-9ffb-d41716a66720'},
+    {op:'add',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner',value:owner},
+    {op:'add',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile',value:'disabled'},
+    {op:'add',path:'/spec/suspend',value:true},
+  ]);
+  assert.deepEqual(buildSuspendPatch({resourceVersion:'279825100',kustomizationUid:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48',annotationsPresent:false,owner}),[
+    {op:'test',path:'/metadata/resourceVersion',value:'279825100'},
+    {op:'test',path:'/metadata/uid',value:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48'},
+    {op:'add',path:'/metadata/annotations',value:{}},
     {op:'add',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner',value:owner},
     {op:'add',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile',value:'disabled'},
     {op:'add',path:'/spec/suspend',value:true},
@@ -146,8 +154,7 @@ test('application suspension ownership is bound to one workflow attempt',()=>{
     {op:'remove',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner'},
     {op:'remove',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile'},
   ]);
-  assert.equal(buildSuspendPatch({resourceVersion:'279825100',kustomizationUid:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48',owner})[1].value,'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48');
-  assert.throws(()=>buildSuspendPatch({resourceVersion:'0',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),/refused/);
+  assert.throws(()=>buildSuspendPatch({resourceVersion:'0',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',annotationsPresent:true,owner}),/refused/);
 });
 
 test('controller handoff restart is atomic and bound to this incident',()=>{

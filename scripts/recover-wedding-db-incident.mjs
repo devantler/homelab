@@ -132,11 +132,12 @@ export function recoveryOwnerAttempt(run,currentAttempt,owner){
   return match[1];
 }
 
-export function buildSuspendPatch({resourceVersion,kustomizationUid,owner}){
-  integer(resourceVersion);check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
+export function buildSuspendPatch({resourceVersion,kustomizationUid,annotationsPresent,owner}){
+  integer(resourceVersion);check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&typeof annotationsPresent==='boolean'&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
   return [
     {op:'test',path:'/metadata/resourceVersion',value:resourceVersion},
     {op:'test',path:'/metadata/uid',value:kustomizationUid},
+    ...(annotationsPresent?[]:[{op:'add',path:'/metadata/annotations',value:{}}]),
     {op:'add',path:RECOVERY_OWNER_PATH,value:owner},
     {op:'add',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
     {op:'add',path:'/spec/suspend',value:true},
@@ -427,13 +428,13 @@ function acquireFence(namespace,name,uidValue,config){
   while(Date.now()<end){
     current=objectAt(namespace,'kustomizations.kustomize.toolkit.fluxcd.io',name);
     check(current.metadata.uid===uidValue&&typeof current.metadata.resourceVersion==='string');
-    check(current.metadata.annotations&&typeof current.metadata.annotations==='object');
-    check(current.spec?.suspend!==true&&!current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]);
+    check(current.metadata.annotations===undefined||(current.metadata.annotations!==null&&typeof current.metadata.annotations==='object'&&!Array.isArray(current.metadata.annotations)));
+    check(current.spec?.suspend!==true&&!current.metadata.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
     if(condition(current,'Ready')&&!condition(current,'Reconciling')&&current.status?.observedGeneration===current.metadata.generation)break;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
   }
   check(current&&Date.now()<end);
-  const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,owner});
+  const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,annotationsPresent:current.metadata.annotations!==undefined,owner});
   kubectl(['--namespace',namespace,'patch','kustomization.kustomize.toolkit.fluxcd.io',name,'--type=json','--patch='+JSON.stringify(patch)]);
   let stableResourceVersion='';
   for(let attempt=0;attempt<3;attempt+=1){
