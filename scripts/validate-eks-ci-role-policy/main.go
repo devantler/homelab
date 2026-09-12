@@ -2025,14 +2025,15 @@ const (
 // snapshot-controller HelmRelease's controller values. Rebasing onto that
 // repair therefore leaves the conservation hunk list above unchanged.
 //
-// RENDERER PROVENANCE: PENDING CI on the merged tree. The constant below still
-// holds the previous aggregate, so CI's validator reports the merged tree's
-// aggregate as its single unapproved entry; that value replaces the constant in
-// the follow-up commit. This host's kubectl/kustomize are not approved
-// renderers, so no local digest is claimed.
+// RENDERER PROVENANCE: the value below was read from CI's own failure on job
+// 103622614274 at c61aac1e (the merge of main 8756f2ad with this context), which
+// renders under the approved SHA256-verified toolchain and reported ZERO missing
+// and ZERO duplicate rendered resources; its single unapproved entry was this
+// aggregate. This host's kubectl/kustomize are not approved renderers, so no
+// local digest is claimed.
 //
 // Previous aggregate: 8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e.
-const expectedRenderedSurfaceSHA = "8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e"
+const expectedRenderedSurfaceSHA = "525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
