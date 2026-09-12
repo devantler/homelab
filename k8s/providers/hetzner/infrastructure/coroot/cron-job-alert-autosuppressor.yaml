@@ -44,9 +44,19 @@
 #      host extension is fixable via a manifest, and a genuine storage fault would
 #      still surface via Longhorn volume health and the instance-manager apps' own
 #      SLOs, so this host-app connectivity signal is the least-actionable place to
-#      lose. Scoped to rule_id + the single app id. NB the sibling
-#      `_:Unknown:kubelet` raises the same rule; it is intentionally NOT suppressed
-#      here until its specific failed upstreams are separately verified benign.
+#      lose. Scoped to rule_id + the single app id.
+#
+#   3. kubelet-static-pod-probes - the sibling `network-tcp-connections` warning
+#      on `_:Unknown:kubelet`, but ONLY while its complete active-upstream set is
+#      kube-scheduler + kube-controller-manager. These are the kubelet's HTTPS
+#      health probes against the Talos static pods: three schedulers each have a
+#      10s liveness and readiness probe (0.6/s total), and three controller
+#      managers each have a 10s liveness probe (0.3/s total). All six pods stay
+#      Ready while Coroot classifies the short probe connections as failures.
+#      SAFETY: the alert detail is read before suppression and every chart series
+#      with a positive sample must be one of those exact two names. Any new active
+#      upstream keeps the alert visible, even though Coroot reuses the same alert
+#      fingerprint for all kubelet TCP failures.
 #
 # PROD-ONLY: Coroot alerting (the Slack webhook) is wired only in the hetzner
 # overlay, so this lives here, not in the base.
@@ -154,6 +164,26 @@ spec:
                                and (.application_id | endswith(":_:Unknown:extensions")))
                       | .id'); do
                     ids="$ids $id"; echo "match extensions-host-failed-conns: $id"
+                  done
+
+                  # Exemption 3 - kubelet health probes to the static scheduler
+                  # and controller-manager pods. Refuse the exemption if ANY
+                  # other upstream has a positive sample in the failed-TCP chart.
+                  for id in $(printf '%s' "$ALERTS" | jq -r '.data.alerts[]
+                      | select(.suppressed==false and .resolved_at==null and .rule_id=="network-tcp-connections"
+                               and (.application_id | endswith(":_:Unknown:kubelet")))
+                      | .id'); do
+                    active=$(curl $RETRY "$BASE/api/project/$PID/alerts/$id" | jq -c '
+                      [.data.widgets[]? | .chart?
+                       | select(.title=="Failed TCP connections, per second")
+                       | .series[]?
+                       | select(.data | any(.[]?; type=="number" and . > 0))
+                       | .name] | unique | sort')
+                    if [ "$active" = '["→kube-controller-manager","→kube-scheduler"]' ]; then
+                      ids="$ids $id"; echo "match kubelet-static-pod-probes: $id"
+                    else
+                      echo "keep kubelet TCP alert visible; active upstreams: $active"
+                    fi
                   done
 
                   n=$(echo $ids | wc -w)
