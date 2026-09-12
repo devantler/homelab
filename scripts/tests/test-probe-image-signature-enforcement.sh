@@ -340,6 +340,41 @@ refute_text "${out}" 'PASS:' 'unmatched signed control'
 [[ ! -e "${fixtures}/pulled.txt" ]] || fail 'probe pulled despite an unmatched signed control'
 check 'an unmatched SIGNED positive control is INCONCLUSIVE and nothing is pulled'
 
+# Talos matches a rule's pattern against the image REPOSITORY, not the full
+# reference: this repository's own `ghcr.io/devantler-tech/platform-kubescape-storage`
+# rule carries no wildcard and still governs that tagged image. Matching the full
+# ref here disagrees with the node in both directions, so both are pinned.
+#
+# A pattern that names a TAG can never match on the node. Matching it against the
+# full ref would call the unsigned ref governed when Talos pulls it unverified.
+reset_fixtures
+{
+  rule_obj "${unsigned}" 'running' "${owner}"
+  rule_obj 'ghcr.io/devantler-tech/ksail*' 'running' "${owner}"
+} >"${fixtures}/rules.json"
+stage_pull "${unsigned}" 1 'image verification failed: no valid signature found'
+stage_pull "${signed}" 0 ''
+run_probe
+[[ ${probe_rc} -eq 3 ]] || fail "tag-bearing rule should exit 3, got ${probe_rc}: ${probe_out}"
+require_text "${probe_out}" 'matches NO running rule' 'tag-bearing rule'
+refute_text "${probe_out}" 'PASS:' 'tag-bearing rule'
+[[ ! -e "${fixtures}/pulled.txt" ]] || fail 'probe pulled despite a rule that cannot match on the node'
+check 'a rule pattern that names a tag does not govern the ref (INCONCLUSIVE, nothing pulled)'
+
+# The converse: an exact-repository pattern with no wildcard DOES govern a tagged
+# ref on the node, so the probe must treat it as matched rather than skip the test.
+reset_fixtures
+{
+  rule_obj "${unsigned%:*}" 'running' "${owner}"
+  rule_obj 'ghcr.io/devantler-tech/ksail*' 'running' "${owner}"
+} >"${fixtures}/rules.json"
+stage_pull "${unsigned}" 1 'image verification failed: no valid signature found'
+stage_pull "${signed}" 0 ''
+run_probe
+[[ ${probe_rc} -eq 0 ]] || fail "exact-repository rule should reach PASS, got ${probe_rc}: ${probe_out}"
+require_text "${probe_out}" 'PASS:' 'exact-repository rule'
+check 'an exact-repository rule governs the tagged ref, as it does on the node'
+
 # --- Cache guard ------------------------------------------------------------
 # The false-PASS case: a cached ref is never re-pulled, so verification never
 # runs. Pinned for BOTH refs, because the positive control is the one most

@@ -245,15 +245,33 @@ patterns="$(printf '%s' "${rules_json}" |
 # verification-shaped refusal with an unrelated successful pull and report
 # PASS, which is a false all-clear on exactly the broken state it was built to
 # detect. Both refs are therefore matched before either is pulled.
+#
+# Talos matches a pattern against the image REPOSITORY, with the tag and digest
+# removed — this repository's own exact-repository rule for
+# `ghcr.io/devantler-tech/platform-kubescape-storage` carries no wildcard and still
+# governs that tagged image. Matching the full ref would disagree with the node in
+# both directions: a pattern naming a tag would look like it governs a ref Talos
+# pulls unverified, and an exact-repository pattern would look like it governs
+# nothing. So the ref is reduced to its repository first.
+ref_repository() {
+  local repo="${1%@*}" last
+  last="${repo##*/}"
+  if [[ "${last}" == *:* ]]; then
+    repo="${repo%:*}"
+  fi
+  printf '%s' "${repo}"
+}
+
 match_rule() {
-  local ref="$1" pattern
+  local repo pattern
+  repo="$(ref_repository "$1")"
   while IFS= read -r pattern; do
     [[ -n "${pattern}" ]] || continue
     # The rule patterns are containerd globs. `case` glob-matches with the same
     # semantics, and the pattern is deliberately UNQUOTED here so it is treated
     # as a glob rather than a literal.
     # shellcheck disable=SC2254
-    case "${ref}" in
+    case "${repo}" in
       ${pattern})
         printf '%s' "${pattern}"
         return 0
@@ -383,13 +401,9 @@ is_verification_refusal() {
 # LITERAL text before classifying. Removing text can only make a match less likely,
 # so this fails towards INCONCLUSIVE, never towards PASS.
 without_probe_refs() {
-  local text="$1" ref repo last
+  local text="$1" ref repo
   for ref in "${unsigned_image}" "${signed_image}"; do
-    repo="${ref%@*}"
-    last="${repo##*/}"
-    if [[ "${last}" == *:* ]]; then
-      repo="${repo%:*}"
-    fi
+    repo="$(ref_repository "${ref}")"
     text="${text//"${ref}"/}"
     text="${text//"${repo}"/}"
   done
