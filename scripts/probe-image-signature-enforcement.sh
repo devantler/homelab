@@ -1,0 +1,363 @@
+#!/usr/bin/env bash
+
+# Observe whether a matched-but-unsigned image is REFUSED at the node pull layer.
+#
+# WHAT IS UNPROVEN, AND WHY A NEW PROBE IS NEEDED.
+# `scripts/validate-image-verifier-liveness.sh` establishes that Talos' own
+# verification is LIVE on every node: every declared rule is materialised and in
+# phase "running", and a TUF trust root exists. That is necessary for
+# enforcement and not sufficient. Every first-party image ever pulled here has
+# PASSED, so a FAILING verification decision has never been observed to block a
+# pull (devantler-tech/platform#3336). This probe obtains that missing
+# observation.
+#
+# WHY THE NODE PULL LAYER, AND NOT A POD.
+# A Pod would reach containerd through the Kubernetes API, where the Kyverno
+# admission layer also sits. An admission-time rejection and a node-side
+# signature refusal both surface as "the workload did not start", so a Pod-based
+# probe cannot attribute the refusal to the control under test. `talosctl image
+# pull` talks to the node's containerd directly: the Kubernetes API is not in
+# the path at all, so admission is *structurally* incapable of producing the
+# result. That is the whole reason this probe is shaped the way it is — do not
+# "simplify" it into applying a manifest.
+#
+# WHY A CACHED IMAGE WOULD FAKE A PASS.
+# Verification happens at PULL. An image already in the node's content store is
+# never re-pulled, so a probe that does not first establish absence can report a
+# successful "pull" that performed no verification whatsoever — and it would
+# report it most confidently for the positive control, which is the ref most
+# likely to be cached already. Both refs are therefore asserted absent before
+# use, and the run fails closed rather than probing a cached ref.
+#
+# WHY BOTH CONTROLS ARE REQUIRED.
+# A refusal on its own is ambiguous: a verifier that refuses EVERYTHING produces
+# exactly the same negative result as one correctly rejecting an unsigned image,
+# and so does an unrelated failure (a typo'd tag, an auth error, a registry
+# outage). The signed positive control is what makes the negative attributable
+# to the signature. If the positive control does not succeed, the verdict is
+# INCONCLUSIVE — never PASS — because nothing then distinguishes working
+# enforcement from a broken verifier.
+#
+# DORMANT BY DEFAULT. Unlike the liveness checker, this probe WRITES to a real
+# node: it pulls images into the container runtime. It therefore refuses to do
+# anything without an explicit `--confirm`, so no scheduled job, no PR, and no
+# accidental invocation can touch a node. Activation — restoring a cadence —
+# is deliberately out of scope here and belongs to #3336.
+#
+# SECURITY: this probe reads Talos resources and the node's image list, and
+# pulls the two refs it is given. It reads no node file, so no registry
+# credential can reach its output. Keep it that way: its output goes to CI logs.
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: probe-image-signature-enforcement.sh --confirm --node <ip> \
+         --unsigned-image <ref> --signed-image <ref> [--keep]
+
+Observes whether the node pull layer REFUSES a matched-but-unsigned image while
+ACCEPTING a correctly signed one, by pulling each directly on one node.
+
+Required:
+  --confirm               Acknowledge that this performs node-level writes
+                          (image pulls) against a real cluster. Without it the
+                          probe does nothing: it is dormant by design.
+  --node <ip>             The single node to probe. Deliberately one node: the
+                          question is whether refusal happens at all, and every
+                          extra node only widens the blast radius.
+  --unsigned-image <ref>  A deliberately unsigned THROWAWAY ref that MATCHES a
+                          declared verification rule. Never a production
+                          workload. The probe asserts the match itself.
+  --signed-image <ref>    A correctly signed ref that MATCHES a declared rule,
+                          used as the positive control.
+
+Optional:
+  --keep                  Leave anything this probe pulled in the node's content
+                          store. By default every ref the probe pulled is
+                          removed again, so the node is left as it was found.
+
+Environment overrides: TALOSCTL
+
+Exit status:
+  0  PASS         — unsigned ref refused for a verification reason, signed ref pulled
+  1  FAIL         — the unsigned ref was ACCEPTED: enforcement is not refusing
+  2  usage error
+  3  INCONCLUSIVE — the probe could not attribute the result (positive control
+                    failed, a ref was already cached, a refusal was not a
+                    verification refusal, or a node/tool error). Never read as PASS.
+USAGE
+}
+
+readonly talosctl_bin="${TALOSCTL:-talosctl}"
+readonly ns='cri'
+
+# Three verdict channels, kept distinct on purpose. `fail_inconclusive` is the
+# one a careless refactor tends to collapse into `fail_enforcement`, which would
+# turn "we could not tell" into "enforcement is broken" — a false alarm — or, if
+# collapsed the other way, into a false all-clear.
+fail_usage() {
+  printf 'ERROR: %s\n\n' "$1" >&2
+  usage
+  exit 2
+}
+
+fail_inconclusive() {
+  printf 'INCONCLUSIVE: %s\n' "$1" >&2
+  printf 'INCONCLUSIVE is NOT a pass: no statement about enforcement is made.\n' >&2
+  exit 3
+}
+
+fail_enforcement() {
+  printf 'FAIL: %s\n' "$1" >&2
+  exit 1
+}
+
+confirmed=0
+node=''
+unsigned_image=''
+signed_image=''
+keep=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --confirm) confirmed=1 ;;
+    --keep) keep=1 ;;
+    --node)
+      [[ $# -ge 2 ]] || fail_usage '--node requires a value'
+      node="$2"
+      shift
+      ;;
+    --unsigned-image)
+      [[ $# -ge 2 ]] || fail_usage '--unsigned-image requires a value'
+      unsigned_image="$2"
+      shift
+      ;;
+    --signed-image)
+      [[ $# -ge 2 ]] || fail_usage '--signed-image requires a value'
+      signed_image="$2"
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *) fail_usage "unknown argument: $1" ;;
+  esac
+  shift
+done
+
+# Dormancy is checked FIRST, before any argument is even validated, so that an
+# invocation missing --confirm can never reach a node for any reason.
+if ((confirmed == 0)); then
+  printf 'probe-image-signature-enforcement: DORMANT — refusing to run without --confirm.\n' >&2
+  printf 'This probe pulls images on a real node. Re-run with --confirm to proceed.\n' >&2
+  exit 2
+fi
+
+[[ -n "${node}" ]] || fail_usage '--node is required'
+[[ -n "${unsigned_image}" ]] || fail_usage '--unsigned-image is required'
+[[ -n "${signed_image}" ]] || fail_usage '--signed-image is required'
+[[ "${unsigned_image}" != "${signed_image}" ]] ||
+  fail_usage 'the unsigned and signed refs are identical — the controls would not distinguish anything'
+
+# A ref carrying no tag or digest would let containerd resolve `:latest`, so the
+# probe would not be pulling the artifact it was asked about.
+for ref in "${unsigned_image}" "${signed_image}"; do
+  case "${ref}" in
+    *@sha256:*) : ;;
+    *:*[!/]*) : ;;
+    *) fail_usage "ref '${ref}' names no tag or digest — refusing to let :latest be resolved for it" ;;
+  esac
+done
+
+command -v "${talosctl_bin}" >/dev/null 2>&1 ||
+  fail_inconclusive "talosctl not found (looked for '${talosctl_bin}')"
+
+"${talosctl_bin}" -n "${node}" ls / >/dev/null 2>&1 ||
+  fail_inconclusive "cannot reach node ${node} (talosctl ls / failed) — refusing to report a probe that did not run"
+
+# ---------------------------------------------------------------------------
+# Pre-flight: the unsigned ref must MATCH a declared rule.
+#
+# An image that matches NO rule is allowed through by design, so pulling an
+# unmatched unsigned ref successfully says nothing at all about enforcement —
+# it is the expected behaviour. Without this gate the probe's headline FAIL
+# would fire on a correctly-configured cluster, which is worse than no probe.
+# The patterns are read from the LIVE node, not the repository, for the same
+# reason the liveness checker does: the repository reads as correct whether or
+# not anything on the node evaluates it.
+# ---------------------------------------------------------------------------
+readonly rules_type='imageverificationrules.security.talos.dev'
+readonly rules_owner='security.ImageVerificationConfigController'
+
+rules_json="$("${talosctl_bin}" -n "${node}" get "${rules_type}" -o json 2>/dev/null)" ||
+  fail_inconclusive "could not read ${rules_type} on node ${node}"
+
+# `talosctl get -o json` emits a STREAM of objects, not an array, so -s slurps
+# them.
+#
+# The shape is one resource PER RULE carrying `.spec.imagePattern` — NOT a
+# single resource holding a `rules[]` array. Getting that wrong yields an empty
+# pattern set, which this script would then report as "no rules materialised" on
+# a perfectly healthy cluster.
+#
+# Only rules the ImageVerificationConfigController OWNS and has brought to phase
+# "running" actually decide anything, so a rule in any other phase is excluded:
+# matching the probe ref against a rule that decides nothing would make the
+# probe claim to be testing a control that is not in the path.
+patterns="$(printf '%s' "${rules_json}" |
+  jq -s -r --arg owner "${rules_owner}" '
+    [ .[]?
+      | select((.metadata?.owner // "") == $owner)
+      | select((.metadata?.phase // "") == "running")
+      | .spec?.imagePattern // empty
+    ] | .[]' 2>/dev/null)" ||
+  fail_inconclusive "could not parse verification rules from node ${node}"
+
+[[ -n "${patterns}" ]] ||
+  fail_inconclusive "node ${node} holds NO running materialised verification rules — nothing would be verified there, so neither a refusal nor a successful pull would prove anything"
+matched_pattern=''
+while IFS= read -r pattern; do
+  [[ -n "${pattern}" ]] || continue
+  # The rule patterns are containerd globs. `case` glob-matches with the same
+  # semantics, and the pattern is deliberately UNQUOTED here so it is treated as
+  # a glob rather than a literal.
+  # shellcheck disable=SC2254
+  case "${unsigned_image}" in
+    ${pattern})
+      matched_pattern="${pattern}"
+      break
+      ;;
+  esac
+done <<<"${patterns}"
+
+[[ -n "${matched_pattern}" ]] ||
+  fail_inconclusive "the unsigned ref '${unsigned_image}' matches NO declared rule on node ${node} — an unmatched image is allowed by design, so refusing it is not what this probe would be observing"
+
+printf 'probe: unsigned ref matches rule pattern %s on node %s\n' "${matched_pattern}" "${node}"
+
+# ---------------------------------------------------------------------------
+# Cache guard. See the header: a cached ref is never re-pulled, so probing one
+# measures nothing while looking like a success.
+# ---------------------------------------------------------------------------
+image_list="$("${talosctl_bin}" -n "${node}" image list --namespace "${ns}" 2>/dev/null)" ||
+  fail_inconclusive "could not list images on node ${node} — cannot establish that the probe refs are absent"
+
+ref_is_cached() {
+  # Substring match on purpose: `image list` renders a ref plus its digest and
+  # size, so an exact line match would miss it. The consequence of a false
+  # positive here is a fail-closed INCONCLUSIVE, never a false PASS.
+  printf '%s' "${image_list}" | grep -qF -- "$1"
+}
+
+for ref in "${unsigned_image}" "${signed_image}"; do
+  if ref_is_cached "${ref}"; then
+    fail_inconclusive "ref '${ref}' is ALREADY in node ${node}'s content store — a cached image is not re-pulled, so this probe would verify nothing. Remove it first: ${talosctl_bin} -n ${node} image remove --namespace ${ns} ${ref}"
+  fi
+done
+
+printf 'probe: both refs confirmed absent from node %s content store\n' "${node}"
+
+# ---------------------------------------------------------------------------
+# Cleanup. Registered only once a pull has actually been attempted, and it
+# removes ONLY refs this probe pulled, so a failure cannot delete an image the
+# node already had. Best-effort by design: a cleanup error must not overwrite
+# the probe's verdict, which is the whole point of the run.
+# ---------------------------------------------------------------------------
+pulled_refs=()
+
+# The FIRST thing this does is capture the status the script is exiting with,
+# and the last thing it does is return it.
+#
+# MEASURED SEMANTICS (bash 3.2.57, the macOS system bash this repository's
+# scripts run under in developer shells): an EXIT trap that returns a NON-ZERO
+# status REPLACES the script's exit status, while a zero status leaves it
+# alone. `return 7` in a trap over `exit 3` yields 7; a trap ending in `false`
+# yields 1.
+#
+# That bit this script for real during development. Before the `pulled_refs`
+# recording was moved into the callers below, the array was always empty here,
+# an emptiness test was the trap's last command, it returned 1, and EVERY
+# INCONCLUSIVE (3) was reported as FAIL (1) — silently turning "the probe could
+# not tell" into "enforcement is broken", the exact false alarm the three
+# separate verdict channels exist to prevent.
+#
+# With that bug fixed the trap now ends on a zero status, so this line is
+# currently DEFENSIVE rather than load-bearing: neutralising it does not change
+# any verdict today, and the test suite therefore does not pin it. It is kept
+# because the cost is one line and the failure it prevents is silent and
+# directional — any future cleanup step whose last command fails would rewrite
+# a verdict rather than report a cleanup problem.
+cleanup() {
+  local rc=$?
+  local ref
+
+  if ((keep != 0)); then
+    printf 'probe: --keep given, leaving %d pulled ref(s) in place\n' "${#pulled_refs[@]}" >&2
+    return "${rc}"
+  fi
+
+  for ref in ${pulled_refs[@]+"${pulled_refs[@]}"}; do
+    if "${talosctl_bin}" -n "${node}" image remove --namespace "${ns}" "${ref}" >/dev/null 2>&1; then
+      printf 'probe: cleaned up %s\n' "${ref}" >&2
+    else
+      printf 'probe: WARNING could not remove %s from node %s — remove it by hand\n' "${ref}" "${node}" >&2
+    fi
+  done
+
+  return "${rc}"
+}
+trap cleanup EXIT
+
+# A refusal is only evidence about signatures if the node says it is about
+# verification. Anything else — an unknown tag, an auth denial, a registry
+# outage — produces a failed pull for reasons this probe is not testing, and
+# counting those as a refusal would manufacture a PASS out of a typo.
+is_verification_refusal() {
+  printf '%s' "$1" | grep -qiE 'verif|signature|cosign|sigstore|not signed|unsigned|trust'
+}
+
+# Records the ref as pulled and then pulls it. The recording deliberately lives
+# in the CALLER (see the call sites) rather than in here: this function's output
+# is captured with `$(...)`, which runs it in a SUBSHELL, so an array appended
+# inside it is discarded when the subshell exits and cleanup would then remove
+# nothing at all — leaving the unsigned probe image on the node.
+pull_ref() {
+  "${talosctl_bin}" -n "${node}" image pull --namespace "${ns}" "$1" 2>&1
+}
+
+# --- Negative control: the matched, unsigned ref MUST be refused. ------------
+printf '\nprobe: NEGATIVE control — pulling matched unsigned ref %s\n' "${unsigned_image}"
+unsigned_output=''
+unsigned_rc=0
+pulled_refs+=("${unsigned_image}")
+unsigned_output="$(pull_ref "${unsigned_image}")" || unsigned_rc=$?
+
+if ((unsigned_rc == 0)); then
+  fail_enforcement "node ${node} ACCEPTED the unsigned ref '${unsigned_image}' even though it matches rule '${matched_pattern}'. Signature verification is not refusing unsigned images at the pull layer."
+fi
+
+if ! is_verification_refusal "${unsigned_output}"; then
+  fail_inconclusive "the unsigned ref was refused, but the node's reason does not read as a verification failure, so the refusal is not attributable to the signature. Node said: ${unsigned_output}"
+fi
+
+printf 'probe: unsigned ref REFUSED for a verification reason (expected)\n'
+
+# --- Positive control: a correctly signed ref MUST be accepted. --------------
+# Without this, a verifier refusing everything is indistinguishable from one
+# working correctly.
+printf '\nprobe: POSITIVE control — pulling signed ref %s\n' "${signed_image}"
+signed_output=''
+signed_rc=0
+pulled_refs+=("${signed_image}")
+signed_output="$(pull_ref "${signed_image}")" || signed_rc=$?
+
+if ((signed_rc != 0)); then
+  fail_inconclusive "the signed positive control '${signed_image}' was ALSO refused, so the negative result is not attributable to the signature — this looks like a verifier refusing everything. Node said: ${signed_output}"
+fi
+
+printf 'probe: signed ref pulled successfully (expected)\n'
+
+printf '\nPASS: node %s refused matched unsigned ref %s for a verification reason and accepted signed ref %s.\n' \
+  "${node}" "${unsigned_image}" "${signed_image}"
+printf 'This is the behavioural refusal devantler-tech/platform#3336 requires. Restoring the daily schedule is that issue, not this probe.\n'
