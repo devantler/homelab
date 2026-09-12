@@ -16,7 +16,7 @@ jobs:
   recover:
     name: Restore pre-loss Wedding data
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     environment: prod
     permissions:
       contents: read
@@ -40,3 +40,33 @@ jobs:
 
       - name: Preserve, recover, merge, and prove Wedding data
         run: node scripts/recover-wedding-db-incident.mjs
+
+  restore-application:
+    name: Restore Wedding application state
+    needs: recover
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: prod
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the exact recovery source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Restore production kubeconfig
+        shell: bash
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          set -euo pipefail
+          test -n "$KUBE_CONFIG"
+          umask 077
+          mkdir -p ~/.kube
+          printf '%s' "$KUBE_CONFIG" >~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Restore only state owned by this recovery run
+        run: node scripts/recover-wedding-db-incident.mjs --cleanup

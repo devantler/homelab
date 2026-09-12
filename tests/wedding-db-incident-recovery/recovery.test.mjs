@@ -5,6 +5,7 @@ import {
   buildBackup,
   buildMergeSQL,
   buildRecoveryResources,
+  recoveryOwner,
   recoverySource,
   validateCoreInventory,
 } from '../../scripts/recover-wedding-db-incident.mjs';
@@ -69,6 +70,11 @@ test('recovery cluster replays the complete predecessor archive from the exact b
   assert.deepEqual(policy.spec.egress.find(item=>item.toFQDNs).toFQDNs,[{matchName:'0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com'}]);
 });
 
+test('application suspension ownership is bound to one workflow attempt',()=>{
+  assert.equal(recoveryOwner('34710000000','1'),'34710000000/1');
+  assert.throws(()=>recoveryOwner('34710000000','0'),/refused/);
+});
+
 test('current and restored backups are distinct, run-owned plugin backups',()=>{
   const before=buildBackup({run:'34710000000',attempt:'1',phase:'before'});
   const after=buildBackup({run:'34710000000',attempt:'1',phase:'after'});
@@ -116,6 +122,10 @@ test('manual recovery is serialized with production deployments and discloses no
   const workflow=await fs.readFile(new URL('../../.github/workflows/recover-wedding-db-incident.yaml',import.meta.url),'utf8');
   assert.match(workflow,/workflow_dispatch:\n\npermissions: \{\}/);
   assert.match(workflow,/group: prod-deploy\n  cancel-in-progress: false\n  queue: max/);
+  assert.match(workflow,/timeout-minutes: 180/);
+  assert.match(workflow,/needs: recover\n    if: \$\{\{ always\(\) \}\}/);
+  assert.match(workflow,/timeout-minutes: 20/);
+  assert.match(workflow,/node scripts\/recover-wedding-db-incident\.mjs --cleanup/);
   assert.match(workflow,/environment: prod/);
   assert.match(workflow,/persist-credentials: false/);
   assert.doesNotMatch(workflow,/pull_request|schedule:|inputs:/);
