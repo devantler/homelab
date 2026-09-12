@@ -1,0 +1,30 @@
+# Inactive destination for the staged Wedding-specific archive. This makes the
+# reviewed target configuration available before any Cluster starts writing
+# here. A later cutover mirrors and verifies the existing catalog, then changes
+# the Cluster's barmanObjectName from `wedding-db` to `wedding-db-dedicated`.
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: wedding-db-dedicated
+  namespace: wedding-app
+  labels:
+    app.kubernetes.io/managed-by: ksail
+spec:
+  retentionPolicy: 30d
+  configuration:
+    destinationPath: s3://wedding-db-backups/cnpg/wedding-db
+    endpointURL: ${r2_endpoint}
+    s3Credentials:
+      accessKeyId:
+        name: wedding-db-backup-r2-dedicated
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: wedding-db-backup-r2-dedicated
+        key: SECRET_ACCESS_KEY
+      region:
+        name: wedding-db-backup-r2-dedicated
+        key: REGION
+    wal:
+      compression: gzip
+    data:
+      compression: gzip
