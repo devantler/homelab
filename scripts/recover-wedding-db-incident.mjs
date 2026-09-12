@@ -26,18 +26,29 @@ const PRELOSS_BACKUP_UID='549fe940-b119-4010-bdc8-fa8e6ebc93ae';
 const PRELOSS_CLUSTER_UID='6b6d4879-e437-4ea5-a0cb-257de8edad00';
 const PRELOSS_TARGET_TIME='2026-09-09T01:57:41Z';
 const PRELOSS_TARGET_TIMELINE='162';
-const PRELOSS_RECONCILIATION_DIGEST='sha256:022128434868723705c489546f68ba344e9cbe9e5c2b930a404d8aa2122ad9c7';
+const PRELOSS_RECONCILIATION_DIGEST='sha256:022128434868723705c489546f68ba344a9cbe9e5c2b930a404d8aa2122ad9c7';
 const RECOVERY_MODE='point in time 2026-09-09T01:57:41Z from backup 20260908T030001 on timeline 162';
 const PROOF='wedding-db-data-recovery-proof';
 const RECOVERY_OWNER_ANNOTATION='devantler.tech/wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_ANNOTATION='kustomize.toolkit.fluxcd.io/reconcile';
 const RECOVERY_OWNER_PATH='/metadata/annotations/devantler.tech~1wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_PATH='/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile';
+const RECOVERY_REFUSAL_PHASES=new Set(['source-state','before-backup','restore-and-merge','after-backup','proof','cleanup']);
+let recoveryInvocationVerified=false;
+let recoveryPhase='invocation';
 const check=value=>{if(!value)throw Error('refused');return value;};
 const integer=value=>{check(typeof value==='string'&&/^[1-9][0-9]*$/.test(value));return value;};
 const uid=value=>{check(typeof value==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value));return value;};
 const timestamp=value=>{check(typeof value==='string'&&!Number.isNaN(Date.parse(value)));return value;};
 const condition=(value,type)=>value.status?.conditions?.some(item=>item.type===type&&item.status==='True');
+
+export function recoveryRefusalMessage({verified=false,phase='invocation'}={}){
+  return verified&&RECOVERY_REFUSAL_PHASES.has(phase)?`Wedding database incident recovery refused (phase: ${phase}).\n`:'Wedding database incident recovery refused.\n';
+}
+
+export function hasPrelossWitness(kustomization){
+  return kustomization.status?.history?.some(item=>item.lastReconciled===PRELOSS_TARGET_TIME&&item.lastReconciledStatus==='ReconciliationSucceeded'&&item.digest===PRELOSS_RECONCILIATION_DIGEST&&item.metadata?.originRevision==='v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9')===true;
+}
 
 function exactObject(value,{apiVersion,kind,name}){
   check(value?.apiVersion===apiVersion&&value.kind===kind);
@@ -306,7 +317,7 @@ function sourceState(){
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.metadata.creationTimestamp==='2026-05-23T01:52:44Z');
   check(kustomization.spec?.force===false&&kustomization.spec.suspend!==true&&condition(kustomization,'Ready'));
-  check(kustomization.status?.history?.some(item=>item.lastReconciled===PRELOSS_TARGET_TIME&&item.lastReconciledStatus==='ReconciliationSucceeded'&&item.digest===PRELOSS_RECONCILIATION_DIGEST&&item.metadata?.originRevision==='v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9'));
+  check(hasPrelossWitness(kustomization));
   const appPolicy=object('ciliumnetworkpolicies.cilium.io','app');
   check(appPolicy.metadata.uid===LIVE_APP_POLICY_UID&&appPolicy.metadata.creationTimestamp==='2026-06-16T18:14:37Z');
   check(appPolicy.spec?.endpointSelector&&Object.keys(appPolicy.spec.endpointSelector).length===0);
@@ -582,8 +593,10 @@ function recordProof({config,source,recovery,before,after,recovered,liveBefore,m
 }
 
 function run(){
-  const config=verifyCandidate(),source=sourceState();
+  const config=verifyCandidate();recoveryInvocationVerified=true;recoveryPhase='source-state';
+  const source=sourceState();recoveryPhase='before-backup';
   const before=backup(config,'before',source);
+  recoveryPhase='restore-and-merge';
   let recovery,recoveredInventory,recovered,liveBefore,merge,mergePrimary,error,schemaCleanupError,resumeError,cleanupError;
   try{
     recovery=createRecovery(config,source);
@@ -608,13 +621,15 @@ function run(){
   try{resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}
   if(error||schemaCleanupError||resumeError||cleanupError)throw Error('refused');
+  recoveryPhase='after-backup';
   const after=backup(config,'after',source);
+  recoveryPhase='proof';
   recordProof({config,source,recovery,before,after,recovered,liveBefore,merge});
   return {restored:true,currentClusterUid:source.currentClusterUid,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,beforeBackupUid:before.uid,afterBackupUid:after.uid,recovered,liveBefore,merge,cleanup:true};
 }
 
 function runCleanup(){
-  const config=verifyCandidate();
+  const config=verifyCandidate();recoveryInvocationVerified=true;recoveryPhase='cleanup';
   let schemaCleanupError,resumeError,cleanupError,resumed=false,schemaCleaned=false;
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   const owner=kustomization.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION];
@@ -642,5 +657,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
     check(process.argv.length===2||(process.argv.length===3&&['--cleanup','--verify-source'].includes(process.argv[2])));
     const result=process.argv[2]==='--verify-source'?(verifyCandidate(),{sourceVerified:true}):process.argv[2]==='--cleanup'?runCleanup():run();
     process.stdout.write(JSON.stringify(result)+'\n');
-  }catch{process.stderr.write('Wedding database incident recovery refused.\n');process.exitCode=2;}
+  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase}));process.exitCode=2;}
 }
