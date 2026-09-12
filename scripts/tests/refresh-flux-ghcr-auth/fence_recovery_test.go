@@ -140,10 +140,10 @@ func TestFenceReleaseCommandsMirrorTheReleaseTheyStandInFor(t *testing.T) {
 	t.Parallel()
 	script := readRepositoryFile(t, "scripts/refresh-flux-ghcr-auth.sh")
 
-	command := functionBody(t, script, "fence_kustomization_release_command")
+	command := functionBody(t, script, "fence_kustomization_release_patch")
 	split := strings.Index(command, "\n  else\n")
 	if split < 0 {
-		t.Fatal("expected fence_kustomization_release_command to branch child vs parent")
+		t.Fatal("expected fence_kustomization_release_patch to branch child vs parent")
 	}
 	childCommand, parentCommand := command[:split], command[split:]
 

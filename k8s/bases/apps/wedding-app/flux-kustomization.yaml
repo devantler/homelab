@@ -15,7 +15,10 @@ spec:
   path: .
   prune: true
   wait: true
-  force: true
+  # Never let an immutable tenant-manifest change delete and recreate the
+  # stateful CNPG Cluster. Resources that genuinely require replacement must
+  # opt in individually with the Flux force annotation.
+  force: false
   # This Kustomization applies wedding-db (a CNPG `Cluster`) from the tenant's
   # own artifact, so `wait: true` health-checks it. kstatus marks a CNPG Cluster
   # NotReady for the whole of any rolling update, and CNPG rolls every instance
