@@ -41,12 +41,14 @@ spec:
             path: /spec/replicas
             value: 2
           - op: add
-            path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+            path: /spec/template/spec/affinity
             value:
-              - labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: kustomize-controller
-                topologyKey: kubernetes.io/hostname
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app: kustomize-controller
+                    topologyKey: kubernetes.io/hostname
       # Run kustomize-/helm-/notification-controller active/standby (HA) for
       # node-failure resilience: each binary runs --enable-leader-election and
       # holds a coordination.k8s.io Lease, so a 2nd replica is a warm standby (one
@@ -89,12 +91,14 @@ spec:
             path: /spec/replicas
             value: 2
           - op: add
-            path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+            path: /spec/template/spec/affinity
             value:
-              - labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: helm-controller
-                topologyKey: kubernetes.io/hostname
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app: helm-controller
+                    topologyKey: kubernetes.io/hostname
       - target:
           kind: Deployment
           name: notification-controller
@@ -103,12 +107,14 @@ spec:
             path: /spec/replicas
             value: 2
           - op: add
-            path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+            path: /spec/template/spec/affinity
             value:
-              - labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: notification-controller
-                topologyKey: kubernetes.io/hostname
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app: notification-controller
+                    topologyKey: kubernetes.io/hostname
       # Spread the four Flux controllers across worker nodes. The three
       # replicated controller patches above require each active/standby pair to
       # use different hostnames. This additional aggregate spread distributes
