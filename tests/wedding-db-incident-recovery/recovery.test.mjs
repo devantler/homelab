@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {
   buildBackup,
+  buildControllerRestartPatch,
   buildMergeSQL,
   buildRecoveryResources,
   buildResumePatch,
@@ -16,6 +17,7 @@ import {
 const CURRENT_UID='afea05ff-7daa-4d80-99a6-f2d696cbc3f1';
 const SOURCE_UID='9cd2ba9b-c7bf-43e2-bd2d-a5c7c139fafb';
 const BACKUP_UID='549fe940-b119-4010-bdc8-fa8e6ebc93ae';
+const CONTROLLER_UID='48c6521a-483a-4de9-895a-bae1a61ea25e';
 
 function fixture(){
   return {
@@ -99,6 +101,32 @@ test('application suspension ownership is bound to one workflow attempt',()=>{
   ]);
   assert.equal(buildSuspendPatch({resourceVersion:'279825100',kustomizationUid:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48',owner})[1].value,'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48');
   assert.throws(()=>buildSuspendPatch({resourceVersion:'0',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),/refused/);
+});
+
+test('controller handoff restart is atomic and bound to this incident',()=>{
+  const restartToken='wedding-db-recovery-34710000000-1';
+  assert.deepEqual(buildControllerRestartPatch({resourceVersion:'279824733',deploymentUid:CONTROLLER_UID,annotationsPresent:true,restartToken}),[
+    {op:'test',path:'/metadata/resourceVersion',value:'279824733'},
+    {op:'test',path:'/metadata/uid',value:CONTROLLER_UID},
+    {op:'add',path:'/spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt',value:restartToken},
+  ]);
+  assert.deepEqual(buildControllerRestartPatch({resourceVersion:'279824733',deploymentUid:CONTROLLER_UID,annotationsPresent:false,restartToken}),[
+    {op:'test',path:'/metadata/resourceVersion',value:'279824733'},
+    {op:'test',path:'/metadata/uid',value:CONTROLLER_UID},
+    {op:'add',path:'/spec/template/metadata/annotations',value:{}},
+    {op:'add',path:'/spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt',value:restartToken},
+  ]);
+  assert.throws(()=>buildControllerRestartPatch({resourceVersion:'279824733',deploymentUid:CURRENT_UID,annotationsPresent:true,restartToken}),/refused/);
+  assert.throws(()=>buildControllerRestartPatch({resourceVersion:'279824733',deploymentUid:CONTROLLER_UID,annotationsPresent:true,restartToken:'manual'}),/refused/);
+});
+
+test('both Flux fences replace every pre-suspension controller before the application drains',async()=>{
+  const fs=await import('node:fs/promises');
+  const source=await fs.readFile(new URL('../../scripts/recover-wedding-db-incident.mjs',import.meta.url),'utf8');
+  const suspension=source.slice(source.indexOf('function suspendApplication'),source.indexOf('function resumeApplication'));
+  assert.match(suspension,/acquireFence\(PARENT_NAMESPACE[\s\S]*acquireFence\(NAMESPACE[\s\S]*restartKustomizeController\(config\)[\s\S]*scale','deployment'/);
+  assert.match(source,/rollout','status','deployment\.apps\/'\+FLUX_CONTROLLER/);
+  assert.match(source,/every\(oldUid=>!pods\.some\(pod=>pod\.metadata\?\.uid===oldUid\)\)/);
 });
 
 test('current and restored backups are distinct, run-owned plugin backups',()=>{

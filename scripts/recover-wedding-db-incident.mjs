@@ -7,6 +7,9 @@ const NAMESPACE='wedding-app';
 const PARENT_NAMESPACE='flux-system';
 const PARENT_KUSTOMIZATION='apps';
 const PARENT_KUSTOMIZATION_UID='7a4f35ea-01c8-460e-aefe-6fdf6d10eb48';
+const FLUX_CONTROLLER='kustomize-controller';
+const FLUX_CONTROLLER_UID='48c6521a-483a-4de9-895a-bae1a61ea25e';
+const FLUX_CONTROLLER_RESTART_PATH='/spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt';
 const LIVE_CLUSTER='wedding-db';
 const LIVE_DEPLOYMENT='wedding-app';
 const LIVE_KUSTOMIZATION='wedding-app';
@@ -117,6 +120,18 @@ export function buildResumePatch({kustomizationUid,owner}){
     {op:'add',path:'/spec/suspend',value:false},
     {op:'remove',path:RECOVERY_OWNER_PATH},
     {op:'remove',path:RECOVERY_RECONCILE_PATH},
+  ];
+}
+
+export function buildControllerRestartPatch({resourceVersion,deploymentUid,annotationsPresent,restartToken}){
+  integer(resourceVersion);
+  check(deploymentUid===FLUX_CONTROLLER_UID&&typeof annotationsPresent==='boolean');
+  check(/^wedding-db-recovery-[1-9][0-9]*-[1-9][0-9]*$/.test(restartToken));
+  return [
+    {op:'test',path:'/metadata/resourceVersion',value:resourceVersion},
+    {op:'test',path:'/metadata/uid',value:deploymentUid},
+    ...(annotationsPresent?[]:[{op:'add',path:'/spec/template/metadata/annotations',value:{}}]),
+    {op:'add',path:FLUX_CONTROLLER_RESTART_PATH,value:restartToken},
   ];
 }
 
@@ -241,10 +256,12 @@ function optionalObject(resource,name){
   return output.length?JSON.parse(output.toString('utf8')):null;
 }
 
-function list(resource,selector){
-  const value=JSON.parse(kubectl(['--namespace',NAMESPACE,'get',resource,'--selector',selector,'--output=json','--request-timeout=20s']).toString('utf8'));
+function listAt(namespace,resource,selector){
+  const value=JSON.parse(kubectl(['--namespace',namespace,'get',resource,'--selector',selector,'--output=json','--request-timeout=20s']).toString('utf8'));
   check(typeof value?.apiVersion==='string'&&Array.isArray(value.items)&&value.items.length<=32);return value.items;
 }
+
+function list(resource,selector){return listAt(NAMESPACE,resource,selector);}
 
 function verifyCandidate(){
   check(process.env.GITHUB_REPOSITORY==='devantler-tech/platform'&&process.env.GITHUB_EVENT_NAME==='workflow_dispatch');
@@ -396,9 +413,64 @@ function proveApplicationFences(config){
   check(fenceOwner(child,LIVE_KUSTOMIZATION_UID,config)===owner);
 }
 
+function assertControllerReady(controller,{restartToken}={}){
+  check(controller.apiVersion==='apps/v1'&&controller.kind==='Deployment');
+  check(controller.metadata?.name===FLUX_CONTROLLER&&controller.metadata.namespace===PARENT_NAMESPACE);
+  check(controller.metadata.uid===FLUX_CONTROLLER_UID&&controller.metadata.creationTimestamp==='2026-05-23T00:41:46Z'&&!controller.metadata.deletionTimestamp);
+  check(typeof controller.metadata.resourceVersion==='string'&&Number.isSafeInteger(controller.metadata.generation));
+  check(controller.spec?.replicas===1&&controller.spec.selector?.matchLabels?.app===FLUX_CONTROLLER);
+  check(controller.status?.observedGeneration===controller.metadata.generation&&controller.status.updatedReplicas===1&&controller.status.readyReplicas===1&&controller.status.availableReplicas===1);
+  check(controller.spec.template?.metadata?.annotations&&typeof controller.spec.template.metadata.annotations==='object');
+  if(restartToken)check(controller.spec.template.metadata.annotations['kubectl.kubernetes.io/restartedAt']===restartToken);
+}
+
+function assertReadyControllerPods(pods,expected){
+  check(pods.length===expected);
+  for(const pod of pods)check(pod.metadata?.namespace===PARENT_NAMESPACE&&!pod.metadata.deletionTimestamp&&uid(pod.metadata.uid)&&condition(pod,'Ready'));
+}
+
+function restartKustomizeController(config){
+  proveApplicationFences(config);
+  const beforeController=objectAt(PARENT_NAMESPACE,'deployments.apps',FLUX_CONTROLLER);
+  assertControllerReady(beforeController);
+  const beforePods=listAt(PARENT_NAMESPACE,'pods','app='+FLUX_CONTROLLER);
+  assertReadyControllerPods(beforePods,1);
+  const oldUids=new Set(beforePods.map(pod=>pod.metadata.uid));
+  const restartToken=`wedding-db-recovery-${integer(config.run)}-${integer(config.attempt)}`;
+  const patch=buildControllerRestartPatch({
+    resourceVersion:beforeController.metadata.resourceVersion,
+    deploymentUid:beforeController.metadata.uid,
+    annotationsPresent:typeof beforeController.spec.template.metadata.annotations==='object',
+    restartToken,
+  });
+  try{
+    kubectl(['--namespace',PARENT_NAMESPACE,'patch','deployment.apps',FLUX_CONTROLLER,'--type=json','--patch='+JSON.stringify(patch)]);
+  }catch{
+    assertControllerReady(objectAt(PARENT_NAMESPACE,'deployments.apps',FLUX_CONTROLLER),{restartToken});
+  }
+  kubectl(['--namespace',PARENT_NAMESPACE,'rollout','status','deployment.apps/'+FLUX_CONTROLLER,'--timeout=10m'],{timeout:630000});
+  const end=Date.now()+5*60*1000;
+  while(Date.now()<end){
+    proveApplicationFences(config);
+    const controller=objectAt(PARENT_NAMESPACE,'deployments.apps',FLUX_CONTROLLER);
+    const pods=listAt(PARENT_NAMESPACE,'pods','app='+FLUX_CONTROLLER);
+    const current=pods.filter(pod=>!pod.metadata?.deletionTimestamp);
+    if([...oldUids].every(oldUid=>!pods.some(pod=>pod.metadata?.uid===oldUid))){
+      assertControllerReady(controller,{restartToken});
+      assertReadyControllerPods(current,1);
+      return;
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
+  }
+  throw Error('refused');
+}
+
 function suspendApplication(config){
   acquireFence(PARENT_NAMESPACE,PARENT_KUSTOMIZATION,PARENT_KUSTOMIZATION_UID,config);
   acquireFence(NAMESPACE,LIVE_KUSTOMIZATION,LIVE_KUSTOMIZATION_UID,config);
+  // Suspension cannot cancel a reconciliation that already started. Replacing
+  // every controller process under both fences drains that cached work first.
+  restartKustomizeController(config);
   kubectl(['--namespace',NAMESPACE,'scale','deployment',LIVE_DEPLOYMENT,'--replicas=0']);
   const end=Date.now()+5*60*1000;let stable=0;
   while(Date.now()<end){
