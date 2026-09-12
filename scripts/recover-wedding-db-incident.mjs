@@ -52,7 +52,7 @@ const condition=(value,type)=>value.status?.conditions?.some(item=>item.type===t
 
 export function recoveryRefusalMessage({verified=false,phase='invocation',checkpoint}={}){
   if(!verified||!RECOVERY_REFUSAL_PHASES.has(phase))return 'Wedding database incident recovery refused.\n';
-  const detail=RECOVERY_REFUSAL_CHECKPOINTS.has(checkpoint)?`; checkpoint: ${checkpoint}`:'';
+  const detail=phase==='restore-and-merge'&&RECOVERY_REFUSAL_CHECKPOINTS.has(checkpoint)?`; checkpoint: ${checkpoint}`:'';
   return `Wedding database incident recovery refused (phase: ${phase}${detail}).\n`;
 }
 
@@ -625,8 +625,8 @@ function run(){
     recoveryReplayTimestamp=validateRecoveryReplayTimestamp(recoveredInventory.value.recoveryReplayTimestamp,{replacementCreatedAt:source.replacementCreatedAt});
     recoveryCheckpoint='recovered-core-inventory';
     recovered=validateCoreInventory(recoveredInventory.value,{requireMeaningful:true});
-    const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     recoveryCheckpoint='live-inventory-query';
+    const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     const liveInventory=inventory(livePrimary,source.database,{requireMeaningful:false});
     recoveryCheckpoint='live-core-inventory';
     liveBefore=validateCoreInventory(liveInventory.value,{requireMeaningful:false});
@@ -655,10 +655,10 @@ function run(){
   try{resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}
   if(error||schemaCleanupError||resumeError||cleanupError){
-    recoveryCheckpoint=error?errorCheckpoint:schemaCleanupError?'drop-staging-schema':resumeError?'resume-application':'cleanup-recovery';
+    recoveryCheckpoint=schemaCleanupError?'drop-staging-schema':resumeError?'resume-application':cleanupError?'cleanup-recovery':errorCheckpoint;
     throw Error('refused');
   }
-  recoveryPhase='after-backup';
+  recoveryCheckpoint=undefined;recoveryPhase='after-backup';
   const after=backup(config,'after',source);
   recoveryPhase='proof';
   recordProof({config,source,recovery,before,after,recovered,recoveryReplayTimestamp,liveBefore,merge});
