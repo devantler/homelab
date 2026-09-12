@@ -21,6 +21,10 @@
 #     reads as narrowed; alternation belongs inside the one subject regex, where the
 #     subject guards judge it.
 #   - that entry names a non-empty `issuer` and a non-empty `subject`.
+#   - the trusted Wedding and AS Coaching tenant artifacts follow the governed
+#     `>=1.0.0` semver stream. The platform owns their signer and namespace
+#     boundaries; restoring a tag or digest would reintroduce a platform PR for
+#     every tenant release and is therefore rejected by the rendered-tree guard.
 #
 # IT JUDGES THE KUSTOMIZE BUILD, NOT THE SOURCE FILES — MEASURED, NOT PREFERRED. A first
 # version scanned `k8s/**/*.yaml` with yq and was bypassed five ways in one review
@@ -82,6 +86,13 @@ readonly REQUIRED_URL_PREFIX='oci://ghcr.io/devantler-tech/'
 # the literal regex text the manifests carry (the `.` escaped), not evaluated.
 readonly REQUIRED_ISSUER='^https://token\.actions\.githubusercontent\.com$'
 readonly REQUIRED_SUBJECT_PREFIX='^https://github\.com/devantler-tech/'
+readonly REQUIRED_TENANT_STREAM_SEMVER='>=1.0.0'
+readonly WEDDING_STREAM_URL='oci://ghcr.io/devantler-tech/wedding-app/manifests'
+readonly ASCOACHING_STREAM_URL='oci://ghcr.io/devantler-tech/ascoachingogvaner/manifests'
+# KRO preserves this placeholder in the rendered ResourceGraphDefinition; every
+# Tenant instance resolves it to its own trusted repository name at runtime.
+# shellcheck disable=SC2016
+readonly TEMPLATED_TENANT_STREAM_URL='oci://ghcr.io/devantler-tech/${schema.spec.name}/manifests'
 # Where the cluster overlays and the Flux roots they name live (seam for the test's
 # discovery fixture; the roots are resolved relative to this directory).
 readonly K8S_DIR="${OCI_VERIFY_K8S_DIR:-$REPO_ROOT/k8s}"
@@ -218,6 +229,7 @@ fi
 # `read`'s whitespace splitting (which shifted every column right of the first empty one
 # and produced wrong-reason messages). `-` is decoded back to empty below.
 #   url  name  has_verify  provider  identities_type  identities_count  incomplete_entries
+#   issuer  subject  ref_type  ref_key_count  ref_semver
 readonly YQ_ROWS='[.. | select(type == "!!map" and .kind == "OCIRepository")]
   | .[]
   | [
@@ -230,7 +242,10 @@ readonly YQ_ROWS='[.. | select(type == "!!map" and .kind == "OCIRepository")]
       (([.spec.verify.matchOIDCIdentity | select(type == "!!seq") | .[]
           | select(((.issuer // "") == "") or ((.subject // "") == ""))] | length) | tostring),
       ((.spec.verify.matchOIDCIdentity | select(type == "!!seq") | .[0].issuer) // ""),
-      ((.spec.verify.matchOIDCIdentity | select(type == "!!seq") | .[0].subject) // "")
+      ((.spec.verify.matchOIDCIdentity | select(type == "!!seq") | .[0].subject) // ""),
+      (.spec.ref | type),
+      ((((.spec.ref | select(type == "!!map") | keys | length) // 0)) | tostring),
+      ((.spec.ref | select(type == "!!map") | .semver) // "")
     ]
   | map(sub("^$", "-"))
   | join("	")'
@@ -260,10 +275,11 @@ while IFS= read -r root; do
     fail "$label: yq could not read the render, so its OCIRepositories are UNKNOWN: $(tr '\n' ' ' <"$work/rows.err")"
     continue
   fi
-  while IFS=$'\t' read -r url name has_verify provider ids_type ids_count incomplete issuer subject; do
+  while IFS=$'\t' read -r url name has_verify provider ids_type ids_count incomplete issuer subject ref_type ref_key_count ref_semver; do
     [ -n "$url" ] || continue
     url="$(decode "$url")"; name="$(decode "$name")"; provider="$(decode "$provider")"
     ids_type="$(decode "$ids_type")"; issuer="$(decode "$issuer")"; subject="$(decode "$subject")"
+    ref_type="$(decode "$ref_type")"; ref_semver="$(decode "$ref_semver")"
     [ -n "$url$name" ] || continue
     url="$(normalise_url "$url")"
     # The second pattern is the literal characters `${` — a Flux substitution marker,
@@ -281,6 +297,14 @@ while IFS= read -r root; do
       *) continue ;;
     esac
     in_scope=$((in_scope + 1))
+    case "$url" in
+      "$WEDDING_STREAM_URL" | "$ASCOACHING_STREAM_URL" | "$TEMPLATED_TENANT_STREAM_URL")
+        if [ "$ref_type" != "!!map" ] || [ "$ref_key_count" -ne 1 ] || [ "$ref_semver" != "$REQUIRED_TENANT_STREAM_SEMVER" ]; then
+          fail "$label: OCIRepository $name ($url) must follow the governed release stream with exactly spec.ref.semver: $REQUIRED_TENANT_STREAM_SEMVER; tag, digest, mixed and missing selectors require a platform boundary change"
+          continue
+        fi
+        ;;
+    esac
     if reason="$(exempt_reason "$url")"; then
       seen_exempt="$seen_exempt$url
 "

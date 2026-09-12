@@ -9,7 +9,7 @@ metadata:
 spec:
   interval: 1m
   ref:
-    tag: 1.15.10
+    semver: ">=1.0.0"
   url: oci://ghcr.io/devantler-tech/wedding-app/manifests
   secretRef:
     name: ghcr-auth

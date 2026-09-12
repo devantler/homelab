@@ -978,8 +978,10 @@ cat >"$origin_stub" <<STUB
 #!/usr/bin/env bash
 set -euo pipefail
 # \$1=repo \$2=workflow \$3=version. Emit the THIRD origin field, which the two-field
-# stubs above never exercise.
-if [ -n "\${3:-}" ]; then
+# stubs above never exercise. First-party tenant manifests deliberately use unbounded
+# release streams now, so choose one consumer explicitly to retain coverage of the
+# resolver's pinned-origin disclaimer without coupling this test to live ref policy.
+if [ "\$1" = '.github' ]; then
   printf '%s\t%s\t%s\n' '$SHA_A' '$SHA_A' 'pinned'
 else
   printf '%s\t%s\t%s\n' '$SHA_A' '$SHA_A' 'inferred'
