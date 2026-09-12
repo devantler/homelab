@@ -7,6 +7,7 @@ const NAMESPACE='wedding-app';
 const LIVE_CLUSTER='wedding-db';
 const LIVE_DEPLOYMENT='wedding-app';
 const LIVE_KUSTOMIZATION='wedding-app';
+const LIVE_KUSTOMIZATION_UID='be31651e-fe0d-4826-9ffb-d41716a66720';
 const SOURCE_STORE='wedding-db';
 const SOURCE_STORE_UID='9cd2ba9b-c7bf-43e2-bd2d-a5c7c139fafb';
 const SOURCE_SECRET='wedding-db-backup-r2';
@@ -17,6 +18,9 @@ const PRELOSS_CLUSTER_UID='6b6d4879-e437-4ea5-a0cb-257de8edad00';
 const RECOVERY_MODE='full archive from backup 20260908T030001';
 const PROOF='wedding-db-data-recovery-proof';
 const RECOVERY_OWNER_ANNOTATION='devantler.tech/wedding-db-recovery-owner';
+const RECOVERY_RECONCILE_ANNOTATION='kustomize.toolkit.fluxcd.io/reconcile';
+const RECOVERY_OWNER_PATH='/metadata/annotations/devantler.tech~1wedding-db-recovery-owner';
+const RECOVERY_RECONCILE_PATH='/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile';
 const check=value=>{if(!value)throw Error('refused');return value;};
 const integer=value=>{check(typeof value==='string'&&/^[1-9][0-9]*$/.test(value));return value;};
 const uid=value=>{check(typeof value==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value));return value;};
@@ -224,6 +228,7 @@ function sourceState(){
   check(kubectl(['--namespace',NAMESPACE,'get','secret',SOURCE_SECRET,'--output=name','--request-timeout=20s']).toString('utf8').trim()==='secret/'+SOURCE_SECRET);
   check(!optionalObject('configmaps',PROOF));
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
+  check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.metadata.creationTimestamp==='2026-05-23T01:52:44Z');
   check(kustomization.spec?.force===false&&kustomization.spec.suspend!==true&&condition(kustomization,'Ready'));
   return recoverySource({cluster:object('clusters.postgresql.cnpg.io',LIVE_CLUSTER),store:object('objectstores.barmancloud.cnpg.io',SOURCE_STORE),backup:object('backups.postgresql.cnpg.io',PRELOSS_BACKUP)});
 }
@@ -287,16 +292,29 @@ function loadRecovered(primary,database,recovered,config){
 function suspendApplication(config){
   const owner=recoveryOwner(config.run,config.attempt);
   const current=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
-  check(current.spec?.suspend!==true&&!current.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]);
-  const patch={metadata:{annotations:{[RECOVERY_OWNER_ANNOTATION]:owner}},spec:{suspend:true}};
-  kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--field-manager=flux-client-side-apply','--type=merge','--patch='+JSON.stringify(patch)]);
+  check(current.metadata.uid===LIVE_KUSTOMIZATION_UID&&typeof current.metadata.resourceVersion==='string');
+  check(current.metadata.annotations&&typeof current.metadata.annotations==='object');
+  check(current.spec?.suspend!==true&&!current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]);
+  const patch=[
+    {op:'test',path:'/metadata/resourceVersion',value:current.metadata.resourceVersion},
+    {op:'test',path:'/metadata/uid',value:LIVE_KUSTOMIZATION_UID},
+    {op:'add',path:RECOVERY_OWNER_PATH,value:owner},
+    {op:'add',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
+    {op:'add',path:'/spec/suspend',value:true},
+  ];
+  kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--type=json','--patch='+JSON.stringify(patch)]);
   const suspended=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
-  check(suspended.spec?.suspend===true&&suspended.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]===owner);
+  check(suspended.metadata.uid===LIVE_KUSTOMIZATION_UID&&suspended.spec?.suspend===true);
+  check(suspended.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]===owner&&suspended.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
   kubectl(['--namespace',NAMESPACE,'scale','deployment',LIVE_DEPLOYMENT,'--replicas=0']);
-  const end=Date.now()+5*60*1000;
+  const end=Date.now()+5*60*1000;let stable=0;
   while(Date.now()<end){
     const deployment=object('deployments.apps',LIVE_DEPLOYMENT);
-    if((deployment.status?.replicas??0)===0&&list('pods','app.kubernetes.io/name=wedding-app').filter(pod=>!pod.metadata.deletionTimestamp).length===0)return;
+    const fence=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
+    check(fence.metadata.uid===LIVE_KUSTOMIZATION_UID&&fence.spec?.suspend===true);
+    check(fence.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]===owner&&fence.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
+    if((deployment.status?.replicas??0)===0&&list('pods','app.kubernetes.io/name=wedding-app').filter(pod=>!pod.metadata.deletionTimestamp).length===0)stable+=1;else stable=0;
+    if(stable>=2)return;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
   }
   throw Error('refused');
@@ -306,18 +324,28 @@ function resumeApplication(config){
   const owner=recoveryOwner(config.run,config.attempt);
   const current=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   if(!current.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION])return false;
-  check(current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]===owner);
+  check(current.metadata.uid===LIVE_KUSTOMIZATION_UID&&current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]===owner);
+  check(current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled'&&current.spec?.suspend===true);
   check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===CURRENT_CLUSTER_UID);
   let failed=false;
   try{kubectl(['--namespace',NAMESPACE,'scale','deployment',LIVE_DEPLOYMENT,'--replicas=2']);}catch{failed=true;}
-  const patch={metadata:{annotations:{[RECOVERY_OWNER_ANNOTATION]:null}},spec:{suspend:false}};
-  try{kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--field-manager=flux-client-side-apply','--type=merge','--patch='+JSON.stringify(patch)]);}catch{failed=true;}
+  const patch=[
+    {op:'test',path:'/metadata/uid',value:LIVE_KUSTOMIZATION_UID},
+    {op:'test',path:RECOVERY_OWNER_PATH,value:owner},
+    {op:'test',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
+    {op:'test',path:'/spec/suspend',value:true},
+    {op:'add',path:'/spec/suspend',value:false},
+    {op:'remove',path:RECOVERY_OWNER_PATH},
+    {op:'remove',path:RECOVERY_RECONCILE_PATH},
+  ];
+  try{kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--type=json','--patch='+JSON.stringify(patch)]);}catch{failed=true;}
   try{kubectl(['--namespace',NAMESPACE,'rollout','status','deployment/'+LIVE_DEPLOYMENT,'--timeout=10m'],{timeout:630000});}catch{failed=true;}
   try{
     const restored=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
     const deployment=object('deployments.apps',LIVE_DEPLOYMENT);
-    check(restored.spec?.suspend===false&&!restored.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]);
-    check(deployment.spec?.replicas===2&&deployment.status?.availableReplicas===2);
+    check(restored.metadata.uid===LIVE_KUSTOMIZATION_UID&&restored.spec?.suspend===false);
+    check(!restored.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!restored.metadata?.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
+    check(deployment.spec?.replicas===2&&deployment.status?.availableReplicas>=2);
   }catch{failed=true;}
   check(!failed);
   return true;
