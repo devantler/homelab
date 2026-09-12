@@ -2002,14 +2002,14 @@ const (
 // disjoint from the kubescape HelmRelease, so the delta is unchanged by rebasing
 // onto it.
 //
-// RENDERER PROVENANCE: PENDING CI on the merged tree. The constant below still
-// holds the previous aggregate, so CI's validator reports the merged tree's
-// aggregate as its single unapproved entry; that value replaces the constant in
-// the follow-up commit. This host's renderer is unapproved, so no local digest
-// is claimed.
+// RENDERER PROVENANCE: the value below was read from CI's own failure on job
+// 103623182789 at 26519900 (the merge of main 8756f2ad with this repair), which
+// renders under the approved SHA256-verified toolchain and reported ZERO missing
+// and ZERO duplicate rendered resources; its single unapproved entry was this
+// aggregate. This host's renderer is unapproved, so no local digest is claimed.
 //
 // Previous aggregate: 8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e.
-const expectedRenderedSurfaceSHA = "8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e"
+const expectedRenderedSurfaceSHA = "cb6b02a3a5fc88e97b09a3388eb036cf8ab508a48f38d48998eb1afcc9542522"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
