@@ -15,6 +15,7 @@ import {
   recoveryOwnerAttempt,
   recoverySource,
   validateCoreInventory,
+  validateRecoveryReplayTimestamp,
 } from '../../scripts/recover-wedding-db-incident.mjs';
 
 const CURRENT_UID='afea05ff-7daa-4d80-99a6-f2d696cbc3f1';
@@ -64,7 +65,7 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
     currentClusterUid:CURRENT_UID,sourceUid:SOURCE_UID,prelossBackupUid:BACKUP_UID,
     database:'wedding',imageName:'ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie',storageClass:'longhorn-wffc',size:'1Gi',
     endpoint:'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com',prelossBackupId:'20260908T030001',
-    prelossTargetTime:'2026-09-09T01:57:41Z',prelossTargetTimeline:'162',
+    replacementCreatedAt:'2026-09-09T01:58:14Z',prelossTargetTime:'2026-09-09T01:57:41Z',prelossTargetTimeline:'162',
   });
   for(const change of [
     value=>{value.cluster.metadata.uid='11111111-1111-1111-1111-111111111111';},
@@ -84,12 +85,12 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
   }
 });
 
-test('recovery cluster reaches the witnessed pre-loss point from the exact base',()=>{
+test('recovery cluster replays the maximum available WAL from the exact base',()=>{
   const source=recoverySource(fixture());
   const {cluster,policy}=buildRecoveryResources({run:'34710000000',attempt:'1',...source});
   assert.equal(cluster.metadata.name,'wedding-db-preloss-34710000000-1');
   assert.deepEqual(cluster.spec.bootstrap,{recovery:{source:'wedding-db-preloss',recoveryTarget:{
-    backupID:'20260908T030001',targetTime:'2026-09-09T01:57:41Z',targetTLI:'162',
+    backupID:'20260908T030001',targetTLI:'162',
   }}});
   assert.deepEqual(cluster.spec.externalClusters,[{name:'wedding-db-preloss',plugin:{name:'barman-cloud.cloudnative-pg.io',parameters:{barmanObjectName:'wedding-db',serverName:'wedding-db'}}}]);
   assert.equal(cluster.spec.plugins,undefined);
@@ -98,6 +99,15 @@ test('recovery cluster reaches the witnessed pre-loss point from the exact base'
   assert.deepEqual(policy.spec.endpointSelector.matchLabels,{'cnpg.io/cluster':cluster.metadata.name});
   assert.deepEqual(policy.spec.egress.find(item=>item.toFQDNs).toFQDNs,[{matchName:'0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com'}]);
   assert.equal(policy.spec.egress.some(item=>item.toEndpoints),false);
+});
+
+test('recovery proof accepts base-only or replay evidence before replacement',()=>{
+  const bounds={replacementCreatedAt:'2026-09-09T01:58:14Z'};
+  assert.equal(validateRecoveryReplayTimestamp('2026-09-08T10:11:23.519651Z',bounds),'2026-09-08T10:11:23.519651Z');
+  assert.equal(validateRecoveryReplayTimestamp('2026-09-08T02:59:59Z',bounds),'2026-09-08T02:59:59Z');
+  assert.equal(validateRecoveryReplayTimestamp(null,bounds),null);
+  assert.throws(()=>validateRecoveryReplayTimestamp('2026-09-09T01:58:14Z',bounds),/refused/);
+  assert.throws(()=>validateRecoveryReplayTimestamp(undefined,bounds),/refused/);
 });
 
 test('application suspension ownership is bound to one workflow attempt',()=>{

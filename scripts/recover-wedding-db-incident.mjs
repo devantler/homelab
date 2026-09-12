@@ -27,7 +27,7 @@ const PRELOSS_CLUSTER_UID='6b6d4879-e437-4ea5-a0cb-257de8edad00';
 const PRELOSS_TARGET_TIME='2026-09-09T01:57:41Z';
 const PRELOSS_TARGET_TIMELINE='162';
 const PRELOSS_RECONCILIATION_DIGEST='sha256:022128434868723705c489546f68ba344a9cbe9e5c2b930a404d8aa2122ad9c7';
-const RECOVERY_MODE='point in time 2026-09-09T01:57:41Z from backup 20260908T030001 on timeline 162';
+const RECOVERY_MODE='latest consistent archived WAL after backup 20260908T030001 on timeline 162';
 const PROOF='wedding-db-data-recovery-proof';
 const RECOVERY_OWNER_ANNOTATION='devantler.tech/wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_ANNOTATION='kustomize.toolkit.fluxcd.io/reconcile';
@@ -48,6 +48,13 @@ export function recoveryRefusalMessage({verified=false,phase='invocation'}={}){
 
 export function hasPrelossWitness(kustomization){
   return kustomization.status?.history?.some(item=>item.lastReconciled===PRELOSS_TARGET_TIME&&item.lastReconciledStatus==='ReconciliationSucceeded'&&item.digest===PRELOSS_RECONCILIATION_DIGEST&&item.metadata?.originRevision==='v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9')===true;
+}
+
+export function validateRecoveryReplayTimestamp(value,{replacementCreatedAt}){
+  const upper=timestamp(replacementCreatedAt);
+  if(value===null)return null;
+  const replay=timestamp(value);check(Date.parse(replay)<Date.parse(upper));
+  return replay;
 }
 
 function exactObject(value,{apiVersion,kind,name}){
@@ -93,7 +100,7 @@ export function recoverySource({cluster,store,backup}){
   check(typeof imageName==='string'&&/^ghcr\.io\/cloudnative-pg\/postgresql:18\.[0-9]+-[a-z0-9-]+$/.test(imageName));
   check(cluster.spec.storage?.storageClass==='longhorn-wffc');
   check(/^[1-9][0-9]*(?:Mi|Gi|Ti)$/.test(cluster.spec.storage?.size));
-  return {currentClusterUid:cluster.metadata.uid,sourceUid:store.metadata.uid,prelossBackupUid:backup.metadata.uid,database:'wedding',imageName,storageClass:'longhorn-wffc',size:cluster.spec.storage.size,endpoint,prelossBackupId:backup.status.backupId,prelossTargetTime:PRELOSS_TARGET_TIME,prelossTargetTimeline:PRELOSS_TARGET_TIMELINE};
+  return {currentClusterUid:cluster.metadata.uid,sourceUid:store.metadata.uid,prelossBackupUid:backup.metadata.uid,database:'wedding',imageName,storageClass:'longhorn-wffc',size:cluster.spec.storage.size,endpoint,prelossBackupId:backup.status.backupId,replacementCreatedAt:cluster.metadata.creationTimestamp,prelossTargetTime:PRELOSS_TARGET_TIME,prelossTargetTimeline:PRELOSS_TARGET_TIMELINE};
 }
 
 function labels(run,attempt){
@@ -161,7 +168,7 @@ export function buildRecoveryResources({run,attempt,endpoint,imageName,storageCl
     instances:1,imageName,enableSuperuserAccess:false,enablePDB:false,
     storage:{size:'2Gi',storageClass},
     resources:{requests:{cpu:'50m',memory:'256Mi'},limits:{cpu:'1',memory:'1Gi'}},
-    bootstrap:{recovery:{source:'wedding-db-preloss',recoveryTarget:{backupID:prelossBackupId,targetTime:prelossTargetTime,targetTLI:prelossTargetTimeline}}},
+    bootstrap:{recovery:{source:'wedding-db-preloss',recoveryTarget:{backupID:prelossBackupId,targetTLI:prelossTargetTimeline}}},
     externalClusters:[{name:'wedding-db-preloss',plugin:{name:'barman-cloud.cloudnative-pg.io',parameters:{barmanObjectName:SOURCE_STORE,serverName:'wedding-db'}}}],
   }};
   const policy={apiVersion:'cilium.io/v2',kind:'CiliumNetworkPolicy',metadata:{name,namespace:NAMESPACE,labels:owned},spec:{endpointSelector:{matchLabels:{'cnpg.io/cluster':name}},egress:[
@@ -348,6 +355,7 @@ function backup(config,phase,source){
 }
 
 const INVENTORY_SQL=`SELECT json_build_object(
+  'recoveryReplayTimestamp',pg_last_xact_replay_timestamp(),
   'guestPairs',COALESCE((SELECT json_agg(json_build_object('code',code,'name',name,'createdAt',created_at) ORDER BY code) FROM guest_pairs),'[]'::json),
   'guests',COALESCE((SELECT json_agg(json_build_object('pairCode',pairs.code,'name',guests.name,'attending',guests.attending,'dietaryNotes',guests.dietary_notes,'updatedAt',guests.updated_at) ORDER BY pairs.code,guests.name) FROM guests JOIN guest_pairs pairs ON pairs.id=guests.guest_pair_id),'[]'::json),
   'roomBookings',COALESCE((SELECT json_agg(json_build_object('pairCode',pairs.code,'requested',bookings.requested,'notes',bookings.notes,'updatedAt',bookings.updated_at) ORDER BY pairs.code) FROM room_bookings bookings JOIN guest_pairs pairs ON pairs.id=bookings.guest_pair_id),'[]'::json)
@@ -550,7 +558,7 @@ function createRecovery(config,source){
   kubectl(['--namespace',NAMESPACE,'wait','cluster.postgresql.cnpg.io/'+name,'--for=condition=Ready','--timeout=30m'],{timeout:1830000});
   const cluster=object('clusters.postgresql.cnpg.io',name);check(cluster.status?.readyInstances===1&&cluster.status.currentPrimary&&condition(cluster,'Ready'));
   const target=cluster.spec?.bootstrap?.recovery?.recoveryTarget;
-  check(target?.backupID===source.prelossBackupId&&target.targetTime===source.prelossTargetTime&&target.targetTLI===source.prelossTargetTimeline&&!target.exclusive&&!cluster.spec.plugins);
+  check(target?.backupID===source.prelossBackupId&&target.targetTLI===source.prelossTargetTimeline&&!target.targetTime&&!target.targetImmediate&&!target.targetLSN&&!target.targetName&&!target.targetXID&&!target.exclusive&&!cluster.spec.plugins);
   return {name,uid:uid(cluster.metadata.uid),primary:cluster.status.currentPrimary};
 }
 
@@ -581,9 +589,9 @@ function cleanupRecovery(config,recovery){
   for(const name of names)check(!optionalObject('clusters.postgresql.cnpg.io',name)&&list('persistentvolumeclaims','cnpg.io/cluster='+name).length===0&&!optionalObject('ciliumnetworkpolicies.cilium.io',name));
 }
 
-function recordProof({config,source,recovery,before,after,recovered,liveBefore,merge}){
+function recordProof({config,source,recovery,before,after,recovered,recoveryReplayTimestamp,liveBefore,merge}){
   const manifest={apiVersion:'v1',kind:'ConfigMap',metadata:{name:PROOF,namespace:NAMESPACE,labels:{'app.kubernetes.io/name':'wedding-db','app.kubernetes.io/managed-by':'github-actions'}},data:{
-    version:'2',recoveryMode:RECOVERY_MODE,recoveryTargetTime:source.prelossTargetTime,recoveryTargetTimeline:source.prelossTargetTimeline,replacementCreatedAt:'2026-09-09T01:58:14Z',currentClusterUid:source.currentClusterUid,prelossClusterUid:PRELOSS_CLUSTER_UID,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,
+    version:'3',recoveryMode:RECOVERY_MODE,recoveryReplayTimestamp:recoveryReplayTimestamp??'none-after-base-backup',prelossReconciliationWitness:source.prelossTargetTime,recoveryArchiveUpperBound:source.replacementCreatedAt,recoveryTargetTimeline:source.prelossTargetTimeline,replacementCreatedAt:source.replacementCreatedAt,currentClusterUid:source.currentClusterUid,prelossClusterUid:PRELOSS_CLUSTER_UID,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,
     beforeBackupUid:before.uid,afterBackupUid:after.uid,recoveredGuests:String(recovered.guests),recoveredMeaningfulGuests:String(recovered.meaningfulGuests),recoveredRoomBookings:String(recovered.roomBookings),
     liveBeforeMeaningfulGuests:String(liveBefore.meaningfulGuests),liveBeforeRoomBookings:String(liveBefore.roomBookings),restoredGuestAnswers:String(merge.restoredGuestAnswers),restoredRoomBookings:String(merge.restoredRoomBookings),
     finalMeaningfulGuestAnswers:String(merge.finalMeaningfulGuestAnswers),finalRoomBookings:String(merge.finalRoomBookings),githubRun:config.run,githubAttempt:config.attempt,
@@ -597,10 +605,11 @@ function run(){
   const source=sourceState();recoveryPhase='before-backup';
   const before=backup(config,'before',source);
   recoveryPhase='restore-and-merge';
-  let recovery,recoveredInventory,recovered,liveBefore,merge,mergePrimary,error,schemaCleanupError,resumeError,cleanupError;
+  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,schemaCleanupError,resumeError,cleanupError;
   try{
     recovery=createRecovery(config,source);
     recoveredInventory=inventory(recovery.primary,source.database,{requireMeaningful:true});
+    recoveryReplayTimestamp=validateRecoveryReplayTimestamp(recoveredInventory.value.recoveryReplayTimestamp,{replacementCreatedAt:source.replacementCreatedAt});
     recovered=validateCoreInventory(recoveredInventory.value,{requireMeaningful:true});
     const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     const liveInventory=inventory(livePrimary,source.database,{requireMeaningful:false});
@@ -624,8 +633,8 @@ function run(){
   recoveryPhase='after-backup';
   const after=backup(config,'after',source);
   recoveryPhase='proof';
-  recordProof({config,source,recovery,before,after,recovered,liveBefore,merge});
-  return {restored:true,currentClusterUid:source.currentClusterUid,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,beforeBackupUid:before.uid,afterBackupUid:after.uid,recovered,liveBefore,merge,cleanup:true};
+  recordProof({config,source,recovery,before,after,recovered,recoveryReplayTimestamp,liveBefore,merge});
+  return {restored:true,currentClusterUid:source.currentClusterUid,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,beforeBackupUid:before.uid,afterBackupUid:after.uid,recoveryReplayTimestamp,recovered,liveBefore,merge,cleanup:true};
 }
 
 function runCleanup(){
