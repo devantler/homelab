@@ -7,6 +7,7 @@ import {
   buildMergeSQL,
   buildRecoveryResources,
   buildResumePatch,
+  buildSchemaCleanupSQL,
   buildSuspendPatch,
   recoveryOwner,
   recoveryOwnerAttempt,
@@ -159,10 +160,24 @@ test('merge restores pre-loss answers only where the replacement has no newer an
   assert.match(sql,/live\.attending IS NULL AND live\.dietary_notes IS NULL/);
   assert.match(sql,/recovered\.attending IS NOT NULL OR recovered\.dietary_notes IS NOT NULL/);
   assert.match(sql,/ON CONFLICT \(guest_pair_id\) DO NOTHING/);
+  assert.match(sql,/BEGIN;\nSET TRANSACTION ISOLATION LEVEL READ COMMITTED;/);
   assert.match(sql,/LOCK TABLE guest_pairs, guests, room_bookings IN ACCESS EXCLUSIVE MODE/);
+  assert.match(sql,/CREATE TEMP TABLE incident_restore_counts/);
+  assert.match(sql,/INSERT INTO incident_restore_counts[\s\S]*;\nSELECT json_build_object\(/);
+  assert.match(sql,/'restoredGuestAnswers',\(SELECT restored_guest_answers FROM incident_restore_counts\)/);
   assert.match(sql,/DROP SCHEMA incident_restore_34710000000_1 CASCADE/);
   assert.doesNotMatch(sql,/sessions|admin_sessions/);
   assert.throws(()=>buildMergeSQL('public'),/refused/);
+});
+
+test('cleanup retries the run-owned schema after application fences are released',async()=>{
+  assert.equal(buildSchemaCleanupSQL('34710000000','2'),'DROP SCHEMA IF EXISTS incident_restore_34710000000_1 CASCADE;\nDROP SCHEMA IF EXISTS incident_restore_34710000000_2 CASCADE;');
+  assert.throws(()=>buildSchemaCleanupSQL('34710000000','101'),/refused/);
+  const fs=await import('node:fs/promises');
+  const source=await fs.readFile(new URL('../../scripts/recover-wedding-db-incident.mjs',import.meta.url),'utf8');
+  const cleanup=source.slice(source.indexOf('function runCleanup'),source.indexOf("if(process.argv[1]"));
+  assert.match(cleanup,/if\(owner\)recoveryOwnerAttempt\(config\.run,config\.attempt,owner\)/);
+  assert.ok(cleanup.lastIndexOf('cleanupSchema()')>cleanup.indexOf('resumeApplication'));
 });
 
 test('Wedding reconciliation cannot globally force-recreate stateful data',async()=>{

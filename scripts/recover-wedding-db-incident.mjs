@@ -194,9 +194,16 @@ function schemaName(run,attempt){
   check(/^incident_restore_[1-9][0-9]*_[1-9][0-9]*$/.test(value)&&value.length<=63);return value;
 }
 
+export function buildSchemaCleanupSQL(run,attempt){
+  integer(run);integer(attempt);
+  const last=Number(attempt);check(Number.isSafeInteger(last)&&last<=100);
+  return Array.from({length:last},(_,index)=>`DROP SCHEMA IF EXISTS ${schemaName(run,String(index+1))} CASCADE;`).join('\n');
+}
+
 export function buildMergeSQL(schema){
   check(/^incident_restore_[1-9][0-9]*_[1-9][0-9]*$/.test(schema)&&schema.length<=63);
   return `BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 LOCK TABLE guest_pairs, guests, room_bookings IN ACCESS EXCLUSIVE MODE;
 DO $guard$
 BEGIN
@@ -213,6 +220,10 @@ BEGIN
       EXCEPT SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered)
   ) THEN RAISE EXCEPTION 'guest identity mismatch'; END IF;
 END $guard$;
+CREATE TEMP TABLE incident_restore_counts (
+  restored_guest_answers bigint NOT NULL,
+  restored_room_bookings bigint NOT NULL
+) ON COMMIT DROP;
 WITH restored_guests AS (
   UPDATE guests live
   SET attending=recovered.attending,dietary_notes=recovered.dietary_notes,updated_at=recovered.updated_at
@@ -228,9 +239,11 @@ WITH restored_guests AS (
   ON CONFLICT (guest_pair_id) DO NOTHING
   RETURNING id
 )
+INSERT INTO incident_restore_counts (restored_guest_answers,restored_room_bookings)
+SELECT (SELECT count(*) FROM restored_guests),(SELECT count(*) FROM restored_bookings);
 SELECT json_build_object(
-  'restoredGuestAnswers',(SELECT count(*) FROM restored_guests),
-  'restoredRoomBookings',(SELECT count(*) FROM restored_bookings),
+  'restoredGuestAnswers',(SELECT restored_guest_answers FROM incident_restore_counts),
+  'restoredRoomBookings',(SELECT restored_room_bookings FROM incident_restore_counts),
   'finalMeaningfulGuestAnswers',(SELECT count(*) FROM guests WHERE attending IS NOT NULL OR dietary_notes IS NOT NULL),
   'finalRoomBookings',(SELECT count(*) FROM room_bookings)
 );
@@ -357,6 +370,10 @@ function loadRecovered(primary,database,recovered,config){
 
 function dropStagingSchema(primary,database,config){
   psql(primary,database,`DROP SCHEMA IF EXISTS ${schemaName(config.run,config.attempt)} CASCADE;`);
+}
+
+function dropRunStagingSchemas(primary,database,config){
+  psql(primary,database,buildSchemaCleanupSQL(config.run,config.attempt));
 }
 
 function fenceOwner(state,uidValue,config){
@@ -590,19 +607,23 @@ function run(){
 
 function runCleanup(){
   const config=verifyCandidate();
-  let schemaCleanupError,resumeError,cleanupError,resumed=false;
+  let schemaCleanupError,resumeError,cleanupError,resumed=false,schemaCleaned=false;
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   const owner=kustomization.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION];
+  if(owner)recoveryOwnerAttempt(config.run,config.attempt,owner);
+  const cleanupSchema=()=>{
+    const cluster=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER);check(cluster.metadata.uid===CURRENT_CLUSTER_UID);
+    const primary=cluster.status?.currentPrimary;check(/^wedding-db-[1-9][0-9]*$/.test(primary));
+    dropRunStagingSchemas(primary,'wedding',config);schemaCleaned=true;schemaCleanupError=undefined;
+  };
   if(owner){
-    const attempt=recoveryOwnerAttempt(config.run,config.attempt,owner);
     try{
       check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.spec?.suspend===true&&kustomization.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
-      const cluster=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER);check(cluster.metadata.uid===CURRENT_CLUSTER_UID);
-      const primary=cluster.status?.currentPrimary;check(/^wedding-db-[1-9][0-9]*$/.test(primary));
-      dropStagingSchema(primary,'wedding',{run:config.run,attempt});
+      cleanupSchema();
     }catch(candidate){schemaCleanupError=candidate;}
   }
   try{resumed=resumeApplication(config);}catch(candidate){resumeError=candidate;}
+  if(!schemaCleaned){try{cleanupSchema();}catch(candidate){schemaCleanupError=candidate;}}
   try{cleanupRecovery(config);}catch(candidate){cleanupError=candidate;}
   if(schemaCleanupError||resumeError||cleanupError)throw Error('refused');
   return {cleanup:true,resumed};
