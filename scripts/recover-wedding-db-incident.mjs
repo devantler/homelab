@@ -84,6 +84,30 @@ function recoveryName(run,attempt){
 
 export function recoveryOwner(run,attempt){return integer(run)+'/'+integer(attempt);}
 
+export function buildSuspendPatch({resourceVersion,kustomizationUid,owner}){
+  integer(resourceVersion);check(kustomizationUid===LIVE_KUSTOMIZATION_UID&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
+  return [
+    {op:'test',path:'/metadata/resourceVersion',value:resourceVersion},
+    {op:'test',path:'/metadata/uid',value:kustomizationUid},
+    {op:'add',path:RECOVERY_OWNER_PATH,value:owner},
+    {op:'add',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
+    {op:'add',path:'/spec/suspend',value:true},
+  ];
+}
+
+export function buildResumePatch({kustomizationUid,owner}){
+  check(kustomizationUid===LIVE_KUSTOMIZATION_UID&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
+  return [
+    {op:'test',path:'/metadata/uid',value:kustomizationUid},
+    {op:'test',path:RECOVERY_OWNER_PATH,value:owner},
+    {op:'test',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
+    {op:'test',path:'/spec/suspend',value:true},
+    {op:'add',path:'/spec/suspend',value:false},
+    {op:'remove',path:RECOVERY_OWNER_PATH},
+    {op:'remove',path:RECOVERY_RECONCILE_PATH},
+  ];
+}
+
 export function buildRecoveryResources({run,attempt,endpoint,imageName,storageClass,prelossBackupId}){
   check(storageClass==='longhorn-wffc');
   check(typeof imageName==='string'&&/^ghcr\.io\/cloudnative-pg\/postgresql:18\.[0-9]+-[a-z0-9-]+$/.test(imageName));
@@ -295,13 +319,7 @@ function suspendApplication(config){
   check(current.metadata.uid===LIVE_KUSTOMIZATION_UID&&typeof current.metadata.resourceVersion==='string');
   check(current.metadata.annotations&&typeof current.metadata.annotations==='object');
   check(current.spec?.suspend!==true&&!current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]);
-  const patch=[
-    {op:'test',path:'/metadata/resourceVersion',value:current.metadata.resourceVersion},
-    {op:'test',path:'/metadata/uid',value:LIVE_KUSTOMIZATION_UID},
-    {op:'add',path:RECOVERY_OWNER_PATH,value:owner},
-    {op:'add',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
-    {op:'add',path:'/spec/suspend',value:true},
-  ];
+  const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,owner});
   kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--type=json','--patch='+JSON.stringify(patch)]);
   const suspended=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   check(suspended.metadata.uid===LIVE_KUSTOMIZATION_UID&&suspended.spec?.suspend===true);
@@ -329,15 +347,7 @@ function resumeApplication(config){
   check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===CURRENT_CLUSTER_UID);
   let failed=false;
   try{kubectl(['--namespace',NAMESPACE,'scale','deployment',LIVE_DEPLOYMENT,'--replicas=2']);}catch{failed=true;}
-  const patch=[
-    {op:'test',path:'/metadata/uid',value:LIVE_KUSTOMIZATION_UID},
-    {op:'test',path:RECOVERY_OWNER_PATH,value:owner},
-    {op:'test',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
-    {op:'test',path:'/spec/suspend',value:true},
-    {op:'add',path:'/spec/suspend',value:false},
-    {op:'remove',path:RECOVERY_OWNER_PATH},
-    {op:'remove',path:RECOVERY_RECONCILE_PATH},
-  ];
+  const patch=buildResumePatch({kustomizationUid:current.metadata.uid,owner});
   try{kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--type=json','--patch='+JSON.stringify(patch)]);}catch{failed=true;}
   try{kubectl(['--namespace',NAMESPACE,'rollout','status','deployment/'+LIVE_DEPLOYMENT,'--timeout=10m'],{timeout:630000});}catch{failed=true;}
   try{

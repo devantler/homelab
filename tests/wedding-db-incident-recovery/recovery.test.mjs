@@ -5,6 +5,8 @@ import {
   buildBackup,
   buildMergeSQL,
   buildRecoveryResources,
+  buildResumePatch,
+  buildSuspendPatch,
   recoveryOwner,
   recoverySource,
   validateCoreInventory,
@@ -71,8 +73,26 @@ test('recovery cluster replays the complete predecessor archive from the exact b
 });
 
 test('application suspension ownership is bound to one workflow attempt',()=>{
-  assert.equal(recoveryOwner('34710000000','1'),'34710000000/1');
+  const owner=recoveryOwner('34710000000','1');
+  assert.equal(owner,'34710000000/1');
   assert.throws(()=>recoveryOwner('34710000000','0'),/refused/);
+  assert.deepEqual(buildSuspendPatch({resourceVersion:'279780874',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),[
+    {op:'test',path:'/metadata/resourceVersion',value:'279780874'},
+    {op:'test',path:'/metadata/uid',value:'be31651e-fe0d-4826-9ffb-d41716a66720'},
+    {op:'add',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner',value:owner},
+    {op:'add',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile',value:'disabled'},
+    {op:'add',path:'/spec/suspend',value:true},
+  ]);
+  assert.deepEqual(buildResumePatch({kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),[
+    {op:'test',path:'/metadata/uid',value:'be31651e-fe0d-4826-9ffb-d41716a66720'},
+    {op:'test',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner',value:owner},
+    {op:'test',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile',value:'disabled'},
+    {op:'test',path:'/spec/suspend',value:true},
+    {op:'add',path:'/spec/suspend',value:false},
+    {op:'remove',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner'},
+    {op:'remove',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile'},
+  ]);
+  assert.throws(()=>buildSuspendPatch({resourceVersion:'0',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),/refused/);
 });
 
 test('current and restored backups are distinct, run-owned plugin backups',()=>{
