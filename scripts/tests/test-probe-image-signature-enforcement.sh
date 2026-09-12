@@ -263,6 +263,22 @@ for bad_arg_case in node unsigned signed; do
 done
 check 'rejects a leading-dash node or ref that talosctl would read as a flag'
 
+# talosctl reads a comma-separated -n value as SEVERAL targets. Accepting one would
+# fan every query, pull and cleanup out across production nodes, and a refusal on
+# one node plus an acceptance on another could still combine into PASS. So the
+# node must be a single target, rejected before anything reaches a node.
+for node_list in '10.0.1.1,10.0.1.2' '10.0.1.1, 10.0.1.2' '10.0.1.1 10.0.1.2'; do
+  reset_fixtures
+  set +e
+  out="$("${script}" --confirm --node "${node_list}" --unsigned-image "${unsigned}" --signed-image "${signed}" 2>&1)"
+  rc=$?
+  set -e
+  [[ ${rc} -eq 2 ]] || fail "node list '${node_list}' should exit 2, got ${rc}: ${out}"
+  require_text "${out}" 'single node' "node list '${node_list}'"
+  [[ ! -e "${fixtures}/pulled.txt" ]] || fail "node list '${node_list}' reached the node"
+done
+check 'rejects a comma- or space-separated node list: the probe targets exactly one node'
+
 # --- Node and query failures are INCONCLUSIVE, never PASS or FAIL -----------
 reset_fixtures
 : >"${fixtures}/unreachable"
@@ -383,6 +399,23 @@ set -e
 [[ ${rc} -eq 0 ]] || fail "exact-repository rule should reach PASS, got ${rc}: ${out}"
 require_text "${out}" 'PASS:' 'exact-repository rule'
 check 'an exact-repository rule governs the tagged ref, as it does on the node'
+
+# Registry domains are case-insensitive, and Talos matches them that way. An
+# upper-case domain must still select the rule it selects on the node, or the probe
+# reports "matches NO running rule" for a ref the node would verify.
+reset_fixtures
+upper_unsigned='GHCR.IO/devantler-tech/probe-throwaway-unsigned:t1'
+upper_signed='GHCR.IO/devantler-tech/probe-throwaway-signed:t1'
+stage_pull "${upper_unsigned}" 1 'image verification failed: no valid signature found'
+stage_pull "${upper_signed}" 0 ''
+set +e
+out="$("${script}" --confirm --node "${node}" \
+  --unsigned-image "${upper_unsigned}" --signed-image "${upper_signed}" 2>&1)"
+rc=$?
+set -e
+[[ ${rc} -eq 0 ]] || fail "upper-case registry domain should reach PASS, got ${rc}: ${out}"
+require_text "${out}" 'PASS:' 'upper-case registry domain'
+check 'an upper-case registry domain matches its rule, as it does on the node'
 
 # --- Both controls must exercise the SAME rule ------------------------------
 # A signed ref under a different first-match rule cannot exclude a rule that

@@ -158,6 +158,13 @@ if ((confirmed == 0)); then
 fi
 
 [[ -n "${node}" ]] || fail_usage '--node is required'
+# talosctl reads a comma-separated -n value as SEVERAL targets. That would fan every
+# query, pull and cleanup out across production nodes, and a refusal on one node
+# combined with an acceptance on another could still produce PASS. The advertised
+# one-node blast radius and the verdict both depend on exactly one target.
+case "${node}" in
+  *,* | *[[:space:]]*) fail_usage "--node '${node}' names more than one target — pass a single node, since talosctl would fan the probe out across every listed node" ;;
+esac
 [[ -n "${unsigned_image}" ]] || fail_usage '--unsigned-image is required'
 [[ -n "${signed_image}" ]] || fail_usage '--signed-image is required'
 [[ "${unsigned_image}" != "${signed_image}" ]] ||
@@ -271,9 +278,33 @@ ref_repository() {
   printf '%s' "${repo}"
 }
 
+# Registry domains are case-insensitive and Talos matches them that way, so the
+# domain — the first path component, when it looks like a host (contains '.' or
+# ':', or is localhost) — is lowercased before matching. The rest of the
+# repository path is left alone. This lives here rather than in ref_repository,
+# which also strips refs out of diagnostics exactly as the node echoes them.
+lowercase_registry_domain() {
+  local repo="$1" domain rest
+  case "${repo}" in
+    */*) ;;
+    *)
+      printf '%s' "${repo}"
+      return 0
+      ;;
+  esac
+  domain="${repo%%/*}"
+  rest="${repo#*/}"
+  case "${domain}" in
+    *.* | *:* | localhost)
+      domain="$(printf '%s' "${domain}" | tr '[:upper:]' '[:lower:]')"
+      ;;
+  esac
+  printf '%s/%s' "${domain}" "${rest}"
+}
+
 match_rule() {
   local repo pattern
-  repo="$(ref_repository "$1")"
+  repo="$(lowercase_registry_domain "$(ref_repository "$1")")"
   while IFS= read -r pattern; do
     [[ -n "${pattern}" ]] || continue
     # The rule patterns are containerd globs. `case` glob-matches with the same
