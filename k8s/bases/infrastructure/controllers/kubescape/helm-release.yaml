@@ -12,7 +12,7 @@ spec:
   chart:
     spec:
       chart: kubescape-operator
-      version: 1.40.3
+      version: 1.40.4
       sourceRef:
         kind: HelmRepository
         name: kubescape
@@ -46,7 +46,7 @@ spec:
     clusterName: ${cluster_name}
     capabilities:
       configurationScan: enable
-      # Chart 1.40.3 derives clusterData.continuousPostureScan from this value,
+      # Chart 1.40.4 derives clusterData.continuousPostureScan from this value,
       # and Kubescape only stores detailed WorkloadConfigurationScan results
       # when that runtime flag is true. Summaries are stored unconditionally,
       # so disabling this produces deceptively fresh summaries while detailed
@@ -90,7 +90,7 @@ spec:
       # it means "do not use the network at all", and the posture scanner needs
       # the network for one thing it cannot work without: its policy artifacts.
       #
-      # What the chart does with it (1.40.3, templates/kubescape/deployment.yaml
+      # What the chart does with it (1.40.4, templates/kubescape/deployment.yaml
       # and templates/_common.tpl):
       #   - `enable` is the ONLY thing that sets `KS_OFFLINE=true` on the
       #     scanner. With that set, the scanner does not fetch the Regolibrary
@@ -200,7 +200,7 @@ spec:
     # failure mode is a scan that aborts before persisting results. This value
     # fully replaces the chart default, so it must stay complete.
     kubescapeScheduler:
-      # Preserve the current posture window explicitly. Chart 1.40.3 hashes one
+      # Preserve the current posture window explicitly. Chart 1.40.4 hashes one
       # shared cluster seed for both scheduler defaults, so posture and
       # vulnerability scans otherwise render to the same instant and contend
       # for the storage service's single-writer SQLite database.
@@ -256,7 +256,7 @@ spec:
   # Drop all capabilities and pin a CONTAINER-level seccompProfile on the four
   # kubescape-operator Deployments. Post-rendered rather than set through
   # `values` above because the chart gives us no choice: kubescape-operator
-  # 1.40.3 exposes NO securityContext value anywhere in values.yaml (zero
+  # 1.40.4 exposes NO securityContext value anywhere in values.yaml (zero
   # occurrences), and each component's Deployment template HARDCODES the
   # container securityContext to exactly `allowPrivilegeEscalation: false`
   # + `readOnlyRootFilesystem: true` + `runAsNonRoot: true` — with no
@@ -308,3 +308,25 @@ spec:
                 path: /spec/template/spec/containers/0/securityContext/seccompProfile
                 value:
                   type: RuntimeDefault
+          # Chart 1.40.4 removes this rule from the node-agent ClusterRole, but
+          # node-agent still lists ApplicationProfiles during its storage
+          # readiness gate. Restore exactly the read-only rule from 1.40.3 so
+          # the upgrade does not expand the pre-existing platform boundary.
+          # Keep NetworkNeighborhoods paired with ApplicationProfiles because
+          # the runtime sensor reads both derived workload-profile resources.
+          - target:
+              kind: ClusterRole
+              name: ^node-agent$
+            patch: |
+              - op: add
+                path: /rules/-
+                value:
+                  apiGroups:
+                    - spdx.softwarecomposition.kubescape.io
+                  resources:
+                    - applicationprofiles
+                    - networkneighborhoods
+                  verbs:
+                    - get
+                    - list
+                    - watch

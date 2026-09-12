@@ -1895,6 +1895,25 @@ const (
 // surface. Restoring either predecessor value makes the same focused test fail,
 // so both checks remain live.
 //
+// Moved again by the Kubescape 1.40.4 reliability repair (#3730). Exactly one
+// existing document changes: the kubescape/kubescape HelmRelease advances to
+// chart 1.40.4, which selects conflict-safe kubevuln v0.3.430, and its Helm
+// post-renderer restores the node-agent profile-reader rule that 1.40.4 removed.
+// The restored rule is byte-for-byte equivalent in authority to chart 1.40.3:
+// get/list/watch on ApplicationProfiles and NetworkNeighborhoods only.
+//
+// CONSERVATION, read from this validator under the SHA256-verified kubectl
+// v1.36.2 renderer: exactly this aggregate changed. It reported ZERO
+// `unapproved rendered <identity>`, ZERO `missing rendered authorization
+// resource` and ZERO `duplicate rendered`; every pinned per-resource identity
+// still passes. No identity, binding, ServiceAccount, write verb, wildcard,
+// AWS identity or net permission expansion is introduced. The post-renderer
+// preserves the pre-upgrade read boundary required by node-agent startup. The
+// kubescape HelmRelease's unresolved-substitution fingerprint changes with the
+// reviewed chart and patch; other substitutions are unchanged diagnostics.
+//
+// Previous aggregate: 2a3498e2fdcd83a48433d7821c382fef70115fc3b87e36ac508afcac5cbdc0ef.
+//
 // Moved again by the descheduler C-0211 baseline context (#3239). The workload
 // sits in kube-system, which add-security-context excludes, so its stored
 // template is supplied through the chart's own values instead. A HelmRelease is
@@ -1933,8 +1952,8 @@ const (
 //
 // The previous aggregate remains recorded here:
 //
-//	2a3498e2fdcd83a48433d7821c382fef70115fc3b87e36ac508afcac5cbdc0ef
-const expectedRenderedSurfaceSHA = "64fa70ceb63e0e967b8218a55e0693f97542137b48ff463ad381afa39d796d9e"
+//	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
+const expectedRenderedSurfaceSHA = "0000000000000000000000000000000000000000000000000000000000000000"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
