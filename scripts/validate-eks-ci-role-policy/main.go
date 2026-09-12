@@ -1969,7 +1969,26 @@ const (
 // mismatch.
 //
 // Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
-const expectedRenderedSurfaceSHA = "814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1"
+// That rollout established aggregate:
+//
+//	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
+//
+// Moved again by the Wedding data-loss repair after rebasing onto #3677. The
+// only additional rendered identity change is the wedding-app Kustomization's
+// global `force` value moving from true to false, plus its explanatory comment.
+// The validator reported no unapproved, missing, or duplicate identity after
+// admitting that Kustomization hash and this aggregate. This removes
+// replacement authority and adds no Role, ClusterRole, binding,
+// ServiceAccount, subject, verb, wildcard, AWS identity, or permission.
+//
+// RENDERER PROVENANCE: reproduced locally with the official kubectl v1.36.2
+// Darwin arm64 binary (SHA256
+// 4408c85c83fd3a31adaa555bdf3c7a6c81f74b19449a9060ba31ab91926f023d),
+// whose embedded Kustomize is v5.8.1, matching CI's pinned versions. Previous
+// aggregate:
+//
+//	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
+const expectedRenderedSurfaceSHA = "8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.

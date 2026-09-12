@@ -4,6 +4,9 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const NAMESPACE='wedding-app';
+const PARENT_NAMESPACE='flux-system';
+const PARENT_KUSTOMIZATION='apps';
+const PARENT_KUSTOMIZATION_UID='7a4f35ea-01c8-460e-aefe-6fdf6d10eb48';
 const LIVE_CLUSTER='wedding-db';
 const LIVE_DEPLOYMENT='wedding-app';
 const LIVE_KUSTOMIZATION='wedding-app';
@@ -94,7 +97,7 @@ export function recoveryOwnerAttempt(run,currentAttempt,owner){
 }
 
 export function buildSuspendPatch({resourceVersion,kustomizationUid,owner}){
-  integer(resourceVersion);check(kustomizationUid===LIVE_KUSTOMIZATION_UID&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
+  integer(resourceVersion);check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
   return [
     {op:'test',path:'/metadata/resourceVersion',value:resourceVersion},
     {op:'test',path:'/metadata/uid',value:kustomizationUid},
@@ -105,7 +108,7 @@ export function buildSuspendPatch({resourceVersion,kustomizationUid,owner}){
 }
 
 export function buildResumePatch({kustomizationUid,owner}){
-  check(kustomizationUid===LIVE_KUSTOMIZATION_UID&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
+  check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
   return [
     {op:'test',path:'/metadata/uid',value:kustomizationUid},
     {op:'test',path:RECOVERY_OWNER_PATH,value:owner},
@@ -226,10 +229,12 @@ function kubectl(args,{input,timeout=30000,maxBytes=2*1024*1024}={}){
   return result.stdout;
 }
 
-function object(resource,name){
-  const value=JSON.parse(kubectl(['--namespace',NAMESPACE,'get',resource,name,'--output=json','--request-timeout=20s']).toString('utf8'));
+function objectAt(namespace,resource,name){
+  const value=JSON.parse(kubectl(['--namespace',namespace,'get',resource,name,'--output=json','--request-timeout=20s']).toString('utf8'));
   check(value&&typeof value==='object'&&!Array.isArray(value));return value;
 }
+
+function object(resource,name){return objectAt(NAMESPACE,resource,name);}
 
 function optionalObject(resource,name){
   const output=kubectl(['--namespace',NAMESPACE,'get',resource,name,'--ignore-not-found=true','--output=json','--request-timeout=20s']);
@@ -259,6 +264,9 @@ function verifyCandidate(){
 function sourceState(){
   check(kubectl(['--namespace',NAMESPACE,'get','secret',SOURCE_SECRET,'--output=name','--request-timeout=20s']).toString('utf8').trim()==='secret/'+SOURCE_SECRET);
   check(!optionalObject('configmaps',PROOF));
+  const parent=objectAt(PARENT_NAMESPACE,'kustomizations.kustomize.toolkit.fluxcd.io',PARENT_KUSTOMIZATION);
+  check(parent.metadata.uid===PARENT_KUSTOMIZATION_UID&&parent.metadata.creationTimestamp==='2026-05-23T00:41:58Z');
+  check(parent.spec?.suspend!==true&&condition(parent,'Ready')&&!parent.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!parent.metadata?.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.metadata.creationTimestamp==='2026-05-23T01:52:44Z');
   check(kustomization.spec?.force===false&&kustomization.spec.suspend!==true&&condition(kustomization,'Ready'));
@@ -334,24 +342,68 @@ function dropStagingSchema(primary,database,config){
   psql(primary,database,`DROP SCHEMA IF EXISTS ${schemaName(config.run,config.attempt)} CASCADE;`);
 }
 
-function suspendApplication(config){
-  const owner=recoveryOwner(config.run,config.attempt);
-  const current=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
-  check(current.metadata.uid===LIVE_KUSTOMIZATION_UID&&typeof current.metadata.resourceVersion==='string');
-  check(current.metadata.annotations&&typeof current.metadata.annotations==='object');
-  check(current.spec?.suspend!==true&&!current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]);
+function fenceOwner(state,uidValue,config){
+  check(state.metadata.uid===uidValue);
+  const owner=state.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION];
+  if(!owner)return null;
+  recoveryOwnerAttempt(config.run,config.attempt,owner);
+  check(state.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled'&&state.spec?.suspend===true);
+  return owner;
+}
+
+function acquireFence(namespace,name,uidValue,config){
+  const owner=recoveryOwner(config.run,config.attempt),end=Date.now()+5*60*1000;
+  let current;
+  while(Date.now()<end){
+    current=objectAt(namespace,'kustomizations.kustomize.toolkit.fluxcd.io',name);
+    check(current.metadata.uid===uidValue&&typeof current.metadata.resourceVersion==='string');
+    check(current.metadata.annotations&&typeof current.metadata.annotations==='object');
+    check(current.spec?.suspend!==true&&!current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]);
+    if(condition(current,'Ready')&&!condition(current,'Reconciling')&&current.status?.observedGeneration===current.metadata.generation)break;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
+  }
+  check(current&&Date.now()<end);
   const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,owner});
-  kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--type=json','--patch='+JSON.stringify(patch)]);
-  const suspended=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
-  check(suspended.metadata.uid===LIVE_KUSTOMIZATION_UID&&suspended.spec?.suspend===true);
-  check(suspended.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]===owner&&suspended.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
+  kubectl(['--namespace',namespace,'patch','kustomization.kustomize.toolkit.fluxcd.io',name,'--type=json','--patch='+JSON.stringify(patch)]);
+  let stableResourceVersion='';
+  for(let attempt=0;attempt<3;attempt+=1){
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
+    const fenced=objectAt(namespace,'kustomizations.kustomize.toolkit.fluxcd.io',name);
+    check(fenced.metadata.uid===uidValue&&fenced.spec?.suspend===true&&!condition(fenced,'Reconciling'));
+    check(fenced.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]===owner&&fenced.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
+    if(stableResourceVersion===fenced.metadata.resourceVersion)return;
+    stableResourceVersion=fenced.metadata.resourceVersion;
+  }
+  throw Error('refused');
+}
+
+function releaseFence(namespace,name,uidValue,config){
+  const current=objectAt(namespace,'kustomizations.kustomize.toolkit.fluxcd.io',name);
+  const owner=fenceOwner(current,uidValue,config);if(!owner)return false;
+  const patch=buildResumePatch({kustomizationUid:current.metadata.uid,owner});
+  kubectl(['--namespace',namespace,'patch','kustomization.kustomize.toolkit.fluxcd.io',name,'--type=json','--patch='+JSON.stringify(patch)]);
+  const released=objectAt(namespace,'kustomizations.kustomize.toolkit.fluxcd.io',name);
+  check(released.metadata.uid===uidValue&&released.spec?.suspend===false);
+  check(!released.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!released.metadata?.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
+  return true;
+}
+
+function proveApplicationFences(config){
+  const owner=recoveryOwner(config.run,config.attempt);
+  const parent=objectAt(PARENT_NAMESPACE,'kustomizations.kustomize.toolkit.fluxcd.io',PARENT_KUSTOMIZATION);
+  const child=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
+  check(fenceOwner(parent,PARENT_KUSTOMIZATION_UID,config)===owner);
+  check(fenceOwner(child,LIVE_KUSTOMIZATION_UID,config)===owner);
+}
+
+function suspendApplication(config){
+  acquireFence(PARENT_NAMESPACE,PARENT_KUSTOMIZATION,PARENT_KUSTOMIZATION_UID,config);
+  acquireFence(NAMESPACE,LIVE_KUSTOMIZATION,LIVE_KUSTOMIZATION_UID,config);
   kubectl(['--namespace',NAMESPACE,'scale','deployment',LIVE_DEPLOYMENT,'--replicas=0']);
   const end=Date.now()+5*60*1000;let stable=0;
   while(Date.now()<end){
     const deployment=object('deployments.apps',LIVE_DEPLOYMENT);
-    const fence=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
-    check(fence.metadata.uid===LIVE_KUSTOMIZATION_UID&&fence.spec?.suspend===true);
-    check(fence.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]===owner&&fence.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled');
+    proveApplicationFences(config);
     if((deployment.status?.replicas??0)===0&&list('pods','app.kubernetes.io/name=wedding-app').length===0)stable+=1;else stable=0;
     if(stable>=2)return;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
@@ -360,17 +412,17 @@ function suspendApplication(config){
 }
 
 function resumeApplication(config){
-  const current=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
-  if(!current.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION])return false;
-  const owner=current.metadata.annotations[RECOVERY_OWNER_ANNOTATION];
-  recoveryOwnerAttempt(config.run,config.attempt,owner);
-  check(current.metadata.uid===LIVE_KUSTOMIZATION_UID);
-  check(current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]==='disabled'&&current.spec?.suspend===true);
+  const child=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
+  const parent=objectAt(PARENT_NAMESPACE,'kustomizations.kustomize.toolkit.fluxcd.io',PARENT_KUSTOMIZATION);
+  const childOwner=fenceOwner(child,LIVE_KUSTOMIZATION_UID,config);
+  const parentOwner=fenceOwner(parent,PARENT_KUSTOMIZATION_UID,config);
+  if(!childOwner&&!parentOwner)return false;
+  if(!childOwner)check(child.spec?.suspend!==true&&!child.metadata?.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
   check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===CURRENT_CLUSTER_UID);
   let failed=false;
   try{kubectl(['--namespace',NAMESPACE,'scale','deployment',LIVE_DEPLOYMENT,'--replicas=2']);}catch{failed=true;}
-  const patch=buildResumePatch({kustomizationUid:current.metadata.uid,owner});
-  try{kubectl(['--namespace',NAMESPACE,'patch','kustomization.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION,'--type=json','--patch='+JSON.stringify(patch)]);}catch{failed=true;}
+  let childReleased=!childOwner;
+  if(childOwner){try{releaseFence(NAMESPACE,LIVE_KUSTOMIZATION,LIVE_KUSTOMIZATION_UID,config);childReleased=true;}catch{failed=true;}}
   try{kubectl(['--namespace',NAMESPACE,'rollout','status','deployment/'+LIVE_DEPLOYMENT,'--timeout=10m'],{timeout:630000});}catch{failed=true;}
   try{
     const restored=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
@@ -379,6 +431,7 @@ function resumeApplication(config){
     check(!restored.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!restored.metadata?.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
     check(deployment.spec?.replicas===2&&deployment.status?.availableReplicas>=2);
   }catch{failed=true;}
+  if(parentOwner&&childReleased&&!failed){try{releaseFence(PARENT_NAMESPACE,PARENT_KUSTOMIZATION,PARENT_KUSTOMIZATION_UID,config);}catch{failed=true;}}
   check(!failed);
   return true;
 }
@@ -448,6 +501,7 @@ function run(){
     mergePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     check(/^wedding-db-[1-9][0-9]*$/.test(mergePrimary));
     const schema=loadRecovered(mergePrimary,source.database,recoveredInventory.value,config);
+    proveApplicationFences(config);check(list('pods','app.kubernetes.io/name=wedding-app').length===0);
     const output=psql(mergePrimary,source.database,buildMergeSQL(schema));
     merge=JSON.parse(output.toString('utf8').trim());
     for(const key of ['restoredGuestAnswers','restoredRoomBookings','finalMeaningfulGuestAnswers','finalRoomBookings'])check(Number.isSafeInteger(merge[key])&&merge[key]>=0);

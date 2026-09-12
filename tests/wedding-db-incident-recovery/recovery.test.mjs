@@ -97,6 +97,7 @@ test('application suspension ownership is bound to one workflow attempt',()=>{
     {op:'remove',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner'},
     {op:'remove',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile'},
   ]);
+  assert.equal(buildSuspendPatch({resourceVersion:'279825100',kustomizationUid:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48',owner})[1].value,'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48');
   assert.throws(()=>buildSuspendPatch({resourceVersion:'0',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),/refused/);
 });
 
