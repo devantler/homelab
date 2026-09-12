@@ -100,7 +100,7 @@ stays quiet by design, exactly as the old Alertmanager did.
   independent of any Flux health gate, so relaxing that gate cannot silently
   remove this coverage.
 - **Velero maintenance OOMKills remain visible after a successful retry.**
-  `bases/infrastructure/controllers/coroot/cron-job-velero-maintenance-oom-alert.yaml`
+  `bases/components/coroot-velero-maintenance-oom-alert/cron-job-velero-maintenance-oom-alert.yaml`
   checks retained repository-maintenance pod status every 30 minutes. It alerts
   on an `OOMKilled` termination from the previous two hours even when a later
   Job for the same repository succeeds and restores `BackupRepository` readiness.

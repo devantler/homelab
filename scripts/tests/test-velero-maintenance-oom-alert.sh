@@ -11,6 +11,8 @@ readonly binding="${bundle_dir}/role-binding-velero-maintenance-oom-alert.yaml"
 readonly kustomization="${bundle_dir}/kustomization.yaml"
 readonly coroot_kustomization="${root_dir}/k8s/bases/infrastructure/controllers/coroot/kustomization.yaml"
 readonly hetzner_kustomization="${root_dir}/k8s/providers/hetzner/infrastructure/controllers/kustomization.yaml"
+readonly alerting_doc="${root_dir}/docs/dr/alerting.md"
+readonly documented_manifest='bases/components/coroot-velero-maintenance-oom-alert/cron-job-velero-maintenance-oom-alert.yaml'
 readonly real_webhook='https://hooks.test.invalid/delivery-target'
 readonly placeholder_webhook='https://example.invalid/no-slack-configured'
 
@@ -47,6 +49,11 @@ fi
 grep -Fq '../../../../bases/components/coroot-velero-maintenance-oom-alert' "$hetzner_kustomization" ||
   fail 'the Hetzner composition must enable the alert alongside Coroot and Velero'
 pass 'the alert is composed only where Coroot and Velero are both enabled'
+grep -Fq "\`${documented_manifest}\`" "$alerting_doc" ||
+  fail 'the alerting runbook does not point at the component manifest'
+[ -f "${root_dir}/k8s/${documented_manifest}" ] ||
+  fail 'the alerting runbook points at a manifest that does not exist'
+pass 'the alerting runbook points at the component manifest'
 [ "$(yq eval '.metadata.annotations["kustomize.toolkit.fluxcd.io/substitute"]' "$manifest")" = disabled ] ||
   fail 'CronJob must disable Flux substitution for its shell variables'
 grep -q 'velero-maintenance-oom-alert-webhook' <<<"$(yq eval "${pod_path}.volumes" "$manifest")" ||
