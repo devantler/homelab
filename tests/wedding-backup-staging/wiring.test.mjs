@@ -6,6 +6,14 @@ import path from 'node:path';
 import {fixture} from './runtime-fixture.mjs';
 const root=path.resolve(import.meta.dirname,'../..');
 const yaml=p=>JSON.parse(execFileSync('yq',['-o=json','.',path.join(root,p)],{encoding:'utf8'}));
+
+test('Wedding archive identity is isolated from retained predecessor WAL',()=>{
+ const overlay=yaml('k8s/providers/hetzner/apps/wedding-app/patches/flux-kustomization-protect-wedding-db.yaml');
+ const candidate=overlay.spec?.patches?.find(entry=>entry.target?.group==='postgresql.cnpg.io'&&entry.target.kind==='Cluster'&&entry.target.name==='wedding-db'&&entry.patch.trimStart().startsWith('- op:'));
+ assert.ok(candidate,'Wedding Cluster archive-incarnation patch is missing');
+ const operations=JSON.parse(execFileSync('yq',['-o=json','.'],{input:candidate.patch,encoding:'utf8'}));
+ assert.deepEqual(operations,[{op:'add',path:'/spec/plugins/0/parameters/serverName',value:'wedding-db-20260909'}]);
+});
 // Test-only resolution of scalar context references; the production proposal
 // contains no expression language beyond these direct input/step handoffs.
 function scalar(value,context){if(typeof value!=='string'||!value.startsWith('${{'))return value;const m=/^\$\{\{ ([a-zA-Z0-9_.-]+) \}\}$/.exec(value);assert.ok(m,'unsupported expression in proposed handoff');return m[1].split('.').reduce((v,k)=>v?.[k],context);}
@@ -34,7 +42,7 @@ for(const flag of [undefined,false])test('actual proposed omitted/false step doe
  const {child,reads}=await executeStep(t,flag);assert.equal(child.status,0);assert.equal(child.stderr,'');assert.equal(reads,'');assert.equal(child.stdout,'');
 });
 test('actual proposed true step uses the publisher digest and succeeds after wait',async t=>{
- const {child,reads}=await executeStep(t,true);assert.equal(child.status,0);assert.equal(child.stderr,'');assert.equal(JSON.parse(child.stdout).projectionEqual,true);assert.equal(reads.trim().split('\n').length,18);
+ const {child,reads}=await executeStep(t,true);assert.equal(child.status,0);assert.equal(child.stderr,'');assert.equal(JSON.parse(child.stdout).projectionEqual,true);assert.equal(reads.trim().split('\n').length,20);
 });
 for(const state of [{wait:'failure'},{publish:'failure'}])test('actual proposed true step refuses failed dependency before API reads '+JSON.stringify(state),async t=>{
  const {child,reads}=await executeStep(t,true,state);assert.equal(child.status,2);assert.equal(child.stderr,'');assert.deepEqual(JSON.parse(child.stdout),{verified:false});assert.equal(reads,'');

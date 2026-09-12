@@ -117,6 +117,16 @@ CSI snapshots need cluster-wide plumbing that the hetzner overlay adds:
 - When the next CNPG-backed app lands, copy the umami ExternalSecret next to
   its `Cluster` and point `barmanObjectStore.destinationPath` at a distinct
   `s3://${r2_bucket}/cnpg/<app>` prefix.
+- Give each CNPG Barman plugin an explicit `parameters.serverName` that
+  identifies the current logical Cluster incarnation. The plugin admission
+  webhook forbids this field on the `ObjectStore`; it belongs on the Cluster's
+  `spec.plugins` entry. Barman requires an empty archive for a new PostgreSQL
+  system ID, so reusing an implicit Cluster-name server after a restore or
+  replacement makes continuous WAL archiving fail with `Expected empty
+  archive`, even when base backups still report success. Keep the ObjectStore
+  destination path stable so retained recovery data remains available, and
+  advance the server name in the same reviewed recovery change that creates the
+  new Cluster. Do not change it for an ordinary rollout of a healthy Cluster.
 
 ## Local clusters: MinIO replaces R2
 

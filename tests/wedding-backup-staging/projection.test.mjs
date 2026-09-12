@@ -33,6 +33,7 @@ for(const [label,change] of [
  ['unverified source',d=>d.source.status.conditions.pop()],
  ['wrong mapping',d=>d.projection.spec.data[0].remoteRef.property='secret_access_key'],
  ['early cutover',d=>d.active.spec.configuration.destinationPath='s3://wedding-db-backups/cnpg/wedding-db'],
+ ['reused predecessor archive',d=>d.cluster.spec.plugins[0].parameters.serverName='wedding-db'],
  ['deleted seed',d=>d.seed.metadata.deletionTimestamp='2026-01-01T00:00:00Z']
 ])test(label+' refuses without payload output',async()=>{
  const h=harness(change);const result=await verifyProjection({...opts,enabled:'true'},h.deps);
