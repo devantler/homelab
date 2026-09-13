@@ -215,9 +215,9 @@ export function validateCoreInventory(value,{requireMeaningful=true}={}){
   check(Array.isArray(guestPairs)&&guestPairs.length>0&&guestPairs.length<=100);
   check(Array.isArray(guests)&&guests.length>0&&guests.length<=300);
   check(Array.isArray(roomBookings)&&roomBookings.length<=100);
-  const codes=new Set();
+  const codes=new Set(),pairNames=new Set();
   for(const pair of guestPairs){
-    check(pair&&typeof pair==='object'&&/^[A-Za-z0-9_-]{1,32}$/.test(pair.code));string(pair.name,255);timestamp(pair.createdAt);check(!codes.has(pair.code));codes.add(pair.code);
+    check(pair&&typeof pair==='object'&&/^[A-Za-z0-9_-]{1,32}$/.test(pair.code));string(pair.name,255);timestamp(pair.createdAt);check(!codes.has(pair.code)&&!pairNames.has(pair.name));codes.add(pair.code);pairNames.add(pair.name);
   }
   const guestKeys=new Set();let meaningfulGuests=0;
   for(const guest of guests){
@@ -252,17 +252,23 @@ LOCK TABLE guest_pairs, guests, room_bookings IN ACCESS EXCLUSIVE MODE;
 DO $guard$
 BEGIN
   IF EXISTS (
-    (SELECT code FROM ${schema}.guest_pairs EXCEPT SELECT code FROM guest_pairs)
-    UNION ALL
-    (SELECT code FROM guest_pairs EXCEPT SELECT code FROM ${schema}.guest_pairs)
-  ) THEN RAISE SQLSTATE 'P1001' USING MESSAGE = 'guest pair code mismatch'; END IF;
+    SELECT 1
+    FROM ${schema}.room_bookings recovered
+    JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+    LEFT JOIN guest_pairs live_pairs ON live_pairs.name=recovered_pairs.name
+    GROUP BY recovered.pair_code
+    HAVING count(live_pairs.id) <> 1
+  ) THEN RAISE SQLSTATE 'P1001' USING MESSAGE = 'room booking pair mapping mismatch'; END IF;
   IF EXISTS (
-    (SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered
-      EXCEPT SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id)
-    UNION ALL
-    (SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id
-      EXCEPT SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered)
-  ) THEN RAISE SQLSTATE 'P1002' USING MESSAGE = 'guest identity mismatch'; END IF;
+    SELECT 1
+    FROM ${schema}.guests recovered
+    JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+    LEFT JOIN guest_pairs live_pairs ON live_pairs.name=recovered_pairs.name
+    LEFT JOIN guests live ON live.guest_pair_id=live_pairs.id AND live.name=recovered.name
+    WHERE recovered.attending IS NOT NULL OR recovered.dietary_notes IS NOT NULL
+    GROUP BY recovered.pair_code,recovered.name
+    HAVING count(live.id) <> 1
+  ) THEN RAISE SQLSTATE 'P1002' USING MESSAGE = 'answered guest mapping mismatch'; END IF;
 END $guard$;
 CREATE TEMP TABLE incident_restore_counts (
   restored_guest_answers bigint NOT NULL,
@@ -271,7 +277,9 @@ CREATE TEMP TABLE incident_restore_counts (
 WITH restored_guests AS (
   UPDATE guests live
   SET attending=recovered.attending,dietary_notes=recovered.dietary_notes,updated_at=recovered.updated_at
-  FROM ${schema}.guests recovered JOIN guest_pairs pairs ON pairs.code=recovered.pair_code
+  FROM ${schema}.guests recovered
+  JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+  JOIN guest_pairs pairs ON pairs.name=recovered_pairs.name
   WHERE live.guest_pair_id=pairs.id AND live.name=recovered.name
     AND live.attending IS NULL AND live.dietary_notes IS NULL
     AND (recovered.attending IS NOT NULL OR recovered.dietary_notes IS NOT NULL)
@@ -279,7 +287,9 @@ WITH restored_guests AS (
 ), restored_bookings AS (
   INSERT INTO room_bookings (guest_pair_id,requested,notes,updated_at)
   SELECT pairs.id,recovered.requested,recovered.notes,recovered.updated_at
-  FROM ${schema}.room_bookings recovered JOIN guest_pairs pairs ON pairs.code=recovered.pair_code
+  FROM ${schema}.room_bookings recovered
+  JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+  JOIN guest_pairs pairs ON pairs.name=recovered_pairs.name
   ON CONFLICT (guest_pair_id) DO NOTHING
   RETURNING id
 )
