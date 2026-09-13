@@ -252,10 +252,10 @@ LOCK TABLE guest_pairs, guests, room_bookings IN ACCESS EXCLUSIVE MODE;
 DO $guard$
 BEGIN
   IF EXISTS (
-    (SELECT code, name FROM ${schema}.guest_pairs EXCEPT SELECT code, name FROM guest_pairs)
+    (SELECT code FROM ${schema}.guest_pairs EXCEPT SELECT code FROM guest_pairs)
     UNION ALL
-    (SELECT code, name FROM guest_pairs EXCEPT SELECT code, name FROM ${schema}.guest_pairs)
-  ) THEN RAISE SQLSTATE 'P1001' USING MESSAGE = 'guest pair identity mismatch'; END IF;
+    (SELECT code FROM guest_pairs EXCEPT SELECT code FROM ${schema}.guest_pairs)
+  ) THEN RAISE SQLSTATE 'P1001' USING MESSAGE = 'guest pair code mismatch'; END IF;
   IF EXISTS (
     (SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered
       EXCEPT SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id)

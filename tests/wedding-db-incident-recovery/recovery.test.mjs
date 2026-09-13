@@ -252,6 +252,10 @@ test('merge restores pre-loss answers only where the replacement has no newer an
   assert.match(sql,/DROP SCHEMA incident_restore_34710000000_1 CASCADE/);
   assert.match(sql,/RAISE SQLSTATE 'P1001'/);
   assert.match(sql,/RAISE SQLSTATE 'P1002'/);
+  assert.match(sql,/SELECT code FROM incident_restore_34710000000_1\.guest_pairs EXCEPT SELECT code FROM guest_pairs/);
+  assert.doesNotMatch(sql,/SELECT code, name FROM (?:incident_restore_34710000000_1\.)?guest_pairs/);
+  assert.match(sql,/SELECT recovered\.pair_code, recovered\.name FROM incident_restore_34710000000_1\.guests recovered/);
+  assert.match(sql,/EXCEPT SELECT pairs\.code, live\.name FROM guests live JOIN guest_pairs pairs/);
   assert.doesNotMatch(sql,/sessions|admin_sessions/);
   assert.throws(()=>buildMergeSQL('public'),/refused/);
 });
