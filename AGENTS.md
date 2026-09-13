@@ -157,6 +157,14 @@ Renovate version-only bump fail until the whole bundle is re-vendored. Re-check 
 against the upstream pod labels on a refresh. All these resources render locally without network
 access; `scripts/render-remote-resource-exceptions.tsv` has no remaining exceptions.
 
+The cert-approver image is also pinned by **digest**, in its `kustomization.yaml` `images:` entry
+rather than in the vendored bytes, because an upstream tag can move (#3515). The entry's tag and
+digest must equal the updater's `cert_approver_version` and `cert_approver_image_digest`:
+`scripts/guard-cert-approver-image-pin.sh` enforces that inside `--validate-committed`, and
+`--render-remotes` re-resolves the tag from the registry and refuses to refresh until the constant
+matches. On a bump, review the image the new tag points at, then update the version, the digest
+constant and the `images:` entry together.
+
 ## Local Development Cluster
 
 **Primary method (requires KSail + Docker):**

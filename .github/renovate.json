@@ -244,8 +244,8 @@
       "addLabels": ["vendored-manifest"]
     },
     {
-      "description": "kubelet-serving-cert-approver is vendored as a complete upstream manifest. Keep Renovate visibility through the updater version, but require a reviewed whole-bundle refresh with matching source commit, digest, image and PDB selector. automerge:false placed last so it overrides the major/minor/patch automerge defaults above.",
-      "matchPackageNames": ["alex1989hu/kubelet-serving-cert-approver"],
+      "description": "kubelet-serving-cert-approver is vendored as a complete upstream manifest. Keep Renovate visibility through the updater version, but require a reviewed whole-bundle refresh with matching source commit, digest, image and PDB selector. The ghcr.io name covers the kustomization images: pin (tag + digest): a tag or digest update there fails CI's image-pin guard until the updater's version and cert_approver_image_digest move with it. automerge:false placed last so it overrides the major/minor/patch automerge defaults above.",
+      "matchPackageNames": ["alex1989hu/kubelet-serving-cert-approver", "ghcr.io/alex1989hu/kubelet-serving-cert-approver"],
       "automerge": false,
       "addLabels": ["security/review-required"]
     },
