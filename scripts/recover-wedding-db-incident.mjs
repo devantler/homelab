@@ -44,16 +44,25 @@ const RECOVERY_REFUSAL_CHECKPOINTS=new Set([
 let recoveryInvocationVerified=false;
 let recoveryPhase='invocation';
 let recoveryCheckpoint;
+let recoveryFailureSqlstate;
 const check=value=>{if(!value)throw Error('refused');return value;};
 const integer=value=>{check(typeof value==='string'&&/^[1-9][0-9]*$/.test(value));return value;};
 const uid=value=>{check(typeof value==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value));return value;};
 const timestamp=value=>{check(typeof value==='string'&&!Number.isNaN(Date.parse(value)));return value;};
 const condition=(value,type)=>value.status?.conditions?.some(item=>item.type===type&&item.status==='True');
 
-export function recoveryRefusalMessage({verified=false,phase='invocation',checkpoint}={}){
+export function extractRecoverySqlstate(stderr){
+  if(typeof stderr!=='string'||stderr.length>65536)return undefined;
+  const codes=stderr.split('\n').flatMap(line=>{const match=/^ERROR:\s+([0-9A-Z]{5})\s*$/.exec(line);return match?[match[1]]:[];});
+  return codes.length===1?codes[0]:undefined;
+}
+
+export function recoveryRefusalMessage({verified=false,phase='invocation',checkpoint,sqlstate}={}){
   if(!verified||!RECOVERY_REFUSAL_PHASES.has(phase))return 'Wedding database incident recovery refused.\n';
-  const detail=phase==='restore-and-merge'&&RECOVERY_REFUSAL_CHECKPOINTS.has(checkpoint)?`; checkpoint: ${checkpoint}`:'';
-  return `Wedding database incident recovery refused (phase: ${phase}${detail}).\n`;
+  const checkpointAllowed=phase==='restore-and-merge'&&RECOVERY_REFUSAL_CHECKPOINTS.has(checkpoint);
+  const checkpointDetail=checkpointAllowed?`; checkpoint: ${checkpoint}`:'';
+  const sqlstateDetail=checkpointAllowed&&checkpoint==='merge-recovered-data'&&/^[0-9A-Z]{5}$/.test(sqlstate)?`; sqlstate: ${sqlstate}`:'';
+  return `Wedding database incident recovery refused (phase: ${phase}${checkpointDetail}${sqlstateDetail}).\n`;
 }
 
 export function hasPrelossWitness(kustomization){
@@ -246,14 +255,14 @@ BEGIN
     (SELECT code, name FROM ${schema}.guest_pairs EXCEPT SELECT code, name FROM guest_pairs)
     UNION ALL
     (SELECT code, name FROM guest_pairs EXCEPT SELECT code, name FROM ${schema}.guest_pairs)
-  ) THEN RAISE EXCEPTION 'guest pair identity mismatch'; END IF;
+  ) THEN RAISE SQLSTATE 'P1001' USING MESSAGE = 'guest pair identity mismatch'; END IF;
   IF EXISTS (
     (SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered
       EXCEPT SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id)
     UNION ALL
     (SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id
       EXCEPT SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered)
-  ) THEN RAISE EXCEPTION 'guest identity mismatch'; END IF;
+  ) THEN RAISE SQLSTATE 'P1002' USING MESSAGE = 'guest identity mismatch'; END IF;
 END $guard$;
 CREATE TEMP TABLE incident_restore_counts (
   restored_guest_answers bigint NOT NULL,
@@ -286,9 +295,14 @@ DROP SCHEMA ${schema} CASCADE;
 COMMIT;`;
 }
 
-function kubectl(args,{input,timeout=30000,maxBytes=2*1024*1024}={}){
+function kubectl(args,{input,timeout=30000,maxBytes=2*1024*1024,captureSqlstate=false}={}){
   const result=spawnSync('kubectl',['--kubeconfig',path.join(process.env.HOME,'.kube/config'),'--context','admin@prod',...args],{input,env:{PATH:process.env.PATH,HOME:process.env.HOME},timeout,maxBuffer:maxBytes});
-  check(!result.error&&result.status===0&&result.stdout.length<=maxBytes&&result.stderr.length<=maxBytes);
+  const valid=!result.error&&result.status===0&&result.stdout.length<=maxBytes&&result.stderr.length<=maxBytes;
+  if(!valid&&captureSqlstate&&!result.error){
+    const sqlstate=extractRecoverySqlstate(result.stderr.toString('utf8'));
+    if(sqlstate)throw Error('sqlstate:'+sqlstate);
+  }
+  check(valid);
   return result.stdout;
 }
 
@@ -385,8 +399,8 @@ function csv(value){
 
 function csvRows(rows,columns){return Buffer.from(rows.map(row=>columns.map(column=>csv(row[column])).join(',')).join('\n')+'\n');}
 
-function psql(primary,database,command,{input,maxBytes=65536}={}){
-  return kubectl(['--namespace',NAMESPACE,'exec',...(input?['--stdin']:[]),primary,'--container=postgres','--','psql','--username=postgres','--dbname='+database,'--set=ON_ERROR_STOP=1','--tuples-only','--no-align','--quiet','--command='+command],{input,timeout:120000,maxBytes});
+function psql(primary,database,command,{input,maxBytes=65536,captureSqlstate=false}={}){
+  return kubectl(['--namespace',NAMESPACE,'exec',...(input?['--stdin']:[]),primary,'--container=postgres','--','psql','--username=postgres','--dbname='+database,'--set=ON_ERROR_STOP=1','--set=VERBOSITY=sqlstate','--tuples-only','--no-align','--quiet','--command='+command],{input,timeout:120000,maxBytes,captureSqlstate});
 }
 
 function loadRecovered(primary,database,recovered,config){
@@ -616,7 +630,7 @@ function run(){
   const source=sourceState();recoveryPhase='before-backup';
   const before=backup(config,'before',source);
   recoveryPhase='restore-and-merge';
-  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,errorCheckpoint,schemaCleanupError,resumeError,cleanupError;
+  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,errorCheckpoint,errorSqlstate,schemaCleanupError,resumeError,cleanupError;
   try{
     recoveryCheckpoint='create-recovery';
     recovery=createRecovery(config,source);
@@ -645,18 +659,22 @@ function run(){
     recoveryCheckpoint='application-fences';
     proveApplicationFences(config);check(list('pods','app.kubernetes.io/name=wedding-app').length===0);
     recoveryCheckpoint='merge-recovered-data';
-    const output=psql(mergePrimary,source.database,buildMergeSQL(schema));
+    const output=psql(mergePrimary,source.database,buildMergeSQL(schema),{captureSqlstate:true});
     merge=JSON.parse(output.toString('utf8').trim());
     recoveryCheckpoint='merge-shape';
     for(const key of ['restoredGuestAnswers','restoredRoomBookings','finalMeaningfulGuestAnswers','finalRoomBookings'])check(Number.isSafeInteger(merge[key])&&merge[key]>=0);
     recoveryCheckpoint='merge-postcondition';
     check(merge.finalMeaningfulGuestAnswers>=recovered.meaningfulGuests&&merge.finalRoomBookings>=recovered.roomBookings);
-  }catch(candidate){error=candidate;errorCheckpoint=recoveryCheckpoint;}
+  }catch(candidate){
+    error=candidate;errorCheckpoint=recoveryCheckpoint;
+    const match=/^sqlstate:([0-9A-Z]{5})$/.exec(candidate?.message);errorSqlstate=match?.[1];
+  }
   if(error&&mergePrimary){try{dropStagingSchema(mergePrimary,source.database,config);}catch(candidate){schemaCleanupError=candidate;}}
   try{resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}
   if(error||schemaCleanupError||resumeError||cleanupError){
     recoveryCheckpoint=schemaCleanupError?'drop-staging-schema':resumeError?'resume-application':cleanupError?'cleanup-recovery':errorCheckpoint;
+    recoveryFailureSqlstate=recoveryCheckpoint===errorCheckpoint?errorSqlstate:undefined;
     throw Error('refused');
   }
   recoveryCheckpoint=undefined;recoveryPhase='after-backup';
@@ -695,5 +713,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
     check(process.argv.length===2||(process.argv.length===3&&['--cleanup','--verify-source'].includes(process.argv[2])));
     const result=process.argv[2]==='--verify-source'?(verifyCandidate(),{sourceVerified:true}):process.argv[2]==='--cleanup'?runCleanup():run();
     process.stdout.write(JSON.stringify(result)+'\n');
-  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase,checkpoint:recoveryCheckpoint}));process.exitCode=2;}
+  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase,checkpoint:recoveryCheckpoint,sqlstate:recoveryFailureSqlstate}));process.exitCode=2;}
 }
