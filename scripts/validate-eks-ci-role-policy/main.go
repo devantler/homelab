@@ -1982,9 +1982,56 @@ const (
 //
 //	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
 //
+// Moved again by the snapshot-controller C-0211 baseline context (#3239). The
+// workload sits in kube-system, which add-security-context excludes, so its
+// stored template is supplied through the chart's own values. A HelmRelease is a
+// controller-RBAC emitter, so a pure VALUES change moves this aggregate even
+// though nothing is granted.
+//
+// CONSERVATION, rendered for all five authorization roots on this branch and on
+// main 491d5ef4 under one renderer: the 86 grant-bearing identities
+// (ClusterRole, Role, ClusterRoleBinding, RoleBinding, ServiceAccount) are
+// identical in both directions, the ClusterRole/Role rule bodies are identical
+// under digest
+// 11656de3ed0f1303187fe75f1d8c8e3e1c9f7d12f95e036f91ec685990d1f2e5, and the
+// binding roleRef/subject bodies are identical under digest
+// 73436c4be4cc0e421dd50f76c945abdd945ca5b905dfcd7582a268128da1ade0. Four of the
+// five roots render byte-identically; infrastructure/controllers grows by 120
+// bytes, and its complete hunk list is ONE hunk of four added lines inside the
+// snapshot-controller HelmRelease's controller values:
+//
+//	podSecurityContext.fsGroupChangePolicy: OnRootMismatch
+//	securityContext.seLinuxOptions: {}
+//
+// It adds no Role, ClusterRole, binding, ServiceAccount, subject, verb,
+// wildcard, AWS identity, or permission. Appending one synthetic wildcard
+// ClusterRole to the branch render makes both the identity and the rule-body
+// comparisons report a difference, so the identical result is a finding rather
+// than a blind read.
+//
+// The two changes touch disjoint objects: the Wedding repair edits the
+// wedding-app Flux Kustomization, while this context edits only the
+// snapshot-controller HelmRelease's controller values. Rebasing onto that
+// repair therefore leaves the conservation hunk list above unchanged.
+//
+// RENDERER PROVENANCE: the value below was read from CI's own failure on job
+// 103622614274 at c61aac1e (the merge of main 8756f2ad with this context), which
+// renders under the approved SHA256-verified toolchain and reported ZERO missing
+// and ZERO duplicate rendered resources; its single unapproved entry was this
+// aggregate. This host's kubectl/kustomize are not approved renderers, so no
+// local digest is claimed.
+//
+// Previous aggregate:
+//
+//	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
+//
+// That context established aggregate:
+//
+//	525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb
+//
 // Moved again by the Kubescape posture-persistence repair, re-derived on top of
-// the Wedding data-loss repair (8756f2ad) rather than on the older 814debc4 or
-// 5b85be73 bases (see #3740). Exactly one
+// the snapshot-controller C-0211 baseline context (525e04ee) rather than on the
+// older 8756f2ad, 814debc4 or 5b85be73 bases (see #3740). Exactly one
 // existing document changes relative to that base: the kubescape/kubescape
 // HelmRelease advances the scanner image from v4.0.12 to v4.0.14. The newer
 // image contains the v0.14 embedded CEL policy bundle required by control
@@ -1998,18 +2045,19 @@ const (
 // rebase. No identity, binding, ServiceAccount, verb, wildcard, AWS identity or
 // permission change is introduced. The kubescape HelmRelease's
 // unresolved-substitution fingerprint changes with the reviewed scanner tag.
-// The Wedding repair edits only the wedding-app Flux Kustomization, which is
-// disjoint from the kubescape HelmRelease, so the delta is unchanged by rebasing
-// onto it.
+// The Wedding repair edits only the wedding-app Flux Kustomization, and the
+// C-0211 context edits only the snapshot-controller HelmRelease's controller
+// values; both are disjoint from the kubescape HelmRelease, so the delta is
+// unchanged by rebasing onto them.
 //
-// RENDERER PROVENANCE: the value below was read from CI's own failure on job
-// 103623182789 at 26519900 (the merge of main 8756f2ad with this repair), which
-// renders under the approved SHA256-verified toolchain and reported ZERO missing
-// and ZERO duplicate rendered resources; its single unapproved entry was this
-// aggregate. This host's renderer is unapproved, so no local digest is claimed.
+// RENDERER PROVENANCE: PENDING. The value below still carries the 525e04ee base
+// until CI renders the merge of main 525e04ee with this repair under the
+// approved SHA256-verified toolchain; it is replaced with that run's single
+// unapproved aggregate once CI reports ZERO missing and ZERO duplicate rendered
+// resources. This host's renderer is unapproved, so no local digest is claimed.
 //
-// Previous aggregate: 8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e.
-const expectedRenderedSurfaceSHA = "cb6b02a3a5fc88e97b09a3388eb036cf8ab508a48f38d48998eb1afcc9542522"
+// Previous aggregate: 525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb.
+const expectedRenderedSurfaceSHA = "525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.

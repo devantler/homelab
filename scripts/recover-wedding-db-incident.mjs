@@ -26,18 +26,55 @@ const PRELOSS_BACKUP_UID='549fe940-b119-4010-bdc8-fa8e6ebc93ae';
 const PRELOSS_CLUSTER_UID='6b6d4879-e437-4ea5-a0cb-257de8edad00';
 const PRELOSS_TARGET_TIME='2026-09-09T01:57:41Z';
 const PRELOSS_TARGET_TIMELINE='162';
-const PRELOSS_RECONCILIATION_DIGEST='sha256:022128434868723705c489546f68ba344e9cbe9e5c2b930a404d8aa2122ad9c7';
-const RECOVERY_MODE='point in time 2026-09-09T01:57:41Z from backup 20260908T030001 on timeline 162';
+const PRELOSS_RECONCILIATION_DIGEST='sha256:022128434868723705c489546f68ba344a9cbe9e5c2b930a404d8aa2122ad9c7';
+const RECOVERY_MODE='latest consistent archived WAL after backup 20260908T030001 on timeline 162';
 const PROOF='wedding-db-data-recovery-proof';
 const RECOVERY_OWNER_ANNOTATION='devantler.tech/wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_ANNOTATION='kustomize.toolkit.fluxcd.io/reconcile';
 const RECOVERY_OWNER_PATH='/metadata/annotations/devantler.tech~1wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_PATH='/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile';
+const RECOVERY_REFUSAL_PHASES=new Set(['source-state','before-backup','restore-and-merge','after-backup','proof','cleanup']);
+const RECOVERY_REFUSAL_CHECKPOINTS=new Set([
+  'create-recovery','recovered-inventory-query','recovered-replay-time','recovered-core-inventory',
+  'live-inventory-query','live-core-inventory','core-cardinality','suspend-application',
+  'live-cluster-identity','live-primary','stage-recovered-data','application-fences',
+  'merge-recovered-data','merge-shape','merge-postcondition','drop-staging-schema',
+  'resume-application','cleanup-recovery',
+]);
+let recoveryInvocationVerified=false;
+let recoveryPhase='invocation';
+let recoveryCheckpoint;
+let recoveryFailureSqlstate;
 const check=value=>{if(!value)throw Error('refused');return value;};
 const integer=value=>{check(typeof value==='string'&&/^[1-9][0-9]*$/.test(value));return value;};
 const uid=value=>{check(typeof value==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value));return value;};
 const timestamp=value=>{check(typeof value==='string'&&!Number.isNaN(Date.parse(value)));return value;};
 const condition=(value,type)=>value.status?.conditions?.some(item=>item.type===type&&item.status==='True');
+
+export function extractRecoverySqlstate(stderr){
+  if(typeof stderr!=='string'||stderr.length>65536)return undefined;
+  const codes=stderr.split('\n').flatMap(line=>{const match=/^ERROR:\s+([0-9A-Z]{5})\s*$/.exec(line);return match?[match[1]]:[];});
+  return codes.length===1?codes[0]:undefined;
+}
+
+export function recoveryRefusalMessage({verified=false,phase='invocation',checkpoint,sqlstate}={}){
+  if(!verified||!RECOVERY_REFUSAL_PHASES.has(phase))return 'Wedding database incident recovery refused.\n';
+  const checkpointAllowed=phase==='restore-and-merge'&&RECOVERY_REFUSAL_CHECKPOINTS.has(checkpoint);
+  const checkpointDetail=checkpointAllowed?`; checkpoint: ${checkpoint}`:'';
+  const sqlstateDetail=checkpointAllowed&&checkpoint==='merge-recovered-data'&&/^[0-9A-Z]{5}$/.test(sqlstate)?`; sqlstate: ${sqlstate}`:'';
+  return `Wedding database incident recovery refused (phase: ${phase}${checkpointDetail}${sqlstateDetail}).\n`;
+}
+
+export function hasPrelossWitness(kustomization){
+  return kustomization.status?.history?.some(item=>item.lastReconciled===PRELOSS_TARGET_TIME&&item.lastReconciledStatus==='ReconciliationSucceeded'&&item.digest===PRELOSS_RECONCILIATION_DIGEST&&item.metadata?.originRevision==='v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9')===true;
+}
+
+export function validateRecoveryReplayTimestamp(value,{replacementCreatedAt}){
+  const upper=timestamp(replacementCreatedAt);
+  if(value===null)return null;
+  const replay=timestamp(value);check(Date.parse(replay)<Date.parse(upper));
+  return replay;
+}
 
 function exactObject(value,{apiVersion,kind,name}){
   check(value?.apiVersion===apiVersion&&value.kind===kind);
@@ -82,7 +119,7 @@ export function recoverySource({cluster,store,backup}){
   check(typeof imageName==='string'&&/^ghcr\.io\/cloudnative-pg\/postgresql:18\.[0-9]+-[a-z0-9-]+$/.test(imageName));
   check(cluster.spec.storage?.storageClass==='longhorn-wffc');
   check(/^[1-9][0-9]*(?:Mi|Gi|Ti)$/.test(cluster.spec.storage?.size));
-  return {currentClusterUid:cluster.metadata.uid,sourceUid:store.metadata.uid,prelossBackupUid:backup.metadata.uid,database:'wedding',imageName,storageClass:'longhorn-wffc',size:cluster.spec.storage.size,endpoint,prelossBackupId:backup.status.backupId,prelossTargetTime:PRELOSS_TARGET_TIME,prelossTargetTimeline:PRELOSS_TARGET_TIMELINE};
+  return {currentClusterUid:cluster.metadata.uid,sourceUid:store.metadata.uid,prelossBackupUid:backup.metadata.uid,database:'wedding',imageName,storageClass:'longhorn-wffc',size:cluster.spec.storage.size,endpoint,prelossBackupId:backup.status.backupId,replacementCreatedAt:cluster.metadata.creationTimestamp,prelossTargetTime:PRELOSS_TARGET_TIME,prelossTargetTimeline:PRELOSS_TARGET_TIMELINE};
 }
 
 function labels(run,attempt){
@@ -104,11 +141,12 @@ export function recoveryOwnerAttempt(run,currentAttempt,owner){
   return match[1];
 }
 
-export function buildSuspendPatch({resourceVersion,kustomizationUid,owner}){
-  integer(resourceVersion);check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
+export function buildSuspendPatch({resourceVersion,kustomizationUid,annotationsPresent,owner}){
+  integer(resourceVersion);check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&typeof annotationsPresent==='boolean'&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
   return [
     {op:'test',path:'/metadata/resourceVersion',value:resourceVersion},
     {op:'test',path:'/metadata/uid',value:kustomizationUid},
+    ...(annotationsPresent?[]:[{op:'add',path:'/metadata/annotations',value:{}}]),
     {op:'add',path:RECOVERY_OWNER_PATH,value:owner},
     {op:'add',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
     {op:'add',path:'/spec/suspend',value:true},
@@ -150,7 +188,7 @@ export function buildRecoveryResources({run,attempt,endpoint,imageName,storageCl
     instances:1,imageName,enableSuperuserAccess:false,enablePDB:false,
     storage:{size:'2Gi',storageClass},
     resources:{requests:{cpu:'50m',memory:'256Mi'},limits:{cpu:'1',memory:'1Gi'}},
-    bootstrap:{recovery:{source:'wedding-db-preloss',recoveryTarget:{backupID:prelossBackupId,targetTime:prelossTargetTime,targetTLI:prelossTargetTimeline}}},
+    bootstrap:{recovery:{source:'wedding-db-preloss',recoveryTarget:{backupID:prelossBackupId,targetTLI:prelossTargetTimeline}}},
     externalClusters:[{name:'wedding-db-preloss',plugin:{name:'barman-cloud.cloudnative-pg.io',parameters:{barmanObjectName:SOURCE_STORE,serverName:'wedding-db'}}}],
   }};
   const policy={apiVersion:'cilium.io/v2',kind:'CiliumNetworkPolicy',metadata:{name,namespace:NAMESPACE,labels:owned},spec:{endpointSelector:{matchLabels:{'cnpg.io/cluster':name}},egress:[
@@ -177,9 +215,9 @@ export function validateCoreInventory(value,{requireMeaningful=true}={}){
   check(Array.isArray(guestPairs)&&guestPairs.length>0&&guestPairs.length<=100);
   check(Array.isArray(guests)&&guests.length>0&&guests.length<=300);
   check(Array.isArray(roomBookings)&&roomBookings.length<=100);
-  const codes=new Set();
+  const codes=new Set(),pairNames=new Set();
   for(const pair of guestPairs){
-    check(pair&&typeof pair==='object'&&/^[A-Za-z0-9_-]{1,32}$/.test(pair.code));string(pair.name,255);timestamp(pair.createdAt);check(!codes.has(pair.code));codes.add(pair.code);
+    check(pair&&typeof pair==='object'&&/^[A-Za-z0-9_-]{1,32}$/.test(pair.code));string(pair.name,255);timestamp(pair.createdAt);check(!codes.has(pair.code)&&!pairNames.has(pair.name));codes.add(pair.code);pairNames.add(pair.name);
   }
   const guestKeys=new Set();let meaningfulGuests=0;
   for(const guest of guests){
@@ -214,17 +252,23 @@ LOCK TABLE guest_pairs, guests, room_bookings IN ACCESS EXCLUSIVE MODE;
 DO $guard$
 BEGIN
   IF EXISTS (
-    (SELECT code, name FROM ${schema}.guest_pairs EXCEPT SELECT code, name FROM guest_pairs)
-    UNION ALL
-    (SELECT code, name FROM guest_pairs EXCEPT SELECT code, name FROM ${schema}.guest_pairs)
-  ) THEN RAISE EXCEPTION 'guest pair identity mismatch'; END IF;
+    SELECT 1
+    FROM ${schema}.room_bookings recovered
+    JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+    LEFT JOIN guest_pairs live_pairs ON live_pairs.name=recovered_pairs.name
+    GROUP BY recovered.pair_code
+    HAVING count(live_pairs.id) <> 1
+  ) THEN RAISE SQLSTATE 'P1001' USING MESSAGE = 'room booking pair mapping mismatch'; END IF;
   IF EXISTS (
-    (SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered
-      EXCEPT SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id)
-    UNION ALL
-    (SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id
-      EXCEPT SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered)
-  ) THEN RAISE EXCEPTION 'guest identity mismatch'; END IF;
+    SELECT 1
+    FROM ${schema}.guests recovered
+    JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+    LEFT JOIN guest_pairs live_pairs ON live_pairs.name=recovered_pairs.name
+    LEFT JOIN guests live ON live.guest_pair_id=live_pairs.id AND live.name=recovered.name
+    WHERE recovered.attending IS NOT NULL OR recovered.dietary_notes IS NOT NULL
+    GROUP BY recovered.pair_code,recovered.name
+    HAVING count(live.id) <> 1
+  ) THEN RAISE SQLSTATE 'P1002' USING MESSAGE = 'answered guest mapping mismatch'; END IF;
 END $guard$;
 CREATE TEMP TABLE incident_restore_counts (
   restored_guest_answers bigint NOT NULL,
@@ -233,7 +277,9 @@ CREATE TEMP TABLE incident_restore_counts (
 WITH restored_guests AS (
   UPDATE guests live
   SET attending=recovered.attending,dietary_notes=recovered.dietary_notes,updated_at=recovered.updated_at
-  FROM ${schema}.guests recovered JOIN guest_pairs pairs ON pairs.code=recovered.pair_code
+  FROM ${schema}.guests recovered
+  JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+  JOIN guest_pairs pairs ON pairs.name=recovered_pairs.name
   WHERE live.guest_pair_id=pairs.id AND live.name=recovered.name
     AND live.attending IS NULL AND live.dietary_notes IS NULL
     AND (recovered.attending IS NOT NULL OR recovered.dietary_notes IS NOT NULL)
@@ -241,7 +287,9 @@ WITH restored_guests AS (
 ), restored_bookings AS (
   INSERT INTO room_bookings (guest_pair_id,requested,notes,updated_at)
   SELECT pairs.id,recovered.requested,recovered.notes,recovered.updated_at
-  FROM ${schema}.room_bookings recovered JOIN guest_pairs pairs ON pairs.code=recovered.pair_code
+  FROM ${schema}.room_bookings recovered
+  JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+  JOIN guest_pairs pairs ON pairs.name=recovered_pairs.name
   ON CONFLICT (guest_pair_id) DO NOTHING
   RETURNING id
 )
@@ -257,9 +305,14 @@ DROP SCHEMA ${schema} CASCADE;
 COMMIT;`;
 }
 
-function kubectl(args,{input,timeout=30000,maxBytes=2*1024*1024}={}){
+function kubectl(args,{input,timeout=30000,maxBytes=2*1024*1024,captureSqlstate=false}={}){
   const result=spawnSync('kubectl',['--kubeconfig',path.join(process.env.HOME,'.kube/config'),'--context','admin@prod',...args],{input,env:{PATH:process.env.PATH,HOME:process.env.HOME},timeout,maxBuffer:maxBytes});
-  check(!result.error&&result.status===0&&result.stdout.length<=maxBytes&&result.stderr.length<=maxBytes);
+  const valid=!result.error&&result.status===0&&result.stdout.length<=maxBytes&&result.stderr.length<=maxBytes;
+  if(!valid&&captureSqlstate&&!result.error){
+    const sqlstate=extractRecoverySqlstate(result.stderr.toString('utf8'));
+    if(sqlstate)throw Error('sqlstate:'+sqlstate);
+  }
+  check(valid);
   return result.stdout;
 }
 
@@ -306,7 +359,7 @@ function sourceState(){
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   check(kustomization.metadata.uid===LIVE_KUSTOMIZATION_UID&&kustomization.metadata.creationTimestamp==='2026-05-23T01:52:44Z');
   check(kustomization.spec?.force===false&&kustomization.spec.suspend!==true&&condition(kustomization,'Ready'));
-  check(kustomization.status?.history?.some(item=>item.lastReconciled===PRELOSS_TARGET_TIME&&item.lastReconciledStatus==='ReconciliationSucceeded'&&item.digest===PRELOSS_RECONCILIATION_DIGEST&&item.metadata?.originRevision==='v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9'));
+  check(hasPrelossWitness(kustomization));
   const appPolicy=object('ciliumnetworkpolicies.cilium.io','app');
   check(appPolicy.metadata.uid===LIVE_APP_POLICY_UID&&appPolicy.metadata.creationTimestamp==='2026-06-16T18:14:37Z');
   check(appPolicy.spec?.endpointSelector&&Object.keys(appPolicy.spec.endpointSelector).length===0);
@@ -337,6 +390,7 @@ function backup(config,phase,source){
 }
 
 const INVENTORY_SQL=`SELECT json_build_object(
+  'recoveryReplayTimestamp',pg_last_xact_replay_timestamp(),
   'guestPairs',COALESCE((SELECT json_agg(json_build_object('code',code,'name',name,'createdAt',created_at) ORDER BY code) FROM guest_pairs),'[]'::json),
   'guests',COALESCE((SELECT json_agg(json_build_object('pairCode',pairs.code,'name',guests.name,'attending',guests.attending,'dietaryNotes',guests.dietary_notes,'updatedAt',guests.updated_at) ORDER BY pairs.code,guests.name) FROM guests JOIN guest_pairs pairs ON pairs.id=guests.guest_pair_id),'[]'::json),
   'roomBookings',COALESCE((SELECT json_agg(json_build_object('pairCode',pairs.code,'requested',bookings.requested,'notes',bookings.notes,'updatedAt',bookings.updated_at) ORDER BY pairs.code) FROM room_bookings bookings JOIN guest_pairs pairs ON pairs.id=bookings.guest_pair_id),'[]'::json)
@@ -355,8 +409,8 @@ function csv(value){
 
 function csvRows(rows,columns){return Buffer.from(rows.map(row=>columns.map(column=>csv(row[column])).join(',')).join('\n')+'\n');}
 
-function psql(primary,database,command,{input,maxBytes=65536}={}){
-  return kubectl(['--namespace',NAMESPACE,'exec',...(input?['--stdin']:[]),primary,'--container=postgres','--','psql','--username=postgres','--dbname='+database,'--set=ON_ERROR_STOP=1','--tuples-only','--no-align','--quiet','--command='+command],{input,timeout:120000,maxBytes});
+function psql(primary,database,command,{input,maxBytes=65536,captureSqlstate=false}={}){
+  return kubectl(['--namespace',NAMESPACE,'exec',...(input?['--stdin']:[]),primary,'--container=postgres','--','psql','--username=postgres','--dbname='+database,'--set=ON_ERROR_STOP=1','--set=VERBOSITY=sqlstate','--tuples-only','--no-align','--quiet','--command='+command],{input,timeout:120000,maxBytes,captureSqlstate});
 }
 
 function loadRecovered(primary,database,recovered,config){
@@ -398,13 +452,13 @@ function acquireFence(namespace,name,uidValue,config){
   while(Date.now()<end){
     current=objectAt(namespace,'kustomizations.kustomize.toolkit.fluxcd.io',name);
     check(current.metadata.uid===uidValue&&typeof current.metadata.resourceVersion==='string');
-    check(current.metadata.annotations&&typeof current.metadata.annotations==='object');
-    check(current.spec?.suspend!==true&&!current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]);
+    check(current.metadata.annotations===undefined||(current.metadata.annotations!==null&&typeof current.metadata.annotations==='object'&&!Array.isArray(current.metadata.annotations)));
+    check(current.spec?.suspend!==true&&!current.metadata.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
     if(condition(current,'Ready')&&!condition(current,'Reconciling')&&current.status?.observedGeneration===current.metadata.generation)break;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
   }
   check(current&&Date.now()<end);
-  const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,owner});
+  const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,annotationsPresent:current.metadata.annotations!==undefined,owner});
   kubectl(['--namespace',namespace,'patch','kustomization.kustomize.toolkit.fluxcd.io',name,'--type=json','--patch='+JSON.stringify(patch)]);
   let stableResourceVersion='';
   for(let attempt=0;attempt<3;attempt+=1){
@@ -539,7 +593,7 @@ function createRecovery(config,source){
   kubectl(['--namespace',NAMESPACE,'wait','cluster.postgresql.cnpg.io/'+name,'--for=condition=Ready','--timeout=30m'],{timeout:1830000});
   const cluster=object('clusters.postgresql.cnpg.io',name);check(cluster.status?.readyInstances===1&&cluster.status.currentPrimary&&condition(cluster,'Ready'));
   const target=cluster.spec?.bootstrap?.recovery?.recoveryTarget;
-  check(target?.backupID===source.prelossBackupId&&target.targetTime===source.prelossTargetTime&&target.targetTLI===source.prelossTargetTimeline&&!target.exclusive&&!cluster.spec.plugins);
+  check(target?.backupID===source.prelossBackupId&&target.targetTLI===source.prelossTargetTimeline&&!target.targetTime&&!target.targetImmediate&&!target.targetLSN&&!target.targetName&&!target.targetXID&&!target.exclusive&&!cluster.spec.plugins);
   return {name,uid:uid(cluster.metadata.uid),primary:cluster.status.currentPrimary};
 }
 
@@ -570,9 +624,9 @@ function cleanupRecovery(config,recovery){
   for(const name of names)check(!optionalObject('clusters.postgresql.cnpg.io',name)&&list('persistentvolumeclaims','cnpg.io/cluster='+name).length===0&&!optionalObject('ciliumnetworkpolicies.cilium.io',name));
 }
 
-function recordProof({config,source,recovery,before,after,recovered,liveBefore,merge}){
+function recordProof({config,source,recovery,before,after,recovered,recoveryReplayTimestamp,liveBefore,merge}){
   const manifest={apiVersion:'v1',kind:'ConfigMap',metadata:{name:PROOF,namespace:NAMESPACE,labels:{'app.kubernetes.io/name':'wedding-db','app.kubernetes.io/managed-by':'github-actions'}},data:{
-    version:'2',recoveryMode:RECOVERY_MODE,recoveryTargetTime:source.prelossTargetTime,recoveryTargetTimeline:source.prelossTargetTimeline,replacementCreatedAt:'2026-09-09T01:58:14Z',currentClusterUid:source.currentClusterUid,prelossClusterUid:PRELOSS_CLUSTER_UID,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,
+    version:'3',recoveryMode:RECOVERY_MODE,recoveryReplayTimestamp:recoveryReplayTimestamp??'none-after-base-backup',prelossReconciliationWitness:source.prelossTargetTime,recoveryArchiveUpperBound:source.replacementCreatedAt,recoveryTargetTimeline:source.prelossTargetTimeline,replacementCreatedAt:source.replacementCreatedAt,currentClusterUid:source.currentClusterUid,prelossClusterUid:PRELOSS_CLUSTER_UID,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,
     beforeBackupUid:before.uid,afterBackupUid:after.uid,recoveredGuests:String(recovered.guests),recoveredMeaningfulGuests:String(recovered.meaningfulGuests),recoveredRoomBookings:String(recovered.roomBookings),
     liveBeforeMeaningfulGuests:String(liveBefore.meaningfulGuests),liveBeforeRoomBookings:String(liveBefore.roomBookings),restoredGuestAnswers:String(merge.restoredGuestAnswers),restoredRoomBookings:String(merge.restoredRoomBookings),
     finalMeaningfulGuestAnswers:String(merge.finalMeaningfulGuestAnswers),finalRoomBookings:String(merge.finalRoomBookings),githubRun:config.run,githubAttempt:config.attempt,
@@ -582,39 +636,66 @@ function recordProof({config,source,recovery,before,after,recovered,liveBefore,m
 }
 
 function run(){
-  const config=verifyCandidate(),source=sourceState();
+  const config=verifyCandidate();recoveryInvocationVerified=true;recoveryPhase='source-state';
+  const source=sourceState();recoveryPhase='before-backup';
   const before=backup(config,'before',source);
-  let recovery,recoveredInventory,recovered,liveBefore,merge,mergePrimary,error,schemaCleanupError,resumeError,cleanupError;
+  recoveryPhase='restore-and-merge';
+  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,errorCheckpoint,errorSqlstate,schemaCleanupError,resumeError,cleanupError;
   try{
+    recoveryCheckpoint='create-recovery';
     recovery=createRecovery(config,source);
+    recoveryCheckpoint='recovered-inventory-query';
     recoveredInventory=inventory(recovery.primary,source.database,{requireMeaningful:true});
+    recoveryCheckpoint='recovered-replay-time';
+    recoveryReplayTimestamp=validateRecoveryReplayTimestamp(recoveredInventory.value.recoveryReplayTimestamp,{replacementCreatedAt:source.replacementCreatedAt});
+    recoveryCheckpoint='recovered-core-inventory';
     recovered=validateCoreInventory(recoveredInventory.value,{requireMeaningful:true});
+    recoveryCheckpoint='live-inventory-query';
     const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     const liveInventory=inventory(livePrimary,source.database,{requireMeaningful:false});
+    recoveryCheckpoint='live-core-inventory';
     liveBefore=validateCoreInventory(liveInventory.value,{requireMeaningful:false});
+    recoveryCheckpoint='core-cardinality';
     check(recovered.guestPairs===liveBefore.guestPairs&&recovered.guests===liveBefore.guests);
+    recoveryCheckpoint='suspend-application';
     suspendApplication(config);
+    recoveryCheckpoint='live-cluster-identity';
     check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===source.currentClusterUid);
+    recoveryCheckpoint='live-primary';
     mergePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     check(/^wedding-db-[1-9][0-9]*$/.test(mergePrimary));
+    recoveryCheckpoint='stage-recovered-data';
     const schema=loadRecovered(mergePrimary,source.database,recoveredInventory.value,config);
+    recoveryCheckpoint='application-fences';
     proveApplicationFences(config);check(list('pods','app.kubernetes.io/name=wedding-app').length===0);
-    const output=psql(mergePrimary,source.database,buildMergeSQL(schema));
+    recoveryCheckpoint='merge-recovered-data';
+    const output=psql(mergePrimary,source.database,buildMergeSQL(schema),{captureSqlstate:true});
     merge=JSON.parse(output.toString('utf8').trim());
+    recoveryCheckpoint='merge-shape';
     for(const key of ['restoredGuestAnswers','restoredRoomBookings','finalMeaningfulGuestAnswers','finalRoomBookings'])check(Number.isSafeInteger(merge[key])&&merge[key]>=0);
+    recoveryCheckpoint='merge-postcondition';
     check(merge.finalMeaningfulGuestAnswers>=recovered.meaningfulGuests&&merge.finalRoomBookings>=recovered.roomBookings);
-  }catch(candidate){error=candidate;}
+  }catch(candidate){
+    error=candidate;errorCheckpoint=recoveryCheckpoint;
+    const match=/^sqlstate:([0-9A-Z]{5})$/.exec(candidate?.message);errorSqlstate=match?.[1];
+  }
   if(error&&mergePrimary){try{dropStagingSchema(mergePrimary,source.database,config);}catch(candidate){schemaCleanupError=candidate;}}
   try{resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}
-  if(error||schemaCleanupError||resumeError||cleanupError)throw Error('refused');
+  if(error||schemaCleanupError||resumeError||cleanupError){
+    recoveryCheckpoint=schemaCleanupError?'drop-staging-schema':resumeError?'resume-application':cleanupError?'cleanup-recovery':errorCheckpoint;
+    recoveryFailureSqlstate=recoveryCheckpoint===errorCheckpoint?errorSqlstate:undefined;
+    throw Error('refused');
+  }
+  recoveryCheckpoint=undefined;recoveryPhase='after-backup';
   const after=backup(config,'after',source);
-  recordProof({config,source,recovery,before,after,recovered,liveBefore,merge});
-  return {restored:true,currentClusterUid:source.currentClusterUid,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,beforeBackupUid:before.uid,afterBackupUid:after.uid,recovered,liveBefore,merge,cleanup:true};
+  recoveryPhase='proof';
+  recordProof({config,source,recovery,before,after,recovered,recoveryReplayTimestamp,liveBefore,merge});
+  return {restored:true,currentClusterUid:source.currentClusterUid,prelossBackupUid:source.prelossBackupUid,recoveryClusterUid:recovery.uid,beforeBackupUid:before.uid,afterBackupUid:after.uid,recoveryReplayTimestamp,recovered,liveBefore,merge,cleanup:true};
 }
 
 function runCleanup(){
-  const config=verifyCandidate();
+  const config=verifyCandidate();recoveryInvocationVerified=true;recoveryPhase='cleanup';
   let schemaCleanupError,resumeError,cleanupError,resumed=false,schemaCleaned=false;
   const kustomization=object('kustomizations.kustomize.toolkit.fluxcd.io',LIVE_KUSTOMIZATION);
   const owner=kustomization.metadata?.annotations?.[RECOVERY_OWNER_ANNOTATION];
@@ -642,5 +723,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
     check(process.argv.length===2||(process.argv.length===3&&['--cleanup','--verify-source'].includes(process.argv[2])));
     const result=process.argv[2]==='--verify-source'?(verifyCandidate(),{sourceVerified:true}):process.argv[2]==='--cleanup'?runCleanup():run();
     process.stdout.write(JSON.stringify(result)+'\n');
-  }catch{process.stderr.write('Wedding database incident recovery refused.\n');process.exitCode=2;}
+  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase,checkpoint:recoveryCheckpoint,sqlstate:recoveryFailureSqlstate}));process.exitCode=2;}
 }

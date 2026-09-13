@@ -9,16 +9,61 @@ import {
   buildResumePatch,
   buildSchemaCleanupSQL,
   buildSuspendPatch,
+  extractRecoverySqlstate,
+  hasPrelossWitness,
+  recoveryRefusalMessage,
   recoveryOwner,
   recoveryOwnerAttempt,
   recoverySource,
   validateCoreInventory,
+  validateRecoveryReplayTimestamp,
 } from '../../scripts/recover-wedding-db-incident.mjs';
 
 const CURRENT_UID='afea05ff-7daa-4d80-99a6-f2d696cbc3f1';
 const SOURCE_UID='9cd2ba9b-c7bf-43e2-bd2d-a5c7c139fafb';
 const BACKUP_UID='549fe940-b119-4010-bdc8-fa8e6ebc93ae';
 const CONTROLLER_UID='48c6521a-483a-4de9-895a-bae1a61ea25e';
+
+test('pre-loss reconciliation witness matches the live Flux history exactly',()=>{
+  const history=[{
+    lastReconciled:'2026-09-09T01:57:41Z',
+    lastReconciledStatus:'ReconciliationSucceeded',
+    digest:'sha256:022128434868723705c489546f68ba344a9cbe9e5c2b930a404d8aa2122ad9c7',
+    metadata:{originRevision:'v1.15.11@sha1:5f0f5be0a228ee189ea3d10e4bd1b61ef0a8efe9'},
+  }];
+  assert.equal(hasPrelossWitness({status:{history}}),true);
+  history[0].digest='sha256:022128434868723705c489546f68ba344e9cbe9e5c2b930a404d8aa2122ad9c7';
+  assert.equal(hasPrelossWitness({status:{history}}),false);
+});
+
+test('verified recovery failures disclose only allow-listed diagnostics',()=>{
+  assert.equal(recoveryRefusalMessage(), 'Wedding database incident recovery refused.\n');
+  assert.equal(recoveryRefusalMessage({verified:true,phase:'source-state'}), 'Wedding database incident recovery refused (phase: source-state).\n');
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'recovered-core-inventory'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge; checkpoint: recovered-core-inventory).\n',
+  );
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'subprocess stderr'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge).\n',
+  );
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'after-backup',checkpoint:'merge-postcondition'}),
+    'Wedding database incident recovery refused (phase: after-backup).\n',
+  );
+  assert.equal(recoveryRefusalMessage({phase:'restore-and-merge',checkpoint:'recovered-core-inventory'}), 'Wedding database incident recovery refused.\n');
+  assert.equal(recoveryRefusalMessage({verified:true,phase:'subprocess stderr'}), 'Wedding database incident recovery refused.\n');
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'merge-recovered-data',sqlstate:'P1001'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge; checkpoint: merge-recovered-data; sqlstate: P1001).\n',
+  );
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'merge-recovered-data',sqlstate:'guest name'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge; checkpoint: merge-recovered-data).\n',
+  );
+  assert.equal(extractRecoverySqlstate('ERROR:  P1001\ncommand terminated with exit code 1\n'),'P1001');
+  assert.equal(extractRecoverySqlstate('guest name\nERROR: value disclosed'),undefined);
+});
 
 function fixture(){
   return {
@@ -44,7 +89,7 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
     currentClusterUid:CURRENT_UID,sourceUid:SOURCE_UID,prelossBackupUid:BACKUP_UID,
     database:'wedding',imageName:'ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie',storageClass:'longhorn-wffc',size:'1Gi',
     endpoint:'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com',prelossBackupId:'20260908T030001',
-    prelossTargetTime:'2026-09-09T01:57:41Z',prelossTargetTimeline:'162',
+    replacementCreatedAt:'2026-09-09T01:58:14Z',prelossTargetTime:'2026-09-09T01:57:41Z',prelossTargetTimeline:'162',
   });
   for(const change of [
     value=>{value.cluster.metadata.uid='11111111-1111-1111-1111-111111111111';},
@@ -64,12 +109,12 @@ test('source is pinned to the empty replacement and last pre-loss backup',()=>{
   }
 });
 
-test('recovery cluster reaches the witnessed pre-loss point from the exact base',()=>{
+test('recovery cluster replays the maximum available WAL from the exact base',()=>{
   const source=recoverySource(fixture());
   const {cluster,policy}=buildRecoveryResources({run:'34710000000',attempt:'1',...source});
   assert.equal(cluster.metadata.name,'wedding-db-preloss-34710000000-1');
   assert.deepEqual(cluster.spec.bootstrap,{recovery:{source:'wedding-db-preloss',recoveryTarget:{
-    backupID:'20260908T030001',targetTime:'2026-09-09T01:57:41Z',targetTLI:'162',
+    backupID:'20260908T030001',targetTLI:'162',
   }}});
   assert.deepEqual(cluster.spec.externalClusters,[{name:'wedding-db-preloss',plugin:{name:'barman-cloud.cloudnative-pg.io',parameters:{barmanObjectName:'wedding-db',serverName:'wedding-db'}}}]);
   assert.equal(cluster.spec.plugins,undefined);
@@ -80,6 +125,15 @@ test('recovery cluster reaches the witnessed pre-loss point from the exact base'
   assert.equal(policy.spec.egress.some(item=>item.toEndpoints),false);
 });
 
+test('recovery proof accepts base-only or replay evidence before replacement',()=>{
+  const bounds={replacementCreatedAt:'2026-09-09T01:58:14Z'};
+  assert.equal(validateRecoveryReplayTimestamp('2026-09-08T10:11:23.519651Z',bounds),'2026-09-08T10:11:23.519651Z');
+  assert.equal(validateRecoveryReplayTimestamp('2026-09-08T02:59:59Z',bounds),'2026-09-08T02:59:59Z');
+  assert.equal(validateRecoveryReplayTimestamp(null,bounds),null);
+  assert.throws(()=>validateRecoveryReplayTimestamp('2026-09-09T01:58:14Z',bounds),/refused/);
+  assert.throws(()=>validateRecoveryReplayTimestamp(undefined,bounds),/refused/);
+});
+
 test('application suspension ownership is bound to one workflow attempt',()=>{
   const owner=recoveryOwner('34710000000','1');
   assert.equal(owner,'34710000000/1');
@@ -87,9 +141,17 @@ test('application suspension ownership is bound to one workflow attempt',()=>{
   assert.equal(recoveryOwnerAttempt('34710000000','2',owner),'1');
   assert.throws(()=>recoveryOwnerAttempt('34710000000','1','34710000000/2'),/refused/);
   assert.throws(()=>recoveryOwnerAttempt('34710000000','2','34710000001/1'),/refused/);
-  assert.deepEqual(buildSuspendPatch({resourceVersion:'279780874',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),[
+  assert.deepEqual(buildSuspendPatch({resourceVersion:'279780874',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',annotationsPresent:true,owner}),[
     {op:'test',path:'/metadata/resourceVersion',value:'279780874'},
     {op:'test',path:'/metadata/uid',value:'be31651e-fe0d-4826-9ffb-d41716a66720'},
+    {op:'add',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner',value:owner},
+    {op:'add',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile',value:'disabled'},
+    {op:'add',path:'/spec/suspend',value:true},
+  ]);
+  assert.deepEqual(buildSuspendPatch({resourceVersion:'279825100',kustomizationUid:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48',annotationsPresent:false,owner}),[
+    {op:'test',path:'/metadata/resourceVersion',value:'279825100'},
+    {op:'test',path:'/metadata/uid',value:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48'},
+    {op:'add',path:'/metadata/annotations',value:{}},
     {op:'add',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner',value:owner},
     {op:'add',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile',value:'disabled'},
     {op:'add',path:'/spec/suspend',value:true},
@@ -103,8 +165,7 @@ test('application suspension ownership is bound to one workflow attempt',()=>{
     {op:'remove',path:'/metadata/annotations/devantler.tech~1wedding-db-recovery-owner'},
     {op:'remove',path:'/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile'},
   ]);
-  assert.equal(buildSuspendPatch({resourceVersion:'279825100',kustomizationUid:'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48',owner})[1].value,'7a4f35ea-01c8-460e-aefe-6fdf6d10eb48');
-  assert.throws(()=>buildSuspendPatch({resourceVersion:'0',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',owner}),/refused/);
+  assert.throws(()=>buildSuspendPatch({resourceVersion:'0',kustomizationUid:'be31651e-fe0d-4826-9ffb-d41716a66720',annotationsPresent:true,owner}),/refused/);
 });
 
 test('controller handoff restart is atomic and bound to this incident',()=>{
@@ -172,6 +233,7 @@ test('core inventory accepts only keyed, duplicate-free recovery rows',()=>{
   assert.deepEqual(validateCoreInventory(inventory),{guestPairs:1,guests:1,roomBookings:1,meaningfulGuests:1});
   for(const change of [
     value=>value.guestPairs.push(structuredClone(value.guestPairs[0])),
+    value=>value.guestPairs.push({...structuredClone(value.guestPairs[0]),code:'PAIR02'}),
     value=>{value.guests[0].pairCode='MISSING';},
     value=>{value.guests[0].attending=null;value.guests[0].dietaryNotes=null;value.roomBookings=[];},
     value=>value.roomBookings.push(structuredClone(value.roomBookings[0])),
@@ -189,6 +251,16 @@ test('merge restores pre-loss answers only where the replacement has no newer an
   assert.match(sql,/INSERT INTO incident_restore_counts[\s\S]*;\nSELECT json_build_object\(/);
   assert.match(sql,/'restoredGuestAnswers',\(SELECT restored_guest_answers FROM incident_restore_counts\)/);
   assert.match(sql,/DROP SCHEMA incident_restore_34710000000_1 CASCADE/);
+  assert.match(sql,/RAISE SQLSTATE 'P1001'/);
+  assert.match(sql,/RAISE SQLSTATE 'P1002'/);
+  assert.doesNotMatch(sql,/EXCEPT SELECT code/);
+  assert.match(sql,/LEFT JOIN guest_pairs live_pairs ON live_pairs\.name=recovered_pairs\.name/);
+  assert.match(sql,/HAVING count\(live_pairs\.id\) <> 1/);
+  assert.match(sql,/LEFT JOIN guests live ON live\.guest_pair_id=live_pairs\.id AND live\.name=recovered\.name/);
+  assert.match(sql,/WHERE recovered\.attending IS NOT NULL OR recovered\.dietary_notes IS NOT NULL\n    GROUP BY/);
+  assert.match(sql,/HAVING count\(live\.id\) <> 1/);
+  assert.match(sql,/JOIN incident_restore_34710000000_1\.guest_pairs recovered_pairs ON recovered_pairs\.code=recovered\.pair_code\n  JOIN guest_pairs pairs ON pairs\.name=recovered_pairs\.name/);
+  assert.doesNotMatch(sql,/JOIN guest_pairs pairs ON pairs\.code=recovered\.pair_code/);
   assert.doesNotMatch(sql,/sessions|admin_sessions/);
   assert.throws(()=>buildMergeSQL('public'),/refused/);
 });

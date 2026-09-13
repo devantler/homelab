@@ -67,3 +67,15 @@ spec:
           memory: 32Mi
         limits:
           memory: 64Mi
+      # C-0211 baseline context, supplied through the chart's own values because
+      # kube-system is excluded from the add-security-context mutation (#3239).
+      # Helm merges these maps into the chart defaults, so the rendered output
+      # keeps the existing non-root identity, dropped capabilities and read-only
+      # root filesystem verbatim. Both fields are inert here: the pod mounts no
+      # volumes and sets no fsGroup, so the ownership policy governs nothing, and
+      # the empty seLinuxOptions object leaves SELinux type and MCS category
+      # selection to the runtime.
+      podSecurityContext:
+        fsGroupChangePolicy: OnRootMismatch
+      securityContext:
+        seLinuxOptions: {}
