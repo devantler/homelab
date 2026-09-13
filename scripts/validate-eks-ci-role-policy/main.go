@@ -1958,18 +1958,7 @@ const (
 // OCIRepositories replace one fixed ref.tag with ref.semver >=1.0.0. Their
 // Cosign verification provider, issuer and platform-bounded workflow subjects
 // remain unchanged, and the rendered guard rejects restoring a tag or digest.
-//
-// CONSERVATION, read from this validator under the SHA256-verified kubectl
-// v1.36.2 renderer: exactly this aggregate changed. It reported ZERO
-// `unapproved rendered <identity>`, ZERO `missing rendered authorization
-// resource` and ZERO `duplicate rendered`; every pinned per-resource identity
-// still passes. No Role, ClusterRole, binding, ServiceAccount, subject, verb,
-// wildcard, AWS identity or permission changes. The unresolved Flux
-// substitutions are the normal diagnostics emitted alongside an aggregate
-// mismatch.
-//
-// Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
-// That rollout established aggregate:
+// Approved aggregate for that tree:
 //
 //	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
 //
@@ -1989,19 +1978,114 @@ const (
 //
 //	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
 //
+// That repair established aggregate:
+//
+//	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
+//
+// Moved again by the snapshot-controller C-0211 baseline context (#3239). The
+// workload sits in kube-system, which add-security-context excludes, so its
+// stored template is supplied through the chart's own values. A HelmRelease is a
+// controller-RBAC emitter, so a pure VALUES change moves this aggregate even
+// though nothing is granted.
+//
+// CONSERVATION, rendered for all five authorization roots on this branch and on
+// main 491d5ef4 under one renderer: the 86 grant-bearing identities
+// (ClusterRole, Role, ClusterRoleBinding, RoleBinding, ServiceAccount) are
+// identical in both directions, the ClusterRole/Role rule bodies are identical
+// under digest
+// 11656de3ed0f1303187fe75f1d8c8e3e1c9f7d12f95e036f91ec685990d1f2e5, and the
+// binding roleRef/subject bodies are identical under digest
+// 73436c4be4cc0e421dd50f76c945abdd945ca5b905dfcd7582a268128da1ade0. Four of the
+// five roots render byte-identically; infrastructure/controllers grows by 120
+// bytes, and its complete hunk list is ONE hunk of four added lines inside the
+// snapshot-controller HelmRelease's controller values:
+//
+//	podSecurityContext.fsGroupChangePolicy: OnRootMismatch
+//	securityContext.seLinuxOptions: {}
+//
+// It adds no Role, ClusterRole, binding, ServiceAccount, subject, verb,
+// wildcard, AWS identity, or permission. Appending one synthetic wildcard
+// ClusterRole to the branch render makes both the identity and the rule-body
+// comparisons report a difference, so the identical result is a finding rather
+// than a blind read.
+//
+// The two changes touch disjoint objects: the Wedding repair edits the
+// wedding-app Flux Kustomization, while this context edits only the
+// snapshot-controller HelmRelease's controller values. Rebasing onto that
+// repair therefore leaves the conservation hunk list above unchanged.
+//
+// RENDERER PROVENANCE: the value below was read from CI's own failure on job
+// 103622614274 at c61aac1e (the merge of main 8756f2ad with this context), which
+// renders under the approved SHA256-verified toolchain and reported ZERO missing
+// and ZERO duplicate rendered resources; its single unapproved entry was this
+// aggregate. This host's kubectl/kustomize are not approved renderers, so no
+// local digest is claimed.
+//
+// Previous aggregate:
+//
+//	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
+//
+// That context established aggregate:
+//
+//	525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb
+//
+// Moved again by the Kubescape posture-persistence repair, re-derived on top of
+// the snapshot-controller C-0211 baseline context (525e04ee) rather than on the
+// older 8756f2ad, 814debc4 or 5b85be73 bases (see #3740). Exactly one
+// existing document changes relative to that base: the kubescape/kubescape
+// HelmRelease advances the scanner image from v4.0.12 to v4.0.14. The newer
+// image contains the v0.14 embedded CEL policy bundle required by control
+// C-0262 and fixes concurrent CEL parameter lookup; the HelmRelease values and
+// rendered authorization objects are otherwise unchanged.
+//
+// CONSERVATION: the earlier approval of this same delta against 5b85be73
+// reported ZERO `unapproved rendered <identity>`, ZERO `missing rendered
+// authorization resource` and ZERO `duplicate rendered` under the
+// SHA256-verified kubectl v1.36.2 renderer; the delta itself is unchanged by the
+// rebase. No identity, binding, ServiceAccount, verb, wildcard, AWS identity or
+// permission change is introduced. The kubescape HelmRelease's
+// unresolved-substitution fingerprint changes with the reviewed scanner tag.
+// The Wedding repair edits only the wedding-app Flux Kustomization, and the
+// C-0211 context edits only the snapshot-controller HelmRelease's controller
+// values; both are disjoint from the kubescape HelmRelease, so the delta is
+// unchanged by rebasing onto them.
+//
+// RENDERER PROVENANCE: the value below was read from CI's own failure on job
+// 103660680497 at 87a682d3 (the merge of main 525e04ee with this repair), which
+// renders under the approved SHA256-verified toolchain and reported ZERO missing
+// and ZERO duplicate rendered resources; its single unapproved entry was this
+// aggregate. This host's renderer is unapproved, so no local digest is claimed.
+//
+// Previous aggregate:
+//
+//	525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb
+//
+// That repair established aggregate:
+//
+//	e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300
+//
 // Moved again by the Velero maintenance OOM alert (#3437). The authored delta
 // adds one observability ServiceAccount, one namespaced Role and RoleBinding,
 // the alert CronJob and its inert placeholder Secret. The Role grants only
 // list on pods in the velero namespace; it cannot read Secrets, mutate
 // workloads or cross namespace boundaries. The CronJob's mounted Slack
 // webhook remains out of its environment and command line.
-// Rebased onto the Wedding data-loss repair above. The aggregate for the merged
-// tree was taken from CI (job 103636664367 at c20eb5db), which reported this
-// aggregate as the only unapproved item: ZERO unapproved rendered resources,
-// ZERO missing and ZERO duplicate identities. Previous aggregate:
 //
-//	8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e
-const expectedRenderedSurfaceSHA = "f6ccd29bddfc08976c91b439b28d7cdf8d602a54540ad997cf21a80e178ab5a9"
+// Re-derived on top of the Kubescape posture-persistence repair (e36a3db7)
+// rather than on the older 8756f2ad base (see #3740). The two changes touch
+// disjoint objects: that repair edits only the kubescape/kubescape HelmRelease
+// scanner tag, while this alert adds only the velero-namespace ServiceAccount,
+// Role, RoleBinding, CronJob and placeholder Secret above, so the authored delta
+// is unchanged by rebasing onto it.
+//
+// RENDERER PROVENANCE: PENDING. The value below still carries the e36a3db7 base
+// until CI renders the merge of main e36a3db7 with this alert under the approved
+// SHA256-verified toolchain; it is replaced with that run's single unapproved
+// aggregate once CI reports ZERO missing and ZERO duplicate rendered resources.
+// This host's renderer is unapproved, so no local digest is claimed.
+//
+// Previous aggregate: e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300.
+const expectedRenderedSurfaceSHA = "e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.

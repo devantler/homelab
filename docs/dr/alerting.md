@@ -82,10 +82,12 @@ stays quiet by design, exactly as the old Alertmanager did.
   with no polling pod for the kubescape scan to flag. The four top-level
   Kustomizations (`bootstrap → infrastructure-controllers → infrastructure →
   apps`) wait on their children, so a failed controller / app / HelmRelease
-  surfaces here as its parent going NotReady. The remaining **backup-success**
-  and **cert-expiry** checks are not Flux resources, so they need a scan-safe
-  synthetic check (e.g. per-CronJob dead-man pings like the heartbeat below, tied
-  to the silent vault snapshot in #1970) and are still TODO.
+  surfaces here as its parent going NotReady. Sustained CNPG continuous-WAL
+  archival failure is covered by the degraded-cluster check below. The
+  remaining **scheduled base-backup success/staleness** and **cert-expiry**
+  checks are not Flux resources, so they need a scan-safe synthetic check (e.g.
+  per-CronJob dead-man pings like the heartbeat below, tied to the silent vault
+  snapshot in #1970) and are still TODO.
 - **Degraded CNPG clusters alert on their own, not via the merge-queue gate.**
   A database losing a replica used to reach Slack only through the gate
   described above — as a *Flux* error naming a Kustomization, 20 minutes late,
@@ -96,9 +98,14 @@ stays quiet by design, exactly as the old Alertmanager did.
   Running, never Ready, with zero restarts.
   `bases/infrastructure/controllers/coroot/cron-job-cnpg-degraded-alert.yaml` now
   checks every CNPG `Cluster` every 30 minutes and posts to the same Slack
-  webhook when one has been degraded past a 15-minute grace. It is deliberately
+  webhook when its replicas or configured continuous WAL archiver have been
+  degraded past a 15-minute grace. The archive branch also treats a missing
+  `ContinuousArchiving` condition as `Unknown` after the Cluster creation grace;
+  this catches a sidecar that never reports state. It is deliberately
   independent of any Flux health gate, so relaxing that gate cannot silently
-  remove this coverage.
+  remove this coverage. The archive branch was added after wedding-db remained
+  3/3 Ready while Barman rejected WAL from a replacement system ID for roughly
+  three days.
 - **Velero maintenance OOMKills remain visible after a successful retry.**
   `bases/components/coroot-velero-maintenance-oom-alert/cron-job-velero-maintenance-oom-alert.yaml`
   checks retained repository-maintenance pod status every 30 minutes. It alerts

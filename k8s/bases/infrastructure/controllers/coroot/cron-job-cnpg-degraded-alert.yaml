@@ -1,4 +1,5 @@
-# Alerts on a CloudNativePG `Cluster` that has been degraded past a grace period.
+# Alerts on a CloudNativePG `Cluster` whose replicas or continuous WAL archive
+# have been degraded past a grace period.
 #
 # WHY THIS EXISTS AS A SEPARATE CHECK
 #
@@ -21,6 +22,13 @@
 # relaxing that gate (platform#2639 direction 1) does not silently remove the
 # only coverage this class has.
 #
+# A second silent shape was proven by the wedding-db data-loss incident on
+# 2026-09-09: a replacement Cluster reused its predecessor's Barman server name,
+# so every WAL upload was rejected while all 3/3 database instances stayed
+# Ready. CNPG reported ContinuousArchiving=False, but the replica-only predicate
+# ignored it for roughly three days. This check now treats a configured WAL
+# archiver whose condition stays non-True beyond the same grace as degradation.
+#
 # GRACE PERIOD — WHY `lastTransitionTime` IS SAFE HERE
 #
 # The grace period keys on the Ready condition's `lastTransitionTime`. That was
@@ -31,10 +39,11 @@
 # unreachable and the check a permanent no-op. Do not copy this pattern to a
 # Crossplane resource without re-measuring.)
 #
-# One rule covers both degradation shapes, because the timestamp means the right
-# thing in each: a cluster short of instances that only just became Ready is
-# still scaling up and stays quiet inside the grace; one that has been "Ready"
-# for hours while short a replica is a persistent degradation and alerts.
+# One rule covers all degradation shapes, because each condition's own
+# lastTransitionTime means the right thing: a cluster still scaling or an
+# archiver still initializing stays quiet inside the grace; either condition
+# remaining bad after that window alerts. If a configured archiver has not
+# published its condition, the Cluster creation time is the conservative clock.
 #
 # REPEATS ARE DELIBERATE. A plain webhook has no notification-controller-style
 # dedupe, so a cluster still degraded on the next tick alerts again. That is
@@ -192,12 +201,30 @@ spec:
                     .items[]
                     | . as $c
                     | (($c.status.conditions // []) | map(select(.type == "Ready")) | first) as $ready
+                    | (($c.status.conditions // []) | map(select(.type == "ContinuousArchiving")) | first) as $archive
                     | ($c.status.readyInstances // 0) as $r
                     | ($c.spec.instances // 0) as $d
-                    | select($r < $d or (($ready.status // "Unknown") != "True"))
-                    | select($ready.lastTransitionTime != null)
-                    | select(($now - ($ready.lastTransitionTime | fromdate)) >= $grace)
-                    | "• `\($c.metadata.namespace)/\($c.metadata.name)` — \($r)/\($d) instances ready, Ready=\($ready.status // "Unknown") since \($ready.lastTransitionTime)"
+                    | (([($c.spec.plugins // [])[] | select(.enabled != false and .isWALArchiver == true)] | length > 0)
+                       or ($c.spec.backup.barmanObjectStore? != null)) as $archiveConfigured
+                    | (if $ready.lastTransitionTime == null
+                       then false
+                       else (($now - ($ready.lastTransitionTime | fromdate)) >= $grace)
+                       end) as $replicaPastGrace
+                    | ($archive.lastTransitionTime // $c.metadata.creationTimestamp) as $archiveSince
+                    | (if $archiveSince == null
+                       then false
+                       else (($now - ($archiveSince | fromdate)) >= $grace)
+                       end) as $archivePastGrace
+                    | [
+                        if (($r < $d or (($ready.status // "Unknown") != "True")) and $replicaPastGrace)
+                        then "• `\($c.metadata.namespace)/\($c.metadata.name)` — \($r)/\($d) instances ready, Ready=\($ready.status // "Unknown") since \($ready.lastTransitionTime)"
+                        else empty
+                        end,
+                        if ($archiveConfigured and (($archive.status // "Unknown") != "True") and $archivePastGrace)
+                        then "• `\($c.metadata.namespace)/\($c.metadata.name)` — WAL archiving configured, ContinuousArchiving=\($archive.status // "Unknown") since \($archiveSince)"
+                        else empty
+                        end
+                      ][]
                   ' /tmp/body)
 
                   if [ -z "$degraded" ]; then
@@ -208,7 +235,7 @@ spec:
                   echo "Degraded CNPG cluster(s) detected:"
                   echo "$degraded"
 
-                  text=$(printf '*Degraded CloudNativePG cluster(s)*\n\n%s\n\n_A replica has been down longer than %ss. The primary may still be serving — check before assuming an outage. A replica that cannot self-heal needs its PVC + pod deleted so CNPG re-clones it from the primary (docs/dr/runbook.md)._' \
+                  text=$(printf '*Degraded CloudNativePG cluster(s)*\n\n%s\n\n_A replica shortage or WAL archival failure has persisted longer than %ss. The primary may still be serving. For ContinuousArchiving failures, inspect Barman object-store access and server-name isolation before trusting backups (docs/dr/runbook.md)._' \
                     "$degraded" "${GRACE_SECONDS}")
                   jq -n --arg t "$text" '{text: $t}' > /tmp/payload.json
 

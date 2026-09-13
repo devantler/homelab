@@ -26,12 +26,55 @@ readonly major="${BASH_REMATCH[1]}"
 readonly minor="${BASH_REMATCH[2]}"
 readonly patch="${BASH_REMATCH[3]}"
 
+# The tag regex admits components of any length, but Bash arithmetic wraps past
+# 2^63-1, so a tag like v4.0.9223372036854775808 would evaluate to a negative
+# patch and be rejected as older than every minimum below. Compare components as
+# decimal strings instead: the regex forbids leading zeros, so a longer component
+# is always the larger one, and equal-length components order lexically.
+component_lt() {
+  local left="$1" right="$2"
+  if [[ ${#left} -ne ${#right} ]]; then
+    [[ ${#left} -lt ${#right} ]]
+    return
+  fi
+  [[ "${left}" < "${right}" ]]
+}
+
+scanner_predates() {
+  local want_major="$1" want_minor="$2" want_patch="$3"
+  if [[ "${major}" != "${want_major}" ]]; then
+    component_lt "${major}" "${want_major}"
+    return
+  fi
+  if [[ "${minor}" != "${want_minor}" ]]; then
+    component_lt "${minor}" "${want_minor}"
+    return
+  fi
+  component_lt "${patch}" "${want_patch}"
+}
+
 # Kubescape <=4.0.11 can override an explicit local-only request, enter SaaS
 # submission with no backend configured, and abort on account-ID chmod before
 # its in-cluster report receiver persists WorkloadConfigurationScan objects.
 # Upstream kubescape#2556 fixes all three links and first ships in v4.0.12.
-if ((major < 4 || (major == 4 && minor == 0 && patch < 12))); then
+if scanner_predates 4 0 12; then
   fail "Kubescape scanner ${scanner_tag} predates v4.0.12 and can silently drop self-hosted posture results"
+fi
+
+# Kubescape v4.0.12 ships CEL admission support with the v0.13 policy bundle,
+# which does not contain the ValidatingAdmissionPolicy for control C-0262. A
+# full scheduled scan therefore aborts after discovery with "no
+# ValidatingAdmissionPolicy for control C-0262" and persists no posture data.
+# v4.0.13 bumps the embedded library to v0.14 and includes that policy.
+if scanner_predates 4 0 13; then
+  fail "Kubescape scanner ${scanner_tag} predates v4.0.13 and can abort on the incomplete embedded CEL policy bundle"
+fi
+
+# v4.0.13 still races on concurrent CEL parameter lookups during a scan; v4.0.14
+# is the first scanner carrying that fix. No cluster-level test exercises the
+# race, so this guard is what stops a downgrade from reintroducing it.
+if scanner_predates 4 0 14; then
+  fail "Kubescape scanner ${scanner_tag} predates v4.0.14 and can race on concurrent CEL parameter lookups"
 fi
 
 # kubevuln v0.3.159 swallows an exhausted conflict retry while updating a

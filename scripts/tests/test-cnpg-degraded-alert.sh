@@ -3,9 +3,10 @@
 # Contract for the cnpg-degraded-alert CronJob (#2787).
 #
 # This CronJob is the ONLY signal for a CloudNativePG cluster that is degraded
-# without crashlooping — a pod that stays Running, never Ready, with zero
-# restarts, which no Coroot inspection covers. It had no test at all, so every
-# behaviour its own manifest comment calls load-bearing was pinned by nothing.
+# without crashlooping — either a pod that stays Running but never Ready, or a
+# Ready database whose continuous WAL archive is failing. It had no test at
+# all, so every behaviour its own manifest comment calls load-bearing was
+# pinned by nothing.
 #
 # Two classes are asserted here, and they fail in opposite directions:
 #
@@ -292,6 +293,37 @@ healthy_body="$(
   }'
 )"
 readonly healthy_body
+archive_failed_body="$(
+  jq -n --arg ts "${old_stamp}" '{
+    items: [{
+      metadata: { namespace: "wedding-app", name: "wedding-db", creationTimestamp: $ts },
+      spec: {
+        instances: 3,
+        plugins: [{
+          name: "barman-cloud.cloudnative-pg.io",
+          isWALArchiver: true
+        }]
+      },
+      status: {
+        readyInstances: 3,
+        conditions: [
+          { type: "Ready", status: "True", lastTransitionTime: $ts },
+          { type: "ContinuousArchiving", status: "False", lastTransitionTime: $ts }
+        ]
+      }
+    }]
+  }'
+)"
+readonly archive_failed_body
+archive_missing_body="$(
+  jq '.items[0].status.conditions |= map(select(.type != "ContinuousArchiving"))' \
+    <<<"${archive_failed_body}"
+)"
+readonly archive_missing_body
+archive_disabled_body="$(
+  jq '.items[0].spec.plugins[0].enabled = false' <<<"${archive_failed_body}"
+)"
+readonly archive_disabled_body
 
 # Scenario 1 — degraded cluster, real webhook: exactly one delivery, and the URL
 # reaches curl through its stdin config rather than its argv.
@@ -309,6 +341,40 @@ jq -e '.text | test("umami/umami-db")' "${dir}/delivered-payload.json" >/dev/nul
 jq -e '.text | test("2/3 instances ready")' "${dir}/delivered-payload.json" >/dev/null ||
   fail "scenario 'delivers': payload does not carry the ready/desired counts"
 pass "a degraded cluster delivers exactly one alert, with the URL out of argv"
+
+# Scenario 1b — INCIDENT REGRESSION. A database can be fully Ready while every
+# WAL upload is rejected. That happened to wedding-db after its 2026-09-09
+# replacement reused the predecessor's Barman server name: all three instances
+# were healthy, so the replica-only check stayed silent for roughly three days.
+dir="$(setup_scenario archive_failed 200 "${archive_failed_body}" "${REAL_WEBHOOK}")"
+run_scenario "${dir}" || fail "scenario 'archive_failed': script exited non-zero: $(cat "${dir}/stderr.log")"
+[ "$(deliveries "${dir}")" = "1" ] ||
+  fail "scenario 'archive_failed': expected exactly 1 delivery, got $(deliveries "${dir}")"
+jq -e '.text | test("wedding-app/wedding-db")' "${dir}/delivered-payload.json" >/dev/null ||
+  fail "scenario 'archive_failed': payload does not name the affected cluster"
+jq -e '.text | test("WAL archiving") and test("ContinuousArchiving=False")' \
+  "${dir}/delivered-payload.json" >/dev/null ||
+  fail "scenario 'archive_failed': payload does not identify the failed archival condition"
+pass "a Ready cluster with sustained WAL archival failure delivers an alert"
+
+# Scenario 1c — a configured archiver that never publishes its condition must
+# not disappear from monitoring. Use Cluster creation as the fallback grace
+# clock, then report the missing condition as Unknown.
+dir="$(setup_scenario archive_missing 200 "${archive_missing_body}" "${REAL_WEBHOOK}")"
+run_scenario "${dir}" || fail "scenario 'archive_missing': script exited non-zero: $(cat "${dir}/stderr.log")"
+[ "$(deliveries "${dir}")" = "1" ] ||
+  fail "scenario 'archive_missing': expected exactly 1 delivery, got $(deliveries "${dir}")"
+jq -e '.text | test("ContinuousArchiving=Unknown")' "${dir}/delivered-payload.json" >/dev/null ||
+  fail "scenario 'archive_missing': payload does not identify the missing archival condition"
+pass "a configured archiver with no condition alerts after the grace period"
+
+# Scenario 1d — an explicitly disabled plugin is retained configuration, not an
+# active archiver. Its stale condition must not page until it is enabled again.
+dir="$(setup_scenario archive_disabled 200 "${archive_disabled_body}" "${REAL_WEBHOOK}")"
+run_scenario "${dir}" || fail "scenario 'archive_disabled': script exited non-zero: $(cat "${dir}/stderr.log")"
+[ "$(deliveries "${dir}")" = "0" ] ||
+  fail "scenario 'archive_disabled': an explicitly disabled archiver must not alert"
+pass "an explicitly disabled WAL archiver stays quiet"
 
 # Scenario 2 — the reserved placeholder host stays inert, so local and CI runs
 # are quiet by design without swallowing a real delivery failure.
@@ -432,6 +498,20 @@ run_scenario "${dir}" || fail "scenario 'within_grace': script exited non-zero: 
 [ "$(deliveries "${dir}")" = "0" ] ||
   fail "scenario 'within_grace': alerted on a cluster still inside its grace period"
 pass "a cluster still inside the grace period does not page"
+
+# Scenario 8b — the archive condition gets its own grace clock. A new Cluster
+# may report ContinuousArchiving=False while its sidecar starts; that ordinary
+# transition must stay quiet even though every database instance is Ready.
+dir="$(setup_scenario archive_within_grace 200 "$(
+  jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.items[0].metadata.creationTimestamp = $ts
+     | (.items[0].status.conditions[] | select(.type == "ContinuousArchiving").lastTransitionTime) = $ts' \
+    <<<"${archive_failed_body}"
+)" "${REAL_WEBHOOK}")"
+run_scenario "${dir}" || fail "scenario 'archive_within_grace': script exited non-zero: $(cat "${dir}/stderr.log")"
+[ "$(deliveries "${dir}")" = "0" ] ||
+  fail "scenario 'archive_within_grace': alerted on an archiver still inside its grace period"
+pass "a WAL archiver still inside the grace period does not page"
 
 # ---------------------------------------------------------------------------
 # Wiring. A contract nothing runs protects nothing.

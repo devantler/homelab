@@ -179,14 +179,17 @@ spec:
         # our CRs offline. Paired with `cluster-role.yaml` + `cluster-role-binding.yaml`,
         # which grant the scanner SA the `list` RBAC the getter needs (the chart never grants
         # it). The merged getter still swallows a missing-RBAC/CRD source, so this bump cannot
-        # break scans on its own. Drop this override + the reader RBAC once the chart bumps
-        # the scanner to >= v4.0.12 AND grants it the securityexceptions RBAC. v4.0.12
-        # also carries kubescape#2556: without a configured SaaS backend, older images
-        # can auto-enable submission and abort on account-ID chmod before the in-cluster
-        # receiver persists posture results. Keep the non-root security context; the
-        # scanner fix makes chmod best-effort and preserves explicit local-only intent.
+        # break scans on its own. Drop this override + the reader RBAC once the chart grants
+        # the securityexceptions RBAC and selects a scanner >= v4.0.14. v4.0.12 carries
+        # kubescape#2556: without a configured SaaS backend, older images can auto-enable
+        # submission and abort on account-ID chmod before the in-cluster receiver persists
+        # posture results. It also ships the v0.13 CEL policy bundle, which lacks the
+        # ValidatingAdmissionPolicy for C-0262 and makes every full cluster scan abort after
+        # discovery. v4.0.13 refreshes that bundle to v0.14; v4.0.14 additionally fixes the
+        # scanner's concurrent CEL parameter lookup. Keep the non-root security context;
+        # the scanner fix makes chmod best-effort and preserves explicit local-only intent.
         # (Same component-image-ahead-of-chart pattern as the nodeAgent override above.)
-        tag: v4.0.12
+        tag: v4.0.14
     # Force the scheduled posture scan to run LOCAL-ONLY. REQUIRED — this is the
     # only thing keeping the scan off the cloud-submit path now that
     # capabilities.kubescapeOffline is disabled (see the note there). The chart

@@ -34,16 +34,35 @@ const RECOVERY_RECONCILE_ANNOTATION='kustomize.toolkit.fluxcd.io/reconcile';
 const RECOVERY_OWNER_PATH='/metadata/annotations/devantler.tech~1wedding-db-recovery-owner';
 const RECOVERY_RECONCILE_PATH='/metadata/annotations/kustomize.toolkit.fluxcd.io~1reconcile';
 const RECOVERY_REFUSAL_PHASES=new Set(['source-state','before-backup','restore-and-merge','after-backup','proof','cleanup']);
+const RECOVERY_REFUSAL_CHECKPOINTS=new Set([
+  'create-recovery','recovered-inventory-query','recovered-replay-time','recovered-core-inventory',
+  'live-inventory-query','live-core-inventory','core-cardinality','suspend-application',
+  'live-cluster-identity','live-primary','stage-recovered-data','application-fences',
+  'merge-recovered-data','merge-shape','merge-postcondition','drop-staging-schema',
+  'resume-application','cleanup-recovery',
+]);
 let recoveryInvocationVerified=false;
 let recoveryPhase='invocation';
+let recoveryCheckpoint;
+let recoveryFailureSqlstate;
 const check=value=>{if(!value)throw Error('refused');return value;};
 const integer=value=>{check(typeof value==='string'&&/^[1-9][0-9]*$/.test(value));return value;};
 const uid=value=>{check(typeof value==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value));return value;};
 const timestamp=value=>{check(typeof value==='string'&&!Number.isNaN(Date.parse(value)));return value;};
 const condition=(value,type)=>value.status?.conditions?.some(item=>item.type===type&&item.status==='True');
 
-export function recoveryRefusalMessage({verified=false,phase='invocation'}={}){
-  return verified&&RECOVERY_REFUSAL_PHASES.has(phase)?`Wedding database incident recovery refused (phase: ${phase}).\n`:'Wedding database incident recovery refused.\n';
+export function extractRecoverySqlstate(stderr){
+  if(typeof stderr!=='string'||stderr.length>65536)return undefined;
+  const codes=stderr.split('\n').flatMap(line=>{const match=/^ERROR:\s+([0-9A-Z]{5})\s*$/.exec(line);return match?[match[1]]:[];});
+  return codes.length===1?codes[0]:undefined;
+}
+
+export function recoveryRefusalMessage({verified=false,phase='invocation',checkpoint,sqlstate}={}){
+  if(!verified||!RECOVERY_REFUSAL_PHASES.has(phase))return 'Wedding database incident recovery refused.\n';
+  const checkpointAllowed=phase==='restore-and-merge'&&RECOVERY_REFUSAL_CHECKPOINTS.has(checkpoint);
+  const checkpointDetail=checkpointAllowed?`; checkpoint: ${checkpoint}`:'';
+  const sqlstateDetail=checkpointAllowed&&checkpoint==='merge-recovered-data'&&/^[0-9A-Z]{5}$/.test(sqlstate)?`; sqlstate: ${sqlstate}`:'';
+  return `Wedding database incident recovery refused (phase: ${phase}${checkpointDetail}${sqlstateDetail}).\n`;
 }
 
 export function hasPrelossWitness(kustomization){
@@ -122,11 +141,12 @@ export function recoveryOwnerAttempt(run,currentAttempt,owner){
   return match[1];
 }
 
-export function buildSuspendPatch({resourceVersion,kustomizationUid,owner}){
-  integer(resourceVersion);check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
+export function buildSuspendPatch({resourceVersion,kustomizationUid,annotationsPresent,owner}){
+  integer(resourceVersion);check([LIVE_KUSTOMIZATION_UID,PARENT_KUSTOMIZATION_UID].includes(kustomizationUid)&&typeof annotationsPresent==='boolean'&&/^[1-9][0-9]*\/[1-9][0-9]*$/.test(owner));
   return [
     {op:'test',path:'/metadata/resourceVersion',value:resourceVersion},
     {op:'test',path:'/metadata/uid',value:kustomizationUid},
+    ...(annotationsPresent?[]:[{op:'add',path:'/metadata/annotations',value:{}}]),
     {op:'add',path:RECOVERY_OWNER_PATH,value:owner},
     {op:'add',path:RECOVERY_RECONCILE_PATH,value:'disabled'},
     {op:'add',path:'/spec/suspend',value:true},
@@ -195,9 +215,9 @@ export function validateCoreInventory(value,{requireMeaningful=true}={}){
   check(Array.isArray(guestPairs)&&guestPairs.length>0&&guestPairs.length<=100);
   check(Array.isArray(guests)&&guests.length>0&&guests.length<=300);
   check(Array.isArray(roomBookings)&&roomBookings.length<=100);
-  const codes=new Set();
+  const codes=new Set(),pairNames=new Set();
   for(const pair of guestPairs){
-    check(pair&&typeof pair==='object'&&/^[A-Za-z0-9_-]{1,32}$/.test(pair.code));string(pair.name,255);timestamp(pair.createdAt);check(!codes.has(pair.code));codes.add(pair.code);
+    check(pair&&typeof pair==='object'&&/^[A-Za-z0-9_-]{1,32}$/.test(pair.code));string(pair.name,255);timestamp(pair.createdAt);check(!codes.has(pair.code)&&!pairNames.has(pair.name));codes.add(pair.code);pairNames.add(pair.name);
   }
   const guestKeys=new Set();let meaningfulGuests=0;
   for(const guest of guests){
@@ -232,17 +252,23 @@ LOCK TABLE guest_pairs, guests, room_bookings IN ACCESS EXCLUSIVE MODE;
 DO $guard$
 BEGIN
   IF EXISTS (
-    (SELECT code, name FROM ${schema}.guest_pairs EXCEPT SELECT code, name FROM guest_pairs)
-    UNION ALL
-    (SELECT code, name FROM guest_pairs EXCEPT SELECT code, name FROM ${schema}.guest_pairs)
-  ) THEN RAISE EXCEPTION 'guest pair identity mismatch'; END IF;
+    SELECT 1
+    FROM ${schema}.room_bookings recovered
+    JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+    LEFT JOIN guest_pairs live_pairs ON live_pairs.name=recovered_pairs.name
+    GROUP BY recovered.pair_code
+    HAVING count(live_pairs.id) <> 1
+  ) THEN RAISE SQLSTATE 'P1001' USING MESSAGE = 'room booking pair mapping mismatch'; END IF;
   IF EXISTS (
-    (SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered
-      EXCEPT SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id)
-    UNION ALL
-    (SELECT pairs.code, live.name FROM guests live JOIN guest_pairs pairs ON pairs.id=live.guest_pair_id
-      EXCEPT SELECT recovered.pair_code, recovered.name FROM ${schema}.guests recovered)
-  ) THEN RAISE EXCEPTION 'guest identity mismatch'; END IF;
+    SELECT 1
+    FROM ${schema}.guests recovered
+    JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+    LEFT JOIN guest_pairs live_pairs ON live_pairs.name=recovered_pairs.name
+    LEFT JOIN guests live ON live.guest_pair_id=live_pairs.id AND live.name=recovered.name
+    WHERE recovered.attending IS NOT NULL OR recovered.dietary_notes IS NOT NULL
+    GROUP BY recovered.pair_code,recovered.name
+    HAVING count(live.id) <> 1
+  ) THEN RAISE SQLSTATE 'P1002' USING MESSAGE = 'answered guest mapping mismatch'; END IF;
 END $guard$;
 CREATE TEMP TABLE incident_restore_counts (
   restored_guest_answers bigint NOT NULL,
@@ -251,7 +277,9 @@ CREATE TEMP TABLE incident_restore_counts (
 WITH restored_guests AS (
   UPDATE guests live
   SET attending=recovered.attending,dietary_notes=recovered.dietary_notes,updated_at=recovered.updated_at
-  FROM ${schema}.guests recovered JOIN guest_pairs pairs ON pairs.code=recovered.pair_code
+  FROM ${schema}.guests recovered
+  JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+  JOIN guest_pairs pairs ON pairs.name=recovered_pairs.name
   WHERE live.guest_pair_id=pairs.id AND live.name=recovered.name
     AND live.attending IS NULL AND live.dietary_notes IS NULL
     AND (recovered.attending IS NOT NULL OR recovered.dietary_notes IS NOT NULL)
@@ -259,7 +287,9 @@ WITH restored_guests AS (
 ), restored_bookings AS (
   INSERT INTO room_bookings (guest_pair_id,requested,notes,updated_at)
   SELECT pairs.id,recovered.requested,recovered.notes,recovered.updated_at
-  FROM ${schema}.room_bookings recovered JOIN guest_pairs pairs ON pairs.code=recovered.pair_code
+  FROM ${schema}.room_bookings recovered
+  JOIN ${schema}.guest_pairs recovered_pairs ON recovered_pairs.code=recovered.pair_code
+  JOIN guest_pairs pairs ON pairs.name=recovered_pairs.name
   ON CONFLICT (guest_pair_id) DO NOTHING
   RETURNING id
 )
@@ -275,9 +305,14 @@ DROP SCHEMA ${schema} CASCADE;
 COMMIT;`;
 }
 
-function kubectl(args,{input,timeout=30000,maxBytes=2*1024*1024}={}){
+function kubectl(args,{input,timeout=30000,maxBytes=2*1024*1024,captureSqlstate=false}={}){
   const result=spawnSync('kubectl',['--kubeconfig',path.join(process.env.HOME,'.kube/config'),'--context','admin@prod',...args],{input,env:{PATH:process.env.PATH,HOME:process.env.HOME},timeout,maxBuffer:maxBytes});
-  check(!result.error&&result.status===0&&result.stdout.length<=maxBytes&&result.stderr.length<=maxBytes);
+  const valid=!result.error&&result.status===0&&result.stdout.length<=maxBytes&&result.stderr.length<=maxBytes;
+  if(!valid&&captureSqlstate&&!result.error){
+    const sqlstate=extractRecoverySqlstate(result.stderr.toString('utf8'));
+    if(sqlstate)throw Error('sqlstate:'+sqlstate);
+  }
+  check(valid);
   return result.stdout;
 }
 
@@ -374,8 +409,8 @@ function csv(value){
 
 function csvRows(rows,columns){return Buffer.from(rows.map(row=>columns.map(column=>csv(row[column])).join(',')).join('\n')+'\n');}
 
-function psql(primary,database,command,{input,maxBytes=65536}={}){
-  return kubectl(['--namespace',NAMESPACE,'exec',...(input?['--stdin']:[]),primary,'--container=postgres','--','psql','--username=postgres','--dbname='+database,'--set=ON_ERROR_STOP=1','--tuples-only','--no-align','--quiet','--command='+command],{input,timeout:120000,maxBytes});
+function psql(primary,database,command,{input,maxBytes=65536,captureSqlstate=false}={}){
+  return kubectl(['--namespace',NAMESPACE,'exec',...(input?['--stdin']:[]),primary,'--container=postgres','--','psql','--username=postgres','--dbname='+database,'--set=ON_ERROR_STOP=1','--set=VERBOSITY=sqlstate','--tuples-only','--no-align','--quiet','--command='+command],{input,timeout:120000,maxBytes,captureSqlstate});
 }
 
 function loadRecovered(primary,database,recovered,config){
@@ -417,13 +452,13 @@ function acquireFence(namespace,name,uidValue,config){
   while(Date.now()<end){
     current=objectAt(namespace,'kustomizations.kustomize.toolkit.fluxcd.io',name);
     check(current.metadata.uid===uidValue&&typeof current.metadata.resourceVersion==='string');
-    check(current.metadata.annotations&&typeof current.metadata.annotations==='object');
-    check(current.spec?.suspend!==true&&!current.metadata.annotations[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations[RECOVERY_RECONCILE_ANNOTATION]);
+    check(current.metadata.annotations===undefined||(current.metadata.annotations!==null&&typeof current.metadata.annotations==='object'&&!Array.isArray(current.metadata.annotations)));
+    check(current.spec?.suspend!==true&&!current.metadata.annotations?.[RECOVERY_OWNER_ANNOTATION]&&!current.metadata.annotations?.[RECOVERY_RECONCILE_ANNOTATION]);
     if(condition(current,'Ready')&&!condition(current,'Reconciling')&&current.status?.observedGeneration===current.metadata.generation)break;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3000);
   }
   check(current&&Date.now()<end);
-  const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,owner});
+  const patch=buildSuspendPatch({resourceVersion:current.metadata.resourceVersion,kustomizationUid:current.metadata.uid,annotationsPresent:current.metadata.annotations!==undefined,owner});
   kubectl(['--namespace',namespace,'patch','kustomization.kustomize.toolkit.fluxcd.io',name,'--type=json','--patch='+JSON.stringify(patch)]);
   let stableResourceVersion='';
   for(let attempt=0;attempt<3;attempt+=1){
@@ -605,32 +640,54 @@ function run(){
   const source=sourceState();recoveryPhase='before-backup';
   const before=backup(config,'before',source);
   recoveryPhase='restore-and-merge';
-  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,schemaCleanupError,resumeError,cleanupError;
+  let recovery,recoveredInventory,recovered,recoveryReplayTimestamp,liveBefore,merge,mergePrimary,error,errorCheckpoint,errorSqlstate,schemaCleanupError,resumeError,cleanupError;
   try{
+    recoveryCheckpoint='create-recovery';
     recovery=createRecovery(config,source);
+    recoveryCheckpoint='recovered-inventory-query';
     recoveredInventory=inventory(recovery.primary,source.database,{requireMeaningful:true});
+    recoveryCheckpoint='recovered-replay-time';
     recoveryReplayTimestamp=validateRecoveryReplayTimestamp(recoveredInventory.value.recoveryReplayTimestamp,{replacementCreatedAt:source.replacementCreatedAt});
+    recoveryCheckpoint='recovered-core-inventory';
     recovered=validateCoreInventory(recoveredInventory.value,{requireMeaningful:true});
+    recoveryCheckpoint='live-inventory-query';
     const livePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     const liveInventory=inventory(livePrimary,source.database,{requireMeaningful:false});
+    recoveryCheckpoint='live-core-inventory';
     liveBefore=validateCoreInventory(liveInventory.value,{requireMeaningful:false});
+    recoveryCheckpoint='core-cardinality';
     check(recovered.guestPairs===liveBefore.guestPairs&&recovered.guests===liveBefore.guests);
+    recoveryCheckpoint='suspend-application';
     suspendApplication(config);
+    recoveryCheckpoint='live-cluster-identity';
     check(object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).metadata.uid===source.currentClusterUid);
+    recoveryCheckpoint='live-primary';
     mergePrimary=object('clusters.postgresql.cnpg.io',LIVE_CLUSTER).status.currentPrimary;
     check(/^wedding-db-[1-9][0-9]*$/.test(mergePrimary));
+    recoveryCheckpoint='stage-recovered-data';
     const schema=loadRecovered(mergePrimary,source.database,recoveredInventory.value,config);
+    recoveryCheckpoint='application-fences';
     proveApplicationFences(config);check(list('pods','app.kubernetes.io/name=wedding-app').length===0);
-    const output=psql(mergePrimary,source.database,buildMergeSQL(schema));
+    recoveryCheckpoint='merge-recovered-data';
+    const output=psql(mergePrimary,source.database,buildMergeSQL(schema),{captureSqlstate:true});
     merge=JSON.parse(output.toString('utf8').trim());
+    recoveryCheckpoint='merge-shape';
     for(const key of ['restoredGuestAnswers','restoredRoomBookings','finalMeaningfulGuestAnswers','finalRoomBookings'])check(Number.isSafeInteger(merge[key])&&merge[key]>=0);
+    recoveryCheckpoint='merge-postcondition';
     check(merge.finalMeaningfulGuestAnswers>=recovered.meaningfulGuests&&merge.finalRoomBookings>=recovered.roomBookings);
-  }catch(candidate){error=candidate;}
+  }catch(candidate){
+    error=candidate;errorCheckpoint=recoveryCheckpoint;
+    const match=/^sqlstate:([0-9A-Z]{5})$/.exec(candidate?.message);errorSqlstate=match?.[1];
+  }
   if(error&&mergePrimary){try{dropStagingSchema(mergePrimary,source.database,config);}catch(candidate){schemaCleanupError=candidate;}}
   try{resumeApplication(config);}catch(candidate){resumeError=candidate;}
   try{cleanupRecovery(config,recovery);}catch(candidate){cleanupError=candidate;}
-  if(error||schemaCleanupError||resumeError||cleanupError)throw Error('refused');
-  recoveryPhase='after-backup';
+  if(error||schemaCleanupError||resumeError||cleanupError){
+    recoveryCheckpoint=schemaCleanupError?'drop-staging-schema':resumeError?'resume-application':cleanupError?'cleanup-recovery':errorCheckpoint;
+    recoveryFailureSqlstate=recoveryCheckpoint===errorCheckpoint?errorSqlstate:undefined;
+    throw Error('refused');
+  }
+  recoveryCheckpoint=undefined;recoveryPhase='after-backup';
   const after=backup(config,'after',source);
   recoveryPhase='proof';
   recordProof({config,source,recovery,before,after,recovered,recoveryReplayTimestamp,liveBefore,merge});
@@ -666,5 +723,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
     check(process.argv.length===2||(process.argv.length===3&&['--cleanup','--verify-source'].includes(process.argv[2])));
     const result=process.argv[2]==='--verify-source'?(verifyCandidate(),{sourceVerified:true}):process.argv[2]==='--cleanup'?runCleanup():run();
     process.stdout.write(JSON.stringify(result)+'\n');
-  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase}));process.exitCode=2;}
+  }catch{process.stderr.write(recoveryRefusalMessage({verified:recoveryInvocationVerified,phase:recoveryPhase,checkpoint:recoveryCheckpoint,sqlstate:recoveryFailureSqlstate}));process.exitCode=2;}
 }
