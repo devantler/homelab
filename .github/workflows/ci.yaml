@@ -1174,10 +1174,11 @@ jobs:
       - name: 🩺 Validate the CNPG degraded-cluster alert
         if: needs.changes.outputs.k8s == 'true'
         # This CronJob is the only signal for a database degraded without
-        # crashlooping, and a broken check prints the same "none degraded" line
-        # as a healthy fleet. Run its real script against a stubbed API and
-        # delivery so both silent-zero guards and the credential's handling are
-        # pinned by behaviour rather than by schema.
+        # crashlooping, including a Ready cluster whose continuous WAL archive
+        # is failing. A broken check prints the same "none degraded" line as a
+        # healthy fleet. Run its real script against a stubbed API and delivery
+        # so both silent-zero guards and the credential's handling are pinned by
+        # behaviour rather than by schema.
         run: bash scripts/tests/test-cnpg-degraded-alert.sh
 
       - name: 🩺 Validate the stranded-volume-attach alert
