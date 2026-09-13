@@ -336,6 +336,10 @@ jobs:
               # contract for the vendored CDI/KubeVirt manifests.
               - 'scripts/annotate-vendored-checkov/**'
               - 'scripts/update-vendored-operators.sh'
+              # The cert-approver image-pin guard reads the updater's constants,
+              # so both halves re-run when either changes.
+              - 'scripts/guard-cert-approver-image-pin.sh'
+              - 'scripts/tests/test-guard-cert-approver-image-pin.sh'
               # The Trivy dispositions and the local CI-equivalent scan are one
               # contract: a path-scoped ignore is inert unless both callers load it.
               - '.mega-linter.yml'
@@ -897,8 +901,11 @@ jobs:
         # vendor rename must fail offline.
         run: |
           bash -n scripts/update-vendored-operators.sh
-          shellcheck scripts/update-vendored-operators.sh
+          shellcheck scripts/update-vendored-operators.sh \
+            scripts/guard-cert-approver-image-pin.sh \
+            scripts/tests/test-guard-cert-approver-image-pin.sh
           go test ./scripts/annotate-vendored-checkov
+          bash scripts/tests/test-guard-cert-approver-image-pin.sh
           scripts/update-vendored-operators.sh --validate-committed
 
       - name: 🔎 Validate Trivy ignore-file wiring

@@ -29,3 +29,13 @@ resources:
   - deployment.yaml
   - cilium-network-policy.yaml
   - pod-disruption-budget.yaml
+# Pin the operator image by digest here, not in the vendored deployment.yaml: those bytes must stay
+# upstream's, and upstream v0.11.1 showed they can name a moving tag with imagePullPolicy: Always
+# (#3515). Renders as `:<newTag>@<digest>`, so the kubelet pulls this digest whatever the tag points
+# at. The tag and digest must equal the updater's cert_approver_version and cert_approver_image_digest;
+# scripts/guard-cert-approver-image-pin.sh enforces that in CI, and the updater re-resolves the digest
+# from the registry on every refresh.
+images:
+  - name: ghcr.io/alex1989hu/kubelet-serving-cert-approver
+    newTag: 0.12.0
+    digest: sha256:534e40a0050c34bda2a7bae53aa9c11133704f23dc83fee14f3b45b0f1eabe45
