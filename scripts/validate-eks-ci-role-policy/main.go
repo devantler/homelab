@@ -1870,7 +1870,125 @@ const (
 // Restoring the superseded value fails with exactly this fingerprint, so the
 // baseline is not vacuous.
 // Previous aggregate: 1b17b64243f850afd2acc2b8af2fa5ed270e3a88d42db80437d2de40d7861a12.
-const expectedRenderedSurfaceSHA = "36049e7ea4817e1d3006e504eea95495341d2c0acbd3ffa5990981b4bf0e4335"
+//
+// Moved again by the Wedding archive-incarnation repair (#3722). Rendering all
+// five authorization roots on this branch and on main de14c1ba preserves the
+// complete document identity set in both directions. Exactly ONE existing
+// document changes:
+//
+//	kustomize.toolkit.fluxcd.io/v1  Kustomization  wedding-app/wedding-app
+//
+// Its only rendered delta is a JSON patch that adds the fixed
+// `spec.plugins[0].parameters.serverName` value to the tenant's CNPG Cluster.
+// That isolates the new PostgreSQL system ID from its predecessor's retained
+// Barman archive. It adds no Role, ClusterRole, binding, ServiceAccount, subject,
+// verb, wildcard, AWS identity, or permission. The validator's error set reports
+// exactly the one per-resource mismatch and this aggregate mismatch, with zero
+// missing or duplicate resources; unresolved Flux substitutions are the usual
+// diagnostics emitted alongside a mismatch.
+//
+// The previous aggregate remains recorded here:
+//
+//	36049e7ea4817e1d3006e504eea95495341d2c0acbd3ffa5990981b4bf0e4335
+//
+// The new fingerprints below were read from this validator's complete rendered
+// surface. Restoring either predecessor value makes the same focused test fail,
+// so both checks remain live.
+//
+// Moved again by the Kubescape 1.40.4 reliability repair (#3730). Exactly one
+// existing document changes: the kubescape/kubescape HelmRelease advances to
+// chart 1.40.4, which selects conflict-safe kubevuln v0.3.430, and its Helm
+// post-renderer restores the node-agent profile-reader rule that 1.40.4 removed.
+// The restored rule is byte-for-byte equivalent in authority to chart 1.40.3:
+// get/list/watch on ApplicationProfiles and NetworkNeighborhoods only.
+//
+// CONSERVATION, read from this validator under the SHA256-verified kubectl
+// v1.36.2 renderer: exactly this aggregate changed. It reported ZERO
+// `unapproved rendered <identity>`, ZERO `missing rendered authorization
+// resource` and ZERO `duplicate rendered`; every pinned per-resource identity
+// still passes. No identity, binding, ServiceAccount, write verb, wildcard,
+// AWS identity or net permission expansion is introduced. The post-renderer
+// preserves the pre-upgrade read boundary required by node-agent startup. The
+// kubescape HelmRelease's unresolved-substitution fingerprint changes with the
+// reviewed chart and patch; other substitutions are unchanged diagnostics.
+//
+// Previous aggregate: 2a3498e2fdcd83a48433d7821c382fef70115fc3b87e36ac508afcac5cbdc0ef.
+//
+// Moved again by the descheduler C-0211 baseline context (#3239). The workload
+// sits in kube-system, which add-security-context excludes, so its stored
+// template is supplied through the chart's own values instead. A HelmRelease is
+// a controller-RBAC emitter, so a pure VALUES change moves this aggregate even
+// though nothing is granted.
+//
+// Rendering all five authorization roots on this branch and on main 0fd0ee0f
+// preserves the complete document identity set in both directions: 86
+// grant-bearing identities (ClusterRole, Role, ClusterRoleBinding, RoleBinding,
+// ServiceAccount) identical either way, the ClusterRole/Role rule bodies
+// identical under digest
+// 6a52babc727cc081fd2505ccf16d8617776edd2bcce6cd25aac733df9aa147e3, and 560
+// documents over 63 kinds unchanged. Four of the five roots render
+// byte-identically; infrastructure/controllers grows by 112 bytes. The complete
+// hunk list is ONE hunk of four added lines inside the descheduler HelmRelease's
+// values:
+//
+//	podSecurityContext.fsGroupChangePolicy: OnRootMismatch
+//	securityContext.seLinuxOptions: {}
+//
+// It adds no Role, ClusterRole, binding, ServiceAccount, subject, verb,
+// wildcard, AWS identity, or permission. Injecting one synthetic ClusterRole
+// into the rendered surface makes both independent extractions report the
+// difference, so the identical result above is a finding rather than a blind
+// read. A first pass of the structural extraction counted 171 per side; 85 of
+// those were document-separator artifacts rather than identities, symmetric on
+// both sides. The filtered count of 86 is the real one.
+//
+// RENDERER PROVENANCE, and unlike the #3722 entry above this one claims no local
+// reproduction: this host renders with kubectl v1.36.1 and kustomize v5.8.1,
+// which this validator REJECTS as unapproved, so no local digest was produced
+// and none could be. The value below was read from CI's own failure on run
+// 34698439645, which renders under the approved SHA256-verified toolchain. The
+// conservation evidence above is renderer-independent — it compares two trees
+// under one renderer — so it stands on its own; only the digest depends on CI.
+//
+// The previous aggregate remains recorded here:
+//
+//	bc95f7ee1b1d9a29819844f5dfac84f256aa4caadac8eb39b43fed59992b85ea
+// Moved again by the trusted tenant semantic-version rollout (#3677). Exactly
+// two existing source objects change: the ascoachingogvaner and wedding-app
+// OCIRepositories replace one fixed ref.tag with ref.semver >=1.0.0. Their
+// Cosign verification provider, issuer and platform-bounded workflow subjects
+// remain unchanged, and the rendered guard rejects restoring a tag or digest.
+//
+// CONSERVATION, read from this validator under the SHA256-verified kubectl
+// v1.36.2 renderer: exactly this aggregate changed. It reported ZERO
+// `unapproved rendered <identity>`, ZERO `missing rendered authorization
+// resource` and ZERO `duplicate rendered`; every pinned per-resource identity
+// still passes. No Role, ClusterRole, binding, ServiceAccount, subject, verb,
+// wildcard, AWS identity or permission changes. The unresolved Flux
+// substitutions are the normal diagnostics emitted alongside an aggregate
+// mismatch.
+//
+// Previous aggregate: 5b85be735c3d7d32e2bf6dce91c0e73435986c169234f2d72984617e9dc25a65.
+// That rollout established aggregate:
+//
+//	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
+//
+// Moved again by the Wedding data-loss repair after rebasing onto #3677. The
+// only additional rendered identity change is the wedding-app Kustomization's
+// global `force` value moving from true to false, plus its explanatory comment.
+// The validator reported no unapproved, missing, or duplicate identity after
+// admitting that Kustomization hash and this aggregate. This removes
+// replacement authority and adds no Role, ClusterRole, binding,
+// ServiceAccount, subject, verb, wildcard, AWS identity, or permission.
+//
+// RENDERER PROVENANCE: reproduced locally with the official kubectl v1.36.2
+// Darwin arm64 binary (SHA256
+// 4408c85c83fd3a31adaa555bdf3c7a6c81f74b19449a9060ba31ab91926f023d),
+// whose embedded Kustomize is v5.8.1, matching CI's pinned versions. Previous
+// aggregate:
+//
+//	814debc4fdfaf76be14273992a9bc982fb30a548fc3fa3f55baea6213e5582a1
+const expectedRenderedSurfaceSHA = "8756f2ad633f8cc0ae64c63a8e4162e0b6a8ed481f28f667736e3d1395531c6e"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
@@ -2087,7 +2205,7 @@ var expectedRenderedHashes = map[resourceIdentity]string{
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "flux-system", name: "infrastructure-controllers"}: "9d9b62d3221442d6355d16a34d31c198619fb3b3728df960fd67222a531ece7b",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "github-config", name: "github-config"}:            "8e9f72b0f4f982d050aff0b97d246c68b538cbc397cdd45d031c95cfae981e7c",
 	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "unifi", name: "unifi"}:                            "33a579299700de2467631854bac4982d3e14caa3bad8cbcd2613ac180b30af32",
-	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "8af27d4845565c57b9ebc618f186669f18ada89e070cf4e6514924717a2532f8",
+	{apiVersion: "kustomize.toolkit.fluxcd.io/v1", kind: "Kustomization", namespace: "wedding-app", name: "wedding-app"}:                "eb6253380641dbfac9936b4a2c938524d4f4cc9352d45ab18e8fdfd9e59bf8a8",
 }
 
 // fingerprint returns the SHA-256 identity used for byte-exact source checks.

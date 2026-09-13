@@ -345,20 +345,25 @@ runtime_probe_sequence=0
 runtime_probe_bootstrap_needed=0
 
 # Every fence below is released by cleanup_refresh_work in one ordered pass. A
-# hard kill leaves an arbitrary prefix released and the remainder held, and a
-# held fence is never auto-reclaimed: Talos machine-config writes expose no
-# fencing token, so a surviving process could still write after any timeout
-# takeover. Recovery is therefore deliberately human. This read-only report is
-# what makes it a procedure rather than an improvisation — it names each fence
-# still held, states whether the holder is provably dead, and prints the exact
-# CAS-guarded release. It performs no mutation by design: an operator running
-# the printed command is the explicit step the fencing model requires.
+# hard kill leaves an arbitrary prefix released and the remainder held. Policy
+# fences and the Lease can be auto-recovered only after every GitHub holder run
+# is proven terminal; node fences remain manual because Talos machine-config
+# writes expose no fencing token. This report names each fence still held,
+# states whether the holder is provably dead, and prints the exact CAS-guarded
+# release used by both the automatic and operator paths.
 # State the fence report hands to --recover-fences. Declared here, beside the
 # report that populates them, so the two cannot drift apart.
-fence_non_lease_held=0
+fence_policy_held=0
+fence_node_held=0
 fence_lease_holder=""
 fence_lease_heartbeat_live=false
 fence_lease_state_file=""
+fence_policy_child_holder=""
+fence_policy_child_uid=""
+fence_policy_child_state_file="${work_dir}/fence-policy-child-state.json"
+fence_policy_parent_holder=""
+fence_policy_parent_uid=""
+fence_policy_parent_state_file="${work_dir}/fence-policy-parent-state.json"
 
 fence_run_segment() {
   if [[ -n "${GITHUB_RUN_ID:-}" ]]; then
@@ -486,6 +491,15 @@ report_fences_now() {
     held=$((held + 1))
     uid="$(jq -r '.metadata.uid' "${state}")"
     suspend="$(jq -r '.spec.suspend // false' "${state}")"
+    if [[ "${name}" == "${IMAGE_VERIFICATION_FLUX_KUSTOMIZATION}" ]]; then
+      fence_policy_child_holder="${holder}"
+      fence_policy_child_uid="${uid}"
+      cp -- "${state}" "${fence_policy_child_state_file}" || return 1
+    else
+      fence_policy_parent_holder="${holder}"
+      fence_policy_parent_uid="${uid}"
+      cp -- "${state}" "${fence_policy_parent_state_file}" || return 1
+    fi
     printf 'HELD  Kustomization flux-system/%s\n' "${name}"
     printf '    holder: %s\n' "${holder}"
     printf '    suspend=%s — Flux reconciliation of this layer is STOPPED while held.\n' \
@@ -495,6 +509,7 @@ report_fences_now() {
       "$(fence_kustomization_release_command "${name}" "${uid}" "${holder}")"
     printf '\n'
   done
+  fence_policy_held="${held}"
 
   if ! kubectl \
     --context "${KUBE_CONTEXT}" \
@@ -854,12 +869,7 @@ report_fences_now() {
         "${owner}" "${recovery}" "${uncordon}")"
     printf '\n'
   done <"${fence_report_nodes}"
-
-  # Captured BEFORE the Lease is reported, so it counts only the fences the
-  # Lease's own ordering rule says must be released first. --recover-fences
-  # refuses while this is non-zero rather than duplicating the node-journal
-  # grouping above, which is the part that is genuinely hard to get right.
-  fence_non_lease_held="${held}"
+  fence_node_held=$((held - fence_policy_held))
 
   fence_report_lease "${state}" || return 1
 
@@ -920,22 +930,26 @@ fence_run_is_terminal() {
 }
 
 recover_fences_now() {
-  local run_reference run_id run_attempt patch_file
+  local run_reference run_id run_attempt patch_file name holder uid state
 
   report_fences_now || return 1
 
   printf '\n== Automatic recovery ==\n'
 
   if [[ -z "${fence_lease_holder}" ]]; then
+    if ((fence_policy_held > 0 || fence_node_held > 0)); then
+      echo "::error::Refusing to recover non-Lease fences without the global Lease fence. Another deploy could start during recovery; inspect the report and recover manually."
+      return 1
+    fi
     printf 'No Lease fence is held; nothing to recover.\n'
     return 0
   fi
-  # The Lease is released LAST for the reason the report states: it is the global
-  # exclusion fence, so clearing it while a policy or node fence is still held
-  # lets a deploy start against a half-recovered cluster. Automation therefore
-  # refuses rather than reordering — the remaining fences need the operator.
-  if ((fence_non_lease_held > 0)); then
-    echo "::error::Refusing to recover the Lease while ${fence_non_lease_held} other fence(s) are held. Release those first, in the order the report prints."
+  # Node journals need the bridge's Talos-revision and scheduling proofs. This
+  # credential-free mode cannot safely reproduce them, so keep refusing node
+  # recovery. Policy fences have complete UID/owner/suspend state in the report
+  # and can be released with the exact same CAS patch printed for an operator.
+  if ((fence_node_held > 0)); then
+    echo "::error::Refusing automatic recovery while ${fence_node_held} node fence(s) are held. Run the bridge so bootstrap recovery can adjudicate their Talos and scheduling state."
     return 1
   fi
   # Belt and braces against a stale or cached API read: if the heartbeat is still
@@ -952,6 +966,57 @@ recover_fences_now() {
   run_id="${run_reference%% *}"
   run_attempt="${run_reference##* }"
   fence_run_is_terminal "${run_id}" "${run_attempt}" || return 1
+
+  # Prove EVERY policy holder dead before releasing the first one. This keeps a
+  # mixed live/orphaned state fully intact instead of partially unwinding it.
+  for name in "${IMAGE_VERIFICATION_FLUX_KUSTOMIZATION}" \
+    "${IMAGE_VERIFICATION_FLUX_PARENT_KUSTOMIZATION}"; do
+    if [[ "${name}" == "${IMAGE_VERIFICATION_FLUX_KUSTOMIZATION}" ]]; then
+      holder="${fence_policy_child_holder}"
+    else
+      holder="${fence_policy_parent_holder}"
+    fi
+    [[ -n "${holder}" ]] || continue
+    if ! run_reference="$(fence_holder_run_reference "${holder}")"; then
+      echo "::error::Refusing to recover Kustomization flux-system/${name}: holder '${holder}' carries no GitHub run reference."
+      return 1
+    fi
+    run_id="${run_reference%% *}"
+    run_attempt="${run_reference##* }"
+    fence_run_is_terminal "${run_id}" "${run_attempt}" || return 1
+  done
+
+  # Release in the same order as cleanup_refresh_work and the fence report:
+  # child policy handoff, parent policy handoff, then the global Lease.
+  for name in "${IMAGE_VERIFICATION_FLUX_KUSTOMIZATION}" \
+    "${IMAGE_VERIFICATION_FLUX_PARENT_KUSTOMIZATION}"; do
+    if [[ "${name}" == "${IMAGE_VERIFICATION_FLUX_KUSTOMIZATION}" ]]; then
+      holder="${fence_policy_child_holder}"
+      uid="${fence_policy_child_uid}"
+      state="${fence_policy_child_state_file}"
+    else
+      holder="${fence_policy_parent_holder}"
+      uid="${fence_policy_parent_uid}"
+      state="${fence_policy_parent_state_file}"
+    fi
+    [[ -n "${holder}" ]] || continue
+    [[ -s "${state}" && -n "${uid}" ]] || {
+      echo "::error::Refusing to recover Kustomization flux-system/${name}: its reported state was not retained."
+      return 1
+    }
+    patch_file="${work_dir}/fence-recovery-${name}-patch.json"
+    fence_kustomization_release_patch "${name}" "${uid}" "${holder}" >"${patch_file}"
+    if ! kubectl \
+      --context "${KUBE_CONTEXT}" \
+      --namespace flux-system \
+      patch "${FLUX_KUSTOMIZATION_RESOURCE}" "${name}" \
+      --type=json \
+      --patch-file "${patch_file}"; then
+      echo "::error::Recovery patch was refused for Kustomization flux-system/${name}; its UID, holder, or suspended state changed after the report. Re-run to re-evaluate."
+      return 1
+    fi
+    printf 'Released Kustomization flux-system/%s held by %s.\n' "${name}" "${holder}"
+  done
 
   # Literally the same patch the report prints for an operator — one builder, so
   # the two cannot diverge. It is built from the state the report RETAINED, never
@@ -1089,11 +1154,11 @@ fence_node_release_command() {
     "$(fence_shell_quote "${KUBE_CONTEXT}")" "${name}" "$(fence_shell_quote "${patch}")"
 }
 
-fence_kustomization_release_command() {
+fence_kustomization_release_patch() {
   local name="$1"
   local uid="$2"
   local holder="$3"
-  local owner_path patch
+  local owner_path
 
   # Only the CHILD handoff carries `reconcile: disabled` — pause_flux_policy_parent
   # writes the owner annotation and spec.suspend and nothing else. Emitting the
@@ -1102,7 +1167,7 @@ fence_kustomization_release_command() {
   # each resume_* function exactly.
   if [[ "${name}" == "${IMAGE_VERIFICATION_FLUX_KUSTOMIZATION}" ]]; then
     owner_path="${FLUX_POLICY_HANDOFF_OWNER_JSON_PATH}"
-    patch="$(jq -nc \
+    jq -nc \
       --arg uid "${uid}" \
       --arg owner_path "${owner_path}" \
       --arg reconcile_path "${FLUX_RECONCILE_JSON_PATH}" \
@@ -1114,10 +1179,10 @@ fence_kustomization_release_command() {
       {op: "add", path: "/spec/suspend", value: false},
       {op: "remove", path: $owner_path},
       {op: "remove", path: $reconcile_path}
-    ]')"
+    ]'
   else
     owner_path="${FLUX_POLICY_PARENT_OWNER_JSON_PATH}"
-    patch="$(jq -nc \
+    jq -nc \
       --arg uid "${uid}" \
       --arg owner_path "${owner_path}" \
       --arg holder "${holder}" '[
@@ -1126,8 +1191,17 @@ fence_kustomization_release_command() {
       {op: "test", path: "/spec/suspend", value: true},
       {op: "add", path: "/spec/suspend", value: false},
       {op: "remove", path: $owner_path}
-    ]')"
+    ]'
   fi
+}
+
+fence_kustomization_release_command() {
+  local name="$1"
+  local uid="$2"
+  local holder="$3"
+  local patch
+
+  patch="$(fence_kustomization_release_patch "${name}" "${uid}" "${holder}")"
   printf "kubectl --context %s -n flux-system patch %s %s --type=json -p %s" \
     "$(fence_shell_quote "${KUBE_CONTEXT}")" "${FLUX_KUSTOMIZATION_RESOURCE}" "${name}" "$(fence_shell_quote "${patch}")"
 }

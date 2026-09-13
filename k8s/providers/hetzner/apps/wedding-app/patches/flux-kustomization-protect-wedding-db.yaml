@@ -42,6 +42,25 @@ spec:
               method: any
               number: 1
               dataDurability: preferred
+    - target:
+        group: postgresql.cnpg.io
+        kind: Cluster
+        name: wedding-db
+      # Barman requires an empty archive when a new PostgreSQL system ID starts
+      # writing. The Cluster was recreated on 2026-09-09 while its predecessor's
+      # retained WAL still occupied the implicit `wedding-db` server, so every
+      # archive attempt was rejected. The Barman webhook requires serverName on
+      # the Cluster plugin parameters rather than on the ObjectStore.
+      #
+      # Keep the ObjectStore destination stable so older recovery data remains
+      # retained. Advance this incarnation only as part of a reviewed Cluster
+      # replacement or restore; ordinary tenant releases must never change it.
+      # The tenant contract currently requires Barman to be plugin index zero,
+      # and the production backup verifier checks the resulting live Cluster.
+      patch: |
+        - op: add
+          path: /spec/plugins/0/parameters/serverName
+          value: wedding-db-20260909
     # NOTE: the tenant's public hostnames (wedding.platform.devantler.tech + the
     # wedding.platform.lan dev host) and its gethomepage.dev/* dashboard
     # annotations are NOT patched here — they are tenant self-presentation and

@@ -55,7 +55,16 @@ consumer_count="$(printf '%s\n' "$consumers" | grep -c .)"
 [ "$consumer_count" -ge 2 ] || { fail "need at least two registered consumers to cross pairs, found $consumer_count"; exit 1; }
 first_consumer="$(printf '%s\n' "$consumers" | sed -n 1p | cut -f1)"
 first_workflow="$(printf '%s\n' "$consumers" | sed -n 1p | cut -f2)"
-second_consumer="$(printf '%s\n' "$consumers" | sed -n 2p | cut -f1)"
+second_consumer='aws'
+second_workflow="$(printf '%s\n' "$consumers" | awk -F'\t' -v c="$second_consumer" '$1 == c {print $2}')"
+TRUSTED_RELEASE_STREAMS='ascoachingogvaner wedding-app'
+
+is_trusted_release_stream() {
+  case " $TRUSTED_RELEASE_STREAMS " in
+    *" $1 "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
 # The artifact name is the repository name except for `.github`, which publishes as
 # `github-config` — the same table the report uses.
@@ -182,8 +191,9 @@ write_set() {
   [ -z "$extra" ] || printf '%s\n' "$extra" >>"$path"
 }
 
-# build_tree <name> <ref-form-for-all-consumers|pair> — a complete fixture: every consumer on the
-# pattern form (`pattern`) or on its own generated pair (`pair`), generics on the pattern form.
+# build_tree <name> <pattern|pair> — a complete fixture. `pair` means exact generated sets for
+# bounded consumers and the immutable commit pattern for trusted release streams. Generic
+# subjects always remain on the pattern form.
 build_tree() {
   local name="$1" form="$2" root repo workflow ref
   root="$WORK/$name"
@@ -193,7 +203,13 @@ build_tree() {
     [ -n "$repo" ] || continue
     case "$form" in
       pattern) ref="$PATTERN" ;;
-      pair) ref="($(signer_for "$repo")|$SHA_B)" ;;
+      pair)
+        if is_trusted_release_stream "$repo"; then
+          ref="$PATTERN"
+        else
+          ref="($(signer_for "$repo")|$SHA_B)"
+        fi
+        ;;
       *) printf 'build_tree: unknown form %s\n' "$form" >&2; exit 1 ;;
     esac
     write_consumer "$root" "$repo" "$workflow" "$ref"
@@ -241,7 +257,7 @@ root="$(build_tree off-pattern pattern)"
 expect_pass 'switch off: every consumer on the pattern form passes' "$root" 0
 
 root="$(build_tree off-pair pair)"
-expect_pass 'switch off: every consumer on its generated pair passes' "$root" 0
+expect_pass 'switch off: bounded consumers use generated pairs and trusted streams use the pattern' "$root" 0
 
 root="$(build_tree off-pair-reversed pair)"
 write_consumer "$root" "$first_consumer" "$first_workflow" "($SHA_B|$(signer_for "$first_consumer"))"
@@ -273,6 +289,13 @@ root="$(build_tree off-crossed pair)"
 write_consumer "$root" "$first_consumer" "$first_workflow" "($(signer_for "$second_consumer")|$SHA_B)"
 expect_refusal "switch off: another consumer's pair on $first_consumer is refused" \
   "$root" 0 "$first_consumer" "$(signer_for "$second_consumer")"
+
+# A concrete pair is still cryptographically narrow, but on a trusted tenant release stream it
+# recreates the platform approval gate this boundary is designed to remove.
+root="$(build_tree release-stream-pinned pair)"
+write_consumer "$root" 'wedding-app' 'publish-app' "($SHA_A|$SHA_B)"
+expect_refusal 'a trusted release stream pinned to a generated pair is refused' \
+  "$root" 1 'wedding-app' 'trusted release stream' "$PATTERN"
 
 root="$(build_tree off-tag pair)"
 write_consumer "$root" "$first_consumer" "$first_workflow" 'refs/tags/v.+'
@@ -323,14 +346,15 @@ expect_refusal 'signer == pin: an alternation adding a foreign revision is refus
 
 # ── switch ON: the pattern form is refused for a per-consumer subject ────────────────────────
 root="$(build_tree on-pair pair)"
-expect_pass 'switch on: every consumer on its generated pair passes' "$root" 1
+expect_pass 'switch on: bounded pairs and trusted release streams pass together' "$root" 1
 
-root="$(build_tree on-pattern pattern)"
+root="$(build_tree on-pattern pair)"
+write_consumer "$root" "$first_consumer" "$first_workflow" "$PATTERN"
 expect_refusal 'switch on: the pattern form is refused and the fix names the pair' \
   "$root" 1 'pattern form' "($(signer_for "$first_consumer")|$SHA_B)"
 
 root="$(build_tree on-one-left pair)"
-write_consumer "$root" "$second_consumer" "$(printf '%s\n' "$consumers" | sed -n 2p | cut -f2)" "$PATTERN"
+write_consumer "$root" "$second_consumer" "$second_workflow" "$PATTERN"
 expect_refusal 'switch on: a single consumer left on the pattern form is refused by name' \
   "$root" 1 "$second_consumer" 'pattern form'
 
@@ -450,9 +474,9 @@ if [ -z "$enforce" ] || printf '%s\n' "$enforce" | grep -qv '^1$'; then
 fi
 [ "$failures" -eq 0 ] && pass 'wiring: ci.yaml enforces the approved set'
 
-# ── the real tree: every committed consumer uses exactly its approved pair ────────────────
+# ── the real tree: every committed consumer uses its declared boundary ───────────────────
 if out="$(APPROVED_REVISIONS_ENFORCE=1 bash "$GUARD" 2>&1)"; then
-  pass 'real tree: every per-consumer matcher uses its approved pair (enforced)'
+  pass 'real tree: every consumer matcher uses its declared boundary (enforced)'
 else
   fail 'real tree: guard refuses the committed state:'; printf '%s\n' "$out" >&2
 fi

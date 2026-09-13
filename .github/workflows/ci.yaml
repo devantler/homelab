@@ -239,6 +239,7 @@ jobs:
           node --version
           yq --version
           node --test tests/wedding-backup-staging/*.test.mjs
+          node --test tests/wedding-db-incident-recovery/*.test.mjs
 
       - name: 🔍 Filter paths
         uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
@@ -398,6 +399,7 @@ jobs:
               - 'scripts/tests/crossplane-egress-policy-rules.yaml'
               - 'scripts/tests/test-cnpg-degraded-alert.sh'
               - 'scripts/tests/test-stranded-volume-attach-alert.sh'
+              - 'scripts/tests/test-coroot-alert-autosuppressor.sh'
               # The Job manifest, the Secret it imports and this test are one
               # contract: the credential is only out of the environment while all
               # three agree.
@@ -1186,6 +1188,13 @@ jobs:
         # shape against a stubbed API and delivery, so the fire, each quiet
         # verdict and both silent-zero guards are pinned by behaviour.
         run: bash scripts/tests/test-stranded-volume-attach-alert.sh
+
+      - name: 🔕 Validate narrow Coroot alert suppressions
+        if: needs.changes.outputs.k8s == 'true'
+        # The kubelet alert fingerprint is shared across every failed upstream.
+        # Exercise the rendered script so the two known static-pod probe series
+        # suppress, while one additional active upstream keeps the alert visible.
+        run: bash scripts/tests/test-coroot-alert-autosuppressor.sh
 
       - name: 🔑 Validate the MinIO bucket Job's credential handling
         if: needs.changes.outputs.k8s == 'true'

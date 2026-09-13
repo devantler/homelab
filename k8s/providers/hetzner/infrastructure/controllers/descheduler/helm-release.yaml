@@ -31,6 +31,17 @@ spec:
     kind: Deployment
     deschedulingInterval: 30m
     replicas: 1
+    # C-0211 baseline context, supplied through the chart's own values because
+    # kube-system is excluded from the add-security-context mutation (#3239).
+    # Both fields are inert here and neither relaxes the chart's hardening,
+    # which the rendered output keeps verbatim: the pod has no fsGroup and its
+    # only volume is a configMap, so ownership policy governs nothing; the
+    # empty seLinuxOptions object satisfies the control while leaving SELinux
+    # type and MCS category selection to the runtime.
+    podSecurityContext:
+      fsGroupChangePolicy: OnRootMismatch
+    securityContext:
+      seLinuxOptions: {}
     deschedulerPolicy:
       # Blast-radius caps: one cycle may move at most 2 pods per node and 2 per
       # namespace, so a misjudged policy degrades slowly and visibly (evictions

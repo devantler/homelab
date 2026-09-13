@@ -350,29 +350,100 @@ find . -name '*.enc.yaml' -print0 | xargs -0 -n1 sops updatekeys --yes
 
 ## Scenario 7 — R2 / Cloudflare credential rotation
 
+Choose the credential by bucket before editing it:
+
+- `platform-backups` uses `k8s/clusters/prod/bootstrap/secret.enc.yaml` and the
+  `seed-r2-credentials` PushSecret.
+- `wedding-db-backups` uses
+  `k8s/clusters/prod/bootstrap/secret-wedding-db-backup-r2.enc.yaml` and the
+  `seed-wedding-db-backup-r2` PushSecret.
+
+They are independent identities, but the consumer boundary changes only after
+the cutover. During staging, Wedding remains a shared-token consumer alongside
+Umami and Coroot, so a `platform-backups` rotation must verify all three
+databases and Velero before revocation. Rotating the dedicated Wedding token
+does not affect those shared consumers.
+
 ```bash
-# 1. Mint a new R2 token in the Cloudflare dashboard (scoped to your
-#    <your-bucket> bucket only). DO NOT revoke the old one
-#    yet -- there is a window where both must work.
+set -euo pipefail
 
-# 2. Update the encrypted secret in-place. The R2 keys are per-environment
-#    and live in the CLUSTER secret (variables-cluster), not the shared base.
-sops --set '["stringData"]["r2_access_key_id"] "<new-id>"' \
-  k8s/clusters/prod/bootstrap/secret.enc.yaml
-sops --set '["stringData"]["r2_secret_access_key"] "<new-secret>"' \
-  k8s/clusters/prod/bootstrap/secret.enc.yaml
-# (repeat for k8s/clusters/local/bootstrap/ if rotating the local creds)
+# 1. Mint a new Object Read & Write R2 token scoped only to the selected bucket.
+#    Keep the old token active until the final verification succeeds.
 
-# 3. PR + merge. Flux propagates within one reconciliation cycle, and the
-#    hourly seed-r2-credentials PushSecret refreshes infrastructure/backup/r2
-#    in OpenBao, from where the Velero/CNPG ExternalSecrets re-sync.
+# 2. Select the bucket. This resolves only public paths and key names.
+bucket=wedding-db-backups
+case "$bucket" in
+  platform-backups)
+    secret_file=k8s/clusters/prod/bootstrap/secret.enc.yaml
+    access_path='["stringData"]["r2_access_key_id"]'
+    secret_path='["stringData"]["r2_secret_access_key"]'
+    ;;
+  wedding-db-backups)
+    secret_file=k8s/clusters/prod/bootstrap/secret-wedding-db-backup-r2.enc.yaml
+    access_path='["stringData"]["access_key_id"]'
+    secret_path='["stringData"]["secret_access_key"]'
+    ;;
+  *) echo 'Unknown R2 bucket' >&2; exit 1 ;;
+esac
 
-# 4. Wait one Velero schedule + one CNPG WAL archive cycle to confirm
-#    the new credentials work end-to-end.
+# Read both values without terminal echo or command-line arguments. SOPS takes
+# each JSON string on stdin and edits only the selected encrypted leaf.
+IFS= read -rsp 'New R2 access key ID: ' new_access_key_id
+printf '\n'
+IFS= read -rsp 'New R2 secret access key: ' new_secret_access_key
+printf '\n'
+if [[ ! "$new_access_key_id" =~ ^[0-9a-f]{32}$ ]]; then echo 'Invalid R2 access key ID' >&2; exit 1; fi
+if [[ ! "$new_secret_access_key" =~ ^[0-9a-f]{64}$ ]]; then echo 'Invalid R2 secret access key' >&2; exit 1; fi
+test "${#new_secret_access_key}" -eq 64
+printf '"%s"' "$new_access_key_id" |
+  sops set --value-stdin "$secret_file" "$access_path"
+printf '"%s"' "$new_secret_access_key" |
+  sops set --value-stdin "$secret_file" "$secret_path"
+unset new_access_key_id new_secret_access_key
+
+# 3. For wedding-db-backups, calculate the two public source receipts. Replace
+#    the corresponding constants in .github/actions/deploy-prod/action.yml.
+shasum -a 256 k8s/clusters/prod/bootstrap/secret-wedding-db-backup-r2.enc.yaml
+shasum -a 256 k8s/clusters/prod/bootstrap/kustomization.yaml
+
+# 4. Open a PR and merge it. Flux reconciles the selected bootstrap Secret,
+#    its PushSecret writes the matching OpenBao path, and the ExternalSecret
+#    refreshes the namespace-local credential on its next reconciliation.
+
+# 5. For wedding-db-backups, bind the non-printing projection verifier to the
+#    current main commit, wait for that exact run, and require its three success
+#    fields before continuing.
+expected_sha="$(gh api repos/devantler-tech/platform/commits/main --jq .sha)"
+run_url="$(gh workflow run cd.yaml --repo devantler-tech/platform --ref main \
+  -f verify-wedding-backup-staging=true)"
+run_id="${run_url##*/}"
+case "${run_id}" in ''|*[!0-9]*) echo 'Could not identify the verifier run' >&2; exit 1;; esac
+gh run watch "$run_id" --repo devantler-tech/platform --exit-status
+gh run view "$run_id" --repo devantler-tech/platform \
+  --json attempt,conclusion,event,headBranch,headSha |
+  jq -e --arg expected "$expected_sha" \
+    '.attempt == 1 and .conclusion == "success" and .event == "workflow_dispatch" and .headBranch == "main" and .headSha == $expected'
+gh run view "$run_id" --repo devantler-tech/platform --log |
+  grep -F '"verified":true' |
+  grep -F '"projectionEqual":true' |
+  grep -F '"liveSourceStable":true'
+
+# 6. During the initial Wedding staging phase, the staged ObjectStore remains
+#    inactive. The verifier requires the live Cluster to keep using `wedding-db`
+#    and the shared catalog while `wedding-db-dedicated` points at the new bucket.
+#    Stop here: the controlled cutover first mirrors the existing base backups
+#    and WAL history, then changes the Cluster reference in a separate review.
+#    Do not revoke the shared credential during staging.
+
+# For a platform-backups credential rotation, Wedding remains a shared-token
+# consumer alongside Umami and Coroot during staging. Observe a new successful
+# Velero backup plus new backups and WAL archives from all three databases
+# before revocation.
 kubectl -n velero get backups.velero.io -w
-kubectl logs -n cnpg-system -l app.kubernetes.io/name=cloudnative-pg --tail=50
 
-# 5. Revoke the old token in Cloudflare.
+# 7. Revoke the old token only after the checks for its active bucket succeed.
+#    A queued workflow, an inactive staged store, an old backup, or a healthy
+#    unrelated consumer is not sufficient evidence.
 ```
 
 The **Cloudflare API token** (DNS01 + external-dns) is user-fed, not in SOPS —
@@ -751,9 +822,13 @@ A deploy fails to start with one of:
 `refresh-flux-ghcr-auth.sh` fences its transaction with a `Lease` and by suspending
 the `infrastructure` and `flux-system` Kustomizations. Those fences are released
 together at exit. A hard kill releases an arbitrary prefix and leaves the rest
-held — and nothing reclaims them automatically, because Talos machine-config
-writes expose no fencing token, so a surviving process could still write after a
-timeout takeover. Recovery is deliberately a human step.
+held. Protected deploy and heal jobs run `--recover-fences`: it releases policy
+fences and then the Lease only when every holder identifies a GitHub Actions run
+attempt that is confirmed terminal, the Lease heartbeat has stopped, no node
+fence is held, and every CAS-guarded patch still matches the reported state.
+Node fences remain a manual or full-bridge recovery because Talos machine-config
+writes expose no fencing token and need the bridge's revision and scheduling
+proofs.
 
 A held policy fence is the more serious of the two: the deploy fails loudly, but
 the suspended Kustomization silently stops GitOps reconciliation for that layer
@@ -791,7 +866,11 @@ fences legitimately.
 - An identity with no run reference predates that recording, or came from a local
   run. Establish liveness another way before continuing.
 
-**3. Release.** Run the command the report printed for each dead fence. Each is
+**3. Release.** For terminal GitHub-run policy fences plus the Lease, run
+`./scripts/refresh-flux-ghcr-auth.sh --recover-fences`; it proves all holders
+before its first mutation and releases child, parent, then Lease. For a local or
+legacy holder that the API cannot prove terminal, use the commands from
+`--fences` only after establishing the process is dead. Each command is
 CAS-guarded on the holder and the resource's current state, so it fails safely if
 anything changed since the report.
 

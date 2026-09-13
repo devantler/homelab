@@ -6,6 +6,8 @@ export const targets = [
   ['seed','external-secrets.io/v1alpha1','PushSecret','pushsecrets.external-secrets.io','flux-system','seed-wedding-db-backup-r2','infrastructure'],
   ['projection','external-secrets.io/v1','ExternalSecret','externalsecrets.external-secrets.io','wedding-app','wedding-db-backup-r2-dedicated','apps'],
   ['active','barmancloud.cnpg.io/v1','ObjectStore','objectstores.barmancloud.cnpg.io','wedding-app','wedding-db','apps'],
+  ['staged','barmancloud.cnpg.io/v1','ObjectStore','objectstores.barmancloud.cnpg.io','wedding-app','wedding-db-dedicated','apps'],
+  ['cluster','postgresql.cnpg.io/v1','Cluster','clusters.postgresql.cnpg.io','wedding-app','wedding-db',null],
   ['bootstrapSecret','v1','Secret','secrets','flux-system','wedding-db-backup-r2-bootstrap','bootstrap'],
   ['projectedSecret','v1','Secret','secrets','wedding-app','wedding-db-backup-r2-dedicated',null],
 ].map(([id,apiVersion,kind,resource,namespace,name,owner]) => ({id,apiVersion,kind,resource,namespace,name,owner}));
@@ -73,6 +75,15 @@ function validateControllers(d, options) {
   const active = d.active.spec.configuration;
   check(active?.destinationPath === 's3://platform-backups/cnpg/wedding-db');
   for (const [key, value] of [['accessKeyId','ACCESS_KEY_ID'],['secretAccessKey','SECRET_ACCESS_KEY'],['region','REGION']]) check(active.s3Credentials?.[key]?.name === 'wedding-db-backup-r2' && active.s3Credentials[key].key === value);
+  const staged = d.staged.spec.configuration;
+  check(staged?.destinationPath === 's3://wedding-db-backups/cnpg/wedding-db');
+  for (const [key, value] of [['accessKeyId','ACCESS_KEY_ID'],['secretAccessKey','SECRET_ACCESS_KEY'],['region','REGION']]) check(staged.s3Credentials?.[key]?.name === 'wedding-db-backup-r2-dedicated' && staged.s3Credentials[key].key === value);
+  const plugins = d.cluster.spec?.plugins;
+  check(Array.isArray(plugins));
+  const barman = plugins.filter(plugin => plugin.name === 'barman-cloud.cloudnative-pg.io');
+  check(barman.length === 1 && barman[0].enabled === true && barman[0].isWALArchiver === true);
+  check(barman[0].parameters?.barmanObjectName === 'wedding-db');
+  check(barman[0].parameters.serverName === 'wedding-db-20260909');
 }
 async function snapshot(options, deps) {
   const docs = {}, identities = {};

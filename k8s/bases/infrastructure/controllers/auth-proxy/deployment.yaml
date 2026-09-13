@@ -51,7 +51,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: traefik
-          image: docker.io/library/traefik:v3.7@sha256:4299bbed850421258fc5448c2e0e6ad350981d4d335a68de11b92448aedbefe5
+          image: docker.io/library/traefik:v3.7@sha256:f86a2cab1b5c649070c49f883c743dd32d8485a56e3368c5f93b9e91f1e91259
           args:
             - --configFile=/etc/traefik/traefik.yaml
           ports:

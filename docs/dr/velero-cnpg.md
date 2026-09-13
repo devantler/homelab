@@ -24,11 +24,19 @@ contents, and Postgres data.
                        └──────────┘  └────────────────────┘
 ```
 
-Credentials are SOPS-encrypted per environment in the cluster secret
-(`k8s/clusters/<env>/bootstrap/secret.enc.yaml`), seeded
-into OpenBao at `infrastructure/backup/r2` by the `seed-r2-credentials`
-PushSecret, and materialised into the Velero and CNPG namespaces by
-ExternalSecrets.
+The shared `platform-backups` credential is SOPS-encrypted per environment in
+`k8s/clusters/<env>/bootstrap/secret.enc.yaml`, seeded into OpenBao at
+`infrastructure/backup/r2` by the `seed-r2-credentials` PushSecret, and
+materialised into the Velero and participating CNPG namespaces by
+ExternalSecrets. Wedding's tenant-isolated destination is currently staged
+beside that active shared archive: its separate `wedding-db-backups` bucket and credential use
+`secret-wedding-db-backup-r2.enc.yaml`, the `seed-wedding-db-backup-r2`
+PushSecret, and the dedicated `apps/wedding-app/backup/r2` OpenBao path. The two
+credential branches rotate independently. The live Wedding Cluster keeps using
+the shared `wedding-db` ObjectStore until the existing catalog has been mirrored
+and a reviewed cutover changes it to `wedding-db-dedicated`. Until then, a
+shared-token rotation must verify Wedding together with Umami, Coroot, and
+Velero before the previous shared token is revoked.
 
 ## Velero
 
@@ -104,19 +112,34 @@ CSI snapshots need cluster-wide plumbing that the hetzner overlay adds:
 ## CloudNativePG
 
 - CNPG backup credentials are projected **per-namespace** from OpenBao: each
-  CNPG `Cluster` gets an ExternalSecret next to it that reads the shared
-  `infrastructure/backup/r2` OpenBao path (the same key/secret Velero uses)
-  into a Secret in the Cluster's own namespace — CNPG's
-  `barmanObjectStore.s3Credentials` can only reference a Secret there. The
-  earlier reusable `cnpg-r2-credentials` Secret in `cnpg-system` was removed:
-  no `Cluster` could reference it across namespaces.
+  CNPG `Cluster` gets an ExternalSecret next to it because the Barman plugin's
+  `ObjectStore` can only reference a Secret in the Cluster's own namespace.
+  Shared consumers read `infrastructure/backup/r2`. Wedding's active
+  `wedding-db` ObjectStore still reads that path while its inactive
+  `wedding-db-dedicated` ObjectStore reads `apps/wedding-app/backup/r2` and
+  points at `wedding-db-backups` for the staged migration.
+  The earlier reusable `cnpg-r2-credentials` Secret in `cnpg-system` was
+  removed because no `Cluster` could reference it across namespaces.
 - Live example: `umami-db` — `k8s/bases/apps/umami/external-secret-db-backup.yaml`
   projects `umami-db-backup-r2`, which the `Cluster` in
   `k8s/bases/apps/umami/cluster.yaml` references (with a
   `ScheduledBackup` in `scheduled-backup.yaml`).
-- When the next CNPG-backed app lands, copy the umami ExternalSecret next to
-  its `Cluster` and point `barmanObjectStore.destinationPath` at a distinct
-  `s3://${r2_bucket}/cnpg/<app>` prefix.
+- When the next CNPG-backed app lands, choose its isolation boundary explicitly.
+  A shared platform consumer can copy the Umami projection and use a distinct
+  `s3://${r2_bucket}/cnpg/<app>` prefix. A tenant-isolated database needs the
+  complete Wedding pattern: a dedicated bucket and Object Read & Write identity,
+  encrypted bootstrap Secret, PushSecret, dedicated OpenBao path, namespace
+  ExternalSecret, and hosted manifest plus live backup and restore proof.
+- Give each CNPG Barman plugin an explicit `parameters.serverName` that
+  identifies the current logical Cluster incarnation. The plugin admission
+  webhook forbids this field on the `ObjectStore`; it belongs on the Cluster's
+  `spec.plugins` entry. Barman requires an empty archive for a new PostgreSQL
+  system ID, so reusing an implicit Cluster-name server after a restore or
+  replacement makes continuous WAL archiving fail with `Expected empty
+  archive`, even when base backups still report success. Keep the ObjectStore
+  destination path stable so retained recovery data remains available, and
+  advance the server name in the same reviewed recovery change that creates the
+  new Cluster. Do not change it for an ordinary rollout of a healthy Cluster.
 
 ## Local clusters: MinIO replaces R2
 
@@ -138,6 +161,13 @@ This is the whole point of the substitution layer: the CI restore drill
 (see [restore-drill.md](./restore-drill.md))
 exercises the *exact* same `velero backup` / `velero restore` calls
 that an operator would run against R2 in prod.
+
+Wedding is deliberately absent from the Docker apps overlay because its tenant
+deployment depends on production-only GHCR, CNPG, and Longhorn resources. The
+local cluster therefore prunes Wedding's PushSecret and carries neither a
+dedicated Wedding bootstrap credential nor an unused `wedding-db-backups`
+bucket. Dedicated ObjectStore acceptance uses the hosted manifest checks and a
+live production backup, WAL archive, and isolated restore instead.
 
 The MinIO credentials are hard-coded local-only secrets. They are
 SOPS-encrypted at rest per the platform-wide rule, but they are not
@@ -186,22 +216,29 @@ etc.) see [`runbook.md`](./runbook.md).
 
 ## Credential rotation
 
-Stored per environment in
-`k8s/clusters/<env>/bootstrap/secret.enc.yaml`. Rotation
-flow (see also runbook.md Scenario 7):
+The shared `platform-backups` credential and Wedding's `wedding-db-backups`
+credential rotate independently. The shared credential lives in
+`k8s/clusters/<env>/bootstrap/secret.enc.yaml`; the Wedding credential lives in
+`k8s/clusters/prod/bootstrap/secret-wedding-db-backup-r2.enc.yaml`. Rotating
+one does not refresh the other.
 
-```bash
-# 1. Mint a new R2 token in Cloudflare; revoke the old one only after step 4.
-# 2. Update both keys in-place with sops:
-sops --set '["stringData"]["r2_access_key_id"] "<new-id>"' \
-  k8s/clusters/prod/bootstrap/secret.enc.yaml
-sops --set '["stringData"]["r2_secret_access_key"] "<new-secret>"' \
-  k8s/clusters/prod/bootstrap/secret.enc.yaml
-# 3. PR + merge -> Flux reconciles the new Secret -> the hourly
-#    seed-r2-credentials PushSecret refreshes OpenBao -> the Velero/CNPG
-#    ExternalSecrets re-sync within their refresh interval.
-# 4. Revoke the old token in Cloudflare.
-```
+Use the repository's non-printing `sops set --value-stdin` procedure in
+runbook.md Scenario 7. It reads each value without terminal echo and passes it
+to SOPS on stdin, keeping plaintext out of the editor, shell history, process
+arguments, and command output. For the Wedding file, recompute the SHA-256
+receipts for that encrypted file and the prod bootstrap `kustomization.yaml`, then replace
+`WEDDING_BACKUP_CIPHER_SHA256` and `WEDDING_BACKUP_BOOTSTRAP_SHA256` in
+`.github/actions/deploy-prod/action.yml`. These hashes cover encrypted public
+bytes and resource membership; calculating them does not decrypt or print the
+credential.
+
+After the rotation merges, let Flux reconcile. For Wedding, run `cd.yaml`
+manually with `verify-wedding-backup-staging=true`; the verifier checks the
+bootstrap Secret, OpenBao projection, both ObjectStores, the still-shared live
+Cluster reference, and live source stability without printing either
+credential. During initial staging, stop after that proof and retain the shared
+token. Catalog mirroring, the active-reference change, a new backup and WAL,
+and an isolated restore are separate cutover gates. See runbook.md Scenario 7.
 
 ## Related
 
