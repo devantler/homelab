@@ -1,0 +1,151 @@
+name: Probe Image Signature Enforcement
+
+# Obtain the ONE observation #3336 is missing: that a matched-but-unsigned image
+# is actually REFUSED at the node pull layer, and that a correctly signed one is
+# not.
+#
+# WHY THIS IS ITS OWN WORKFLOW, and must stay that way.
+# validate-image-verifier-liveness.yaml is READ-ONLY against prod. This probe
+# WRITES: it pulls images into a node's container runtime. Adding it as a third
+# job there would mean that dispatching the read-only liveness checks also fired
+# a node write, because `workflow_dispatch` runs every job in the workflow. The
+# separation is the blast-radius control, not tidiness — do not merge them.
+#
+# DORMANT, TWICE OVER. There is no `schedule:` and no `pull_request:` trigger,
+# so nothing runs this on its own; and the operator must additionally type an
+# exact confirmation phrase, so an accidental dispatch from the UI does nothing.
+# Adding a cadence is #3336's activation step and is deliberately NOT done here.
+#
+# WHAT RUNNING IT REQUIRES:
+#   * `unsigned_image` — a deliberately unsigned THROWAWAY ref that matches one
+#     of the rules in talos/cluster/verify-first-party-images.yaml. The
+#     catch-all `ghcr.io/devantler-tech/*` rule means any first-party name
+#     matches, so a dedicated throwaway repository is the right home for it.
+#     NEVER a production workload: the probe asserts the rule match itself, but
+#     it cannot know whether a ref is something the cluster depends on.
+#   * `signed_image` — a correctly signed ref that also matches a rule, used as
+#     the positive control. Without it a verifier refusing EVERYTHING is
+#     indistinguishable from one working correctly.
+#   * `node` — one node IP. Deliberately one: the question is whether refusal
+#     happens at all, and every extra node only widens the blast radius.
+#
+# Neither ref may already be cached on the node. Verification happens at PULL,
+# so a cached image is never re-pulled and the probe would verify nothing; it
+# fails closed (INCONCLUSIVE) rather than reporting that as a pass.
+
+on:
+  workflow_dispatch:
+    inputs:
+      node:
+        description: "Single node IP to probe"
+        required: true
+        type: string
+      unsigned_image:
+        description: "Deliberately unsigned THROWAWAY ref matching a verification rule"
+        required: true
+        type: string
+      signed_image:
+        description: "Correctly signed ref matching a verification rule (positive control)"
+        required: true
+        type: string
+      confirm:
+        description: "Type exactly: probe-production-nodes"
+        required: true
+        type: string
+      keep:
+        description: "Leave pulled refs on the node instead of removing them"
+        required: false
+        default: false
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  # The probe pulls and removes images on a production node and reads its
+  # verification rules. Every other job that mutates production nodes — the
+  # merge-queue deploy, manual CD, heal, DR and the Wedding recovery — serializes
+  # on `prod-deploy`, and so must this: a concurrent deploy can reboot the node,
+  # rewrite its verification or registry configuration, or stage the same image,
+  # which would split the verdict across two node states and let cleanup remove a
+  # ref the deploy just pulled. The shared group also keeps two probes apart.
+  group: prod-deploy
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  probe-image-signature-enforcement:
+    name: 🔏 Probe Image Signature Enforcement
+    runs-on: ubuntu-latest
+    # TALOS_CONFIG is a `prod` ENVIRONMENT secret, not a repository secret, so
+    # without this it resolves to the empty string and the probe cannot reach a
+    # node. It would fail closed rather than pass falsely, but a control that
+    # can never run is the same class of problem this epic exists to fix.
+    environment: prod
+    permissions:
+      contents: read # checkout repository
+    steps:
+      - name: 📑 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The second half of dormancy. Checked BEFORE talosctl is even installed,
+      # so a mistyped dispatch cannot reach a node for any reason.
+      #
+      # The input is read through `env:` rather than interpolated into this
+      # script. A `${{ inputs.confirm }}` inside `run:` would be substituted
+      # before bash ever saw it, which is a shell-injection vector: an operator
+      # could pass a value that closes the comparison and runs arbitrary
+      # commands in this job. Every other input below is passed the same way for
+      # the same reason.
+      - name: 🛑 Require explicit confirmation
+        shell: bash
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          set -euo pipefail
+          if [[ "${CONFIRM}" != 'probe-production-nodes' ]]; then
+            printf 'Refusing to run: the confirm input must be exactly "probe-production-nodes".\n' >&2
+            printf 'This probe pulls images on a production node. Nothing has been touched.\n' >&2
+            exit 1
+          fi
+          printf 'Confirmation accepted.\n'
+
+      - name: ⚙️ Setup talosctl
+        shell: bash
+        run: |
+          .github/scripts/setup-talosctl.sh
+
+      - name: 🔑 Restore talosconfig
+        shell: bash
+        env:
+          TALOS_CONFIG: ${{ secrets.TALOS_CONFIG }}
+        run: |
+          mkdir -p ~/.talos
+          umask 077
+          printf '%s' "${TALOS_CONFIG}" > ~/.talos/config
+          chmod 600 ~/.talos/config
+
+      - name: 🔏 Observe whether an unsigned image is refused at pull
+        shell: bash
+        env:
+          NODE: ${{ inputs.node }}
+          UNSIGNED_IMAGE: ${{ inputs.unsigned_image }}
+          SIGNED_IMAGE: ${{ inputs.signed_image }}
+          KEEP: ${{ inputs.keep }}
+        run: |
+          set -euo pipefail
+          args=(
+            --confirm
+            --node "${NODE}"
+            --unsigned-image "${UNSIGNED_IMAGE}"
+            --signed-image "${SIGNED_IMAGE}"
+          )
+          if [[ "${KEEP}" == 'true' ]]; then
+            args+=(--keep)
+          fi
+          # Exit 3 is INCONCLUSIVE — the probe could not attribute the result.
+          # It is surfaced as a FAILED job on purpose: an inconclusive probe has
+          # proven nothing, and reporting it green is exactly the false all-clear
+          # this whole epic exists to remove.
+          ./scripts/probe-image-signature-enforcement.sh "${args[@]}"

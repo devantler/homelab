@@ -317,6 +317,16 @@ jobs:
               # change to either must re-run both.
               - 'scripts/validate-image-verifier-liveness.sh'
               - 'scripts/tests/test-validate-image-verifier-liveness.sh'
+              # The enforcement probe and its test are one contract for the
+              # same reason as the pair above: the probe reports on a security
+              # control, and BOTH of its possible mistakes are silent — a PASS
+              # where nothing was verified, and a FAIL where the result was
+              # merely ambiguous. The probe's workflow belongs here too: it is a
+              # production-secret talosctl caller checked by the setup-talosctl
+              # call-site guard, so a change to it alone must re-run that guard.
+              - 'scripts/probe-image-signature-enforcement.sh'
+              - 'scripts/tests/test-probe-image-signature-enforcement.sh'
+              - '.github/workflows/probe-image-signature-enforcement.yaml'
               - 'scripts/generate-kubescape-exceptions/**'
               - 'scripts/tests/test-kubescape-self-hosted-scan-persistence.sh'
               - 'scripts/tests/test-kubescape-storage-hotfix.sh'
@@ -1100,6 +1110,22 @@ jobs:
         run: |
           shellcheck scripts/validate-image-verifier-liveness.sh scripts/tests/test-validate-image-verifier-liveness.sh
           bash scripts/tests/test-validate-image-verifier-liveness.sh
+
+      - name: 🔏 Validate image-signature enforcement probe
+        if: needs.changes.outputs.k8s == 'true'
+        # The probe itself needs a cluster and WRITES to a node, so it never
+        # runs here. Its own test does not: talosctl is faked from fixtures, so
+        # the 20 cases run in the required job like the liveness checker's.
+        #
+        # It gates a merge for a sharper reason than most tests. The probe
+        # reports on supply-chain enforcement and both of its possible mistakes
+        # are silent: a PASS where a cached image meant nothing was verified,
+        # and a FAIL where the refusal was merely ambiguous. A regression in
+        # either direction would be invisible, so an advisory check is not
+        # enough.
+        run: |
+          shellcheck scripts/probe-image-signature-enforcement.sh scripts/tests/test-probe-image-signature-enforcement.sh
+          bash scripts/tests/test-probe-image-signature-enforcement.sh
 
       - name: 🔐 Validate Cilium mutual-auth policy scope
         if: needs.changes.outputs.k8s == 'true'

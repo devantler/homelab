@@ -239,6 +239,7 @@ for callsite in \
   .github/actions/deploy-prod/action.yml \
   .github/workflows/ci.yaml \
   .github/workflows/dr-rebuild.yaml \
+  .github/workflows/probe-image-signature-enforcement.yaml \
   .github/workflows/validate-image-verifier-liveness.yaml; do
   assert_callsite "${repo_root}/${callsite}" "${callsite}" || exit 1
 done
