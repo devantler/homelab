@@ -233,6 +233,7 @@ test('core inventory accepts only keyed, duplicate-free recovery rows',()=>{
   assert.deepEqual(validateCoreInventory(inventory),{guestPairs:1,guests:1,roomBookings:1,meaningfulGuests:1});
   for(const change of [
     value=>value.guestPairs.push(structuredClone(value.guestPairs[0])),
+    value=>value.guestPairs.push({...structuredClone(value.guestPairs[0]),code:'PAIR02'}),
     value=>{value.guests[0].pairCode='MISSING';},
     value=>{value.guests[0].attending=null;value.guests[0].dietaryNotes=null;value.roomBookings=[];},
     value=>value.roomBookings.push(structuredClone(value.roomBookings[0])),
@@ -252,10 +253,14 @@ test('merge restores pre-loss answers only where the replacement has no newer an
   assert.match(sql,/DROP SCHEMA incident_restore_34710000000_1 CASCADE/);
   assert.match(sql,/RAISE SQLSTATE 'P1001'/);
   assert.match(sql,/RAISE SQLSTATE 'P1002'/);
-  assert.match(sql,/SELECT code FROM incident_restore_34710000000_1\.guest_pairs EXCEPT SELECT code FROM guest_pairs/);
-  assert.doesNotMatch(sql,/SELECT code, name FROM (?:incident_restore_34710000000_1\.)?guest_pairs/);
-  assert.match(sql,/SELECT recovered\.pair_code, recovered\.name FROM incident_restore_34710000000_1\.guests recovered/);
-  assert.match(sql,/EXCEPT SELECT pairs\.code, live\.name FROM guests live JOIN guest_pairs pairs/);
+  assert.doesNotMatch(sql,/EXCEPT SELECT code/);
+  assert.match(sql,/LEFT JOIN guest_pairs live_pairs ON live_pairs\.name=recovered_pairs\.name/);
+  assert.match(sql,/HAVING count\(live_pairs\.id\) <> 1/);
+  assert.match(sql,/LEFT JOIN guests live ON live\.guest_pair_id=live_pairs\.id AND live\.name=recovered\.name/);
+  assert.match(sql,/WHERE recovered\.attending IS NOT NULL OR recovered\.dietary_notes IS NOT NULL\n    GROUP BY/);
+  assert.match(sql,/HAVING count\(live\.id\) <> 1/);
+  assert.match(sql,/JOIN incident_restore_34710000000_1\.guest_pairs recovered_pairs ON recovered_pairs\.code=recovered\.pair_code\n  JOIN guest_pairs pairs ON pairs\.name=recovered_pairs\.name/);
+  assert.doesNotMatch(sql,/JOIN guest_pairs pairs ON pairs\.code=recovered\.pair_code/);
   assert.doesNotMatch(sql,/sessions|admin_sessions/);
   assert.throws(()=>buildMergeSQL('public'),/refused/);
 });
