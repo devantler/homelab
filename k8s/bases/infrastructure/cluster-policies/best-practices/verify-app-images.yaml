@@ -58,10 +58,12 @@ spec:
       cosign:
         keyless:
           # publish-app.yaml lives in the actions monorepo. Callers pin that
-          # reusable workflow by commit SHA, so the ref admits that form alone
-          # and rejects everything else — a mutable ref such as @main, and a
-          # release tag — the same shape as the tenants' Flux OCIRepository
-          # verify blocks (#3022). Keep this to exactly ONE identity
+          # reusable workflow by commit SHA, so the ref admits that commit shape
+          # alone and rejects everything else — a mutable ref such as @main, and
+          # a release tag — the same shape as the tenants' Flux OCIRepository
+          # verify blocks (#3022). A 40-hex ref is not proof of a reviewed
+          # revision of the actions repository; that remaining risk is
+          # accepted in #3746. Keep this to exactly ONE identity
           # entry: the IVPOL engine verifies cosign v3 bundles through
           # sigstore-go, which rejects more than one identity per verification
           # ("unsupported: multiple identities are not supported at this
