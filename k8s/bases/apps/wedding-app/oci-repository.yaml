@@ -16,7 +16,9 @@ spec:
   verify:
     provider: cosign
     matchOIDCIdentity:
-      # Trust immutable revisions of the platform-owned shared workflow. The tenant may
-      # release independently; platform policy, RBAC, and network boundaries govern it.
+      # Matches the issuer and the shared publish-app.yaml workflow path at a 40-hex
+      # commit: the commit shape, not a reviewed revision. Package write access,
+      # namespace, RBAC, network and admission policy bound the release; the remaining
+      # risk is accepted in devantler-tech/platform#3746.
       - issuer: '^https://token\.actions\.githubusercontent\.com$'
         subject: '^https://github\.com/devantler-tech/actions/\.github/workflows/publish-app\.yaml@[0-9a-f]{40}$'
