@@ -320,9 +320,12 @@ jobs:
               # same reason as the pair above: the probe reports on a security
               # control, and BOTH of its possible mistakes are silent — a PASS
               # where nothing was verified, and a FAIL where the result was
-              # merely ambiguous.
+              # merely ambiguous. The probe's workflow belongs here too: it is a
+              # production-secret talosctl caller checked by the setup-talosctl
+              # call-site guard, so a change to it alone must re-run that guard.
               - 'scripts/probe-image-signature-enforcement.sh'
               - 'scripts/tests/test-probe-image-signature-enforcement.sh'
+              - '.github/workflows/probe-image-signature-enforcement.yaml'
               - 'scripts/generate-kubescape-exceptions/**'
               - 'scripts/tests/test-kubescape-self-hosted-scan-persistence.sh'
               - 'scripts/tests/test-kubescape-storage-hotfix.sh'
