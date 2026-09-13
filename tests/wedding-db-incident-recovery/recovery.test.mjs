@@ -9,6 +9,7 @@ import {
   buildResumePatch,
   buildSchemaCleanupSQL,
   buildSuspendPatch,
+  extractRecoverySqlstate,
   hasPrelossWitness,
   recoveryRefusalMessage,
   recoveryOwner,
@@ -52,6 +53,16 @@ test('verified recovery failures disclose only allow-listed diagnostics',()=>{
   );
   assert.equal(recoveryRefusalMessage({phase:'restore-and-merge',checkpoint:'recovered-core-inventory'}), 'Wedding database incident recovery refused.\n');
   assert.equal(recoveryRefusalMessage({verified:true,phase:'subprocess stderr'}), 'Wedding database incident recovery refused.\n');
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'merge-recovered-data',sqlstate:'P1001'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge; checkpoint: merge-recovered-data; sqlstate: P1001).\n',
+  );
+  assert.equal(
+    recoveryRefusalMessage({verified:true,phase:'restore-and-merge',checkpoint:'merge-recovered-data',sqlstate:'guest name'}),
+    'Wedding database incident recovery refused (phase: restore-and-merge; checkpoint: merge-recovered-data).\n',
+  );
+  assert.equal(extractRecoverySqlstate('ERROR:  P1001\ncommand terminated with exit code 1\n'),'P1001');
+  assert.equal(extractRecoverySqlstate('guest name\nERROR: value disclosed'),undefined);
 });
 
 function fixture(){
@@ -239,6 +250,8 @@ test('merge restores pre-loss answers only where the replacement has no newer an
   assert.match(sql,/INSERT INTO incident_restore_counts[\s\S]*;\nSELECT json_build_object\(/);
   assert.match(sql,/'restoredGuestAnswers',\(SELECT restored_guest_answers FROM incident_restore_counts\)/);
   assert.match(sql,/DROP SCHEMA incident_restore_34710000000_1 CASCADE/);
+  assert.match(sql,/RAISE SQLSTATE 'P1001'/);
+  assert.match(sql,/RAISE SQLSTATE 'P1002'/);
   assert.doesNotMatch(sql,/sessions|admin_sessions/);
   assert.throws(()=>buildMergeSQL('public'),/refused/);
 });
