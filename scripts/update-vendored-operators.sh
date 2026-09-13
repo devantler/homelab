@@ -19,6 +19,10 @@ readonly originissuers_sha256='d085e763718cf34e675b62f8394e20854237b3997f825d865
 readonly cert_approver_version='0.12.0'
 readonly cert_approver_commit='b5516301e48f8e50cb18368e457779d01796119b'
 readonly cert_approver_sha256='44d74b38379d96572c434290732092f577ee4835392b36922a72c406ee406139'
+# The digest the cert-approver kustomization pins its image to (#3515). The vendored bytes name only a
+# tag, and a tag can move; this is what production actually pulls. --render-remotes re-resolves the tag
+# from the registry and refuses to refresh while this constant disagrees with it.
+readonly cert_approver_image_digest='sha256:534e40a0050c34bda2a7bae53aa9c11133704f23dc83fee14f3b45b0f1eabe45'
 # Keep this aligned with CI_CHECKOV_VERSION in megalinter-scan-counts.sh so a
 # local vendor refresh cannot miss a rule that the non-blocking CI scan knows.
 readonly checkov_version='3.3.2'
@@ -176,6 +180,9 @@ validate_committed_bundles() {
       --validate-annotated --source-sha256 "${cert_approver_sha256}" \
       --source-version "${cert_approver_version}" \
       --resources-dir "${render_controllers}/kubelet-serving-cert-approver" </dev/null
+    scripts/guard-cert-approver-image-pin.sh \
+      "${render_controllers}/kubelet-serving-cert-approver/kustomization.yaml" \
+      "${cert_approver_version}" "${cert_approver_image_digest}"
     validate_crd "${render_controllers}/origin-ca-issuer/custom-resource-definition-clusteroriginissuers.yaml" "${clusteroriginissuers_sha256}"
     validate_crd "${render_controllers}/origin-ca-issuer/custom-resource-definition-originissuers.yaml" "${originissuers_sha256}"
   )
@@ -188,8 +195,34 @@ validate_crd() {
     --bundle origin-ca-issuer --validate-source <"${file}")
 }
 
+# Resolve what the pinned cert-approver tag points at in the registry NOW, and refuse to refresh when
+# it differs from cert_approver_image_digest. A refresh is the moment a new tag is adopted, so this is
+# where a tag that moved, or a version bump without its digest, must stop and name the digest to review.
+verify_cert_approver_image_digest() {
+  local token resolved
+  token="$(curl --proto '=https' --tlsv1.2 --fail --silent --show-error \
+    "https://ghcr.io/token?scope=repository:alex1989hu/kubelet-serving-cert-approver:pull&service=ghcr.io" |
+    sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+  if [ -z "${token}" ]; then
+    printf 'could not obtain a ghcr.io pull token for the cert-approver image\n' >&2
+    exit 1
+  fi
+  resolved="$(curl --proto '=https' --tlsv1.2 --fail --silent --show-error --head \
+    -H "Authorization: Bearer ${token}" \
+    -H 'Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json' \
+    "https://ghcr.io/v2/alex1989hu/kubelet-serving-cert-approver/manifests/${cert_approver_version}" |
+    tr -d '\r' | sed -n 's/^[Dd]ocker-[Cc]ontent-[Dd]igest: *//p')"
+  if [ "${resolved}" != "${cert_approver_image_digest}" ]; then
+    printf 'ghcr.io/alex1989hu/kubelet-serving-cert-approver:%s resolves to %s, but cert_approver_image_digest is %s.\n' \
+      "${cert_approver_version}" "${resolved:-<nothing>}" "${cert_approver_image_digest}" >&2
+    printf 'Review that image, then record its digest here and in the kustomization images: pin.\n' >&2
+    exit 1
+  fi
+}
+
 prepare_render_remotes() {
   local name digest source
+  verify_cert_approver_image_digest
   for name in clusteroriginissuers originissuers; do
     if [ "${name}" = clusteroriginissuers ]; then
       digest="${clusteroriginissuers_sha256}"
