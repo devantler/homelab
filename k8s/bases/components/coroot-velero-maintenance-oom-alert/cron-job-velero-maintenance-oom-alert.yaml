@@ -1,0 +1,175 @@
+# Alerts on a recent OOMKilled Velero repository-maintenance pod, even when a
+# later retry succeeds and makes the BackupRepository healthy again.
+#
+# The 2026-08-28 observability maintenance was OOMKilled, retried 25 minutes
+# later, and ended with a healthy BackupRepository. Job and repository readiness
+# therefore erased the incident from every existing alert surface. Velero keeps
+# the latest three maintenance Jobs per repository, and each pod carries
+# `velero.io/repo-name`, so terminated pod status is the durable retry-proof
+# signal. A 30-minute schedule with a two-hour lookback catches the attempt and
+# bounds repeats from retained history to four ticks.
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: velero-maintenance-oom-alert
+  namespace: observability
+  annotations:
+    checkov.io/skip1: "CKV_K8S_38=the detector reads its SA token to list retained Velero maintenance pods"
+    # `${LOOKBACK_SECONDS}` and `${NOW_EPOCH}` below are container variables.
+    # The parent Kustomization runs Flux substitution, which would blank them.
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 60
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 180
+      template:
+        metadata:
+          labels:
+            app: velero-maintenance-oom-alert
+        spec:
+          restartPolicy: Never
+          serviceAccountName: velero-maintenance-oom-alert
+          automountServiceAccountToken: true
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            fsGroup: 65532
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: check
+              image: docker.io/badouralix/curl-jq:latest@sha256:1e7c0284e24572ace7170df9fc91f15fd3b79ebf056d4dde17244d5d74bbfabc
+              env:
+                - name: LOOKBACK_SECONDS
+                  value: "7200"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  API=https://kubernetes.default.svc
+                  SA=/var/run/secrets/kubernetes.io/serviceaccount
+                  PODS="$API/api/v1/namespaces/velero/pods"
+
+                  WEBHOOK_URL=$(cat /etc/velero-maintenance-oom-alert/url)
+                  if [ "$(printf '%s' "$WEBHOOK_URL" | tr -d '[:cntrl:]')" != "$WEBHOOK_URL" ]; then
+                    echo "ERROR: webhook URL contains control characters" >&2
+                    exit 1
+                  fi
+                  case "$WEBHOOK_URL" in
+                    https://*) ;;
+                    *)
+                      echo "ERROR: webhook URL must use https://" >&2
+                      exit 1
+                      ;;
+                  esac
+                  case "${LOOKBACK_SECONDS}" in
+                    ''|*[!0-9]*)
+                      echo "ERROR: LOOKBACK_SECONDS must be a positive integer" >&2
+                      exit 1
+                      ;;
+                  esac
+                  if [ "${LOOKBACK_SECONDS}" -le 0 ]; then
+                    echo "ERROR: LOOKBACK_SECONDS must be a positive integer" >&2
+                    exit 1
+                  fi
+                  NOW_EPOCH=${NOW_EPOCH:-$(date -u +%s)}
+                  case "$NOW_EPOCH" in
+                    ''|*[!0-9]*)
+                      echo "ERROR: NOW_EPOCH must be a positive integer" >&2
+                      exit 1
+                      ;;
+                  esac
+                  cutoff=$((NOW_EPOCH - LOOKBACK_SECONDS))
+
+                  code=$(curl -sS -o /tmp/body -w '%{http_code}' \
+                    --get --data-urlencode 'labelSelector=velero.io/repo-name' \
+                    --cacert "$SA/ca.crt" \
+                    -H "Authorization: Bearer $(cat "$SA/token")" \
+                    "$PODS")
+                  if [ "$code" != "200" ]; then
+                    echo "ERROR: kube API returned HTTP $code listing Velero maintenance pods" >&2
+                    exit 1
+                  fi
+                  if ! jq -e '(.items | type) == "array"' /tmp/body >/dev/null; then
+                    echo "ERROR: unexpected pod-list response shape" >&2
+                    exit 1
+                  fi
+
+                  total=$(jq -r '.items | length' /tmp/body)
+                  ooms=$(jq -r --argjson cutoff "$cutoff" '
+                    .items[]
+                    | . as $pod
+                    | ($pod.metadata.labels["velero.io/repo-name"] // "unknown-repository") as $repo
+                    | ($pod.status.containerStatuses // [])[]
+                    | [.state.terminated, .lastState.terminated][]
+                    | select(. != null and .reason == "OOMKilled" and .finishedAt != null)
+                    | (.finishedAt | fromdateiso8601) as $finished
+                    | select($finished > $cutoff)
+                    | "• `velero/\($pod.metadata.name)` — repository `\($repo)`, OOMKilled at \(.finishedAt) (exit \(.exitCode // "unknown"))"
+                  ' /tmp/body)
+
+                  if [ -z "$ooms" ]; then
+                    echo "Checked $total retained Velero maintenance pod(s); no OOMKill in the last ${LOOKBACK_SECONDS}s."
+                    exit 0
+                  fi
+
+                  echo "Recent Velero repository-maintenance OOMKill(s) detected:"
+                  echo "$ooms"
+                  text=$(printf '*Velero repository maintenance OOMKilled*\n\n%s\n\n_A later retry can make the BackupRepository healthy; this alert records the failed attempt that readiness hides._' "$ooms")
+                  jq -n --arg t "$text" '{text: $t}' >/tmp/payload.json
+
+                  case "$WEBHOOK_URL" in
+                    https://example.invalid/*)
+                      echo "No Slack webhook configured; alert not delivered."
+                      exit 0
+                      ;;
+                  esac
+
+                  # Keep the webhook token out of argv. The control-character
+                  # check above makes the one-line curl config total.
+                  printf 'url = %s\n' "$WEBHOOK_URL" |
+                    curl -sf --max-time 15 \
+                      --retry 3 --retry-delay 2 --retry-all-errors --retry-connrefused \
+                      -H 'Content-Type: application/json' \
+                      --data @/tmp/payload.json \
+                      --config -
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 65532
+                runAsGroup: 65532
+                seLinuxOptions: {}
+                capabilities:
+                  drop:
+                    - ALL
+              resources:
+                requests:
+                  cpu: 5m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              volumeMounts:
+                - name: webhook
+                  mountPath: /etc/velero-maintenance-oom-alert
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: webhook
+              secret:
+                secretName: velero-maintenance-oom-alert-webhook
+                defaultMode: 288
+            - name: tmp
+              emptyDir: {}

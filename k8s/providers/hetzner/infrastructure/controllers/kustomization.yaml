@@ -62,6 +62,10 @@ resources:
   # - ../../../../bases/infrastructure/controllers/chaos-mesh/
 components:
   - ../../../../bases/components/annotations-transformers
+  # Cross-controller alert (#3437): Coroot delivers the alert and Velero owns
+  # the namespace-scoped pod status read. Both controllers are present in this
+  # full production composition.
+  - ../../../../bases/components/coroot-velero-maintenance-oom-alert
   # Platform-wide HelmRelease drift detection (mode: enabled). Restores
   # Helm-rendered resources deleted/mutated out-of-band — the cause of the
   # silently-broken keda external-scaler and homepage Deployments.

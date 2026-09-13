@@ -106,6 +106,12 @@ stays quiet by design, exactly as the old Alertmanager did.
   remove this coverage. The archive branch was added after wedding-db remained
   3/3 Ready while Barman rejected WAL from a replacement system ID for roughly
   three days.
+- **Velero maintenance OOMKills remain visible after a successful retry.**
+  `bases/components/coroot-velero-maintenance-oom-alert/cron-job-velero-maintenance-oom-alert.yaml`
+  checks retained repository-maintenance pod status every 30 minutes. It alerts
+  on an `OOMKilled` termination from the previous two hours even when a later
+  Job for the same repository succeeds and restores `BackupRepository` readiness.
+  Its cross-namespace Role is limited to `list` on pods in `velero`.
 - **A stranded volume attach alerts within about fifteen minutes.** On
   2026-07-01 one hcloud volume that stayed attached to a departed node took all
   prod delivery down for nine hours: the rescheduled `openbao-0` logged

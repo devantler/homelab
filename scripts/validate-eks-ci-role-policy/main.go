@@ -2056,8 +2056,36 @@ const (
 // and ZERO duplicate rendered resources; its single unapproved entry was this
 // aggregate. This host's renderer is unapproved, so no local digest is claimed.
 //
-// Previous aggregate: 525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb.
-const expectedRenderedSurfaceSHA = "e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300"
+// Previous aggregate:
+//
+//	525e04eedfc5e504a27b04585e25b28d42fc48db0ee9124d31b6468220bd50eb
+//
+// That repair established aggregate:
+//
+//	e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300
+//
+// Moved again by the Velero maintenance OOM alert (#3437). The authored delta
+// adds one observability ServiceAccount, one namespaced Role and RoleBinding,
+// the alert CronJob and its inert placeholder Secret. The Role grants only
+// list on pods in the velero namespace; it cannot read Secrets, mutate
+// workloads or cross namespace boundaries. The CronJob's mounted Slack
+// webhook remains out of its environment and command line.
+//
+// Re-derived on top of the Kubescape posture-persistence repair (e36a3db7)
+// rather than on the older 8756f2ad base (see #3740). The two changes touch
+// disjoint objects: that repair edits only the kubescape/kubescape HelmRelease
+// scanner tag, while this alert adds only the velero-namespace ServiceAccount,
+// Role, RoleBinding, CronJob and placeholder Secret above, so the authored delta
+// is unchanged by rebasing onto it.
+//
+// RENDERER PROVENANCE: the value below was read from CI's own failure on job
+// 103670038741 at 66f6f349 (the merge of main e36a3db7 with this alert), which
+// renders under the approved SHA256-verified toolchain and reported ZERO missing
+// and ZERO duplicate rendered resources; its single unapproved entry was this
+// aggregate. This host's renderer is unapproved, so no local digest is claimed.
+//
+// Previous aggregate: e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300.
+const expectedRenderedSurfaceSHA = "59f51f1775bcded62ab018a6389ef11420b696a3b00357fc4424c4ab83935dba"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
