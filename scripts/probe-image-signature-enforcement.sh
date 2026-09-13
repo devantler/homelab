@@ -194,6 +194,24 @@ for ref in "${unsigned_image}" "${signed_image}"; do
   esac
 done
 
+# The ref NAME — registry, namespace and repository, without its tag or digest —
+# must be canonical lowercase. OCI repository names are lowercase, and registry
+# domains are matched case-insensitively. Normalizing case for one comparison but
+# not another is how a `GHCR.IO/...` input missed its cached `ghcr.io/...` twin:
+# the cache check saw no match, the pull was served from cache without
+# verification, and the probe reported PASS. Requiring the canonical form makes
+# the rule match, the cache check and the pull all see one spelling, instead of
+# normalizing each comparison separately. A tag may still carry upper case.
+for ref in "${unsigned_image}" "${signed_image}"; do
+  ref_name="${ref%@*}"
+  case "${ref_name##*/}" in
+    *:*) ref_name="${ref_name%:*}" ;;
+  esac
+  case "${ref_name}" in
+    *[[:upper:]]*) fail_usage "ref '${ref}' is not canonical lowercase — write the registry and repository in lowercase so rule matching, the cache check and the pull all refer to the same image" ;;
+  esac
+done
+
 command -v "${talosctl_bin}" >/dev/null 2>&1 ||
   fail_inconclusive "talosctl not found (looked for '${talosctl_bin}')"
 
@@ -278,33 +296,11 @@ ref_repository() {
   printf '%s' "${repo}"
 }
 
-# Registry domains are case-insensitive and Talos matches them that way, so the
-# domain — the first path component, when it looks like a host (contains '.' or
-# ':', or is localhost) — is lowercased before matching. The rest of the
-# repository path is left alone. This lives here rather than in ref_repository,
-# which also strips refs out of diagnostics exactly as the node echoes them.
-lowercase_registry_domain() {
-  local repo="$1" domain rest
-  case "${repo}" in
-    */*) ;;
-    *)
-      printf '%s' "${repo}"
-      return 0
-      ;;
-  esac
-  domain="${repo%%/*}"
-  rest="${repo#*/}"
-  case "${domain}" in
-    *.* | *:* | localhost)
-      domain="$(printf '%s' "${domain}" | tr '[:upper:]' '[:lower:]')"
-      ;;
-  esac
-  printf '%s/%s' "${domain}" "${rest}"
-}
-
+# Refs are already required to be canonical lowercase (see the argument checks),
+# so the repository compares directly against the live patterns.
 match_rule() {
   local repo pattern
-  repo="$(lowercase_registry_domain "$(ref_repository "$1")")"
+  repo="$(ref_repository "$1")"
   while IFS= read -r pattern; do
     [[ -n "${pattern}" ]] || continue
     # The rule patterns are containerd globs. `case` glob-matches with the same

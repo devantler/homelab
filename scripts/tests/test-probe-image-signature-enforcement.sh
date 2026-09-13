@@ -400,22 +400,32 @@ set -e
 require_text "${out}" 'PASS:' 'exact-repository rule'
 check 'an exact-repository rule governs the tagged ref, as it does on the node'
 
-# Registry domains are case-insensitive, and Talos matches them that way. An
-# upper-case domain must still select the rule it selects on the node, or the probe
-# reports "matches NO running rule" for a ref the node would verify.
-reset_fixtures
-upper_unsigned='GHCR.IO/devantler-tech/probe-throwaway-unsigned:t1'
-upper_signed='GHCR.IO/devantler-tech/probe-throwaway-signed:t1'
-stage_pull "${upper_unsigned}" 1 'image verification failed: no valid signature found'
-stage_pull "${upper_signed}" 0 ''
-set +e
-out="$("${script}" --confirm --node "${node}" \
-  --unsigned-image "${upper_unsigned}" --signed-image "${upper_signed}" 2>&1)"
-rc=$?
-set -e
-[[ ${rc} -eq 0 ]] || fail "upper-case registry domain should reach PASS, got ${rc}: ${out}"
-require_text "${out}" 'PASS:' 'upper-case registry domain'
-check 'an upper-case registry domain matches its rule, as it does on the node'
+# A ref whose name is not canonical lowercase is a usage error, before anything
+# reaches a node. Normalizing case in one place and not another is exactly how a
+# `GHCR.IO/...` input missed its cached `ghcr.io/...` twin: the cache check saw
+# no match, the pull was served from cache without verification, and the probe
+# reported PASS. OCI repository names are lowercase, so requiring the canonical
+# form removes the whole class instead of chasing each comparison.
+for upper_case in signed unsigned; do
+  reset_fixtures
+  case "${upper_case}" in
+    signed) u="${unsigned}" s='GHCR.IO/devantler-tech/probe-throwaway-signed:t1' ;;
+    unsigned) u='ghcr.io/Devantler-Tech/probe-throwaway-unsigned:t1' s="${signed}" ;;
+  esac
+  # The exact false-PASS setup: the canonical twin of the upper-case ref is cached.
+  printf '%s sha256:abc 12MB\n' 'ghcr.io/devantler-tech/probe-throwaway-signed:t1' >"${fixtures}/imagelist.txt"
+  stage_pull "${u}" 1 'image verification failed: no valid signature found'
+  stage_pull "${s}" 0 ''
+  set +e
+  out="$("${script}" --confirm --node "${node}" --unsigned-image "${u}" --signed-image "${s}" 2>&1)"
+  rc=$?
+  set -e
+  [[ ${rc} -eq 2 ]] || fail "non-lowercase ${upper_case} ref should exit 2, got ${rc}: ${out}"
+  require_text "${out}" 'lowercase' "non-lowercase ${upper_case} ref"
+  refute_text "${out}" 'PASS:' "non-lowercase ${upper_case} ref"
+  [[ ! -e "${fixtures}/pulled.txt" ]] || fail "non-lowercase ${upper_case} ref reached the node"
+done
+check 'a ref whose name is not canonical lowercase is a usage error and nothing is pulled'
 
 # --- Both controls must exercise the SAME rule ------------------------------
 # A signed ref under a different first-match rule cannot exclude a rule that
