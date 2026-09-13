@@ -2078,14 +2078,14 @@ const (
 // Role, RoleBinding, CronJob and placeholder Secret above, so the authored delta
 // is unchanged by rebasing onto it.
 //
-// RENDERER PROVENANCE: PENDING. The value below still carries the e36a3db7 base
-// until CI renders the merge of main e36a3db7 with this alert under the approved
-// SHA256-verified toolchain; it is replaced with that run's single unapproved
-// aggregate once CI reports ZERO missing and ZERO duplicate rendered resources.
-// This host's renderer is unapproved, so no local digest is claimed.
+// RENDERER PROVENANCE: the value below was read from CI's own failure on job
+// 103670038741 at 66f6f349 (the merge of main e36a3db7 with this alert), which
+// renders under the approved SHA256-verified toolchain and reported ZERO missing
+// and ZERO duplicate rendered resources; its single unapproved entry was this
+// aggregate. This host's renderer is unapproved, so no local digest is claimed.
 //
 // Previous aggregate: e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300.
-const expectedRenderedSurfaceSHA = "e36a3db7047b2b45855f6e3f2b25087dd4e56f74775bd08a5ba94efd3b86d300"
+const expectedRenderedSurfaceSHA = "59f51f1775bcded62ab018a6389ef11420b696a3b00357fc4424c4ab83935dba"
 
 // authorizationOverlayPaths lists every independently reconciled production
 // layer where an object can grant privileges to the aws/aws service account.
